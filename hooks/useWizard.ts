@@ -12,6 +12,7 @@ const SAVE_KEY = "kenshin_player_data";
 const DEFAULT_DATA: PlayerFormData = {
   role: "athlete",
   name: "",
+  gender: "male",
   position: null,
   age: null,
   height: null,

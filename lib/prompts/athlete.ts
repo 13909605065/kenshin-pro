@@ -60,6 +60,13 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
     bodyNote = `标准体型(BMI ${bmi.toFixed(1)})：维持当前体成分，力量与体能均衡发展。`;
   }
 
+  // Gender-specific notes
+  const isFemale = data.gender === "female";
+  let genderNote = "";
+  if (isFemale) {
+    genderNote = `女性运动员：ACL损伤风险为男性2-8倍，每节必含落地力学纠正（膝勿内扣）+北欧弯举。上肢初始负荷低15-20%。关注铁/钙摄入（月经周期铁流失），蛋白质建议1.8-2.0g/kg。警惕女性运动员三联征（进食紊乱→月经失调→骨密度降低）。`;
+  }
+
   // Build combo hint
   const pos = data.position || "midfielder";
   const goal = data.goal || "strength";
@@ -78,6 +85,7 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
 - 训练经验等级: ${expLevel}。${expNote}
 - 年龄段调整: ${ageNote}
 - 体型评估: ${bodyNote}
+- 性别特征: ${genderNote || "男性，标准方案"}
 - 伤病史: ${data.injuryHistory || "无"}
 - 伤病部位: ${injurySitesStr}
 
@@ -97,5 +105,6 @@ ${langInstruction}
 特殊规则:
 ${isUnder18 ? "- 该球员未成年，禁止使用>85%1RM负荷。用 db-goblet-squat/sus-squat 替代 back-squat。" : ""}
 ${isGoalkeeper ? "- 守门员专项：upper必须含 shoulder-press + face-pull；core必须含 cable-woodchop(旋转爆发) + pallof-press(抗旋转)；lower必须含 box-jump(爆发力)。" : ""}
-${data.injurySites.includes("knee") || data.injurySites.includes("thigh") ? "- 含膝/大腿伤病：禁止大重量深蹲和跳跃类。替代为 leg-press(闭链安全)+hip-thrust(臀肌)+nordic-hamstring(轻型离心)。" : ""}`;
+${data.injurySites.includes("knee") || data.injurySites.includes("thigh") ? "- 含膝/大腿伤病：禁止大重量深蹲和跳跃类。替代为 leg-press(闭链安全)+hip-thrust(臀肌)+nordic-hamstring(轻型离心)。" : ""}
+${isFemale ? "- 女性运动员：热身必含落地力学训练(膝勿内扣)；营养方案加铁/钙建议；上肢初始负荷保守(-15%)。每节必练北欧弯举。" : ""}`;
 }

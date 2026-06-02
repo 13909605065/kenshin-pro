@@ -23,9 +23,12 @@ export type LeagueTag =
   | "amateur_team";
 export type TacticalTheme = "possession" | "shooting" | "crossing" | "defending" | "pressing" | "counterattack" | "set_pieces" | "positional_attack";
 
+export type Gender = "male" | "female";
+
 export interface PlayerFormData {
   role: UserRole;
   name: string;
+  gender: Gender;
   position: Position | null;
   age: number | null;
   height: number | null;

@@ -40,6 +40,7 @@ function ProfileSummary({ formData, t }: any) {
     return <span className="text-xs text-gray-400">教练 · {parts.join(" / ") || "未设置"}</span>;
   }
   const parts = [
+    formData.gender === "female" ? "♀" : "♂",
     formData.position && t(`pos.${formData.position}`),
     formData.age && `${formData.age}岁`,
     formData.height && `${formData.height}cm`,
@@ -74,6 +75,14 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose }: any) {
             {/* Name */}
             <input type="text" value={formData.name} onChange={(e: any) => updateField("name", e.target.value)}
               placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
+
+            {/* Gender */}
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => updateField("gender", "male")}
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>♂ 男</button>
+              <button onClick={() => updateField("gender", "female")}
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>♀ 女</button>
+            </div>
 
             {/* Position 3+2 */}
             <div>
