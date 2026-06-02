@@ -76,6 +76,19 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh"): str
     pro: "PRO级教练：顶级战术设计能力。可包含复杂战术体系和比赛策略。",
   };
 
+  // Tactical theme → physical quality mapping
+  const tacticalPhysicalMap: Record<string, string> = {
+    pressing: "体能重点：反复冲刺能力+加速能力。训练强度高(Zone4-5)，短间歇高密度。每项练习后心率恢复至Zone2再开始下一项。",
+    possession: "体能重点：有氧基础+敏捷性。训练强度中(Zone2-3)，持续跑动为主。关注控球中的位移质量和决策速度。",
+    counterattack: "体能重点：爆发力+最大速度。训练强度极高(Zone5)，长间歇(1:6-1:10)充分恢复。每次冲刺质量优先于数量。",
+    defending: "体能重点：力量+对抗+反应速度。训练强度中高(Zone3-4)，间歇性。注意防守姿态的体能消耗。",
+    crossing: "体能重点：速度耐力+爆发力。训练强度中高(Zone3-4)，间歇性。边路反复冲刺后传中质量是关键。",
+    shooting: "体能重点：爆发力+协调性。训练强度中(Zone2-3)，充分恢复。每次射门前保持技术动作质量。",
+    set_pieces: "体能重点：爆发力+弹跳。训练强度中低(Zone1-2)，充分恢复。定位球训练体能负荷低但技术精度要求高。",
+    positional_attack: "体能重点：有氧基础+敏捷+决策速度。训练强度中(Zone2-3)，持续跑动。体能疲劳后决策质量下降是训练重点。",
+  };
+  const physicalNote = tacticalPhysicalMap[primaryTheme] || "";
+
   return `教练信息:
 - 身份: 教练
 - 教练证书: ${COACH_CERT_LABELS[cert]}
@@ -90,6 +103,7 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh"): str
 - 微周期类型: ${microcycleId === "microcycle-youth" ? "青少年发展微周期" : "标准一周一赛微周期"}
 - 联赛适配: ${levelNote}
 - 教练级别: ${certNotes[cert] || ""}
+- ${physicalNote}
 
 你是一位持有${COACH_CERT_LABELS[cert]}证书的${COACH_ROLE_LABELS[role]}，正在为${LEAGUE_TAG_LABELS[league]}级别设计一堂以「${TACTICAL_THEME_LABELS[primaryTheme]}」为主题的训练课。
 

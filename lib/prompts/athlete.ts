@@ -32,17 +32,23 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
   } else if (years >= 8) {
     expLevel = "高级";
     expNote = "可采用高级进退阶方案，负荷可接近个人极限。可加入比赛速度下的功能性训练。";
+  } else {
+    // years 4-7 → 中级
+    expLevel = "中级";
+    expNote = "中等强度负荷(75-85%1RM)，3-4组×6-10次。可引入杠铃基础动作和中级增强式(L2)。注意渐进负荷原则。";
   }
 
   // Age adjustments
   const age = data.age ?? 25;
   let ageNote = "";
-  if (age < 16) {
-    ageNote = `青少年球员(${age}岁)：以自重训练为主，禁止>85%1RM负荷。重点发展协调性、敏捷性、基础动作模式。使用LTAD模型。`;
+  if (age < 14) {
+    ageNote = `青少年早期(${age}岁)：以自重训练为主，禁止>85%1RM。重点发展协调性、敏捷性、基础动作模式。LTAD FUNdamentals阶段。`;
+  } else if (age < 16) {
+    ageNote = `青少年中期(${age}岁)：训练年龄<2年→体重为主；训练年龄≥2年→可渐进引入>85%1RM(需技术合格+监督)。${years < 2 ? "当前训练年龄不足，保持体重训练为主。" : "当前训练年龄达标，可适度增加负荷。"}`;
   } else if (age < 18) {
-    ageNote = `青年球员(${age}岁)：可逐步引入外部阻力但不过度。注意骨骺板未闭合，避免极限负荷。`;
-  } else if (age > 33) {
-    ageNote = `资深球员(${age}岁)：热身时间延长至20分钟。关节保护优先，加入更多预康复训练。恢复时间适当延长。`;
+    ageNote = `青年球员(${age}岁)：训练年龄≥2年且技术合格者可渐进引入>85%1RM。关注PHV后的力量窗口期。`;
+  } else if (age >= 35) {
+    ageNote = `资深球员(${age}岁)：热身延长至20min，恢复优先。关节保护+预康复必练。训练频率可降至1-2次/周。`;
   } else if (age > 28) {
     ageNote = `成熟球员(${age}岁)：注意训练负荷与恢复的平衡。加入关节稳定性训练。`;
   }
@@ -55,7 +61,7 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
   if (bmi < 18.5) {
     bodyNote = `偏瘦体型(BMI ${bmi.toFixed(1)})：需加强力量训练和营养补充，目标增肌增重。蛋白质摄入建议2.0-2.2g/kg。`;
   } else if (bmi >= 25) {
-    bodyNote = `偏重体型(BMI ${bmi.toFixed(1)})：体能训练中增加有氧和灵敏成分，注意关节负荷管理。`;
+    bodyNote = `BMI ${bmi.toFixed(1)}偏高。注意：BMI无法区分肌肉和脂肪。如体脂也偏高，增加有氧/灵敏成分+关节负荷管理。如为肌肉型（体脂正常），维持当前力量训练方向，忽略BMI偏高提示。`;
   } else {
     bodyNote = `标准体型(BMI ${bmi.toFixed(1)})：维持当前体成分，力量与体能均衡发展。`;
   }
@@ -100,15 +106,17 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
 **1. 训练年龄调整：**
 ${years <= 1 ? "- 入门级(y≤1年)：所有动作降为 2-3组×12-15次，负荷≤65%1RM。杠铃动作替换为哑铃/自重变式。禁止奥举。" : ""}
 ${years > 1 && years <= 3 ? "- 初级(1-3年)：3组×8-12次为主，负荷65-75%1RM。可引入杠铃基础动作。不安排奥举。" : ""}
+${years > 3 && years < 8 ? "- 中级(4-7年)：3-4组×6-10次，负荷75-85%1RM。杠铃基础动作适用。可引入L2增强式(不含深度跳)。注意渐进负荷。" : ""}
 ${years >= 8 ? "- 高级(≥8年)：3-4组×2-5次可接近最大力量。可安排奥举+增强式训练。负荷可用80-95%1RM。" : ""}
 
 **2. 年龄调整：**
-${age < 18 ? `- 未成年(${age}岁)：禁止>85%1RM。deep squat/back-squat→goblet-squat或sus-squat。deadlift→trap-bar或kettlebell。重点：协调性+动作模式>绝对力量。` : ""}
-${age > 33 ? `- 资深球员(${age}岁)：热身延长至20min。每项力量训练前加1组轻重量热身。关节保护类动作必选（face-pull、band-activation）。恢复日间隔≥48h。` : ""}
+${age < 14 ? `- 青少年早期(${age}岁)：体重训练为主。禁止>85%1RM。squat→goblet-squat；deadlift→kettlebell。重点：协调性+动作模式>绝对力量。` : ""}
+${age >= 14 && age < 18 ? `- 青少年(${age}岁)：训练年龄≥2年→可渐进>85%1RM(需技术合格)。${years >= 2 ? "可用杠铃基础动作。" : "体重为主，暂不引入>85%1RM。"}` : ""}
+${age >= 35 ? `- 资深球员(${age}岁)：热身延长至20min。每项力量训练前加轻重量热身组。关节保护必选（face-pull、band-activation）。恢复间隔≥48h。` : ""}
 
 **3. 体型调整：**
 ${bmi < 18.5 ? `- 偏瘦(BMI ${bmi.toFixed(1)})：力量训练为主(70%)，有氧减少(15%)。每餐蛋白目标2.0-2.2g/kg。核心训练加抗旋转类(pallof-press)。` : ""}
-${bmi >= 25 ? `- 偏重(BMI ${bmi.toFixed(1)})：增加有氧/灵敏成分到30%。HIIT长间歇优先。注意关节保护(避免高冲击跳跃)。下肢选闭链动作(leg-press>back-squat)。` : ""}
+${bmi >= 25 ? `- BMI ${bmi.toFixed(1)}偏高：如是体脂偏高→增加有氧/灵敏到30%，关节保护优先(闭链动作)。如是肌肉型→忽略此提示，维持力量训练方向。HIIT长间歇优先。` : ""}
 
 **4. 性别调整：**
 ${isFemale ? "- 女性：热身必须含落地力学(jump-landing纠正膝外翻)。北欧弯举必练。上肢负荷保守(女-15%)。营养加铁/钙建议。" : ""}

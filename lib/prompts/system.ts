@@ -43,11 +43,11 @@ const PERIODIZATION = `### 周期化参数速查（NSCA 2022）
 | 目标 | %1RM | 组×次 | 间歇 | 节奏(E:I:C) |
 |------|------|-------|------|------------|
 | 肌耐力 | <67% | 2-3×12-20 | 30-60s | 2:0:1 |
-| 肌肥大 | 67-85% | 3-6×6-12 | 1-2min | 3:1:1 |
-| 最大力量 | 85-100% | 3-5×1-5 | 3-5min | 1:2:1 |
-| 爆发力 | 30-60%或80-90% | 3-5×1-5 | 3-5min | x:x:x(爆发) |
+| 肌肥大 | 67-85% | 3-6×6-12 | 1-2min | 3:0:1 |
+| 最大力量 | 85-100% | 3-5×1-5 | 3-5min | 1:0:1 |
+| 爆发力 | 30-60%或80-90% | 3-5×1-5 | 3-5min | explosive |
 
-休赛期4阶段：W1-2(GPP/肌耐力)→W3-6(基础力量)→W7-10(最大力量/爆发)→W11-12(转换)
+休赛期4阶段：W1-2(GPP/肌耐力:50-67%1RM,2-3×12-15)→W3-6(基础力量:67-80%1RM,3-4×6-10渐进)→W7-10(最大力量/爆发:80-95%1RM,3-5×2-5)→W11-12(转换:75-85%1RM,3-4×3-6,爆发速度优先)
 季前：爆发力优先(80-85%1RM,4-6次,2-4次/周)
 赛季：维持刺激,强度保持/量降低,1-2次/周
 训练频率≥2次/周可维持,1次/周可能退步,完全停训4周显著退步`;
@@ -90,8 +90,11 @@ ${PERIODIZATION}
 - 低训练年龄(<2年)：自限性练习,体重为主,2-3×12-15,避免>85%1RM
 - 中训练年龄(2-7年)：递增负荷,引入杠铃,3-4×8-12
 - 高训练年龄(≥8年)：奥举+爆发力,80-95%1RM,3-4×2-5
-- <18岁：禁止最大力量训练(>85%1RM),体重复合动作优先,LTAD模型
-- PHV期(12-16男/10-14女)：单侧力量+稳定性+落地力学
+- 训练年龄<2年且年龄<16岁：体重为主,避免>85%1RM。体重复合动作优先,LTAD模型
+- 训练年龄≥2年且年龄≥14岁：可渐进引入>85%1RM（需技术合格+成人监督）
+- PHV期(12-16男/10-14女)：单侧力量+稳定性+落地力学优先
+- 年龄<14岁：体重复合动作优先,LTAD FUNdamentals阶段
+- 年龄≥35岁：热身延长至20min,恢复优先,关节保护。训练频率可降至1-2次/周
 
 ### 能量系统与训练区间（运动生理学第六版）
 | 系统 | 持续时间 | 足球应用 | 训练区间 |
@@ -168,10 +171,10 @@ ${RAMP_WARMUP}
 ### 增强式训练进阶（CSCS）
 | 等级 | 类型 | 要求 | 训练量(触地次数) |
 |------|------|------|-----------------|
-| L1 入门 | 跳箱(低箱)、踝跳、跳绳 | 训练年龄<1年 | 80-100次/节 |
-| L2 中级 | 连续跳箱、立定跳远、药球抛掷 | 训练年龄1-3年 | 100-120次/节 |
-| L3 高级 | 深度跳(30-60cm)、跨栏跳、单腿跳 | 训练年龄≥3年 | 120-140次/节 |
-| L4 精英 | 负重深度跳、单腿变向跳 | 训练年龄≥8年 | 100-120次/节(高质量) |
+| L1 入门 | 跳箱(低箱)、踝跳、跳绳 | 训练年龄<1年 | 60-80次/节 |
+| L2 中级 | 连续跳箱、立定跳远、药球抛掷 | 训练年龄1-3年 | 80-100次/节 |
+| L3 高级 | 深度跳(30-60cm)、跨栏跳、单腿跳 | 训练年龄≥3年 | 80-120次/节 |
+| L4 精英 | 负重深度跳、单腿变向跳 | 训练年龄≥8年 | 80-120次/节(高质量) |
 
 <18岁禁止L3以上。<16岁仅L1。女性ACL风险者避免深度跳的高冲击落地。
 
@@ -277,7 +280,7 @@ data: {"totalModules":5}
 
 ### ID参考（不使用套餐时从以下列表选择）
 
-warmup_ids: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-ball-touch, warm-ball-dribble, warm-rondo, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
+warmup_ids: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-ball-touch, warm-ball-dribble, warm-rondo, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
 
 upper_ids: ex-bench-press, ex-pull-up, ex-dumbbell-shoulder-press, ex-cable-row, ex-face-pull, ex-med-ball-slam, ex-dumbbell-pullover, ex-mb-rotational-throw, ex-db-bench-press, ex-db-flye, ex-db-incline-press, ex-db-tricep-extension, ex-db-skull-crusher, ex-db-kickback, ex-db-curl, ex-db-hammer-curl, ex-db-overhead-press, ex-db-close-flye, ex-db-shrug, ex-db-upright-row, ex-db-front-raise, ex-db-rear-flye, ex-sus-bicep-curl, ex-sus-chest-press, ex-sus-tricep-press, ex-sus-face-pull, ex-sus-shoulder-press, ex-sus-y-fly, ex-sus-cable-fly, ex-sus-standing-dip
 
@@ -405,7 +408,7 @@ data: {"module":"session_plan","title":"压迫反击主题训练课","duration":
 | ssg-8v8-phase | 8v8阶段对抗 | 分阶段演练 |
 | ssg-4v4-plus-2 | 4v4+2中立 | 控球(人数优势) |
 
-### warmup_ids 可用ID: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-ball-touch, warm-ball-dribble, warm-rondo, warm-nordic-curl
+### warmup_ids 可用ID: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-ball-touch, warm-ball-dribble, warm-rondo, warm-nordic-curl
 
 ### cooldown_ids 可用ID: cool-light-jog, cool-static-stretch, cool-foam-roll, cool-breathing
 

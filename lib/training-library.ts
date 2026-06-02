@@ -196,6 +196,7 @@ export interface ExerciseRef {
   name: string;
   sets: [number, number]; // [min, max] default range
   reps: [number, number];
+  reps_unit?: "reps" | "seconds" | "meters"; // default: "reps"
   load_default: string;
   rest: number; // seconds default
   rpe: number; // default
@@ -290,9 +291,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     id: "ex-back-squat",
     name: "杠铃后蹲",
     sets: [3, 4],
-    reps: [5, 8],
+    reps: [4, 6],
     load_default: "80% 1RM",
-    rest: 120,
+    rest: 180,
     rpe: 8,
     heart_rate_zone: "Zone1-2",
     image_url: "https://musclewiki.com/media/uploads/male-barbell-back-squat-front.gif",
@@ -303,9 +304,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     id: "ex-deadlift",
     name: "传统硬拉",
     sets: [3, 4],
-    reps: [5, 6],
+    reps: [4, 6],
     load_default: "80% 1RM",
-    rest: 120,
+    rest: 210,
     rpe: 9,
     heart_rate_zone: "Zone1-2",
     image_url: "https://musclewiki.com/media/uploads/male-barbell-deadlift-front.gif",
@@ -344,7 +345,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     sets: [3, 4],
     reps: [6, 8],
     load_default: "自身体重",
-    rest: 120,
+    rest: 150,
     rpe: 9,
     heart_rate_zone: "Zone1-2",
     image_url: "https://musclewiki.com/media/uploads/bodyweight-nordic-hamstring-curl-male-0213.png",
@@ -410,7 +411,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     sets: [3, 4],
     reps: [5, 8],
     load_default: "80% 1RM",
-    rest: 120,
+    rest: 180,
     rpe: 8,
     heart_rate_zone: "Zone1-2",
     image_url: "https://musclewiki.com/media/uploads/male-trapbar-deadlift-front.gif",
@@ -434,10 +435,11 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     id: "ex-plank",
     name: "平板支撑",
     sets: [3, 3],
-    reps: [45, 60],
+    reps: [30, 60],
+    reps_unit: "seconds",
     load_default: "自身体重",
     rest: 60,
-    rpe: 6,
+    rpe: 7,
     heart_rate_zone: "Zone1",
     image_url: "https://musclewiki.com/media/uploads/bodyweight-plank-male-0213.png",
     cue_points: ["核心收紧", "身体直线", "呼吸均匀"],
@@ -502,7 +504,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     sets: [4, 5],
     reps: [3, 5],
     load_default: "70% 1RM",
-    rest: 120,
+    rest: 180,
     rpe: 9,
     heart_rate_zone: "Zone2-3",
     image_url: "https://musclewiki.com/media/uploads/male-barbell-power-clean-front.gif",
@@ -765,7 +767,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
   // ══ 哑铃 — 全身 ══
   "ex-db-snatch": {
     id: "ex-db-snatch", name: "哑铃抓举",
-    sets: [4,5], reps: [3,5], load_default: "60% 1RM", rest: 120, rpe: 9, heart_rate_zone: "Zone3-4",
+    sets: [4,5], reps: [3,5], load_default: "60% 1RM", rest: 180, rpe: 9, heart_rate_zone: "Zone3-4",
     image_url: "https://musclewiki.com/media/uploads/dumbbell-snatch-male-0213.png",
     cue_points: ["爆发伸髋","快速下拉","锁定位稳定"], progression: "单臂交替抓举",
   },
@@ -783,7 +785,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
   },
   "ex-db-plank-hold": {
     id: "ex-db-plank-hold", name: "哑铃平板支撑",
-    sets: [3,3], reps: [30,45], load_default: "自身体重", rest: 60, rpe: 6, heart_rate_zone: "Zone1",
+    sets: [3,3], reps: [30,45], reps_unit: "seconds", load_default: "自身体重", rest: 60, rpe: 7, heart_rate_zone: "Zone1",
     image_url: "https://musclewiki.com/media/uploads/bodyweight-plank-male-0213.png",
     cue_points: ["核心收紧","身体直线","呼吸均匀"], progression: "负重平板支撑",
   },
@@ -895,7 +897,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
   },
   "ex-sus-plank": {
     id: "ex-sus-plank", name: "悬吊平板支撑",
-    sets: [3,3], reps: [30,60], load_default: "自身体重", rest: 60, rpe: 7, heart_rate_zone: "Zone1",
+    sets: [3,3], reps: [30,60], reps_unit: "seconds", load_default: "自身体重", rest: 60, rpe: 7, heart_rate_zone: "Zone1",
     image_url: "https://musclewiki.com/media/uploads/suspension-plank-male-0213.png",
     cue_points: ["脚悬吊","核心收紧","身体直线"], progression: "单腿悬吊平板",
   },
@@ -1294,7 +1296,7 @@ export const PHASE_TEMPLATES: Record<string, PhasePlanRef> = {
     weekly_frequency: 3,
     session_duration: 60,
     intensity_distribution: { low: 30, medium: 40, high: 30 },
-    recovery_strategy: "W1-2:GPP/肌耐力(60-75%1RM,3×8-10)→W3-6:基础力量(60-80%1RM,2-3×8-10)→W7-10:最大力量/爆发(80-95%1RM,3-4×2-5)→W11-12:季前转换(80-85%1RM,3-4×3-6)。GK单独方案。低训练年龄从体重开始",
+    recovery_strategy: "W1-2:GPP/肌耐力(50-67%1RM,2-3×12-15)→W3-6:基础力量(67-80%1RM,3-4×6-10渐进)→W7-10:最大力量/爆发(80-95%1RM,3-5×2-5)→W11-12:季前转换(75-85%1RM,3-4×3-6,爆发速度优先)。GK单独方案。低训练年龄从体重开始",
   },
 };
 
