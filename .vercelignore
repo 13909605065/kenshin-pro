@@ -1,0 +1,5 @@
+kb/
+node_modules/
+.git/
+.claude/
+out/

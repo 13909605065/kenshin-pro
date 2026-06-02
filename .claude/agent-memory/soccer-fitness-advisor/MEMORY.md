@@ -1,0 +1,2 @@
+- [HIIT Book Reference](hiit-book-reference.md) — Buchheit & Laursen (2013) HIIT programming paper: 9 variables, T@VO2max protocols, football-specific HIT prescriptions
+- [Chinese Football Fitness Book Reference](cn-football-fitness-book-reference.md) — 刘丹主编《足球体能训练》(2006): 29 chapters, match analysis data, training methods, China NT data
