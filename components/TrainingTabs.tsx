@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { TrainingModule, PlayerFormData } from "@/lib/types";
+import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 import { WarmupTab } from "./tabs/WarmupTab";
 import { TechniqueTab } from "./tabs/TechniqueTab";
@@ -17,20 +17,225 @@ interface Props {
   onSaveTemplate?: () => void;
 }
 
-const TABS = [
-  { id: "warmup" as const, label: "热身" },
-  { id: "technique" as const, label: "技术训练" },
-  { id: "physical" as const, label: "体能训练" },
-  { id: "tactical" as const, label: "战术要点" },
-  { id: "nutrition" as const, label: "饮食与恢复" },
+const ATHLETE_TABS = [
+  { id: "warmup" as const, label: "热身", short: "热身" },
+  { id: "technique" as const, label: "技术训练", short: "技术" },
+  { id: "physical" as const, label: "体能训练", short: "体能" },
+  { id: "tactical" as const, label: "战术要点", short: "战术" },
+  { id: "nutrition" as const, label: "饮食与恢复", short: "饮食" },
 ];
 
-type TabId = typeof TABS[number]["id"];
+const COACH_TABS = [
+  { id: "session" as const, label: "训练教案", short: "教案" },
+  { id: "tactical" as const, label: "战术专项", short: "战术" },
+  { id: "microcycle" as const, label: "微周期", short: "周期" },
+];
+
+function CoachSessionView({ module: m }: { module: SessionPlan }) {
+  return (
+    <div className="space-y-4">
+      {/* Session header */}
+      <div className="bg-pitch-700/50 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-white font-bold text-lg">{m.title}</h3>
+        </div>
+        <div className="grid grid-cols-4 gap-3 text-center">
+          <div className="bg-pitch-800 rounded-lg p-2">
+            <div className="text-neon-pink font-bold text-xl">{m.duration}</div>
+            <div className="text-[10px] text-gray-500">分钟</div>
+          </div>
+          <div className="bg-pitch-800 rounded-lg p-2">
+            <div className="text-neon-pink font-bold text-xl">{m.player_count}</div>
+            <div className="text-[10px] text-gray-500">球员</div>
+          </div>
+          <div className="bg-pitch-800 rounded-lg p-2">
+            <div className="text-neon-pink font-bold text-xl">{m.warmup.length}</div>
+            <div className="text-[10px] text-gray-500">热身项</div>
+          </div>
+          <div className="bg-pitch-800 rounded-lg p-2">
+            <div className="text-neon-pink font-bold text-xl">{m.activities.length}</div>
+            <div className="text-[10px] text-gray-500">练习项</div>
+          </div>
+        </div>
+        {m.equipment.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1">
+            {m.equipment.map((eq, i) => (
+              <span key={i} className="text-[10px] bg-pitch-600 px-2 py-0.5 rounded text-gray-300">{eq}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Warmup */}
+      {m.warmup.length > 0 && (
+        <div>
+          <h4 className="text-neon-pink text-sm font-bold mb-2">🔥 引导热身 ({m.warmup.reduce((s,w) => s+w.duration, 0)}min)</h4>
+          <div className="space-y-2">
+            {m.warmup.map((w, i) => (
+              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-white text-sm">{w.name}</span>
+                  <span className="text-xs text-gray-400">{w.duration}min</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{w.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Activities */}
+      {m.activities.length > 0 && (
+        <div>
+          <h4 className="text-neon-pink text-sm font-bold mb-2">⚽ 主体训练 ({m.activities.reduce((s,a) => s+a.duration, 0)}min)</h4>
+          <div className="space-y-3">
+            {m.activities.map((act, i) => (
+              <div key={i} className="bg-pitch-700/50 rounded-lg p-4 border-l-2 border-neon-pink">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-white">{i+1}. {act.name}</span>
+                  <span className="text-xs text-neon-pink">{act.duration}min</span>
+                </div>
+                <div className="flex gap-3 text-[10px] text-gray-500 mb-2">
+                  <span>场地: {act.area}</span>
+                  <span>分组: {act.groups}</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-2">{act.description}</p>
+                {act.coaching_points.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[10px] text-gray-500">指导要点:</span>
+                    <ul className="list-disc list-inside text-xs text-gray-300 mt-1 space-y-0.5">
+                      {act.coaching_points.map((cp, j) => <li key={j}>{cp}</li>)}
+                    </ul>
+                  </div>
+                )}
+                <div className="flex gap-4 text-[10px]">
+                  <span className="text-green-400">⬆ 进阶: {act.progression}</span>
+                  <span className="text-yellow-400">⬇ 退阶: {act.regression}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SSG */}
+      {m.ssg && (
+        <div>
+          <h4 className="text-neon-pink text-sm font-bold mb-2">🏟️ 分队比赛: {m.ssg.name}</h4>
+          <div className="bg-pitch-700/50 rounded-lg p-4">
+            <div className="grid grid-cols-3 gap-3 mb-3 text-center">
+              <div><div className="text-white font-bold">{m.ssg.duration}min</div><div className="text-[10px] text-gray-500">时长</div></div>
+              <div><div className="text-white font-bold">{m.ssg.area}</div><div className="text-[10px] text-gray-500">场地</div></div>
+              <div><div className="text-white font-bold">{m.ssg.players}</div><div className="text-[10px] text-gray-500">人数</div></div>
+            </div>
+            <p className="text-xs text-gray-400 mb-2">规则: {m.ssg.rules}</p>
+            <div className="flex flex-wrap gap-1">
+              {m.ssg.coaching_focus.map((cf, i) => (
+                <span key={i} className="text-[10px] bg-neon-pink/10 text-neon-pink px-2 py-0.5 rounded">{cf}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cooldown */}
+      {m.cooldown.length > 0 && (
+        <div>
+          <h4 className="text-neon-pink text-sm font-bold mb-2">🧊 冷身整理 ({m.cooldown.reduce((s,c) => s+c.duration, 0)}min)</h4>
+          <div className="space-y-2">
+            {m.cooldown.map((c, i) => (
+              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-white text-sm">{c.name}</span>
+                  <span className="text-xs text-gray-400">{c.duration}min</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{c.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
+  return (
+    <div className="space-y-4">
+      <div className="bg-pitch-700/50 rounded-lg p-4">
+        <h3 className="text-white font-bold text-lg">{m.title}</h3>
+        <span className="text-xs text-neon-pink bg-neon-pink/10 px-2 py-0.5 rounded">{m.tactical_theme}</span>
+      </div>
+      {m.drills.length > 0 && (
+        <div className="space-y-3">
+          {m.drills.map((drill, i) => (
+            <div key={i} className="bg-pitch-700/50 rounded-lg p-4 border-l-2 border-neon-pink">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-white">{i+1}. {drill.name}</span>
+                <span className="text-xs text-neon-pink">{drill.duration}min</span>
+              </div>
+              <div className="flex gap-3 text-[10px] text-gray-500 mb-2">
+                <span>场地: {drill.area}</span>
+                <span>分组: {drill.groups}</span>
+              </div>
+              <p className="text-xs text-gray-400 mb-2">{drill.description}</p>
+              {drill.coaching_points.length > 0 && (
+                <div className="mb-2">
+                  <span className="text-[10px] text-gray-500">指导要点:</span>
+                  <ul className="list-disc list-inside text-xs text-gray-300 mt-1 space-y-0.5">
+                    {drill.coaching_points.map((cp, j) => <li key={j}>{cp}</li>)}
+                  </ul>
+                </div>
+              )}
+              <div className="flex gap-4 text-[10px]">
+                <span className="text-green-400">⬆ 进阶: {drill.progression}</span>
+                <span className="text-yellow-400">⬇ 退阶: {drill.regression}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
+  const intensityColors: Record<string, string> = {
+    "极低": "bg-gray-500", "低": "bg-green-500", "中低": "bg-green-400",
+    "中": "bg-yellow-500", "中高": "bg-orange-500", "高": "bg-neon-pink", "极高": "bg-neon-red",
+  };
+  return (
+    <div className="space-y-4">
+      <div className="bg-pitch-700/50 rounded-lg p-4">
+        <h3 className="text-white font-bold text-lg">{m.title}</h3>
+        <p className="text-xs text-gray-400">比赛日: <span className="text-neon-pink">{m.match_day}</span></p>
+      </div>
+      <div className="space-y-2">
+        {m.days.map((d, i) => (
+          <div key={i} className="bg-pitch-700/50 rounded-lg p-3 flex items-center gap-3">
+            <div className="flex-shrink-0 w-16">
+              <span className="text-xs text-gray-400">{d.day}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-white font-medium">{d.focus}</p>
+              <p className="text-[10px] text-gray-500">{d.session_type} · {d.duration}min</p>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <div className={`w-2 h-2 rounded-full ${intensityColors[d.intensity] || "bg-gray-500"}`} />
+              <span className="text-[10px] text-gray-400">{d.intensity}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Props) {
-  const [activeTab, setActiveTab] = useState<TabId>("warmup");
-  const touchStartX = useRef(0);
   const isCoach = formData.role === "coach";
+  const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
+  const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
+  const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -39,29 +244,33 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) < 50) return;
-
-    const currentIdx = TABS.findIndex((t) => t.id === activeTab);
-    if (diff > 0 && currentIdx < TABS.length - 1) {
-      setActiveTab(TABS[currentIdx + 1].id);
+    const currentIdx = tabs.findIndex((t) => t.id === activeTab);
+    if (diff > 0 && currentIdx < tabs.length - 1) {
+      setActiveTab(tabs[currentIdx + 1].id);
     } else if (diff < 0 && currentIdx > 0) {
-      setActiveTab(TABS[currentIdx - 1].id);
+      setActiveTab(tabs[currentIdx - 1].id);
     }
-  }, [activeTab]);
+  }, [activeTab, tabs]);
+
+  // Coach module lookup
+  const sessionPlan = modules.find(m => m.module === "session_plan") as SessionPlan | undefined;
+  const tacticalFocus = modules.find(m => m.module === "tactical_focus") as TacticalFocus | undefined;
+  const microcycle = modules.find(m => m.module === "microcycle") as Microcycle | undefined;
 
   return (
-    <div className="flex flex-col min-h-[70vh]">
-      {/* Top: Player Summary Card (fixed) */}
+    <div className="flex flex-col">
+      {/* Top: Summary Card */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center">
             <span className="text-neon-pink font-bold text-sm">
-              {isCoach ? "教" : (formData.position ? POSITION_LABELS[formData.position][0] : "?" )}
+              {isCoach ? "教" : (formData.position ? POSITION_LABELS[formData.position][0] : "?")}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-white font-bold truncate">
               {isCoach
-                ? "教练方案"
+                ? (sessionPlan?.title || "教练方案")
                 : (formData.position ? POSITION_LABELS[formData.position] : "球员方案")
               }
             </p>
@@ -72,54 +281,74 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
                 {formData.phase && ` · ${PHASE_LABELS[formData.phase]}`}
               </p>
             )}
-            {isCoach && (
+            {isCoach && sessionPlan && (
               <p className="text-xs text-gray-400 truncate">
-                {formData.tacticalThemes.length > 0
-                  ? `战术主题: ${formData.tacticalThemes.length}个`
-                  : ""}
+                {sessionPlan.duration}分钟 · {sessionPlan.player_count}人 · {sessionPlan.activities.length + 1}项练习
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Middle: Tab Bar */}
-      <div className="flex overflow-x-auto border-b border-pitch-700 mb-4 -mx-1 px-1 scrollbar-hide">
-        {TABS.map((tab) => (
+      {/* Tab Bar */}
+      <div className="flex flex-wrap justify-center gap-x-1 border-b border-pitch-700 mb-4">
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+            className={`px-2.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-neon-pink text-neon-pink"
                 : "border-transparent text-gray-500 hover:text-gray-300"
             }`}
           >
-            {tab.label}
+            <span className="sm:hidden">{tab.short}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Content Area (swipeable) */}
-      <div
-        className="flex-1"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {activeTab === "warmup" && (
-          <WarmupTab modules={modules} position={formData.position} />
-        )}
-        {activeTab === "technique" && (
-          <TechniqueTab modules={modules} />
-        )}
-        {activeTab === "physical" && (
-          <PhysicalTab modules={modules} position={formData.position} />
-        )}
-        {activeTab === "tactical" && (
-          <TacticalTab modules={modules} />
-        )}
-        {activeTab === "nutrition" && (
-          <NutritionTab modules={modules} />
+      {/* Content Area */}
+      <div className="flex-1" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        {isCoach ? (
+          <>
+            {activeTab === "session" && sessionPlan && (
+              <CoachSessionView module={sessionPlan} />
+            )}
+            {activeTab === "session" && !sessionPlan && (
+              <p className="text-sm text-gray-500 py-8 text-center">暂无训练教案内容</p>
+            )}
+            {activeTab === "tactical" && tacticalFocus && (
+              <CoachTacticalView module={tacticalFocus} />
+            )}
+            {activeTab === "tactical" && !tacticalFocus && (
+              <p className="text-sm text-gray-500 py-8 text-center">暂无战术专项内容</p>
+            )}
+            {activeTab === "microcycle" && microcycle && (
+              <CoachMicrocycleView module={microcycle} />
+            )}
+            {activeTab === "microcycle" && !microcycle && (
+              <p className="text-sm text-gray-500 py-8 text-center">暂无微周期内容</p>
+            )}
+          </>
+        ) : (
+          <>
+            {activeTab === "warmup" && (
+              <WarmupTab modules={modules} position={formData.position} />
+            )}
+            {activeTab === "technique" && (
+              <TechniqueTab modules={modules} />
+            )}
+            {activeTab === "physical" && (
+              <PhysicalTab modules={modules} position={formData.position} />
+            )}
+            {activeTab === "tactical" && (
+              <TacticalTab modules={modules} />
+            )}
+            {activeTab === "nutrition" && (
+              <NutritionTab modules={modules} />
+            )}
+          </>
         )}
       </div>
 

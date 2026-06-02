@@ -1,15 +1,34 @@
 import { NextRequest } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { SYSTEM_PROMPT, buildUserPrompt } from "@/lib/prompt";
+import { buildSystemPrompt, buildUserPrompt } from "@/lib/prompt";
 import { PlayerFormData } from "@/lib/types";
+import { resolveModule, resolveCoachModule, resolveCombo, type CompactModule, type CoachCompactModule } from "@/lib/training-library";
 
 // Rate limiting: simple in-memory map (resets on cold start)
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 60_000; // 1 minute per user
-const MAX_TOKENS = 3000;
-const API_TIMEOUT_MS = 90_000; // 90s timeout for LLM call
+const MAX_TOKENS = 6000;
+const API_TIMEOUT_MS = 90_000; // 90s
 
-const DOUBAO_BASE = "https://ark.cn-beijing.volces.com/api/v3/chat/completions";
+// Provider configs — auto-detect from env vars
+const PROVIDERS = {
+  deepseek: {
+    base: "https://api.deepseek.com/v1/chat/completions",
+    model: "deepseek-chat",
+    key: process.env.DEEPSEEK_API_KEY,
+  },
+  doubao: {
+    base: "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    model: process.env.DOUBAO_ENDPOINT || "",
+    key: process.env.DOUBAO_API_KEY,
+  },
+} as const;
+
+function resolveProvider() {
+  if (PROVIDERS.deepseek.key) return PROVIDERS.deepseek;
+  if (PROVIDERS.doubao.key && PROVIDERS.doubao.model) return PROVIDERS.doubao;
+  return null;
+}
 
 export async function POST(request: NextRequest) {
   // Auth check
@@ -20,9 +39,8 @@ export async function POST(request: NextRequest) {
   }
 
   // API key check
-  const apiKey = process.env.DOUBAO_API_KEY;
-  const endpointId = process.env.DOUBAO_ENDPOINT;
-  if (!apiKey || !endpointId) {
+  const provider = resolveProvider();
+  if (!provider) {
     return Response.json(
       { code: "no-api-key", message: "服务器未配置 AI 接口" },
       { status: 500 }
@@ -71,6 +89,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const isCoach = formData.role === "coach";
+  const systemPrompt = buildSystemPrompt(formData);
   const userMessage = buildUserPrompt(formData, lang);
 
   const encoder = new TextEncoder();
@@ -83,16 +103,16 @@ export async function POST(request: NextRequest) {
         const abortController = new AbortController();
         timeoutId = setTimeout(() => abortController.abort(), API_TIMEOUT_MS);
 
-        const response = await fetch(DOUBAO_BASE, {
+        const response = await fetch(provider.base, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
+            Authorization: `Bearer ${provider.key}`,
           },
           body: JSON.stringify({
-            model: endpointId,
+            model: provider.model,
             messages: [
-              { role: "system", content: SYSTEM_PROMPT },
+              { role: "system", content: systemPrompt },
               { role: "user", content: userMessage },
             ],
             max_tokens: MAX_TOKENS,
@@ -134,7 +154,6 @@ export async function POST(request: NextRequest) {
             try {
               const parsed = JSON.parse(jsonStr);
               const delta = parsed.choices?.[0]?.delta;
-              // Support both normal and reasoning model output
               const content = delta?.content || delta?.reasoning_content || "";
               if (!content) continue;
 
@@ -149,12 +168,59 @@ export async function POST(request: NextRequest) {
                   currentEvent = outLine.slice(7).trim();
                 } else if (outLine.startsWith("data: ") && currentEvent) {
                   const dataStr = outLine.slice(6).trim();
-                  controller.enqueue(
-                    encoder.encode(`event: ${currentEvent}\ndata: ${dataStr}\n\n`)
-                  );
+
                   if (currentEvent === "done") {
+                    controller.enqueue(
+                      encoder.encode(`event: done\ndata: ${dataStr}\n\n`)
+                    );
                     currentEvent = "";
+                    continue;
                   }
+
+                  // Resolve compact IDs → full data
+                  let resolvedData = dataStr;
+                  try {
+                    const compact = JSON.parse(dataStr);
+
+                    if (isCoach) {
+                      // Coach mode: use coach resolver
+                      const full = resolveCoachModule(compact as CoachCompactModule);
+                      if (full) resolvedData = JSON.stringify(full);
+                    } else {
+                      // Athlete mode: support combo_id shorthand
+                      if (compact.combo_id && compact.module === "position_training") {
+                        const combo = resolveCombo(compact.combo_id);
+                        if (combo) {
+                          // Expand combo into full compact module then resolve
+                          const expanded: CompactModule = {
+                            module: "position_training",
+                            title: compact.title || combo.label,
+                            warmup_ids: combo.warmup_ids,
+                            upper_ids: compact.upper_ids || combo.upper_ids,
+                            lower_ids: compact.lower_ids || combo.lower_ids,
+                            core_ids: compact.core_ids || combo.core_ids,
+                            cooldown_ids: combo.cooldown_ids,
+                            nutrition_goal: compact.nutrition_goal || combo.nutrition_goal,
+                            ability_exercise_ids: compact.ability_exercise_ids,
+                            status: "complete",
+                          };
+                          const full = resolveModule(expanded, formData.position);
+                          if (full) resolvedData = JSON.stringify(full);
+                        }
+                      } else if (currentEvent.startsWith("module_")) {
+                        // Standard athlete module resolution
+                        const full = resolveModule(compact as CompactModule, formData.position);
+                        if (full) resolvedData = JSON.stringify(full);
+                      }
+                    }
+                  } catch {
+                    // If parsing/resolution fails, send raw data
+                  }
+
+                  controller.enqueue(
+                    encoder.encode(`event: ${currentEvent}\ndata: ${resolvedData}\n\n`)
+                  );
+                  currentEvent = "";
                 }
               }
             } catch {

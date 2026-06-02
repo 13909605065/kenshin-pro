@@ -1,3 +1,8 @@
+// ---- Tactical Board Types ----
+export type EquipmentKind = "cone" | "ball" | "goal" | "marker_pole" | "player_home" | "player_away";
+export interface TacticalScene { items: any[]; arrows: any[]; }
+export type TacticalTool = "select" | "place_player" | "place_cone" | "place_ball" | "place_goal" | "place_marker_pole" | "draw_arrow" | "erase";
+
 // ---- Form Input ----
 export type Position = "goalkeeper" | "defender" | "midfielder" | "forward" | "wingback";
 export type TrainingGoal = "strength" | "power" | "speed" | "agility" | "mas_endurance" | "combat";
@@ -167,12 +172,76 @@ export interface ParseError {
   status: "complete";
 }
 
+// ---- Coach-specific Module Types ----
+
+export interface SessionActivity {
+  name: string;
+  duration: number;
+  area: string;
+  groups: string;
+  description: string;
+  coaching_points: string[];
+  progression: string;
+  regression: string;
+}
+
+export interface SSGInfo {
+  id: string;
+  name: string;
+  focus: string;
+  duration: number;
+  area: string;
+  players: string;
+  rules: string;
+  coaching_focus: string[];
+}
+
+export interface SessionPlan {
+  module: "session_plan";
+  title: string;
+  duration: number;
+  player_count: number;
+  equipment: string[];
+  warmup: WarmupItem[];
+  activities: SessionActivity[];
+  ssg: SSGInfo;
+  cooldown: WarmupItem[];
+  status: "complete";
+}
+
+export interface TacticalFocus {
+  module: "tactical_focus";
+  title: string;
+  tactical_theme: string;
+  drills: SessionActivity[];
+  status: "complete";
+}
+
+export interface MicrocycleDay {
+  day: string;
+  focus: string;
+  intensity: string;
+  duration: number;
+  session_type: string;
+}
+
+export interface Microcycle {
+  module: "microcycle";
+  title: string;
+  match_day: string;
+  days: MicrocycleDay[];
+  status: "complete";
+}
+
 export type TrainingModule =
   | PositionTraining
   | AbilityTraining
   | TechniqueRunning
   | PhasePlan
   | InjuryRecovery
+  | SessionPlan
+  | TacticalFocus
+  | Microcycle
   | ParseError;
 
 // ---- Generation State ----

@@ -34,6 +34,14 @@ const ERROR_CONFIG: Record<string, { title: string; message: string }> = {
     title: "内容解析异常",
     message: "AI 返回内容格式异常，部分内容可能无法正常显示。",
   },
+  "empty-response": {
+    title: "AI 返回内容为空",
+    message: "AI 服务未返回有效的训练方案。请检查 API 配置或稍后重试。",
+  },
+  "timeout": {
+    title: "生成超时",
+    message: "AI 响应时间过长（超过 80 秒），已自动取消。请简化输入或稍后重试。",
+  },
 };
 
 export function ErrorAlert({ code, onRetry, hasPartialContent, onViewPartial }: Props) {

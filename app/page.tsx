@@ -1,11 +1,11 @@
 "use client";
 
-import { TrainingApp } from "@/components/TrainingApp";
+import { Dashboard } from "@/components/Dashboard";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase-client";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { LogOut, History, Settings, Dumbbell } from "lucide-react";
+import { LogOut, History, Settings, Dumbbell, Layout } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 class ErrorBoundary extends Component<
@@ -78,7 +78,7 @@ export default function Home() {
     <div className="min-h-screen bg-pitch-900">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-pitch-900/90 backdrop-blur border-b border-pitch-700">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold text-white">Kenshinpro</h1>
             <span className="text-xs text-gray-500 hidden sm:inline">
@@ -86,14 +86,14 @@ export default function Home() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
             {/* Language Switcher */}
-            <div className="flex bg-pitch-800 rounded-lg p-0.5">
+            <div className="flex bg-pitch-800 rounded-lg p-0.5 flex-shrink-0">
               {LANGS.map((l) => (
                 <button
                   key={l.value}
                   onClick={() => setLang(l.value)}
-                  className={`px-2 py-1 rounded-md text-xs font-medium transition ${
+                  className={`px-1.5 sm:px-2 py-1 rounded-md text-xs font-medium transition ${
                     lang === l.value
                       ? "bg-neon-pink text-black"
                       : "text-gray-400 hover:text-white"
@@ -103,33 +103,44 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <span className="text-sm text-gray-400 hidden sm:inline">
+            <span className="text-xs text-gray-500 hidden lg:inline max-w-[120px] truncate">
               {userEmail}
             </span>
             <button
-              onClick={() => router.push("/strength")}
-              className="p-2 text-gray-400 hover:text-neon-pink transition"
-              title="力量训练"
+              onClick={() => router.push("/exercises")}
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-pitch-700 transition flex-shrink-0"
+              title="训练动作库"
             >
-              <Dumbbell className="w-5 h-5" />
+              <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>动作库</span>
+            </button>
+            <button
+              onClick={() => router.push("/tactics")}
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-pitch-700 transition flex-shrink-0"
+              title="在线战术板"
+            >
+              <Layout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>战术</span>
             </button>
             <button
               onClick={() => router.push("/settings")}
-              className="p-2 text-gray-400 hover:text-white transition"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-pitch-700 transition flex-shrink-0"
               title="设置"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">设置</span>
             </button>
             <button
               onClick={() => setHistoryOpen(true)}
-              className="p-2 text-gray-400 hover:text-white transition"
-              title="历史记录"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-pitch-700 transition flex-shrink-0"
+              title="训练历史"
             >
-              <History className="w-5 h-5" />
+              <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">历史</span>
             </button>
             <button
               onClick={handleLogout}
-              className="p-2 text-gray-400 hover:text-neon-red transition"
+              className="p-1.5 text-gray-400 hover:text-neon-red transition flex-shrink-0"
               title="退出登录"
             >
               <LogOut className="w-5 h-5" />
@@ -139,7 +150,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6">
         {clientError && (
           <div className="mb-6 p-4 bg-neon-red/20 border border-neon-red rounded-xl">
             <p className="text-neon-red font-bold text-sm mb-1">客户端错误:</p>
@@ -147,7 +158,7 @@ export default function Home() {
           </div>
         )}
         <ErrorBoundary>
-          <TrainingApp />
+          <Dashboard />
         </ErrorBoundary>
       </main>
 
@@ -157,15 +168,6 @@ export default function Home() {
         onClose={() => setHistoryOpen(false)}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-pitch-700 mt-16 py-6 text-center text-gray-600 text-xs">
-        <p>Kenshinpro · AI 足球训练方案生成器</p>
-        <p className="mt-1">
-          <a href="#" className="hover:text-gray-400 transition">隐私政策</a>
-          {" · "}
-          <a href="#" className="hover:text-gray-400 transition">服务条款</a>
-        </p>
-      </footer>
     </div>
   );
 }

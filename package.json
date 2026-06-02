@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "next build && next export",
     "start": "next start",
     "lint": "next lint"
   },
@@ -12,6 +13,8 @@
     "@anthropic-ai/sdk": "^0.100.1",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
+    "fabric": "^6.9.1",
+    "konva": "^10.3.0",
     "lucide-react": "^1.17.0",
     "next": "14.2.35",
     "react": "^18",
