@@ -206,6 +206,10 @@ export async function POST(request: NextRequest) {
                           };
                           const full = resolveModule(expanded, formData.position);
                           if (full) resolvedData = JSON.stringify(full);
+                        } else {
+                          // Combo not found — fall back to standard resolution
+                          const full = resolveModule(compact as CompactModule, formData.position);
+                          if (full) resolvedData = JSON.stringify(full);
                         }
                       } else if (currentEvent.startsWith("module_")) {
                         // Standard athlete module resolution

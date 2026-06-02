@@ -13,10 +13,10 @@ export function PhysicalTab({ modules, position }: Props) {
   const abilityModule = modules.find((m) => m.module === "ability_training");
   const isGoalkeeper = position === "goalkeeper";
 
-  const upper = posModule?.module === "position_training" ? posModule.upper_limb : [];
-  const lower = posModule?.module === "position_training" ? posModule.lower_limb : [];
-  const core = posModule?.module === "position_training" ? posModule.core : [];
-  const abilityExercises = abilityModule?.module === "ability_training" ? abilityModule.exercises : [];
+  const upper = posModule?.module === "position_training" ? (posModule.upper_limb || []) : [];
+  const lower = posModule?.module === "position_training" ? (posModule.lower_limb || []) : [];
+  const core = posModule?.module === "position_training" ? (posModule.core || []) : [];
+  const abilityExercises = abilityModule?.module === "ability_training" ? (abilityModule.exercises || []) : [];
 
   const hasAnyContent = upper.length > 0 || lower.length > 0 || core.length > 0 || abilityExercises.length > 0;
   if (!hasAnyContent) {
