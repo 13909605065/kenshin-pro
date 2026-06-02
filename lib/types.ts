@@ -127,6 +127,7 @@ export interface NutritionInfo {
 export interface PositionTraining {
   module: "position_training";
   title: string;
+  analysis?: string;
   warmup: WarmupItem[];
   upper_limb: Exercise[];
   lower_limb: Exercise[];

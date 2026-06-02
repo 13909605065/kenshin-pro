@@ -256,6 +256,8 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
   const sessionPlan = modules.find(m => m.module === "session_plan") as SessionPlan | undefined;
   const tacticalFocus = modules.find(m => m.module === "tactical_focus") as TacticalFocus | undefined;
   const microcycle = modules.find(m => m.module === "microcycle") as Microcycle | undefined;
+  // Athlete module lookup
+  const posModule = modules.find(m => m.module === "position_training") as import("@/lib/types").PositionTraining | undefined;
 
   return (
     <div className="flex flex-col">
@@ -289,6 +291,19 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
           </div>
         </div>
       </div>
+
+      {/* Personalization Analysis — athlete only */}
+      {!isCoach && posModule?.analysis && (
+        <div className="mb-4 bg-neon-pink/5 border border-neon-pink/20 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <span className="text-lg flex-shrink-0">🔍</span>
+            <div>
+              <p className="text-[10px] text-neon-pink font-bold mb-1 uppercase tracking-wider">个性化诊断分析</p>
+              <p className="text-sm text-gray-200 leading-relaxed">{posModule.analysis}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Bar */}
       <div className="flex flex-wrap justify-center gap-x-1 border-b border-pitch-700 mb-4">

@@ -93,10 +93,35 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
 赛季阶段: ${PHASE_LABELS[data.phase!]}
 推荐套餐: ${comboHint}
 
+## 个性化调整指令（必须执行）
+
+套餐为基础模板，你必须根据以下个人因素做出调整：
+
+**1. 训练年龄调整：**
+${years <= 1 ? "- 入门级(y≤1年)：所有动作降为 2-3组×12-15次，负荷≤65%1RM。杠铃动作替换为哑铃/自重变式。禁止奥举。" : ""}
+${years > 1 && years <= 3 ? "- 初级(1-3年)：3组×8-12次为主，负荷65-75%1RM。可引入杠铃基础动作。不安排奥举。" : ""}
+${years >= 8 ? "- 高级(≥8年)：3-4组×2-5次可接近最大力量。可安排奥举+增强式训练。负荷可用80-95%1RM。" : ""}
+
+**2. 年龄调整：**
+${age < 18 ? `- 未成年(${age}岁)：禁止>85%1RM。deep squat/back-squat→goblet-squat或sus-squat。deadlift→trap-bar或kettlebell。重点：协调性+动作模式>绝对力量。` : ""}
+${age > 33 ? `- 资深球员(${age}岁)：热身延长至20min。每项力量训练前加1组轻重量热身。关节保护类动作必选（face-pull、band-activation）。恢复日间隔≥48h。` : ""}
+
+**3. 体型调整：**
+${bmi < 18.5 ? `- 偏瘦(BMI ${bmi.toFixed(1)})：力量训练为主(70%)，有氧减少(15%)。每餐蛋白目标2.0-2.2g/kg。核心训练加抗旋转类(pallof-press)。` : ""}
+${bmi >= 25 ? `- 偏重(BMI ${bmi.toFixed(1)})：增加有氧/灵敏成分到30%。HIIT长间歇优先。注意关节保护(避免高冲击跳跃)。下肢选闭链动作(leg-press>back-squat)。` : ""}
+
+**4. 性别调整：**
+${isFemale ? "- 女性：热身必须含落地力学(jump-landing纠正膝外翻)。北欧弯举必练。上肢负荷保守(女-15%)。营养加铁/钙建议。" : ""}
+
 ${langInstruction}
 
-直接开始输出 event: module_1，不要任何开场白。依次生成以下5个模块：
-1. ${POSITION_LABELS[data.position!]}专项分位置训练（优先使用套餐ID: ${comboHint}；如套餐不匹配可单独指定ID微调）
+直接开始输出 event: module_1，不要任何开场白。
+
+**module_1 必须包含 analysis 字段**，用2-3句话解释：「基于你的[训练年龄/体型/性别/年龄]情况，你应该[可以做什么]，你不应该[避免什么]，所以我给你的方案是[核心思路]」。例如：
+"analysis": "基于你1年入门级训练经验+偏瘦体型(BMI 17)+女性ACL防护需求，你应以中低强度肌耐力为主(2-3×12-15)，避免>85%1RM大重量和奥举。杠铃动作替换为哑铃/自重变式，加强核心抗旋转和落地力学训练。"
+
+依次生成以下5个模块：
+1. ${POSITION_LABELS[data.position!]}专项分位置训练（优先套餐: ${comboHint}；必须含 analysis 字段）
 2. ${GOAL_LABELS[data.goal!]}定向能力训练
 3. ${POSITION_LABELS[data.position!]}位置专属技术练习与跑动特征
 4. ${PHASE_LABELS[data.phase!]}周期适配计划

@@ -1390,6 +1390,7 @@ export const GOAL_EXTRAS: Record<string, string[]> = {
 export interface CompactModule {
   module: string;
   title: string;
+  analysis?: string;
   warmup_ids?: string[];
   upper_ids?: string[];
   lower_ids?: string[];
@@ -1400,6 +1401,7 @@ export interface CompactModule {
   drill_ids?: string[];
   phase_id?: string;
   injury_phases?: any[];
+  combo_id?: string;
   status: string;
 }
 
@@ -1474,6 +1476,7 @@ export function resolveModule(c: CompactModule, position?: string | null): Train
       return {
         module: "position_training",
         title: c.title,
+        analysis: c.analysis,
         warmup: warmupIds.length > 0 ? resolveWarmup(warmupIds) : resolveWarmup(["warm-hip-open", "warm-dynamic-stretch", "warm-ball-touch"]),
         upper_limb: resolveExercises(upperIds),
         lower_limb: resolveExercises(lowerIds),

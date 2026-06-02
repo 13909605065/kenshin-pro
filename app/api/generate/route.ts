@@ -195,6 +195,7 @@ export async function POST(request: NextRequest) {
                           const expanded: CompactModule = {
                             module: "position_training",
                             title: compact.title || combo.label,
+                            analysis: compact.analysis,
                             warmup_ids: combo.warmup_ids,
                             upper_ids: compact.upper_ids || combo.upper_ids,
                             lower_ids: compact.lower_ids || combo.lower_ids,
