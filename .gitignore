@@ -35,3 +35,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 kb/books/NSCA-CSCS*.pdf
+kb/ocr_output/
+kb/ocr_output/
+*.zip
