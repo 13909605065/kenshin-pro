@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { TrainingModule } from "@/lib/types";
-import { Check, Timer } from "lucide-react";
+import { Check, Timer, Image, X } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -10,24 +10,32 @@ interface SeqItem {
   id: string;
   step: number;
   name: string;
-  load: string;     // 负重: BW / 20 / 40 / 12 14 / —
-  sets: string;     // 组数: 1 / 2 / 4 / —
-  reps: string;     // 次/米/秒: 15s / 20次 / 12次/侧 / 6次/侧 / /
-  rest: string;     // 组间休息: 15s / 2min / / / —
-  notes: string;    // 备注: 心肺准备（动员） / 动作准备（激活）
-  phase: string;    // 阶段: Warm-up / 主训 / 放松
-  done: boolean;
+  load: string;
+  sets: string;
+  reps: string;
+  rest: string;
+  notes: string;
+  phase: string;       // 分区标签（仅首行显示）
+  phaseColor: string;  // 色块颜色
+  imageUrl?: string;
 }
+
+const PHASE_COLORS: Record<string, string> = {
+  "Warm-up": "#22c55e",
+  "过渡": "#3B82F6",
+  "主训": "#16a34a",
+  "放松": "#eab308",
+};
 
 // ─── Flatten ──────────────────────────────────────────────
 
-function flattenModules(modules: TrainingModule[]): SeqItem[] {
-  const items: SeqItem[] = [];
+function flattenModules(modules: TrainingModule[]): { phases: string[]; rows: (SeqItem | { type: "break"; label: string })[] } {
+  const rows: (SeqItem | { type: "break"; label: string })[] = [];
   let step = 0;
 
-  const add = (phase: string, name: string, load: string, sets: string, reps: string, rest: string, notes: string) => {
+  const add = (phase: string, color: string, name: string, load: string, sets: string, reps: string, rest: string, notes: string, imageUrl?: string) => {
     step++;
-    items.push({ id: `s${step}`, step, phase, name, load, sets, reps, rest, notes, done: false });
+    rows.push({ id: `s${step}`, step, phase, phaseColor: color, name, load, sets, reps, rest, notes, imageUrl });
   };
 
   modules.forEach((mod: any) => {
@@ -36,86 +44,135 @@ function flattenModules(modules: TrainingModule[]): SeqItem[] {
     if (warmups.length) {
       warmups.forEach((w: any) => {
         const repsStr = w.duration ? `${w.duration}min` : (w.reps ? `${w.reps}次` : "/");
-        add("Warm-up", w.name || "热身", w.load || w.equipment || "BW", w.sets || "1", repsStr, w.rest || "/", w.description || w.notes || "");
+        const restStr = w.rest ? String(w.rest) : "/";
+        add("Warm-up", PHASE_COLORS["Warm-up"], w.name || "热身", w.load || w.equipment || "BW", w.sets || "1", repsStr, restStr, w.description || "");
       });
     }
 
-    // ── Position training drills ──
+    // ── Transition ──
+    if (warmups.length > 0) {
+      rows.push({ type: "break", label: "队员休息 + 教练布置训练任务" });
+    }
+
+    // ── 主训 ──
+    let mainCount = 0;
+
+    // Find position training drills
     const drills = mod.drills || mod.position_training?.drills || [];
-    if (drills.length) {
-      drills.forEach((d: any) => {
-        add("技术训练", d.name, d.equipment || "BW", d.sets || "1", d.duration ? `${d.duration}min` : (d.reps ? `${d.reps}次` : "/"), d.rest || "/", d.description || d.focus || "");
-      });
-    }
+    drills.forEach((d: any) => {
+      mainCount++;
+      add("主训", PHASE_COLORS["主训"], d.name, d.equipment || "BW", d.sets || "1", d.duration ? `${d.duration}min` : (d.reps ? `${d.reps}次` : "/"), d.rest || "/", d.description || d.focus || "", d.imageUrl || d.diagram?.image_url);
+    });
 
-    // ── Strength exercises ──
-    const strengthKeys = [
-      { key: "upper_limb", phase: "力量-上肢" },
-      { key: "lower_limb", phase: "力量-下肢" },
-      { key: "core", phase: "力量-核心" },
-      { key: "ability", phase: "专项能力" },
-    ];
-
-    strengthKeys.forEach(({ key, phase: p }) => {
-      const exs = (mod as any)[key] || mod.position_training?.[key] || [];
+    // Strength exercises
+    const strengthKeys = ["upper_limb", "lower_limb", "core", "ability"] as const;
+    strengthKeys.forEach((key) => {
+      const exs = mod[key] || mod.position_training?.[key] || [];
       exs.forEach((ex: any) => {
-        const loadStr = ex.load || (ex.equipment !== "自重" && ex.equipment ? ex.equipment : "BW");
+        mainCount++;
+        const loadStr = ex.load || ex.equipment || "BW";
         const repsStr = ex.reps ? `${ex.reps}次` : (ex.duration ? `${ex.duration}` : "/");
-        const restStr = ex.rest ? (typeof ex.rest === "number" ? `${ex.rest}s` : ex.rest) : "/";
-        add(p, ex.name, loadStr, ex.sets || "?", repsStr, restStr, ex.notes || ex.cue || "");
+        const restStr = ex.rest ? (typeof ex.rest === "number" ? (ex.rest >= 60 ? `${ex.rest / 60}min` : `${ex.rest}s`) : ex.rest) : "/";
+        add("主训", PHASE_COLORS["主训"], ex.name, loadStr, ex.sets || "?", repsStr, restStr, ex.notes || ex.cue || "", ex.imageUrl);
       });
     });
 
-    // ── Coach activities ──
+    // Coach activities
     const acts = mod.activities || [];
-    if (acts.length) {
-      acts.forEach((a: any) => {
-        add("主训", a.name, "—", "—", `${a.duration}min`, "—", a.description + (a.coaching_points?.length ? " 📌" + a.coaching_points.join("；") : ""));
-      });
-    }
+    acts.forEach((a: any) => {
+      mainCount++;
+      add("主训", PHASE_COLORS["主训"], a.name, "—", "—", `${a.duration}min`, "—", a.description || "", a.diagram?.image_url);
+    });
 
-    // ── Cool down ──
+    // ── 放松 ──
     const cds = mod.cooldown || mod.position_training?.cooldown || [];
     if (cds.length) {
       cds.forEach((c: any) => {
-        add("放松", c.name || "整理", "BW", "1", c.duration ? `${c.duration}min` : "/", "/", c.description || "");
+        add("放松", PHASE_COLORS["放松"], c.name || "整理", "BW", "1", c.duration ? `${c.duration}min` : "/", "/", c.description || "");
       });
     }
+
+    // Aggregate phase names
+    const phases: string[] = [];
+    if (warmups.length) phases.push(`Warm-up (${warmups.length}项)`);
+    if (mainCount > 0) phases.push(`主训 (${mainCount}项)`);
+    if (cds.length) phases.push(`放松 (${cds.length}项)`);
   });
 
-  return items;
+  // Compute phase row spans
+  const phases = computePhases(rows);
+  return { phases, rows };
+}
+
+function computePhases(rows: (SeqItem | { type: "break"; label: string })[]): string[] {
+  const p: string[] = [];
+  let current = "";
+  let count = 0;
+  rows.forEach((r) => {
+    if ("type" in r && r.type === "break") {
+      if (current) p.push(`${current} (${count}项)`);
+      p.push("过渡");
+      current = "";
+      count = 0;
+      return;
+    }
+    const item = r as SeqItem;
+    if (item.phase !== current) {
+      if (current) p.push(`${current} (${count}项)`);
+      current = item.phase;
+      count = 0;
+    }
+    count++;
+  });
+  if (current) p.push(`${current} (${count}项)`);
+  return p;
 }
 
 // ─── Component ────────────────────────────────────────────
 
-const COLS = ["阶段", "练习内容", "负重", "组数", "次/米/秒", "组间休息", "备注", "✓"];
+const HEADERS = ["练习内容", "负重", "组数", "次/米/秒", "组间休息", "备注"];
 
 export function SequentialTrainingList({ modules }: { modules: TrainingModule[] }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const sequence = useMemo(() => flattenModules(modules), [modules]);
+  const [imageModal, setImageModal] = useState<{ name: string; url: string } | null>(null);
 
-  const total = sequence.length;
-  const doneCount = sequence.filter(i => completed.has(i.id)).length;
+  const { rows } = useMemo(() => flattenModules(modules), [modules]);
+  const items = rows.filter((r): r is SeqItem => !("type" in r));
+  const total = items.length;
+  const doneCount = items.filter(i => completed.has(i.id)).length;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
   const toggle = (id: string) => {
     setCompleted(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   };
 
+  // Compute rowSpans for phase column
+  const rowSpans = useMemo(() => {
+    const spans: (number | null)[] = new Array(rows.length).fill(null);
+    let i = 0;
+    while (i < rows.length) {
+      const r = rows[i];
+      if ("type" in r && r.type === "break") {
+        spans[i] = 1;
+        i++;
+        continue;
+      }
+      const phase = (r as SeqItem).phase;
+      let count = 0;
+      let j = i;
+      while (j < rows.length && !("type" in rows[j]) && (rows[j] as SeqItem).phase === phase) {
+        count++;
+        j++;
+      }
+      spans[i] = count;
+      i += count;
+    }
+    return spans;
+  }, [rows]);
+
   if (total === 0) {
     return <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练项目</div>;
   }
-
-  // Group by phase for visual grouping
-  const phases = useMemo(() => {
-    const map = new Map<string, SeqItem[]>();
-    sequence.forEach(item => {
-      const arr = map.get(item.phase) || [];
-      arr.push(item);
-      map.set(item.phase, arr);
-    });
-    return Array.from(map.entries());
-  }, [sequence]);
 
   return (
     <div className="space-y-4">
@@ -132,101 +189,156 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-x-auto">
-        <table className="w-full min-w-[600px]">
-          {/* Header */}
-          <thead>
-            <tr className="text-[11px] text-gray-400 border-b border-[#333]">
-              {COLS.map((col, i) => (
-                <th key={i} className={`py-2.5 font-medium ${i === 0 ? "pl-4 text-left w-[80px]" : i === 1 ? "text-left" : "text-center"} ${i === COLS.length - 1 ? "pr-4 w-10" : "pr-2"}`}>
-                  {col}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {phases.map(([phase, items], pi) => (
-              <>
-                {/* Phase separator row */}
-                {pi > 0 && (
-                  <tr>
-                    <td colSpan={COLS.length} className="py-1">
-                      <div className="border-t border-[#222]" />
-                    </td>
-                  </tr>
-                )}
-
-                {items.map((item, idx) => {
-                  const isDone = completed.has(item.id);
-                  const isFirstInPhase = idx === 0;
-
+      {/* Single table */}
+      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px]">
+            {/* Sticky header */}
+            <thead className="sticky top-0 z-10 bg-[#111]">
+              <tr className="text-[11px] text-gray-400 border-b border-[#333]">
+                <th className="py-2.5 pl-4 text-left font-medium w-[90px]">阶段</th>
+                {HEADERS.map((h, i) => (
+                  <th key={i} className={`py-2.5 font-medium ${i === 0 ? "text-left" : "text-center"} ${i === HEADERS.length - 1 ? "pr-4" : "pr-2"}`}>
+                    {h}
+                  </th>
+                ))}
+                <th className="py-2.5 pr-4 text-center font-medium w-10">✓</th>
+                <th className="py-2.5 pr-4 text-center font-medium w-20">动作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, idx) => {
+                // Break row
+                if ("type" in row && row.type === "break") {
                   return (
-                    <tr
-                      key={item.id}
-                      onClick={() => toggle(item.id)}
-                      className={`cursor-pointer transition ${isDone ? "bg-neon-pink/5" : "hover:bg-[#222]"}`}
-                    >
-                      {/* 阶段 — show only on first row of phase */}
-                      <td className="py-2.5 pl-4 pr-2">
-                        {isFirstInPhase && (
-                          <span className="text-[11px] font-bold text-gray-300 whitespace-nowrap">{phase}</span>
-                        )}
-                      </td>
-
-                      {/* 练习内容 */}
-                      <td className="py-2.5 pr-2">
-                        <p className={`text-sm ${isDone ? "text-gray-500 line-through" : "text-white"}`}>
-                          {item.step}. {item.name}
-                        </p>
-                      </td>
-
-                      {/* 负重 */}
-                      <td className="py-2.5 pr-2 text-center">
-                        <span className={`text-xs ${isDone ? "text-gray-600" : "text-gray-300"}`}>{item.load}</span>
-                      </td>
-
-                      {/* 组数 */}
-                      <td className="py-2.5 pr-2 text-center">
-                        <span className={`text-xs tabular-nums ${isDone ? "text-gray-600" : "text-white"}`}>{item.sets}</span>
-                      </td>
-
-                      {/* 次/米/秒 */}
-                      <td className="py-2.5 pr-2 text-center">
-                        <span className={`text-xs whitespace-nowrap ${isDone ? "text-gray-600" : "text-gray-300"}`}>{item.reps}</span>
-                      </td>
-
-                      {/* 组间休息 */}
-                      <td className="py-2.5 pr-2 text-center">
-                        <span className={`text-xs whitespace-nowrap ${isDone ? "text-gray-600" : "text-gray-400"}`}>
-                          {item.rest !== "/" && item.rest !== "—" && <Timer className="w-3 h-3 inline mr-0.5" />}
-                          {item.rest}
-                        </span>
-                      </td>
-
-                      {/* 备注 */}
-                      <td className="py-2.5 pr-2">
-                        <span className={`text-[10px] ${isDone ? "text-gray-600" : "text-gray-500"}`}>
-                          {item.notes.length > 20 ? item.notes.slice(0, 20) + "…" : item.notes}
-                        </span>
-                      </td>
-
-                      {/* ✓ */}
-                      <td className="py-2.5 pr-4 text-center">
-                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition ${
-                          isDone ? "bg-neon-pink border-neon-pink" : "border-[#444]"
-                        }`}>
-                          {isDone && <Check className="w-3 h-3 text-black" />}
+                    <tr key={`break-${idx}`} className="bg-[#0d1b2e]">
+                      <td className="py-3 pl-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-4 rounded-full bg-[#3B82F6]" />
+                          <span className="text-[11px] font-bold text-[#3B82F6]">过渡</span>
                         </div>
+                      </td>
+                      <td colSpan={HEADERS.length + 2} className="py-3 text-center">
+                        <span className="text-xs text-gray-400">{row.label}</span>
                       </td>
                     </tr>
                   );
-                })}
-              </>
-            ))}
-          </tbody>
-        </table>
+                }
+
+                // Training row
+                const item = row as SeqItem;
+                const isDone = completed.has(item.id);
+                const span = rowSpans[idx];
+                const isPhaseHead = span !== null;
+                const isFirstInPhase = idx === 0 || ("type" in rows[idx - 1]) || (rows[idx - 1] as SeqItem).phase !== item.phase;
+
+                return (
+                  <tr
+                    key={item.id}
+                    className={`cursor-pointer transition border-b border-[#1a1a1a] ${isDone ? "bg-neon-pink/5" : "hover:bg-[#222]"}`}
+                    onClick={() => toggle(item.id)}
+                  >
+                    {/* 阶段 — vertical merge, color block */}
+                    {isPhaseHead && span && (
+                      <td
+                        rowSpan={span}
+                        className="pl-4 pr-2 py-2.5 align-top"
+                        style={{ backgroundColor: item.phaseColor + "15" }}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.phaseColor }} />
+                          <span className="text-[11px] font-bold" style={{ color: item.phaseColor }}>{item.phase}</span>
+                        </div>
+                      </td>
+                    )}
+
+                    {/* 练习内容 */}
+                    <td className="py-2.5 pr-2">
+                      <p className={`text-sm ${isDone ? "text-gray-500 line-through" : "text-white"}`}>
+                        {item.step}. {item.name}
+                      </p>
+                    </td>
+
+                    {/* 负重 */}
+                    <td className="py-2.5 pr-2 text-center">
+                      <span className={`text-xs ${isDone ? "text-gray-600" : "text-gray-300"}`}>{item.load}</span>
+                    </td>
+
+                    {/* 组数 */}
+                    <td className="py-2.5 pr-2 text-center">
+                      <span className={`text-xs tabular-nums ${isDone ? "text-gray-600" : "text-white"}`}>{item.sets}</span>
+                    </td>
+
+                    {/* 次/米/秒 */}
+                    <td className="py-2.5 pr-2 text-center">
+                      <span className={`text-xs whitespace-nowrap ${isDone ? "text-gray-600" : "text-gray-300"}`}>{item.reps}</span>
+                    </td>
+
+                    {/* 组间休息 */}
+                    <td className="py-2.5 pr-2 text-center">
+                      <span className={`text-xs whitespace-nowrap ${isDone ? "text-gray-600" : "text-gray-400"}`}>
+                        {item.rest !== "/" && item.rest !== "—" && <Timer className="w-3 h-3 inline mr-0.5" />}
+                        {item.rest}
+                      </span>
+                    </td>
+
+                    {/* 备注 */}
+                    <td className="py-2.5 pr-2">
+                      <span className={`text-[10px] ${isDone ? "text-gray-600" : "text-gray-500"}`}>
+                        {item.notes.length > 15 ? item.notes.slice(0, 15) + "…" : item.notes || "—"}
+                      </span>
+                    </td>
+
+                    {/* ✓ */}
+                    <td className="py-2.5 pr-2 text-center">
+                      <div className={`w-5 h-5 rounded flex items-center justify-center border-2 mx-auto transition ${
+                        isDone ? "bg-neon-pink border-neon-pink" : "border-[#444]"
+                      }`}>
+                        {isDone && <Check className="w-3 h-3 text-black" />}
+                      </div>
+                    </td>
+
+                    {/* 动作图 */}
+                    <td className="py-2.5 pr-4 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.imageUrl) {
+                            setImageModal({ name: item.name, url: item.imageUrl });
+                          }
+                        }}
+                        className={`text-[10px] px-2 py-1 rounded transition ${
+                          item.imageUrl
+                            ? "bg-[#222] hover:bg-[#333] text-gray-300"
+                            : "text-gray-600 cursor-default"
+                        }`}
+                      >
+                        <Image className="w-3.5 h-3.5 inline mr-0.5" />
+                        查看
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Image modal */}
+      {imageModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setImageModal(null)}>
+          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#333]">
+              <span className="text-sm font-bold text-white truncate">{imageModal.name}</span>
+              <button onClick={() => setImageModal(null)} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-4">
+              <img src={imageModal.url} alt={imageModal.name} className="w-full rounded-lg" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
