@@ -12,11 +12,11 @@ import { StickFigure } from "@/components/StickFigure";
 
 type BodyPart = "all" | "上肢" | "下肢" | "核心" | "背部" | "全身";
 type Equipment = "all" | "杠铃" | "哑铃" | "悬吊" | "自重";
-type ExType = "all" | "热身" | "力量" | "技术训练" | "整理";
+type ExType = "all" | "力量";
 
 const BODY_PARTS: BodyPart[] = ["all", "上肢", "下肢", "核心", "背部", "全身"];
 const EQUIPMENTS: Equipment[] = ["all", "杠铃", "哑铃", "悬吊", "自重"];
-const EX_TYPES: ExType[] = ["all", "热身", "力量", "技术训练", "整理"];
+const EX_TYPES: ExType[] = ["all", "力量"];
 
 // ═══════════════════════════════════════════════
 // Unified Exercise Item
@@ -390,7 +390,7 @@ function ExerciseCard({
   return (
     <div className="glass-card overflow-hidden hover:ring-1 hover:ring-neon-pink/50 cursor-pointer transition-all" onClick={onSelect}>
       <div className="aspect-square bg-[#111] flex items-center justify-center p-2">
-        <StickFigure name={exercise.name} size={80} compact={true}/>
+        <StickFigure name={exercise.name} size={56} compact={true}/>
       </div>
       <div className="p-2">
         <h3 className="text-white font-bold text-xs truncate">{exercise.name}</h3>
