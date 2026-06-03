@@ -12,6 +12,7 @@ import { ErrorAlert } from "./ErrorAlert";
 import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
+import { getPlayers } from "@/lib/roster-utils";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
 import { SceneTabs } from "./SceneTabs";
@@ -97,6 +98,39 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                     if (fd.injuryTags) updateField("injuryTags", fd.injuryTags);
                     if (fd.injuryHistory) updateField("injuryHistory", fd.injuryHistory);
                     if (fd.weakness) updateField("weakness", fd.weakness);
+                  }
+                  // Fallback: check roster
+                  if (!match) {
+                    const roster = getPlayers();
+                    const rp = roster.find((p) => p.name === name);
+                    if (rp && confirm(`${rp.name} 在花名册中（${rp.position}），是否自动填入信息？`)) {
+                      updateField("name", rp.name);
+                      if (rp.age) updateField("age", rp.age);
+                      if (rp.height) updateField("height", rp.height);
+                      if (rp.weight) updateField("weight", rp.weight);
+                      // Map roster position to form position
+                      const posMap: Record<string, string> = {
+                        "中后卫": "defender", "左后卫": "defender", "右后卫": "defender",
+                        "后腰": "midfielder", "中前卫": "midfielder", "前腰": "midfielder",
+                        "中锋": "forward", "影锋": "forward", "边锋": "forward",
+                        "左边翼卫": "wingback", "右边翼卫": "wingback",
+                        "门将": "goalkeeper",
+                      };
+                      if (posMap[rp.position]) updateField("position", posMap[rp.position]);
+                      // Auto-fill injury info
+                      if (rp.injuryStatus !== "healthy") {
+                        const injuryMap: Record<string, string> = {
+                          "minor": "knee",
+                          "out": "knee",
+                        };
+                        const statusLabel: Record<string, string> = {
+                          "minor": "🟡轻微伤",
+                          "out": "🔴重伤",
+                        };
+                        updateField("injuryTags", [injuryMap[rp.injuryStatus] || "knee"]);
+                        updateField("injuryHistory", `${statusLabel[rp.injuryStatus] || "伤病"}: ${rp.injuryNote || "花名册记录"}`);
+                      }
+                    }
                   }
                 }}
                 placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
