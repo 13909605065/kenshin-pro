@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kenshinpro — AI Football Coach Decision System
+
+An AI-powered decision system for Chinese football coaches. Generates personalized training plans, tactical analyses, and session designs.
+
+## Tech Stack
+
+- **Frontend:** Next.js 14 (App Router), React 18, TypeScript 5, Tailwind CSS
+- **Visuals:** Fabric.js 5 (tactical whiteboard)
+- **Backend:** Supabase (auth + PostgreSQL)
+- **AI:** Doubao (ByteDance Volcano Ark) / DeepSeek (auto-fallback)
+- **Deployment:** Vercel (kenshin-pro.vercel.app)
+
+## Key Features
+
+- **AI Training Generation** — SSE-streamed personalized training plans (warmup, physical, technical, tactical, nutrition) tailored to athlete position, age, gender, and fitness level.
+- **Tactical Diagnosis** — Interactive Fabric.js canvas for drawing and analyzing tactical scenarios.
+- **Sequential Training Table** — Structured session plans with warmup, activities, small-sided games, and cooldown.
+- **Scene System** — Context-aware generation for pre-season, competition, recovery, and injury-rehab phases.
+- **Roster Management** — Excel import for team rosters with injury tracking integration.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set the following environment variables (`.env.local`):
 
-## Learn More
+- `ARK_API_KEY` — Doubao API key
+- `DEEPSEEK_API_KEY` — DeepSeek API key (fallback)
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous key
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project — all rights reserved.

@@ -119,18 +119,26 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                         "门将": "goalkeeper",
                       };
                       if (posMap[rp.position]) updateField("position", posMap[rp.position]);
-                      // Auto-fill injury info
+                      // Auto-fill injury info with accurate mapping
                       if (rp.injuryStatus !== "healthy") {
-                        const injuryMap: Record<string, string> = {
-                          "minor": "knee",
-                          "out": "knee",
-                        };
                         const statusLabel: Record<string, string> = {
                           "minor": "🟡轻微伤",
                           "out": "🔴重伤",
                         };
-                        updateField("injuryTags", [injuryMap[rp.injuryStatus] || "knee"]);
-                        updateField("injuryHistory", `${statusLabel[rp.injuryStatus] || "伤病"}: ${rp.injuryNote || "花名册记录"}`);
+                        // Extract injury site from note text (e.g. "右脚踝扭伤" → "ankle")
+                        const note = rp.injuryNote || "";
+                        const siteMap: [RegExp, string][] = [
+                          [/踝|ankle/i, "ankle"], [/膝|knee/i, "knee"],
+                          [/髋|hip|groin|腹股沟/i, "hip"], [/肩|shoulder/i, "shoulder"],
+                          [/腰|背|waist|back|lumbar/i, "waist"], [/肘|elbow/i, "elbow"],
+                          [/腕|wrist/i, "wrist"], [/腿|腘绳|hamstring|thigh|quad/i, "thigh"],
+                          [/小腿|calf|shin/i, "calf"], [/跟腱|achilles/i, "achilles"],
+                          [/脚|足|foot/i, "foot"],
+                        ];
+                        const found = siteMap.find(([re]) => re.test(note));
+                        const site = found ? found[1] : "thigh";
+                        updateField("injuryTags", [site]);
+                        updateField("injuryHistory", `${statusLabel[rp.injuryStatus] || "伤病"}: ${note || "花名册记录"}`);
                       }
                     }
                   }
@@ -313,7 +321,7 @@ export function Dashboard() {
             </button>
           )}
           {scene === "planning" && (
-            <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+            <button onClick={() => document.getElementById("generate-section")?.scrollIntoView({ behavior: "smooth" })} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
               <Zap className="w-5 h-5 text-neon-pink mb-1" />
               <p className="text-xs font-bold text-white">生成训练方案</p>
               <p className="text-[10px] text-gray-500">AI 科学化备课</p>
@@ -321,12 +329,12 @@ export function Dashboard() {
           )}
           {scene === "pitch" && role === "coach" && (
             <>
-              <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
                 <Timer className="w-5 h-5 text-neon-pink mb-1" />
                 <p className="text-xs font-bold text-white">计时跟练</p>
                 <p className="text-[10px] text-gray-500">执行教案</p>
               </button>
-              <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
                 <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
                 <p className="text-xs font-bold text-white">快速调整</p>
                 <p className="text-[10px] text-gray-500">人数/分组/器材</p>
@@ -369,7 +377,7 @@ export function Dashboard() {
             </button>
           )}
           {scene === "recovery" && (
-            <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+            <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
               <Activity className="w-5 h-5 text-neon-pink mb-1" />
               <p className="text-xs font-bold text-white">恢复评估</p>
               <p className="text-[10px] text-gray-500">拉伸+伤病自评</p>

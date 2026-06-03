@@ -73,6 +73,13 @@ export default function TacticalDiagnosisPage() {
         setDiagnosis(json.data);
         setStatus("done");
         setActiveTab("analysis");
+        // Save to localStorage history
+        try {
+          const key = "kenshin_diagnosis_history";
+          const history = JSON.parse(localStorage.getItem(key) || "[]");
+          history.unshift({ problem: problem.trim(), diagnosis: json.data, date: new Date().toISOString() });
+          localStorage.setItem(key, JSON.stringify(history.slice(0, 10)));
+        } catch {}
       } else {
         setErrorMessage(json.message || "诊断失败，请重试");
         setStatus("error");

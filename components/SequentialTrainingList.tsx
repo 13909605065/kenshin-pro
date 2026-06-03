@@ -230,7 +230,6 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
                 const isDone = completed.has(item.id);
                 const span = rowSpans[idx];
                 const isPhaseHead = span !== null;
-                const isFirstInPhase = idx === 0 || ("type" in rows[idx - 1]) || (rows[idx - 1] as SeqItem).phase !== item.phase;
 
                 return (
                   <tr
@@ -300,22 +299,17 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
 
                     {/* 动作图 */}
                     <td className="py-2.5 pr-4 text-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.imageUrl) {
-                            setImageModal({ name: item.name, url: item.imageUrl });
-                          }
-                        }}
-                        className={`text-[10px] px-2 py-1 rounded transition ${
-                          item.imageUrl
-                            ? "bg-[#222] hover:bg-[#333] text-gray-300"
-                            : "text-gray-600 cursor-default"
-                        }`}
-                      >
-                        <Image className="w-3.5 h-3.5 inline mr-0.5" />
-                        查看
-                      </button>
+                      {item.imageUrl ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setImageModal({ name: item.name, url: item.imageUrl! }); }}
+                          className="text-[10px] px-2 py-1 rounded bg-[#222] hover:bg-[#333] text-gray-300 transition"
+                        >
+                          <Image className="w-3.5 h-3.5 inline mr-0.5" />
+                          查看
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-gray-600">-</span>
+                      )}
                     </td>
                   </tr>
                 );

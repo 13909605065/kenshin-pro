@@ -26,6 +26,11 @@ export default function RosterPage() {
   const [editing, setEditing] = useState<PlayerRecord | null>(null);
   const [filter, setFilter] = useState<"all" | "healthy" | "minor" | "out">("all");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<{
+    rawRows: (string | number | null)[][];
+    parsed: Omit<PlayerRecord, "id">[];
+    fileName: string;
+  } | null>(null);
 
   const filtered = filter === "all" ? players : players.filter((p) => p.injuryStatus === filter);
 
@@ -33,7 +38,6 @@ export default function RosterPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      // Dynamic import xlsx
       const XLSX = await import("xlsx");
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data);
@@ -41,13 +45,23 @@ export default function RosterPage() {
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as (string | number | null)[][];
       const parsed = parseExcelData(rows);
       if (parsed.length === 0) { alert("未识别到球员数据，请检查 Excel 格式"); return; }
-      const existing = getPlayers();
-      const merged = [...existing, ...parsed.map((p) => ({ ...p, id: Date.now().toString() + Math.random().toString(36).slice(2) }))];
-      savePlayers(merged as PlayerRecord[]);
-      setPlayers(merged as PlayerRecord[]);
-      alert(`成功导入 ${parsed.length} 名球员`);
+      setPreview({ rawRows: rows, parsed, fileName: file.name });
     } catch { alert("Excel 解析失败，请检查文件格式"); }
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const handleConfirmImport = () => {
+    if (!preview) return;
+    const existing = getPlayers();
+    const merged = [...existing, ...preview.parsed.map((p) => ({ ...p, id: Date.now().toString() + Math.random().toString(36).slice(2) }))];
+    savePlayers(merged as PlayerRecord[]);
+    setPlayers(merged as PlayerRecord[]);
+    alert(`成功导入 ${preview.parsed.length} 名球员`);
+    setPreview(null);
+  };
+
+  const handleCancelImport = () => {
+    setPreview(null);
   };
 
   const handleAdd = () => {

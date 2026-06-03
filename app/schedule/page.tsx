@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
-import { Upload, Plus, X, Save, Trash2, Trophy, MapPin, ChevronRight } from "lucide-react";
+import { Upload, Plus, X, Trash2, ChevronRight, Zap } from "lucide-react";
 import {
   getMatches, saveMatches, addMatch, updateMatch, deleteMatch,
   importMatches, getNextMatch, type MatchRecord,
@@ -122,8 +122,14 @@ export default function SchedulePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {m.status === "upcoming" && (
+                      <button onClick={(e) => { e.stopPropagation(); router.push("/?matchOpponent=" + encodeURIComponent(m.opponent) + "&matchDate=" + m.date); }}
+                        className="flex items-center gap-1 px-2 py-1 bg-neon-pink/20 hover:bg-neon-pink/30 border border-neon-pink/30 rounded text-[10px] text-neon-pink transition">
+                        <Zap className="w-3 h-3" /> 生成训练
+                      </button>
+                    )}
                     {m.status === "played" && m.result && <span className="text-[11px] text-neon-pink font-bold">{m.result}</span>}
-                    {m.status === "upcoming" && <span className="text-[10px] text-green-400">未赛</span>}
+                    {m.status === "upcoming" && !m.result && <span className="text-[10px] text-green-400">未赛</span>}
                     <ChevronRight className="w-4 h-4 text-gray-600" />
                   </div>
                 </div>

@@ -25,9 +25,12 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
       const payload = {
         modules,
         formData: {
-          role: formData.role, name: formData.name, gender: formData.gender,
-          position: formData.position, age: formData.age, height: formData.height,
-          weight: formData.weight, goal: formData.goal, phase: formData.phase,
+          role: formData.role,
+          name: formData.name?.charAt(0) + "**", // 隐私保护: 只显示姓
+          gender: formData.gender,
+          position: formData.position,
+          goal: formData.goal,
+          phase: formData.phase,
         },
       };
       const res = await fetch("/api/share/", {
