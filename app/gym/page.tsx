@@ -33,13 +33,40 @@ export default function GymPage() {
 
   const isCoach = role === "coach";
 
-  const goGenerate = () => {
-    if (isCoach) {
-      router.push("/?scene=planning");
-    } else {
-      router.push("/?scene=gym&generate=1");
-    }
-  };
+  const goGenerate = () => router.push(isCoach ? "/?scene=planning" : "/?scene=gym&generate=1");
+
+  // Compute personalized recommendation
+  const age = formData.age || 25;
+  const weight = formData.weight || 70;
+  const height = formData.height || 175;
+  const bmi = weight / ((height/100)**2);
+  const years = formData.years || 1;
+  const goal = formData.goal || "strength";
+  const phase = formData.phase || "preseason";
+  const isUnder18 = age < 18;
+  const isOver35 = age > 35;
+
+  let trainRec = "";
+  if (goal === "strength") trainRec = `推荐${isUnder18?"中低":"中高"}强度力量训练，${phase==="preseason"?"基础力量打底":"维持已有水平"}。3-4个复合动作，组间${isUnder18?"2-3min":"2min"}。`;
+  else if (goal === "power") trainRec = `爆发力训练日。奥举衍生+跳跃类，${isUnder18?"中等重量控速":"低次数高速度"}，充分动态热身。`;
+  else if (goal === "speed") trainRec = `速度力量转换。${isUnder18?"自重为主":"轻中重量"}快速完成，配合灵敏训练。`;
+  else trainRec = `全身力量维持。${isUnder18?"动作质量优先":"根据感觉调整强度"}。`;
+
+  let bodyNote = "";
+  if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌，蛋白2.0g/kg，训练后补充碳水+快蛋白。`;
+  else if (bmi >= 25) bodyNote = `BMI ${bmi.toFixed(1)}偏高，如体脂高需增加有氧，关节保护优先闭链动作。`;
+  if (isUnder18) bodyNote += " 未成年，禁止>85%1RM，专注动作技术。";
+  if (isOver35) bodyNote += " 热身10min以上，关注关节活动度。";
+
+  const hasInjury = (formData.injurySites?.length > 0) || (formData.injuryTags?.length > 0);
+  let injuryNote = "";
+  if (hasInjury) {
+    const sites = formData.injurySites?.join("、") || formData.injuryTags?.join("、") || "伤病部位";
+    injuryNote = `检测到伤病：${sites}。训练时避开该部位直接负重，以康复性训练为主，减少ROM，无痛范围训练。如有不适立即停止。`;
+    trainRec += ` ⚠️避开${sites}直接负重。`;
+  }
+
+  const dietRec = `训练后30min内: 蛋白${Math.round(weight*0.4)}g + 碳水${Math.round(weight*0.8)}g。全天蛋白${Math.round(weight*1.6)}g。${hasInjury?"伤病恢复期，蛋白需求增加至"+Math.round(weight*2.0)+"g/天，补充维生素C和锌促进愈合。":""}`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
@@ -70,66 +97,27 @@ export default function GymPage() {
         {/* Personalized Recommendation */}
         <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5 space-y-4">
           <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">今日训练建议</p>
-
-          {(()=>{
-            const age = formData.age || 25;
-            const weight = formData.weight || 70;
-            const height = formData.height || 175;
-            const bmi = weight / ((height/100)**2);
-            const years = formData.years || 1;
-            const goal = formData.goal || "strength";
-            const phase = formData.phase || "preseason";
-            const isUnder18 = age < 18;
-            const isOver35 = age > 35;
-
-            // Training recommendation
-            let training = "";
-            if (goal === "strength") training = `推荐${isUnder18?"中低强度":"中高强度"}力量训练，${phase==="preseason"?"侧重基础力量打底":"保持已有水平"}。3-4个复合动作为主，组间休息${isUnder18?"2-3min":"2min"}。`;
-            else if (goal === "power") training = `爆发力训练日。奥举衍生动作+跳跃类，${isUnder18?"中等重量低速控制":"低次数高速度爆发"}，充分动态热身。`;
-            else if (goal === "speed") training = `速度力量转换。${isUnder18?"自重为主":"轻中重量"}快速完成，配合灵敏反应训练。`;
-            else training = `全身力量维持。${isUnder18?"动作质量优先，避免大重量":"根据感觉调整强度"}。`;
-
-            // Body-specific notes
-            let bodyNote = "";
-            if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌为主，蛋白摄入2.0g/kg体重，训练后补充碳水和快蛋白。`;
-            else if (bmi >= 25) bodyNote = `BMI ${bmi.toFixed(1)}偏高，如体脂偏高建议增加有氧比例，关节保护优先选择闭链动作。`;
-            if (isUnder18) bodyNote += " 未成年，禁止>85%1RM大重量训练，专注动作技术。";
-            if (isOver35) bodyNote += " 充分热身10min以上，关注关节活动度。";
-
-            // Diet suggestion
-            let diet = "";
-            if (goal === "strength" || goal === "power") diet = `训练后30min内补充蛋白${Math.round(weight*0.4)}g+碳水${Math.round(weight*0.8)}g。全天蛋白${Math.round(weight*1.8)}g。`;
-            else diet = `均衡饮食，蛋白${Math.round(weight*1.5)}g/天，多摄入富含铁锌的食物。`;
-
-            return <>
-              <div>
-                <p className="text-[10px] text-gray-500 mb-1">训练方向</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{training}</p>
-              </div>
-              {bodyNote && <div>
-                <p className="text-[10px] text-gray-500 mb-1">身体状况</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p>
-              </div>}
-              <div>
-                <p className="text-[10px] text-gray-500 mb-1">营养建议</p>
-                <p className="text-sm text-gray-200 leading-relaxed">{diet}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-2 pt-2">
-                <div className="text-center bg-[#111] rounded-lg p-2">
-                  <p className="text-neon-pink font-bold text-lg">{formData.age||"-"}</p>
-                  <p className="text-[10px] text-gray-500">年龄</p>
-                </div>
-                <div className="text-center bg-[#111] rounded-lg p-2">
-                  <p className="text-neon-pink font-bold text-lg">{bmi.toFixed(1)}</p>
-                  <p className="text-[10px] text-gray-500">BMI</p>
-                </div>
-                <div className="text-center bg-[#111] rounded-lg p-2">
-                  <p className="text-neon-pink font-bold text-lg">{formData.years||1}年</p>
-                  <p className="text-[10px] text-gray-500">训练年限</p>
-                </div>
-              </div>
-            </>;
-          })()}
+          <div>
+            <p className="text-[10px] text-gray-500 mb-1">训练方向</p>
+            <p className="text-sm text-gray-200 leading-relaxed">{trainRec}</p>
+          </div>
+          {bodyNote && <div>
+            <p className="text-[10px] text-gray-500 mb-1">身体状况</p>
+            <p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p>
+          </div>}
+          {hasInjury && <div>
+            <p className="text-[10px] text-red-400 mb-1">伤病提醒</p>
+            <p className="text-sm text-red-300 leading-relaxed">{injuryNote}</p>
+          </div>}
+          <div>
+            <p className="text-[10px] text-gray-500 mb-1">营养建议</p>
+            <p className="text-sm text-gray-200 leading-relaxed">{dietRec}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-2">
+            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{age}</p><p className="text-[10px] text-gray-500">年龄</p></div>
+            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-500">BMI</p></div>
+            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-500">训练年限</p></div>
+          </div>
         </div>
         </div>
 
