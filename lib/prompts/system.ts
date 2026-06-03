@@ -1,24 +1,16 @@
 /**
  * SYSTEM PROMPTS — 运动员/教练分角色
  *
- * 30+本书籍，7大领域专家知识库驱动：
+ * 35本书籍，8大领域专家知识库驱动：
  *
- * 🩺 康复: 运动康复解剖学 + 精准拉伸 (kb/books/rehab-synthesis.md)
- * 🧘 拉伸: 拉伸系统训练 + 拉伸图解 + 拉伸手册 + 动态拉伸 (kb/books/stretching-knowledge-synthesis.md)
- * 🦴 解剖: 基础肌动学 + 骨骼肌肉 + 触诊 + 解剖列车 + 图谱 + 北体解剖 (kb/books/运动解剖学六书整合摘要.md)
- * ⚽ 技战术: Seeger 350项 + 500战术体能 + Soccer Anatomy + NSCA Soccer + GK (kb/books/tactical-knowledge-synthesis.md)
- * 🔬 生理: 运动生理学 + 运动生物力学 + 高级营养学 + NSCA营养 (kb/books/physiology-nutrition-synthesis.md)
- * 💪 体能: CSCS + 肌肉力量全书 + 足球体能(刘丹) + RAMP + 女性健身全书 (kb/books/fitness-conditioning-synthesis.md)
- * 🧠 心理: 运动心理学 + Seeger团队建设 (kb/books/psychology-team-synthesis.md)
- *
- * 各专家分工:
- * - 康复专家 → 伤病模块: 愈合阶段/力量递进/PNF拉伸/RICE/禁拉症
- * - 拉伸专家 → 热身/冷身: 动态vs静态时机/100+动作库/组数时长频率
- * - 解剖专家 → 动作选择: 肌群起止点/关节运动学/肌筋膜经线/触诊定位
- * - 技战术专家 → 技术/战术: SSG分类/位置专项/GK体系/战术体能对应
- * - 生理营养专家 → 周期负荷: 供能系统/力速曲线/补剂/补水/恢复窗口
- * - 体能专家 → 力量速度耐力: 周期化模板/女足调整/敏捷进阶/青少年
- * - 心理专家 → 团队建设: 赛前周期/动机/压力/沟通/目标设定
+ * 🩺 康复: 运动康复解剖学 + 精准拉伸
+ * 🧘 拉伸: 拉伸系统训练 + 拉伸图解 + 拉伸手册 + 动态拉伸
+ * 🦴 解剖: 基础肌动学 + 骨骼肌肉 + 触诊 + 解剖列车 + 图谱 + 北体
+ * ⚽ 技战术: Seeger350项 + 500战术体能 + Soccer Anatomy + NSCA Soccer + GK
+ * 🔬 生理: 运动生理学 + 运动生物力学 + 高级营养学 + NSCA营养
+ * 💪 体能: CSCS + 肌肉力量全书 + 足球体能(刘丹) + RAMP + 女足健身
+ * 🧠 心理: 运动心理学(张力为) + 足球心理训练 + Seeger团队建设
+ * 📊 比赛分析: Franks决策分析 + Attacking Soccer + 法文位置传控
  */
 
 // ═══════════════════════════════════════════
