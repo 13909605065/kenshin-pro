@@ -71,6 +71,26 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     canvas.on("selection:updated", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:cleared", () => onObjectSelected?.(null));
 
+    // Double-click player to edit number
+    canvas.on("mouse:dblclick", (opt: any) => {
+      const target = opt.target;
+      if (!target || !(target as any)._isPlayer) return;
+      const currentNum = (target as any).number || "";
+      const newNum = prompt("输入球员号码:", currentNum);
+      if (newNum !== null && newNum.trim() !== "") {
+        (target as any).number = newNum.trim();
+        // Update the FabricText inside the group
+        const group = target as Group;
+        const objs = (group as any)._objects || [];
+        const textObj = objs.find((o: any) => o instanceof FabricText);
+        if (textObj) {
+          textObj.set({ text: newNum.trim() });
+          canvas.requestRenderAll();
+          save();
+        }
+      }
+    });
+
     // Load field image as background (not vector drawing)
     FabricImage.fromURL("/equipment/场地.png").then((img) => {
       const scaleX = FW / (img.width || 1);
@@ -155,8 +175,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     return () => { container.removeEventListener("drop", onDrop); canvas.dispose(); boardRef.current = null; };
   }, []);
 
-  // ---- ALL ROUTE TOOLS use bezier curves ----
-  const isRouteTool = activeTool === "draw_run" || activeTool === "draw_dribble" || activeTool === "draw_pass" || activeTool === "draw_curve";
+  // ---- Route tools: straight (跑动/传球/直线) vs curved (带球 only) ----
+  const isStraightTool = activeTool === "draw_run" || activeTool === "draw_pass" || activeTool === "draw_curve";
+  const isCurveTool = activeTool === "draw_dribble";
+  const isRouteTool = isStraightTool || isCurveTool;
 
   const getLineStyle = useCallback(() => {
     const style = ROUTE_STYLES[activeTool];
@@ -196,7 +218,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (!isRouteTool || !lineStartRef.current || !tempLineRef.current) return;
       const p = opt.scenePoint;
       const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
-      // Show live preview as straight line (final path will be bezier)
+      // Show live preview as straight line
       tempLineRef.current.set({ path: [["M", x1, y1], ["L", p.x, p.y]] as any });
       c.requestRenderAll();
     };
@@ -212,26 +234,34 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
       const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
       const x2 = p.x, y2 = p.y;
-      const color = (getLineStyle() as any).stroke || "#FF2D55";
+      const color = (getLineStyle() as any).stroke || "#000";
 
-      // Quadratic bezier for smooth curved lines
-      // Control point = midpoint offset perpendicular for natural arc
-      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-      const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-      const perpX = -(y2 - y1) / (len || 1);
-      const perpY = (x2 - x1) / (len || 1);
-      const arcOffset = Math.min(len * 0.3, 80);
-      const cx = mx + perpX * arcOffset;
-      const cy = my + perpY * arcOffset;
+      let pathData: string;
+      let arrowAngle: number;
 
-      const pathData = `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+      if (isCurveTool) {
+        // draw_dribble: pronounced bezier curve for dribbling path
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        const perpX = -(y2 - y1) / (len || 1);
+        const perpY = (x2 - x1) / (len || 1);
+        const arcOffset = Math.min(len * 0.5, 150); // larger arc for pronounced curves
+        const cx = mx + perpX * arcOffset;
+        const cy = my + perpY * arcOffset;
+        pathData = `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+        arrowAngle = Math.atan2(y2 - cy, x2 - cx);
+      } else {
+        // Straight line tools (draw_run, draw_pass, draw_curve)
+        pathData = `M ${x1} ${y1} L ${x2} ${y2}`;
+        arrowAngle = Math.atan2(y2 - y1, x2 - x1);
+      }
+
       const path = new Path(pathData, getLineStyle());
       (path as any)._isRoute = true; (path as any)._routeType = activeTool;
       c.add(path);
 
-      // Arrow head at endpoint (tangent direction at end of bezier)
-      const tangAngle = Math.atan2(y2 - cy, x2 - cx);
-      addArrowHead(c, x2, y2, tangAngle, color);
+      // Arrow head at endpoint
+      addArrowHead(c, x2, y2, arrowAngle, color);
 
       lineStartRef.current = null;
       c.requestRenderAll();

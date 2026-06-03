@@ -45,7 +45,7 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
   const [tab, setTab] = useState<string>("equipment");
   const [previewField, setPreviewField] = useState<string | null>(null);
 
-  const w = collapsed ? "w-[52px]" : "w-[112px]";
+  const w = collapsed ? "w-0 overflow-hidden border-r-0" : "w-[112px]";
 
   const handleFieldClick = (field: string) => {
     setPreviewField(field);
@@ -84,13 +84,16 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
   );
 
   return (
-    <div className={`${w} bg-pitch-800 border-r border-pitch-600 flex flex-col flex-shrink-0 transition-all duration-200`}>
-      {/* Collapse toggle */}
+    <div className="relative flex flex-shrink-0">
+      {/* Floating collapse toggle — always visible */}
       <button onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center h-7 text-gray-500 hover:text-white hover:bg-pitch-700 transition border-b border-pitch-600"
-        title={collapsed ? "展开" : "折叠"}>
+        className="absolute top-2 z-20 flex items-center justify-center w-6 h-8 bg-pitch-700 border border-pitch-600 rounded-r-md text-gray-400 hover:text-white hover:bg-pitch-600 transition shadow-md"
+        style={{ left: collapsed ? 4 : 108 }}
+        title={collapsed ? "展开器材面板" : "折叠器材面板"}>
         {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
+
+      <div className={`${w} bg-pitch-800 border-r border-pitch-600 flex flex-col flex-shrink-0 transition-all duration-200`}>
 
       {/* Tabs */}
       {!collapsed && (
@@ -211,6 +214,7 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

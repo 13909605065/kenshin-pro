@@ -10,28 +10,43 @@ import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut } from "lucid
 import { useRouter } from "next/navigation";
 import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 
+// Standard 11-a-side positions. Canvas: 1050×680, field area: x=30..1020, y=30..650, center=(525,340)
+// Zones: GK x≈55 · DF x≈175-195 · DM x≈340-360 · MF x≈400-440 · AM x≈570-590 · FW x≈700-780
+// Vertical: top-flank≈100 · top-half≈250 · center≈340 · bottom-half≈430 · bottom-flank≈580
 const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
   "4-3-3": [
-    {x:55,y:340,n:"1",c:"#FF2D55"},{x:195,y:100,n:"2",c:"#FF2D55"},{x:170,y:260,n:"4",c:"#FF2D55"},{x:170,y:420,n:"5",c:"#FF2D55"},{x:195,y:580,n:"3",c:"#FF2D55"},
-    {x:390,y:190,n:"8",c:"#FF2D55"},{x:430,y:340,n:"6",c:"#FF2D55"},{x:390,y:490,n:"10",c:"#FF2D55"},{x:670,y:110,n:"7",c:"#FF2D55"},{x:740,y:340,n:"9",c:"#FF2D55"},{x:670,y:570,n:"11",c:"#FF2D55"},
+    //         GK           RB          RCB          LCB          LB
+    {x:55,y:340,n:"1",c:"#FF2D55"},{x:185,y:100,n:"2",c:"#FF2D55"},{x:175,y:250,n:"4",c:"#FF2D55"},{x:175,y:430,n:"5",c:"#FF2D55"},{x:185,y:580,n:"3",c:"#FF2D55"},
+    //         RCM         CDM          LCM          RW           ST           LW
+    {x:420,y:190,n:"8",c:"#FF2D55"},{x:440,y:340,n:"6",c:"#FF2D55"},{x:420,y:490,n:"10",c:"#FF2D55"},{x:700,y:100,n:"7",c:"#FF2D55"},{x:770,y:340,n:"9",c:"#FF2D55"},{x:700,y:580,n:"11",c:"#FF2D55"},
   ],
   "4-4-2": [
-    {x:55,y:340,n:"1",c:"#FF2D55"},{x:195,y:90,n:"2",c:"#FF2D55"},{x:170,y:250,n:"4",c:"#FF2D55"},{x:170,y:430,n:"5",c:"#FF2D55"},{x:195,y:590,n:"3",c:"#FF2D55"},
-    {x:410,y:90,n:"7",c:"#FF2D55"},{x:430,y:250,n:"8",c:"#FF2D55"},{x:430,y:430,n:"6",c:"#FF2D55"},{x:410,y:590,n:"11",c:"#FF2D55"},{x:700,y:260,n:"9",c:"#FF2D55"},{x:700,y:420,n:"10",c:"#FF2D55"},
+    //         GK           RB          RCB          LCB          LB
+    {x:55,y:340,n:"1",c:"#FF2D55"},{x:185,y:100,n:"2",c:"#FF2D55"},{x:175,y:250,n:"4",c:"#FF2D55"},{x:175,y:430,n:"5",c:"#FF2D55"},{x:185,y:580,n:"3",c:"#FF2D55"},
+    //         RM          RCM          LCM          LM           ST           ST
+    {x:420,y:100,n:"7",c:"#FF2D55"},{x:440,y:250,n:"8",c:"#FF2D55"},{x:440,y:430,n:"6",c:"#FF2D55"},{x:420,y:580,n:"11",c:"#FF2D55"},{x:730,y:250,n:"9",c:"#FF2D55"},{x:730,y:430,n:"10",c:"#FF2D55"},
   ],
   "3-5-2": [
-    {x:55,y:340,n:"1",c:"#FF2D55"},{x:140,y:180,n:"3",c:"#FF2D55"},{x:120,y:340,n:"5",c:"#FF2D55"},{x:140,y:500,n:"4",c:"#FF2D55"},
-    {x:310,y:60,n:"7",c:"#FF2D55"},{x:390,y:180,n:"8",c:"#FF2D55"},{x:410,y:340,n:"6",c:"#FF2D55"},{x:390,y:500,n:"10",c:"#FF2D55"},{x:310,y:620,n:"2",c:"#FF2D55"},
-    {x:700,y:260,n:"9",c:"#FF2D55"},{x:700,y:420,n:"11",c:"#FF2D55"},
+    //         GK           LCB          CB           RCB
+    {x:55,y:340,n:"1",c:"#FF2D55"},{x:145,y:180,n:"3",c:"#FF2D55"},{x:135,y:340,n:"5",c:"#FF2D55"},{x:145,y:500,n:"4",c:"#FF2D55"},
+    //         RWB         RCM          CDM          LCM          LWB
+    {x:320,y:70,n:"7",c:"#FF2D55"},{x:420,y:190,n:"8",c:"#FF2D55"},{x:430,y:340,n:"6",c:"#FF2D55"},{x:420,y:490,n:"10",c:"#FF2D55"},{x:320,y:610,n:"2",c:"#FF2D55"},
+    //         ST           ST
+    {x:730,y:250,n:"9",c:"#FF2D55"},{x:730,y:430,n:"11",c:"#FF2D55"},
   ],
   "4-2-3-1": [
-    {x:55,y:340,n:"1",c:"#FF2D55"},{x:195,y:90,n:"2",c:"#FF2D55"},{x:170,y:250,n:"4",c:"#FF2D55"},{x:170,y:430,n:"5",c:"#FF2D55"},{x:195,y:590,n:"3",c:"#FF2D55"},
-    {x:340,y:250,n:"6",c:"#FF2D55"},{x:340,y:430,n:"8",c:"#FF2D55"},{x:570,y:90,n:"7",c:"#FF2D55"},{x:580,y:340,n:"10",c:"#FF2D55"},{x:570,y:590,n:"11",c:"#FF2D55"},{x:770,y:340,n:"9",c:"#FF2D55"},
+    //         GK           RB          RCB          LCB          LB
+    {x:55,y:340,n:"1",c:"#FF2D55"},{x:185,y:100,n:"2",c:"#FF2D55"},{x:175,y:250,n:"4",c:"#FF2D55"},{x:175,y:430,n:"5",c:"#FF2D55"},{x:185,y:580,n:"3",c:"#FF2D55"},
+    //         RDM          LDM          RW           CAM          LW           ST
+    {x:355,y:250,n:"6",c:"#FF2D55"},{x:355,y:430,n:"8",c:"#FF2D55"},{x:590,y:100,n:"7",c:"#FF2D55"},{x:590,y:340,n:"10",c:"#FF2D55"},{x:590,y:580,n:"11",c:"#FF2D55"},{x:780,y:340,n:"9",c:"#FF2D55"},
   ],
   "3-4-3": [
-    {x:55,y:340,n:"1",c:"#FF2D55"},{x:140,y:180,n:"3",c:"#FF2D55"},{x:120,y:340,n:"4",c:"#FF2D55"},{x:140,y:500,n:"5",c:"#FF2D55"},
-    {x:350,y:70,n:"7",c:"#FF2D55"},{x:390,y:250,n:"8",c:"#FF2D55"},{x:390,y:430,n:"6",c:"#FF2D55"},{x:350,y:610,n:"11",c:"#FF2D55"},
-    {x:640,y:130,n:"10",c:"#FF2D55"},{x:720,y:340,n:"9",c:"#FF2D55"},{x:640,y:550,n:"11",c:"#FF2D55"},
+    //         GK           LCB          CB           RCB
+    {x:55,y:340,n:"1",c:"#FF2D55"},{x:145,y:180,n:"3",c:"#FF2D55"},{x:135,y:340,n:"4",c:"#FF2D55"},{x:145,y:500,n:"5",c:"#FF2D55"},
+    //         RM          RCM          LCM          LM
+    {x:370,y:80,n:"7",c:"#FF2D55"},{x:420,y:250,n:"8",c:"#FF2D55"},{x:420,y:430,n:"6",c:"#FF2D55"},{x:370,y:600,n:"11",c:"#FF2D55"},
+    //         RW           ST           LW
+    {x:660,y:130,n:"10",c:"#FF2D55"},{x:740,y:340,n:"9",c:"#FF2D55"},{x:660,y:550,n:"2",c:"#FF2D55"},
   ],
 };
 
@@ -43,9 +58,10 @@ export default function TacticsPage() {
   const router = useRouter();
   const boardRef = useRef<Canvas | null>(null);
   const [activeTool, setActiveTool] = useState("select");
-  const [activeColor, setActiveColor] = useState("#FF2D55");
+  const [activeColor, setActiveColor] = useState("#000000");
   const [canUndo, setCanUndo] = useState(false); const [canRedo, setCanRedo] = useState(false);
   const [selObj, setSelObj] = useState<any>(null);
+  const [, setEditTick] = useState(0); // force re-render on number edit
   const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
@@ -189,6 +205,15 @@ export default function TacticsPage() {
 
   const hFormation = (f: string) => placePlayers(FORMATION_DATA[f]||FORMATION_DATA["4-3-3"]);
 
+  const hUpdatePlayerNum = (newNum: string) => {
+    if (!selObj || !(selObj as any)._isPlayer) return;
+    (selObj as any).number = newNum;
+    const objs = (selObj as any)._objects || [];
+    const textObj = objs.find((o: any) => o.type === "text" || o.type === "textbox");
+    if (textObj) { textObj.set({ text: newNum }); boardRef.current?.requestRenderAll(); }
+    setEditTick(t => t + 1);
+  };
+
   const hSave = () => {
     const c=boardRef.current; if(!c||!sName.trim())return;
     const json=JSON.stringify(c.toJSON());
@@ -223,7 +248,19 @@ export default function TacticsPage() {
           title="打开已保存的战术">
           <FolderOpen className="w-3.5 h-3.5"/>战术库{scenes.length>0&&<span className="text-neon-pink ml-0.5">{scenes.length}</span>}
         </button>
-        {selName && <span className="text-[10px] text-gray-500 hidden sm:inline ml-1">已选：{selName}</span>}
+        {selObj && (selObj as any)._isPlayer && (
+          <div className="flex items-center gap-1 ml-2">
+            <span className="text-[10px] text-gray-500">号码:</span>
+            <input
+              defaultValue={(selObj as any).number || ""}
+              onBlur={(e) => hUpdatePlayerNum(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
+              className="w-10 h-5 bg-pitch-700 border border-pitch-500 rounded text-white text-[10px] text-center"
+              title="编辑球员号码（也可双击球员编辑）"
+            />
+          </div>
+        )}
+        {selName && !(selObj as any)?._isPlayer && <span className="text-[10px] text-gray-500 hidden sm:inline ml-1">已选：{selName}</span>}
       </header>
 
       {saveOpen && (
