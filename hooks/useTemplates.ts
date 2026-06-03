@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { TrainingModule, PlayerFormData } from "@/lib/types";
 
 export interface TrainingTemplate {

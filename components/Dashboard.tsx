@@ -12,7 +12,7 @@ import { ErrorAlert } from "./ErrorAlert";
 import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
-import { useLang } from "@/lib/i18n/LanguageContext";
+import { useLang } from "@/components/providers/LanguageProvider";
 import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown } from "lucide-react";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;

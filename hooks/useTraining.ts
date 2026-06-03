@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { TrainingModule, PlayerFormData, GenerationStatus } from "@/lib/types";
 import { cacheModules } from "@/lib/storage";
-import { streamGenerate } from "@/lib/services";
+import { streamGenerate } from "@/lib/ai";
 import { fingerprint, findCached, saveToCache } from "@/lib/cache";
 
 export function useTraining() {

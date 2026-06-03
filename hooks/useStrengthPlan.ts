@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { PlanExercise, ExerciseLibItem, StrengthTemplate } from "@/lib/strength-types";
 import { findExercise } from "@/lib/exercise-data";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 const STORAGE_KEY = "kenshin_strength_plan";
 const PLANS_KEY = "kenshin_strength_plans";

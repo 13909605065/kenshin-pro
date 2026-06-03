@@ -5,7 +5,7 @@ import { TrainingHistoryItem } from "@/lib/types";
 import { GOAL_LABELS } from "@/lib/constants";
 import { X, Trash2, Calendar, Heart, Clock } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 interface Props {
   open: boolean;

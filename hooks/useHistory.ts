@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { TrainingHistoryItem } from "@/lib/types";
 import { getLocalHistory } from "@/lib/storage";
 

@@ -3,7 +3,7 @@
 import { TrainingModule, PlayerFormData } from "@/lib/types";
 import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { ExportTable } from "./ExportTable";
 
 interface Props {

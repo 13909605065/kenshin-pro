@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from "react";
-import zh from "./locales/zh.json";
-import en from "./locales/en.json";
-import ja from "./locales/ja.json";
+import zh from "@/lib/i18n/locales/zh.json";
+import en from "@/lib/i18n/locales/en.json";
+import ja from "@/lib/i18n/locales/ja.json";
 
 export type Language = "zh" | "en" | "ja";
 
@@ -23,10 +23,6 @@ export function useLang() {
   return useContext(LanguageContext);
 }
 
-/**
- * Enable transitioning while preserving modal/menu state.
- * Flattens nested JSON keys to "section.key" format.
- */
 function flatten(obj: Record<string, any>, prefix = ""): Record<string, string> {
   const result: Record<string, string> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -51,7 +47,6 @@ const STORAGE_KEY = "kenshin_lang";
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>("zh");
 
-  // Restore saved language on mount — no DOM side effects
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as Language;
@@ -61,17 +56,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
 
-  // setLang: pure state update — won't close modals or reset DOM
   const setLang = useCallback((l: Language) => {
     setLangState(l);
     try { localStorage.setItem(STORAGE_KEY, l); } catch {}
-    // Set html lang attribute for accessibility / CSS targeting
     if (typeof document !== "undefined") {
       document.documentElement.lang = l === "ja" ? "ja" : l === "en" ? "en" : "zh-CN";
     }
   }, []);
 
-  // t(): stable reference, returns key as fallback
   const t = useCallback(
     (key: string): string => {
       return FLAT[lang]?.[key] || FLAT.zh[key] || key;

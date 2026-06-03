@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Layout, Users, History, Settings } from "lucide-react";
-import { useLang } from "@/lib/i18n/LanguageContext";
+import { Home, Brain, Users, History, Settings } from "lucide-react";
+import { useLang } from "@/components/providers/LanguageProvider";
 
 export function MobileNav() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export function MobileNav() {
 
   const TABS = [
     { id: "home", label: t("nav.home"), icon: Home, path: "/" },
-    { id: "tactics", label: t("nav.tactics"), icon: Layout, path: "/tactics" },
+    { id: "diagnosis", label: "AI诊断", icon: Brain, path: "/tactical-diagnosis" },
     { id: "roster", label: t("nav.roster"), icon: Users, path: "/roster" },
     { id: "history", label: t("nav.history"), icon: History, path: "/history" },
     { id: "settings", label: t("nav.settings"), icon: Settings, path: "/settings" },

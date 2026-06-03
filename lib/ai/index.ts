@@ -1,16 +1,14 @@
 /**
- * lib/prompts — modular AI prompt system (role-aware)
+ * lib/ai — AI prompts & streaming service
  *
- * Usage:
- *   import { buildSystemPrompt, buildUserPrompt } from "@/lib/prompts";
- *   // or from "@/lib/prompt" (same API)
+ * Prompt builders (role-aware):
+ *   import { buildSystemPrompt, buildUserPrompt } from "@/lib/ai";
  *
- * Editing a specific section:
- *   - system.ts: buildAthleteSystemPrompt(), buildCoachSystemPrompt()
- *   - athlete.ts: buildAthletePrompt()
- *   - coach.ts: buildCoachPrompt()
+ * Streaming:
+ *   import { streamGenerate } from "@/lib/ai";
  */
 
+// --- Prompt re-exports ---
 export { buildAthleteSystemPrompt, buildCoachSystemPrompt } from "./system";
 export { buildAthletePrompt, LANG_INSTRUCTIONS } from "./athlete";
 export { buildCoachPrompt } from "./coach";
@@ -39,3 +37,7 @@ export function buildUserPrompt(data: PlayerFormData, lang: string = "zh", weath
   }
   return buildAthletePrompt(data, lang, weatherHint);
 }
+
+// --- Streaming re-exports ---
+export { streamGenerate } from "./ai";
+export type { StreamCallbacks, ApiError } from "./ai";

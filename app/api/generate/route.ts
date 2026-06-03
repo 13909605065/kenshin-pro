@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { createServerSupabase } from "@/lib/supabase-server";
-import { buildSystemPrompt, buildUserPrompt } from "@/lib/prompt";
+import { createServerSupabase } from "@/lib/supabase/supabase-server";
+import { buildSystemPrompt, buildUserPrompt } from "@/lib/ai";
 import { PlayerFormData } from "@/lib/types";
 import { resolveModule, resolveCoachModule, resolveCombo, type CompactModule, type CoachCompactModule } from "@/lib/training-library";
 import { getWeather, weatherHint } from "@/lib/weather";

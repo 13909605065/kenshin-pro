@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-client";
-import { useTheme, THEME_LABELS } from "@/lib/ThemeContext";
+import { createClient } from "@/lib/supabase/supabase-client";
+import { useTheme, THEME_LABELS } from "@/components/providers/ThemeProvider";
 import { ArrowLeft, Save, Camera } from "lucide-react";
 
 export default function SettingsPage() {

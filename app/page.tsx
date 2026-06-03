@@ -4,8 +4,8 @@ import { Dashboard } from "@/components/Dashboard";
 import { MobileNav } from "@/components/MobileNav";
 import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { useState, useEffect, Component } from "react";
-import { createClient } from "@/lib/supabase-client";
-import { useLang } from "@/lib/i18n/LanguageContext";
+import { createClient } from "@/lib/supabase/supabase-client";
+import { useLang } from "@/components/providers/LanguageProvider";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
