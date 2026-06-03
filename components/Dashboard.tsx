@@ -328,16 +328,6 @@ export function Dashboard() {
                   </button>
                 </>
               )}
-              {/* 健身房: strength templates + exercise library */}
-              {scene === "gym" && (
-                <>
-                  <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                    <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
-                    <p className="text-xs font-bold text-white">动作库</p>
-                    <p className="text-[10px] text-gray-500">124个力量动作</p>
-                  </button>
-                </>
-              )}
             </>
           )}
 
@@ -351,18 +341,57 @@ export function Dashboard() {
                   <p className="text-[10px] text-gray-500">按顺序跟练</p>
                 </button>
               )}
-              {scene === "gym" && (
-                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
-                  <p className="text-xs font-bold text-white">动作库</p>
-                  <p className="text-[10px] text-gray-500">124个力量动作</p>
-                </button>
               )}
             </>
           )}
         </div>
       )}
 
+
+      {/* ====== Gym: 健身房助手 ====== */}
+      {status === "idle" && scene === "gym" && (
+        <div className="space-y-4">
+          {/* Profile + AI Suggestion */}
+          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-neon-pink/20 flex items-center justify-center text-xl">{isCoach ? "C" : "A"}</div>
+              <div>
+                <p className="text-white font-bold">{formData.name || (isCoach ? "教练" : "运动员")}</p>
+                <p className="text-[11px] text-gray-500">
+                  {!isCoach && formData.position && `${t("pos." + formData.position)} · `}
+                  {formData.age ? `${formData.age}岁 · ` : ""}
+                  {formData.weight ? `${formData.weight}kg` : ""}
+                  {isCoach && "力量教练"}
+                </p>
+              </div>
+            </div>
+
+            {/* AI Recommendation */}
+            <div className="bg-[#111] border border-neon-pink/20 rounded-lg p-3">
+              <p className="text-[10px] text-neon-pink font-bold mb-1">今日AI建议</p>
+              <p className="text-sm text-gray-300">
+                {!isCoach && formData.goal === "strength" ? "下肢爆发力 + 核心稳定。你正处于力量期，建议3-4个复合动作，组间2min。" :
+                 !isCoach && formData.goal === "power" ? "爆发力训练日。推荐奥举+跳跃类，低次数高速度，充分热身。" :
+                 !isCoach && formData.goal === "speed" ? "速度力量转换。轻中重量快速完成，配合灵敏训练。" :
+                 "根据你的档案和赛季阶段，今日推荐力量维持+专项转化训练。"}
+              </p>
+            </div>
+
+            {/* Quick actions */}
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={handleGenerate} className="bg-neon-pink text-black font-bold py-3 rounded-lg text-sm flex flex-col items-center gap-1">
+                <Zap className="w-4 h-4"/> 按建议练
+              </button>
+              <button onClick={() => window.location.href = "/exercises"} className="bg-[#222] border border-[#444] text-white font-medium py-3 rounded-lg text-sm flex flex-col items-center gap-1">
+                <Dumbbell className="w-4 h-4"/> 自己选动作
+              </button>
+              <button onClick={() => window.location.href = "/history"} className="bg-[#222] border border-[#444] text-white font-medium py-3 rounded-lg text-sm flex flex-col items-center gap-1">
+                <History className="w-4 h-4"/> 训练记录
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ====== Athlete: My Training ====== */}
       {status === "idle" && !isCoach && playerPlans.length > 0 && (
