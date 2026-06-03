@@ -176,7 +176,7 @@ export default function TacticsPage() {
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#ffffff"; c.renderAll(); };
+  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#000"; c.renderAll(); };
 
   const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.renderAll(); }};
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
@@ -376,8 +376,8 @@ export default function TacticsPage() {
   const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: "#121419" }}>
-      <header className="px-3 h-11 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: "#16181e", borderBottom: "1px solid #2a2d35" }}>
+    <div className="h-screen flex flex-col" style={{ backgroundColor: "#000" }}>
+      <header className="px-3 h-11 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: "#0a0a0a", borderBottom: "1px solid #2a2d35" }}>
         <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1" title="返回首页">
           <ArrowLeft className="w-4 h-4"/><span className="text-[11px] hidden sm:inline">返回</span>
         </button>
@@ -437,7 +437,7 @@ export default function TacticsPage() {
       )}
 
       {/* ─── AI 自动生成战术板 ─── */}
-      <div className="px-3 py-2 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: "#16181e", borderBottom: "1px solid #2a2d35" }}>
+      <div className="px-3 py-2 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: "#0a0a0a", borderBottom: "1px solid #2a2d35" }}>
         <span className="text-base flex-shrink-0">🤖</span>
         <input
           value={aiPrompt}
@@ -446,7 +446,7 @@ export default function TacticsPage() {
           placeholder="如：4-3-3 边路套上传中..."
           disabled={aiLoading}
           className="flex-1 px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none disabled:opacity-40 rounded-md"
-          style={{ backgroundColor: "#121419", border: `1.5px solid ${aiError ? "#ef4444" : "#2a2d35"}`, borderRadius: "6px" }}
+          style={{ backgroundColor: "#000", border: `1.5px solid ${aiError ? "#ef4444" : "#2a2d35"}`, borderRadius: "6px" }}
         />
         <button onClick={hAIGenerate}
           disabled={aiLoading || !aiPrompt.trim()}

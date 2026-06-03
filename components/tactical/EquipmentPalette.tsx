@@ -7,8 +7,8 @@ import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
 const ACCENT = "#c82630";
 const BLUE = "#2563eb";
 const GREEN = "#279e46";
-const BG = "#121419";
-const CARD_BG = "#1a1d24";
+const BG = "#000";
+const CARD_BG = "#0d0d0d";
 const BORDER = "#2a2d35";
 const TEXT_DIM = "#6b6f78";
 const TEXT_MAIN = "#c8ccd4";
@@ -169,7 +169,6 @@ interface Item { name: string; filename: string; }
 const TABS = [
   { id: "equipment", label: "器材" },
   { id: "players", label: "球员" },
-  { id: "markers", label: "标记" },
   { id: "fields", label: "场地" },
 ] as const;
 
@@ -190,10 +189,6 @@ const EQUIPMENT: Item[] = [
   { name: "长绳梯", filename: "长绳梯" },
   { name: "敏捷环", filename: "圆形环" },
   { name: "人墙", filename: "人墙" },
-];
-
-const MARKERS: Item[] = [
-  { name: "实线", filename: "虚线" },
 ];
 
 const FIELD_LIST = ["default", "场地", "场地2", "场地3", "场地4", "场地5", "场地6", "场地7", "场地8", "场地9", "场地10", "场地11"];
@@ -358,36 +353,6 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
                   ))}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* ── Tab: Markers ── */}
-          {tab === "markers" && (
-            <div>
-                <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
-                  标记
-                </p>
-                <div className="grid grid-cols-2 gap-1">
-                  {MARKERS.map((item) => (
-                    <div
-                      key={item.filename}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item)}
-                      className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-colors"
-                      style={{ borderRadius: "6px" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#22252d"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                    >
-                      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                        <line x1="4" y1="14" x2="24" y2="14" stroke={TEXT_DIM} strokeWidth="2" strokeLinecap="round" />
-                        <polygon points="24,14 17,10 17,18" fill={TEXT_DIM} />
-                      </svg>
-                      {!collapsed && (
-                        <span className="text-[9px] leading-tight" style={{ color: TEXT_DIM }}>{item.name}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
             </div>
           )}
 

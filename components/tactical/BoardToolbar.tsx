@@ -5,7 +5,7 @@ import { useState } from "react";
 
 // ─── Design tokens ───────────────────────────────────────
 const ACCENT = "#c82630";
-const BAR_BG = "#16181e";
+const BAR_BG = "#0a0a0a";
 const BORDER = "#2a2d35";
 const TEXT_DIM = "#6b6f78";
 const TEXT_MAIN = "#c8ccd4";
