@@ -198,23 +198,6 @@ const MARKERS: Item[] = [
 
 const FIELD_LIST = ["default", "场地", "场地2", "场地3", "场地4", "场地5", "场地6", "场地7", "场地8", "场地9", "场地10", "场地11"];
 
-// ─── Line preview icons for markers tab ──────────────────
-
-function LinePreview({ dashed, wavy, color = TEXT_MAIN }: { dashed?: boolean; wavy?: boolean; color?: string }) {
-  return (
-    <svg width="44" height="16" viewBox="0 0 44 16">
-      {wavy ? (
-        <path d="M4 8 Q10 2 16 8 Q22 14 28 8 Q34 2 40 8" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round"
-          strokeDasharray={dashed ? "5 3" : "none"} />
-      ) : (
-        <line x1="4" y1="8" x2="40" y2="8" stroke={color} strokeWidth="2" strokeLinecap="round"
-          strokeDasharray={dashed ? "4 3" : "none"} />
-      )}
-      <polygon points="40,8 33,4 33,12" fill={color} />
-    </svg>
-  );
-}
-
 // ─── Component ───────────────────────────────────────────
 
 interface Props { onFieldSelect?: (filename: string) => void; }
@@ -381,29 +364,6 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
           {/* ── Tab: Markers ── */}
           {tab === "markers" && (
             <div>
-              <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
-                绘图
-              </p>
-              <div className="space-y-1">
-                {[
-                  { label: "实线", preview: <LinePreview /> },
-                  { label: "虚线", preview: <LinePreview dashed /> },
-                  { label: "带球", preview: <LinePreview wavy dashed /> },
-                  { label: "折线", preview: <LinePreview wavy /> },
-                ].map((m) => (
-                  <div key={m.label}
-                    className="flex items-center gap-2 px-1.5 py-1 rounded-md transition-colors cursor-pointer"
-                    style={{ borderRadius: "6px" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#22252d"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                  >
-                    {m.preview}
-                    <span className="text-[10px]" style={{ color: TEXT_DIM }}>{m.label}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3" style={{ borderTop: `1px solid ${BORDER}` }} />
-              <div className="mt-2">
                 <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
                   标记
                 </p>
@@ -428,7 +388,6 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
                     </div>
                   ))}
                 </div>
-              </div>
             </div>
           )}
 

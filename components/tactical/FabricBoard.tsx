@@ -26,7 +26,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: "#121419",
+      backgroundColor: "#000",
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
@@ -91,11 +91,14 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
-    // Load field image as background (not vector drawing)
+    // Load field image — scale to fill canvas with tight margins
     FabricImage.fromURL("/equipment/场地.png").then((img) => {
-      const scaleX = FW / (img.width || 1);
-      const scaleY = FH / (img.height || 1);
-      const scale = Math.max(scaleX, scaleY);
+      const margin = 15; // small consistent margin
+      const availW = FW - margin * 2;
+      const availH = FH - margin * 2;
+      const scaleX = availW / (img.width || 1);
+      const scaleY = availH / (img.height || 1);
+      const scale = Math.max(scaleX, scaleY); // cover to avoid gaps
       img.set({
         left: (FW - (img.width || 0) * scale) / 2,
         top: (FH - (img.height || 0) * scale) / 2,
@@ -152,8 +155,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       // Handle cones (标志盘) — load PNG with lockUniScaling
       FabricImage.fromURL(src).then((img) => {
         img.set({
-          left: x - 25, top: y - 25,
-          scaleX: 0.2, scaleY: 0.2,
+          left: x - 35, top: y - 35,
+          scaleX: 0.3, scaleY: 0.3,
           lockUniScaling: true,
           selectable: true,
           evented: true,
@@ -375,11 +378,16 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         drawVectorField(c);
         return;
       }
-      // Otherwise load PNG field
+      // Otherwise load PNG field — fill canvas with tight margins
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
         c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-        const s = Math.max(c.width! / img.width!, c.height! / img.height!);
-        img.set({ left: 0, top: 0, scaleX: s, scaleY: s, selectable: false, evented: false });
+        const margin = 15;
+        const s = Math.max((c.width!-margin*2)/img.width!, (c.height!-margin*2)/img.height!);
+        img.set({
+          left: (c.width! - img.width! * s) / 2,
+          top: (c.height! - img.height! * s) / 2,
+          scaleX: s, scaleY: s, selectable: false, evented: false,
+        });
         (img as any)._isFieldBg = true;
         const others = c.getObjects().filter((o: any) => !o._isFieldBg);
         others.forEach((o: any) => c.remove(o));

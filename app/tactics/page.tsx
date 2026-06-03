@@ -89,7 +89,8 @@ export default function TacticsPage() {
       FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
         hideFieldMarkings(canvas);
         canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
-        const s = Math.max(canvas.width!/img.width!, canvas.height!/img.height!);
+        const margin = 15;
+        const s = Math.max((canvas.width!-margin*2)/img.width!, (canvas.height!-margin*2)/img.height!);
         img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
         (img as any)._isFieldBg = true;
         const others = canvas.getObjects().filter((o:any)=>!o._isFieldBg);
@@ -315,8 +316,8 @@ export default function TacticsPage() {
       result.equipment.forEach((eq) => {
         FabricImage.fromURL(`/equipment/${eq.type}.png`).then((img) => {
           img.set({
-            left: eq.x - 25, top: eq.y - 25,
-            scaleX: 0.2, scaleY: 0.2,
+            left: eq.x - 35, top: eq.y - 35,
+            scaleX: 0.3, scaleY: 0.3,
             lockUniScaling: true,
             selectable: true, evented: true,
           });
@@ -380,7 +381,7 @@ export default function TacticsPage() {
         <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1" title="返回首页">
           <ArrowLeft className="w-4 h-4"/><span className="text-[11px] hidden sm:inline">返回</span>
         </button>
-        <h1 className="text-white font-bold text-sm" style={{ color: "#c8ccd4" }}>📋 战术板</h1>
+        <h1 className="text-white font-bold text-sm">📋 战术板</h1>
         <div className="flex-1"/>
         <div className="flex items-center gap-0.5 #1e2128 rounded-lg p-0.5">
           <button onClick={hZoomOut} className="p-1 text-gray-400 hover:text-white rounded" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
