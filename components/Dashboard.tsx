@@ -82,7 +82,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
             {/* Name — auto-fill from saved profiles */}
             <div className="relative">
               <input type="text" value={formData.name} onChange={(e: any) => updateField("name", e.target.value)}
-                onBlur={(e) => {
+                onBlur={async (e) => {
                   const name = e.target.value.trim();
                   if (!name) return;
                   const match = profiles.findByName(name);
@@ -103,7 +103,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                   }
                   // Fallback: check roster
                   if (!match) {
-                    const roster = getPlayers();
+                    const roster = await getPlayers();
                     const rp = roster.find((p) => p.name === name);
                     if (rp && confirm(`${rp.name} 在花名册中（${rp.position}），是否自动填入信息？`)) {
                       updateField("name", rp.name);

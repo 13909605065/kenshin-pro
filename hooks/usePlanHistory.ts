@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PlayerFormData, TrainingModule } from "@/lib/types";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 const PLANS_KEY = "kenshin_plans";
 const MAX_PLANS = 30;
@@ -14,6 +15,19 @@ export interface SavedPlan {
   modules: TrainingModule[];
 }
 
+// ---- DB row shape matching training_plans (id, user_id, player_name, modules JSONB, form_data JSONB, created_at) ----
+
+interface PlanRow {
+  id: string;
+  user_id: string;
+  player_name: string;
+  modules: TrainingModule[];
+  form_data: PlayerFormData;
+  created_at: string;
+}
+
+// ---- localStorage helpers (fallback) ----
+
 function loadAll(): SavedPlan[] {
   if (typeof window === "undefined") return [];
   try {
@@ -23,23 +37,88 @@ function loadAll(): SavedPlan[] {
   }
 }
 
-function persist(plans: SavedPlan[]) {
+function persistLocal(plans: SavedPlan[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(PLANS_KEY, JSON.stringify(plans.slice(0, MAX_PLANS)));
   } catch {}
 }
 
-export function usePlanHistory() {
-  const [plans, setPlans] = useState<SavedPlan[]>(() => loadAll());
+// ---- Map between SavedPlan and DB row ----
 
-  const refresh = useCallback(() => {
-    const all = loadAll();
-    setPlans(all);
-    return all;
+function rowToPlan(row: PlanRow): SavedPlan {
+  return {
+    id: row.id,
+    playerName: row.player_name,
+    createdAt: row.created_at,
+    formData: row.form_data,
+    modules: row.modules,
+  };
+}
+
+function planToRow(plan: SavedPlan, userId: string): PlanRow {
+  return {
+    id: plan.id,
+    user_id: userId,
+    player_name: plan.playerName,
+    modules: plan.modules,
+    form_data: plan.formData,
+    created_at: plan.createdAt,
+  };
+}
+
+export function usePlanHistory() {
+  // Seed state from localStorage immediately (sync), Supabase refresh follows in useEffect
+  const [plans, setPlans] = useState<SavedPlan[]>(() => loadAll());
+  const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
+
+  /** Load plans from Supabase (primary), fallback to localStorage on error or missing auth */
+  const refresh = useCallback(async (): Promise<SavedPlan[]> => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const local = loadAll();
+        setPlans(local);
+        return local;
+      }
+
+      const { data, error } = await supabase
+        .from("training_plans")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(MAX_PLANS);
+
+      if (error) throw error;
+
+      const remote: SavedPlan[] = (data || []).map((row: any) => rowToPlan(row as PlanRow));
+      setPlans(remote);
+      persistLocal(remote); // keep localStorage cache in sync
+      return remote;
+    } catch {
+      // Supabase unreachable or error — keep whatever localStorage has
+      const local = loadAll();
+      setPlans(local);
+      return local;
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  /** Save a plan to history, grouped by player name */
+  // Initial fetch from Supabase on mount
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  /**
+   * Save a plan to history.
+   * Writes localStorage synchronously (immediate, always succeeds).
+   * Fires Supabase insert in background (primary store, best-effort).
+   * Returns the SavedPlan synchronously for backward compatibility.
+   */
   const savePlan = useCallback(
     (
       playerName: string,
@@ -53,10 +132,23 @@ export function usePlanHistory() {
         formData: { ...formData },
         modules: [...modules],
       };
+
+      // localStorage — synchronous, always works
       const all = loadAll();
       const updated = [plan, ...all].slice(0, MAX_PLANS);
-      persist(updated);
+      persistLocal(updated);
       setPlans(updated);
+
+      // Supabase — fire-and-forget in background
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("training_plans").insert(planToRow(plan, user.id))
+            .then(({ error }) => {
+              if (error) console.warn("[usePlanHistory] Supabase insert failed:", error.message);
+            });
+        }
+      }).catch(() => {});
+
       return plan;
     },
     []
@@ -82,12 +174,26 @@ export function usePlanHistory() {
     [plans]
   );
 
-  /** Delete a plan by ID */
+  /**
+   * Delete a plan by ID.
+   * Updates localStorage + state synchronously.
+   * Fires Supabase delete in background.
+   */
   const deletePlan = useCallback(
     (id: string) => {
       const updated = plans.filter((p) => p.id !== id);
-      persist(updated);
+      persistLocal(updated);
       setPlans(updated);
+
+      // Supabase — fire-and-forget in background
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase.from("training_plans").delete().eq("id", id)
+            .then(({ error }) => {
+              if (error) console.warn("[usePlanHistory] Supabase delete failed:", error.message);
+            });
+        }
+      }).catch(() => {});
     },
     [plans]
   );
@@ -102,6 +208,7 @@ export function usePlanHistory() {
 
   return {
     plans,
+    loading,
     savePlan,
     getPlansForPlayer,
     loadPlan,

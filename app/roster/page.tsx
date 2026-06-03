@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   getPlayers,
   savePlayers,
@@ -21,7 +21,12 @@ const POSITION_OPTIONS = [
 
 export default function RosterPage() {
   const router = useRouter();
-  const [players, setPlayers] = useState<PlayerRecord[]>(() => getPlayers());
+  const [players, setPlayers] = useState<PlayerRecord[]>([]);
+  useEffect(() => {
+    setPlayers(getPlayers());
+  }, []);
+
+  const refreshPlayers = () => { setPlayers(getPlayers()); };
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState<PlayerRecord | null>(null);
   const [filter, setFilter] = useState<"all" | "healthy" | "minor" | "out">("all");
@@ -53,7 +58,7 @@ export default function RosterPage() {
   const handleConfirmImport = () => {
     if (!preview) return;
     const existing = getPlayers();
-    const merged = [...existing, ...preview.parsed.map((p) => ({ ...p, id: Date.now().toString() + Math.random().toString(36).slice(2) }))];
+    const merged = [...existing, ...preview.parsed.map((p) => ({ ...p, id: (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2)) }))];
     savePlayers(merged as PlayerRecord[]);
     setPlayers(merged as PlayerRecord[]);
     alert(`成功导入 ${preview.parsed.length} 名球员`);
@@ -65,21 +70,21 @@ export default function RosterPage() {
   };
 
   const handleAdd = () => {
-    const p = addPlayer({
+    addPlayer({
       name: editing?.name || "", position: editing?.position || "", number: editing?.number || "",
       age: editing?.age || null, height: editing?.height || null, weight: editing?.weight || null,
       injuryStatus: editing?.injuryStatus || "healthy", injuryNote: editing?.injuryNote || "", notes: editing?.notes || "",
     });
-    setPlayers(getPlayers());
+    refreshPlayers();
     setEditing(null); setShowAdd(false);
   };
 
   const handleUpdate = (id: string, field: string, value: any) => {
     updatePlayer(id, { [field]: value });
-    setPlayers(getPlayers());
+    refreshPlayers();
   };
 
-  const handleDelete = (id: string) => { deletePlayer(id); setPlayers(getPlayers()); };
+  const handleDelete = (id: string) => { deletePlayer(id); refreshPlayers(); };
 
   const statusEmoji = (s: string) => s === "healthy" ? "🟢" : s === "minor" ? "🟡" : "🔴";
   const statusLabel = (s: string) => s === "healthy" ? "健康" : s === "minor" ? "轻伤" : "重伤缺阵";
