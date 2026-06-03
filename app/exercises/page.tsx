@@ -1,5 +1,5 @@
 "use client";
-
+import ExerciseSvg from '@/components/ExerciseSvg'
 import { useState, useMemo } from "react";
 import { Search, Dumbbell, ChevronUp, ChevronDown, ArrowUpFromLine, Plus, Pencil, Trash2 } from "lucide-react";
 import { STRENGTH_LIBRARY, WARMUP_LIBRARY, DRILL_LIBRARY, COOLDOWN_LIBRARY } from "@/lib/training-library";

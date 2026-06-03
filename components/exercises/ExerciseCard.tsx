@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ExerciseLibItem } from "@/lib/strength-types";
 import { BODY_PART_LABELS, EQUIPMENT_LABELS } from "@/lib/exercise-data";
+import { StickFigure } from "@/components/StickFigure";
 import { Plus, Eye } from "lucide-react";
 
 interface Props {
@@ -16,8 +17,8 @@ export function ExerciseCard({ exercise, onView, onAdd }: Props) {
 
   return (
     <div className="glass-card-hover p-4 group">
-      {/* Image */}
-      <div className="relative w-full aspect-[4/3] bg-pitch-700 rounded-lg overflow-hidden mb-3">
+      {/* Image: external GIF primary, stick figure fallback */}
+      <div className="relative w-full aspect-[4/3] bg-[#111] rounded-lg overflow-hidden mb-3">
         {exercise.image_url && !imgFailed ? (
           <img
             src={exercise.image_url}
@@ -27,11 +28,10 @@ export function ExerciseCard({ exercise, onView, onAdd }: Props) {
             onError={() => setImgFailed(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-3xl">
-            🏋️
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <StickFigure name={exercise.name} size={90} />
           </div>
         )}
-        {/* View button overlay */}
         <button
           onClick={() => onView(exercise)}
           className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-center justify-center opacity-0 group-hover:opacity-100"
