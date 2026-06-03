@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { TrainingModule } from "@/lib/types";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+
+/* ============================================================
+   Types
+   ============================================================ */
 
 interface CRow {
   id: string; step: number; section: string; color: string;
@@ -10,112 +14,308 @@ interface CRow {
   hasDia: boolean; dia?: any; cp: string; prog: string;
 }
 
-const CS: Record<string, string> = {
-  "热身": "#22c55e", "技术专项": "#16a34a", "分队实战": "#3B82F6", "冷身放松": "#eab308",
+const COLORS: Record<string, string> = {
+  "技术训练": "#16a34a",
+  "分队对抗": "#3B82F6",
+  "冷身放松": "#eab308",
 };
 
+const HEADERS = ["序号", "训练项目", "用时", "场地&分组", "内容简述", "场地示意图", "执教要点", "进阶/退阶"];
+
+/* ============================================================
+   Flatten
+   ============================================================ */
+
 function flat(modules: TrainingModule[]): CRow[] {
-  const r: CRow[] = []; let s = 0;
+  const rows: CRow[] = []; let s = 0;
   const a = (sec: string, nm: string, dur: string, su: string, br: string, cp: string, pr: string, hd: boolean, d?: any) => {
-    s++; r.push({ id: "c"+s, step:s, section:sec, color:CS[sec]||"#666", name:nm, dur, setup:su, brief:br, hasDia:hd, dia:d, cp, prog:pr });
+    s++; rows.push({ id: "c"+s, step:s, section:sec, color:COLORS[sec]||"#666", name:nm, dur, setup:su, brief:br||"", hasDia:hd, dia:d, cp:cp||"", prog:pr||"" });
   };
   modules.forEach((m: any) => {
     if (m.module !== "session_plan") return;
-    (m.warmup||[]).forEach((w: any) => a("热身", w.name||"热身", (w.duration||"?")+"min", "全队", w.description||"", w.coaching_points?.join(";")||"", "-", false));
-    (m.activities||[]).forEach((x: any) => a("技术专项", x.name, (x.duration||"?")+"min", (x.area||"全场")+" "+(x.groups||"全队"), x.description||"", x.coaching_points?.join(";")||"", "+"+(x.progression||"-")+" -"+(x.regression||"-"), !!x.diagram, x.diagram));
-    if (m.ssg) a("分队实战", m.ssg.name, (m.ssg.duration||"?")+"min", (m.ssg.area||"?")+" "+(m.ssg.players||"?"), m.ssg.rules||"", m.ssg.coaching_focus?.join(";")||"", "-", false);
-    (m.cooldown||[]).forEach((c: any) => a("冷身放松", c.name||"", (c.duration||"?")+"min", "全队", c.description||"", "-", "-", false));
+    // Warmup merged into first section
+    (m.warmup||[]).forEach((w: any) => a("技术训练", w.name||"热身", (w.duration||"?")+"min", "全队", w.description||"", w.coaching_points?.join(";")||"", "-", false));
+    (m.activities||[]).forEach((x: any) => a("技术训练", x.name, (x.duration||"?")+"min", (x.area||"全场")+" | "+(x.groups||"全队"), x.description||"", x.coaching_points?.join(";")||"", "升:"+(x.progression||"-")+" 降:"+(x.regression||"-"), !!x.diagram, x.diagram));
+    if (m.ssg) a("分队对抗", m.ssg.name, (m.ssg.duration||"?")+"min", (m.ssg.area||"?")+" | "+(m.ssg.players||"?"), m.ssg.rules||"", m.ssg.coaching_focus?.join(";")||"", "-", false);
+    (m.cooldown||[]).forEach((c: any) => a("冷身放松", c.name||"整理", (c.duration||"?")+"min", "全队", c.description||"", "-", "-", false));
   });
-  return r;
+  return rows;
 }
 
-function Thumb({ dia, onClick }: { dia?: any; onClick: () => void }) {
-  if (!dia) return <span className="text-[10px] text-gray-600">-</span>;
+/* ============================================================
+   Diagram Modal with Canvas
+   ============================================================ */
+
+function DiagramModal({ diagram, onClose }: { diagram?: any; onClose: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [zoom, setZoom] = useState(1);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const img = new Image();
+    img.src = "/equipment/场地.png";
+    img.onload = () => {
+      imgRef.current = img;
+      render();
+    };
+
+    function render() {
+      if (!ctx || !imgRef.current) return;
+      const cw = canvas!.width;
+      const ch = canvas!.height;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.save();
+      ctx.translate(cw/2, ch/2);
+      ctx.scale(zoom, zoom);
+      ctx.drawImage(imgRef.current, -imgRef.current.width/2, -imgRef.current.height/2);
+      ctx.restore();
+
+      // Draw players from diagram data
+      if (diagram) {
+        const players = diagram.players || [];
+        const opponents = diagram.opponents || [];
+        const ball = diagram.ball;
+
+        ctx.save();
+        ctx.translate(cw/2, ch/2);
+        ctx.scale(zoom, zoom);
+
+        const fieldW = imgRef.current?.width || 800;
+        const fieldH = imgRef.current?.height || 500;
+        const toX = (x: number) => -fieldW/2 + x * fieldW;
+        const toY = (y: number) => -fieldH/2 + y * fieldH;
+
+        // Players
+        players.forEach((p: any) => {
+          ctx!.beginPath();
+          ctx!.arc(toX(p.x), toY(p.y), 12, 0, Math.PI*2);
+          ctx!.fillStyle = p.color || "#FF2D55";
+          ctx!.fill();
+          ctx!.strokeStyle = "#fff";
+          ctx!.lineWidth = 2;
+          ctx!.stroke();
+          ctx!.fillStyle = "#fff";
+          ctx!.font = "bold 10px Arial";
+          ctx!.textAlign = "center";
+          ctx!.textBaseline = "middle";
+          ctx!.fillText(p.number || "", toX(p.x), toY(p.y));
+        });
+
+        // Opponents
+        opponents.forEach((p: any) => {
+          ctx!.beginPath();
+          ctx!.arc(toX(p.x), toY(p.y), 12, 0, Math.PI*2);
+          ctx!.fillStyle = p.color || "#3B82F6";
+          ctx!.fill();
+          ctx!.strokeStyle = "#fff";
+          ctx!.lineWidth = 2;
+          ctx!.stroke();
+          ctx!.fillStyle = "#fff";
+          ctx!.font = "bold 10px Arial";
+          ctx!.textAlign = "center";
+          ctx!.textBaseline = "middle";
+          ctx!.fillText(p.number || "", toX(p.x), toY(p.y));
+        });
+
+        // Arrows
+        (diagram.arrows || []).forEach((a: any) => {
+          ctx!.beginPath();
+          ctx!.moveTo(toX(a.from.x), toY(a.from.y));
+          ctx!.lineTo(toX(a.to.x), toY(a.to.y));
+          ctx!.strokeStyle = a.color || "#FF2D55";
+          ctx!.lineWidth = 2;
+          if (a.dashed) ctx!.setLineDash([6, 4]);
+          ctx!.stroke();
+          ctx!.setLineDash([]);
+        });
+
+        ctx.restore();
+      }
+    }
+
+    // Pan with mouse drag
+    let dragging = false;
+    let lastX = 0, lastY = 0;
+    canvas.onmousedown = (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; };
+    canvas.onmousemove = (e) => { if (dragging) { /* pan if needed */ } };
+    canvas.onmouseup = () => { dragging = false; };
+
+    // Zoom with wheel
+    canvas.onwheel = (e) => {
+      e.preventDefault();
+      setZoom(z => { const nz = z * (0.999 ** e.deltaY); return Math.min(Math.max(nz, 0.3), 4); });
+    };
+
+    return () => { canvas.onwheel = null; canvas.onmousedown = null; };
+  }, [diagram, zoom]);
+
+  useEffect(() => {
+    // Re-render on zoom change
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx || !imgRef.current) return;
+    const cw = canvas.width, ch = canvas.height;
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.save();
+    ctx.translate(cw/2, ch/2);
+    ctx.scale(zoom, zoom);
+    ctx.drawImage(imgRef.current, -imgRef.current.width/2, -imgRef.current.height/2);
+    ctx.restore();
+  }, [zoom]);
+
   return (
-    <button onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className="w-10 h-7 rounded border border-[#444] hover:border-neon-pink bg-[#f0f4e8] overflow-hidden">
-      <svg viewBox="0 0 60 40" className="w-full h-full">
-        <rect x="3" y="2" width="54" height="36" fill="none" stroke="#4a9e4a" strokeWidth="1"/>
-        <line x1="30" y1="2" x2="30" y2="38" stroke="#4a9e4a" strokeWidth="0.5"/>
-        <circle cx="30" cy="20" r="6" fill="none" stroke="#4a9e4a" strokeWidth="0.5"/>
-        {(dia.players||[]).slice(0,11).map((p: any, i: number) => (
-          <circle key={"p"+i} cx={3+p.x*54} cy={2+p.y*36} r="1.5" fill={p.color||"#FF2D55"}/>
-        ))}
-        {(dia.opponents||[]).slice(0,11).map((p: any, i: number) => (
-          <circle key={"o"+i} cx={3+p.x*54} cy={2+p.y*36} r="1.5" fill={p.color||"#3B82F6"}/>
-        ))}
-      </svg>
-    </button>
+    <div className="fixed inset-0 z-50 bg-black/80 flex flex-col" onClick={onClose}>
+      <div className="flex items-center justify-between px-4 py-2 bg-[#111] border-b border-[#333]">
+        <span className="text-sm text-white font-bold">战术场地图</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setZoom(z => Math.min(z*1.2, 4))} className="p-1.5 text-gray-400 hover:text-white"><ZoomIn className="w-4 h-4" /></button>
+          <button onClick={() => setZoom(z => Math.max(z/1.2, 0.3))} className="p-1.5 text-gray-400 hover:text-white"><ZoomOut className="w-4 h-4" /></button>
+          <button onClick={() => setZoom(1)} className="p-1.5 text-gray-400 hover:text-white"><RotateCcw className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+        </div>
+      </div>
+      <div className="flex-1 flex items-center justify-center p-4">
+        <canvas ref={canvasRef} width={900} height={600}
+          className="max-w-full max-h-full rounded-lg shadow-2xl"
+          style={{ background: "#2d8c2d" }}
+        />
+      </div>
+    </div>
   );
 }
 
-export function CoachSessionTable({ modules, onOpenDiagram }: { modules: TrainingModule[]; onOpenDiagram?: (d: any) => void }) {
-  const [done, setDone] = useState<Set<string>>(new Set());
-  const [exp, setExp] = useState<string | null>(null);
-  const rows = useMemo(() => flat(modules), [modules]);
-  const T = rows.length;
-  const D = rows.filter(r => done.has(r.id)).length;
+/* ============================================================
+   Component
+   ============================================================ */
 
-  const sp = useMemo(() => {
-    const s: number[] = new Array(rows.length).fill(1);
+export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOpenDiagram?: (d: any) => void }) {
+  const [done, setDone] = useState<Set<string>>(new Set());
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [diagramModal, setDiagramModal] = useState<any | null>(null);
+
+  const rows = useMemo(() => flat(modules), [modules]);
+  const total = rows.length;
+  const doneCount = rows.filter(r => done.has(r.id)).length;
+  const pct = total > 0 ? Math.round((doneCount/total)*100) : 0;
+
+  const spans = useMemo(() => {
+    const sp: number[] = new Array(rows.length).fill(1);
     let i = 0;
     while (i < rows.length) {
-      const x = rows[i].section; let c = 0, j = i;
-      while (j < rows.length && rows[j].section === x) { c++; j++; }
-      s[i] = c; i += c;
+      const sec = rows[i].section; let c = 0, j = i;
+      while (j < rows.length && rows[j].section === sec) { c++; j++; }
+      sp[i] = c; i += c;
     }
-    return s;
+    return sp;
   }, [rows]);
 
-  if (!T) return <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练教案</div>;
+  if (!total) return <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练教案</div>;
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between bg-[#1a1a1a] border border-[#333] rounded-xl px-4 py-2.5">
-        <span className="text-sm font-bold text-white">训练课表</span>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-gray-500">{T}项 {D}/{T}</span>
-          {Object.entries(CS).filter(([k]) => rows.some(r => r.section === k)).map(([label, color]) => (
-            <div key={label} className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} title={label} />
-          ))}
+      {/* Progress bar */}
+      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[11px] text-gray-400">训练进度</span>
+          <span className="text-[11px] text-neon-pink font-bold">{pct}%</span>
+        </div>
+        <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
+          <div className="h-full bg-neon-pink rounded-full transition-all duration-300" style={{width:pct+"%"}} />
         </div>
       </div>
 
+      {/* Table */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[480px]">
-            <thead className="sticky top-0 z-10 bg-[#111]">
-              <tr className="text-[10px] text-gray-500 border-b border-[#333]">
-                <th className="py-2 pl-3 text-left w-6">#</th>
-                <th className="py-2 text-left w-14">模块</th>
-                <th className="py-2 text-left">训练科目</th>
-                <th className="py-2 text-center w-12">用时</th>
-                <th className="py-2 text-center w-14">场地图</th>
-                <th className="py-2 pr-3 text-center w-8">OK</th>
+          <table className="w-full min-w-[700px]">
+            {/* Fixed header */}
+            <thead className="sticky top-0 z-10 bg-[#0a0a0a]">
+              <tr className="text-[10px] text-gray-400 border-b-2 border-[#333]">
+                {HEADERS.map((h, i) => (
+                  <th key={i} className={"py-2.5 font-medium " + (i===0?"pl-3 w-10":"pr-2") + (i<=2?" text-left":" text-center")}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {rows.map((row, idx) => {
-                const isD = done.has(row.id);
-                const isE = exp === row.id;
-                const isF = idx === 0 || rows[idx-1]?.section !== row.section;
+                const isDone = done.has(row.id);
+                const isFirstInSection = idx === 0 || rows[idx-1]?.section !== row.section;
+                const isExpanded = expandedRow === row.id;
+
                 return (
                   <tr key={row.id}
-                    onClick={() => {
-                      setDone(p => { const n = new Set(p); n.has(row.id) ? n.delete(row.id) : n.add(row.id); return n; });
-                      setExp(isE ? null : row.id);
-                    }}
-                    className={"cursor-pointer border-b border-[#1a1a1a] " + (isD ? "bg-neon-pink/5" : "hover:bg-[#222]")}>
-                    <td className="py-2 pl-3"><span className={"text-[11px] font-bold "+(isD?"text-neon-pink line-through":"text-gray-500")}>{row.step}</span></td>
-                    {isF && <td rowSpan={sp[idx]} className="py-2 pr-1 align-top" style={{backgroundColor:row.color+"10"}}>
-                      <div className="flex items-center gap-1"><div className="w-1 h-3 rounded-full" style={{backgroundColor:row.color}}/><span className="text-[10px] font-bold whitespace-nowrap" style={{color:row.color}}>{row.section}</span></div>
-                    </td>}
-                    <td className="py-2 pr-2">
-                      <div className="flex items-center gap-1"><div className="flex-1 min-w-0"><p className={"text-sm truncate "+(isD?"text-gray-500 line-through":"text-white")}>{row.name}</p><p className="text-[10px] text-gray-600 truncate mt-0.5 hidden sm:block">{row.setup}</p></div>{isE?<ChevronUp className="w-3 h-3 text-gray-600"/>:<ChevronDown className="w-3 h-3 text-gray-600"/>}</div>
+                    onClick={() => { setExpandedRow(isExpanded ? null : row.id); }}
+                    className={"cursor-pointer border-b border-[#1a1a1a] transition " + (isDone ? "bg-neon-pink/5" : "hover:bg-[#222]")}>
+                    {/* 序号 + checkbox */}
+                    <td className="py-2 pl-3 text-center">
+                      <div onClick={(e) => { e.stopPropagation(); setDone(p => { const n = new Set(p); n.has(row.id)?n.delete(row.id):n.add(row.id); return n; }); }}
+                        className={"w-5 h-5 rounded border-2 mx-auto flex items-center justify-center cursor-pointer " + (isDone ? "bg-neon-pink border-neon-pink" : "border-[#444] hover:border-neon-pink/50")}>
+                        {isDone && <Check className="w-3 h-3 text-black" />}
+                      </div>
                     </td>
-                    <td className="py-2 text-center"><span className={"text-[11px] whitespace-nowrap "+(isD?"text-gray-600":"text-gray-300")}>{row.dur}</span></td>
-                    <td className="py-2 text-center"><div className="flex justify-center"><Thumb dia={row.hasDia?row.dia:null} onClick={()=>onOpenDiagram?.(row.dia)}/></div></td>
-                    <td className="py-2 pr-3 text-center"><div className={"w-5 h-5 rounded flex items-center justify-center border-2 mx-auto "+(isD?"bg-neon-pink border-neon-pink":"border-[#444]")}>{isD&&<Check className="w-3 h-3 text-black"/>}</div></td>
+
+                    {/* 训练项目 — with section color on first row */}
+                    <td className={"py-2 pr-2 " + (isFirstInSection ? "border-l-2" : "")}
+                      style={isFirstInSection ? { borderLeftColor: row.color, borderLeftWidth: "2px" } : undefined}>
+                      <div className="flex items-center gap-1.5">
+                        {isFirstInSection && (
+                          <span className="text-[10px] font-bold px-1 py-0.5 rounded whitespace-nowrap"
+                            style={{backgroundColor: row.color+"20", color: row.color}}>
+                            {row.section}
+                          </span>
+                        )}
+                        <p className={"text-sm " + (isDone ? "text-gray-500 line-through" : "text-white")}>{row.name}</p>
+                      </div>
+                    </td>
+
+                    {/* 用时 */}
+                    <td className="py-2 pr-2 text-center">
+                      <span className={"text-xs whitespace-nowrap " + (isDone ? "text-gray-600" : "text-gray-300")}>{row.dur}</span>
+                    </td>
+
+                    {/* 场地&分组 */}
+                    <td className="py-2 pr-2 text-center">
+                      <span className={"text-[11px] " + (isDone ? "text-gray-600" : "text-gray-400")}>{row.setup}</span>
+                    </td>
+
+                    {/* 内容简述 */}
+                    <td className="py-2 pr-2 text-center">
+                      <span className={"text-[11px] truncate max-w-[120px] inline-block " + (isDone ? "text-gray-600" : "text-gray-400")}>
+                        {row.brief?.slice(0, 20) || "-"}
+                      </span>
+                    </td>
+
+                    {/* 场地示意图 */}
+                    <td className="py-2 pr-2 text-center">
+                      {row.hasDia ? (
+                        <button onClick={(e) => { e.stopPropagation(); setDiagramModal(row.dia); }}
+                          className="text-[10px] px-2 py-1 rounded bg-[#222] hover:bg-[#333] text-neon-pink border border-[#444] transition">
+                          查看
+                        </button>
+                      ) : <span className="text-[10px] text-gray-600">-</span>}
+                    </td>
+
+                    {/* 执教要点 */}
+                    <td className="py-2 pr-2 text-center">
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}>
+                        {row.cp?.slice(0, 18) || "-"}
+                      </span>
+                    </td>
+
+                    {/* 进阶/退阶 */}
+                    <td className="py-2 pr-2 text-center">
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}>
+                        {row.prog?.slice(0, 15) || "-"}
+                      </span>
+                    </td>
                   </tr>
                 );
               })}
@@ -123,6 +323,9 @@ export function CoachSessionTable({ modules, onOpenDiagram }: { modules: Trainin
           </table>
         </div>
       </div>
+
+      {/* Diagram modal */}
+      {diagramModal && <DiagramModal diagram={diagramModal} onClose={() => setDiagramModal(null)} />}
     </div>
   );
 }

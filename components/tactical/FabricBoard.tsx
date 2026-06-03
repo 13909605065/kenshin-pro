@@ -26,15 +26,26 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: "#ffffff",
+      backgroundColor: "transparent",
       selection: true,
       preserveObjectStacking: true,
-      // Round selection anchors
       cornerStyle: "circle",
       cornerSize: 10,
       cornerColor: "#FF2D55",
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
+    });
+
+    // Mouse wheel zoom
+    canvas.on("mouse:wheel", (opt: any) => {
+      const delta = opt.e.deltaY;
+      let zoom = canvas.getZoom();
+      zoom *= 0.999 ** delta;
+      zoom = Math.min(Math.max(zoom, 0.3), 5);
+      const point = { x: opt.e.offsetX, y: opt.e.offsetY };
+      canvas.zoomToPoint(point as any, zoom);
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
     });
     boardRef.current = canvas;
 
@@ -60,8 +71,28 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     canvas.on("selection:updated", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:cleared", () => onObjectSelected?.(null));
 
-    // Draw default vector field
-    drawVectorField(canvas);
+    // Load field image as background (not vector drawing)
+    FabricImage.fromURL("/equipment/场地.png").then((img) => {
+      const scaleX = FW / (img.width || 1);
+      const scaleY = FH / (img.height || 1);
+      const scale = Math.max(scaleX, scaleY);
+      img.set({
+        left: (FW - (img.width || 0) * scale) / 2,
+        top: (FH - (img.height || 0) * scale) / 2,
+        scaleX: scale,
+        scaleY: scale,
+        selectable: false,
+        evented: false,
+        excludeFromExport: false,
+      });
+      (img as any)._isFieldBg = true;
+      canvas.add(img);
+      canvas.sendObjectToBack(img);
+      canvas.requestRenderAll();
+    }).catch(() => {
+      // Fallback to vector field if image fails
+      drawVectorField(canvas);
+    });
 
     // Drop handler — with proper scaling controls for all equipment
     const container = containerRef.current!;

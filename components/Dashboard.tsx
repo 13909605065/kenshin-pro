@@ -13,6 +13,8 @@ import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
 import { getPlayers } from "@/lib/roster-utils";
+import { getNextMatch } from "@/lib/match-store";
+import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
 import { SceneTabs } from "./SceneTabs";
@@ -255,6 +257,18 @@ export function Dashboard() {
   const handleGenerate = useCallback(async () => {
     if (!isStepValid) return;
     setStatus("generating"); setErrorCode(null); setShowDone(false); setSavedPlanId(null);
+
+    // Build match context for AI
+    const nextMatch = getNextMatch();
+    let matchContext = "";
+    if (nextMatch) {
+      const days = daysUntilNextMatch([nextMatch]);
+      matchContext = `## 比赛情报\n距下一场比赛: ${days !== null ? days + "天" : "未知"}\n${matchDayTrainingHint(days)}\n${opponentHint(nextMatch)}`;
+      (formData as any).matchContext = matchContext;
+    } else {
+      (formData as any).matchContext = undefined;
+    }
+
     const timeout = setTimeout(() => { training.reset(); setStatus("error"); setErrorCode("timeout"); }, 80000);
     try {
       await training.generate(formData, (s) => {

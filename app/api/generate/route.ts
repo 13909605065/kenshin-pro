@@ -70,11 +70,13 @@ export async function POST(request: NextRequest) {
   let formData: PlayerFormData;
   let lang = "zh";
   let scene: string | undefined;
+  let matchContext: string | undefined;
   try {
     const body = await request.json();
     formData = body;
     lang = body.lang || "zh";
     scene = body.scene;
+    matchContext = body.matchContext;
     const isCoach = formData.role === "coach";
     if (isCoach) {
       if (!formData.coachCert || !formData.coachRole || !formData.leagueTag || !formData.tacticalThemes?.length) {
@@ -110,7 +112,8 @@ export async function POST(request: NextRequest) {
     sceneHint = `## 场景限制：球场训练日\n今天是场地训练日。只输出有球训练内容（传球、射门、盘带、战术跑位）。不输出健身房力量训练、不输出杠铃/哑铃类动作。体能训练通过有球形式完成（4v4间歇、传球循环）。`;
   }
 
-  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint);
+  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +
+    (matchContext ? "\n\n" + matchContext : "");
 
   const encoder = new TextEncoder();
 

@@ -41,6 +41,7 @@ export async function streamGenerate(
         ...formData,
         lang: typeof window !== "undefined" ? localStorage.getItem("kenshin_lang") || "zh" : "zh",
         scene: scene || undefined,
+        matchContext: (formData as any).matchContext || undefined,
       }),
       signal,
     });
