@@ -10,6 +10,7 @@ const MAX_PLANS = 30;
 export interface SavedPlan {
   id: string;
   playerName: string;
+  role: "coach" | "athlete";
   createdAt: string;
   formData: PlayerFormData;
   modules: TrainingModule[];
@@ -50,6 +51,7 @@ function rowToPlan(row: PlanRow): SavedPlan {
   return {
     id: row.id,
     playerName: row.player_name,
+    role: (row.form_data?.role || "athlete") as "coach" | "athlete",
     createdAt: row.created_at,
     formData: row.form_data,
     modules: row.modules,
@@ -128,6 +130,7 @@ export function usePlanHistory() {
       const plan: SavedPlan = {
         id: Date.now().toString(),
         playerName: playerName.trim(),
+        role: (formData.role || "athlete") as "coach" | "athlete",
         createdAt: new Date().toISOString(),
         formData: { ...formData },
         modules: [...modules],
@@ -162,6 +165,14 @@ export function usePlanHistory() {
       return plans.filter(
         (p) => p.playerName.toLowerCase() === normalized
       );
+    },
+    [plans]
+  );
+
+  /** Get plans by current role */
+  const getPlansByRole = useCallback(
+    (currentRole: "coach" | "athlete"): SavedPlan[] => {
+      return plans.filter((p) => p.role === currentRole);
     },
     [plans]
   );
