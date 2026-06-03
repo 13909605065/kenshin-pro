@@ -222,6 +222,7 @@ export function usePlanHistory() {
     loading,
     savePlan,
     getPlansForPlayer,
+    getPlansByRole,
     loadPlan,
     deletePlan,
     hasPlansForPlayer,
