@@ -1,16 +1,14 @@
 "use client";
 
-type Tab = "library" | "free" | "templates";
+type Tab = "library" | "free";
 
 interface Props {
   active: Tab;
   onChange: (tab: Tab) => void;
 }
-
 const TABS: { value: Tab; label: string }[] = [
   { value: "library", label: "动作库" },
-  { value: "free", label: "自由选择" },
-  { value: "templates", label: "推荐模板" },
+  { value: "free", label: "自由训练" },
 ];
 
 export function StrengthTabSwitcher({ active, onChange }: Props) {

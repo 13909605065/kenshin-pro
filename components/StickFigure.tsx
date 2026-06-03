@@ -19,7 +19,7 @@ interface Pose {
   ankleL: Pt; ankleR: Pt;
   start?: { dy: number; parts: string[] }; // which joints go up (negative dy) for start
   muscles: MuscleGroup;
-  equip?: "barbell" | "dumbbell" | "body";
+  equip?: "barbell" | "dumbbell" | "body" | "bench";
   move: "concentric" | "eccentric" | "static";
   angleHints?: { joint: Pt; angle: number }[];
 }
@@ -61,7 +61,7 @@ const POSES: Record<string, Pose> = {
     name: "弓步蹲", head:{x:50,y:6}, neck:{x:50,y:16}, shoulderL:{x:38,y:22}, shoulderR:{x:62,y:22}, elbowL:{x:30,y:34}, elbowR:{x:70,y:34}, wristL:{x:24,y:46}, wristR:{x:76,y:46}, hipL:{x:40,y:52}, hipR:{x:58,y:48}, kneeL:{x:30,y:72}, kneeR:{x:62,y:66}, ankleL:{x:22,y:94}, ankleR:{x:66,y:82},
     start:{dy:-5, parts:["kneeL","kneeR","ankleL","ankleR"]},
     muscles:{agonists:["quads","glutes"],synergists:["hams"],stabilizers:["core"]},
-    equip:"dumbbell", move:"eccentric", angleHints:[{joint:{x:30,y:72},angle:90}],
+    equip:"bench", move:"eccentric", angleHints:[{joint:{x:30,y:72},angle:90}],
   },
   pullup: {
     name: "引体向上",
@@ -111,18 +111,19 @@ const POSES: Record<string, Pose> = {
     kneeL:{x:38,y:60}, kneeR:{x:62,y:60},
     ankleL:{x:38,y:84}, ankleR:{x:62,y:84},
     muscles:{agonists:["glutes"],synergists:["hams"],stabilizers:["core"]},
-    equip:"body", move:"concentric",
+    equip:"bench", move:"concentric",
     angleHints:[{joint:{x:38,y:38},angle:90}],
   },
   fly: {
     name: "飞鸟",
-    head:{x:50,y:8}, neck:{x:50,y:16},
-    shoulderL:{x:30,y:24}, shoulderR:{x:70,y:24},
-    elbowL:{x:18,y:28}, elbowR:{x:82,y:28},
-    wristL:{x:14,y:34}, wristR:{x:86,y:34},
-    hipL:{x:42,y:54}, hipR:{x:58,y:54},
-    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
-    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    head:{x:50,y:62}, neck:{x:50,y:56},
+    shoulderL:{x:30,y:50}, shoulderR:{x:70,y:50},
+    elbowL:{x:18,y:54}, elbowR:{x:82,y:54},
+    wristL:{x:14,y:60}, wristR:{x:86,y:60},
+    hipL:{x:44,y:72}, hipR:{x:56,y:72},
+    kneeL:{x:44,y:88}, kneeR:{x:56,y:88},
+    ankleL:{x:44,y:98}, ankleR:{x:56,y:98},
+    start:{dy:6, parts:["elbowL","elbowR","wristL","wristR"]},
     muscles:{agonists:["chest"],synergists:["shoulders"],stabilizers:["core"]},
     equip:"dumbbell", move:"concentric",
   },
@@ -248,7 +249,8 @@ const POSES: Record<string, Pose> = {
 
 function detect(name: string): string {
   const n = name.toLowerCase().replace(/[·\s\-_.]+/g, "");
-  if (/深蹲|squat|蹲/.test(n) && !/弓步|箭步|lunge/.test(n)) return "squat";
+  if (/保加利亚|弓步|lunge|箭步|split/.test(n)) return "lunge";
+  if (/深蹲|squat|蹲/.test(n)) return "squat";
   if (/硬拉|deadlift|rdl|romanian/.test(n)) return "deadlift";
   if (/弓步|lunge|箭步/.test(n)) return "lunge";
   if (/臀桥|bridge|hipthrust|臀推/.test(n)) return "bridge";
@@ -431,7 +433,7 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
       {/* Torso */}
       <polygon points={torsoPts} fill="rgba(20,10,10,0.6)" stroke={BONE_MAIN} strokeWidth="1" opacity="0.7"/>
 
-      {/* Equipment — only if not bodyweight */}
+      {/* Equipment */}
       {p.equip === "barbell" && <>
         <line x1={X(p.wristL)-3*s} y1={Y(p.shoulderL)-1*s} x2={X(p.wristR)+3*s} y2={Y(p.shoulderR)-1*s} stroke="#ddd" strokeWidth="2" strokeLinecap="round"/>
         <rect x={X(p.wristL)-5*s} y={Y(p.shoulderL)-4*s} width={10*s} height={6*s} rx="1.5" fill="#333" stroke="#888" strokeWidth="0.8"/>
@@ -440,6 +442,21 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
       {p.equip === "dumbbell" && <>
         <rect x={X(p.wristL)-1.2*s} y={Y(p.wristL)-6*s} width={2.4*s} height={8*s} rx="1" fill="#ccc"/>
         <rect x={X(p.wristR)-1.2*s} y={Y(p.wristR)-6*s} width={2.4*s} height={8*s} rx="1" fill="#ccc"/>
+      </>}
+      {/* Bench/box — for exercises needing support */}
+      {(p.equip === "bench" || key === "bench" || key === "bridge" || key === "fly") && (
+        <rect x={X(p.hipL)-8*s} y={Y(p.hipL)-2*s} width={(X(p.hipR)-X(p.hipL))+16*s} height={10*s} rx="2" fill="#2a2a2a" stroke="#555" strokeWidth="1"/>
+      )}
+      {key === "lunge" && (  // Bulgarian split squat box
+        <rect x={X(p.ankleL)-6*s} y={Y(p.ankleL)-8*s} width={12*s} height={10*s} rx="2" fill="#2a2a2a" stroke="#555" strokeWidth="0.8"/>
+      )}
+      {p.equip === "bench" && <>
+        {key === "lunge" && (
+          <rect x={X(p.ankleL)-5*s} y={Y(p.ankleL)-3*s} width={10*s} height={8*s} rx="1.5" fill="#2a2a2a" stroke="#555" strokeWidth="1"/>
+        )}
+        {key === "bridge" && (
+          <rect x={X(p.shoulderL)-4*s} y={Y(p.shoulderL)-1*s} width={X(p.shoulderR)-X(p.shoulderL)+8*s} height={7*s} rx="1.5" fill="#2a2a2a" stroke="#555" strokeWidth="1"/>
+        )}
       </>}
 
       {/* Bone structure — main bones thick */}
