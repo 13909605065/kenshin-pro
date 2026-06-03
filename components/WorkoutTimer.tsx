@@ -241,7 +241,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   }, [phase, currentStep, currentSet, step, completed]);
 
   // ═══ SAVE ═══
-  const saveRecord = (stepsDone: number, totalDuration: number, isComplete: boolean) => {
+  const saveRecord = (stepsDone: number, totalDuration: number) => {
     try {
       const records: WorkoutRecord[] = JSON.parse(localStorage.getItem("workout_records") || "[]");
       records.unshift({
@@ -258,7 +258,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   useEffect(() => {
     const id = setInterval(() => {
       if (!completed && elapsed > 0) {
-        saveRecord(currentStep, elapsed, false);
+        saveRecord(currentStep, elapsed);
       }
     }, 30000); // every 30s
     return () => clearInterval(id);
@@ -268,7 +268,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   useEffect(() => {
     return () => {
       if (!completed && elapsed > 10) {
-        saveRecord(currentStep, elapsed, false);
+        saveRecord(currentStep, elapsed);
       }
     };
   }, []);
@@ -278,7 +278,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
     if (currentStep + 1 >= steps.length) {
       completeSound();
       setCompleted(true);
-      saveRecord(steps.length, elapsed + 1, true);
+      saveRecord(steps.length, elapsed + 1);
       return;
     }
     setCurrentStep((s) => s + 1);
