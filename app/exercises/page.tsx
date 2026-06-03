@@ -393,7 +393,7 @@ export default function ExercisesPage() {
             <p className="text-sm">没有匹配的动作</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
             {filtered.map((ex) => (
               <ExerciseCard
                 key={ex.id}

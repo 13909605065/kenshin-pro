@@ -77,7 +77,7 @@ export default function StrengthPage() {
                 没有匹配的动作
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                 {filteredLibrary.map((ex) => (
                   <ExerciseCard
                     key={ex.id}
