@@ -409,7 +409,7 @@ export function Dashboard() {
                 className="bg-[#111] hover:bg-[#222] border border-[#333] rounded-lg p-3 text-left transition">
                 <p className="text-xs font-bold text-white">{tmpl.name}</p>
                 <p className="text-[10px] text-gray-500 mt-1">{tmpl.description.slice(0, 20)}</p>
-                <p className="text-[10px] text-gray-600 mt-1">{tmpl.exercise_ids.length}个动作</p>
+                <p className="text-[10px] text-gray-600 mt-1">{tmpl.exercises.length}个动作</p>
               </button>
             ))}
           </div>
