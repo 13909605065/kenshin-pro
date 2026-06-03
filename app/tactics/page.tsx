@@ -68,12 +68,14 @@ export default function TacticsPage() {
       const positions = computePlayerPositions(red, blue, neutral, ctx.area);
 
       FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
-        // Remove existing field background + hide markings
-        canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
         hideFieldMarkings(canvas);
-
-        img.set({ left: 0, top: 0, scaleX: 1050 / img.width!, scaleY: 680 / img.height!, selectable: false, evented: false });
-        (img as any)._isFieldBg = true;
+        const scaleX = canvas.width! / img.width!;
+        const scaleY = canvas.height! / img.height!;
+        const scale = Math.max(scaleX, scaleY);
+        (img as any).scaleX = scale;
+        (img as any).scaleY = scale;
+        canvas.backgroundImage = img;
+        canvas.renderAll();
 
         // Preserve layering: re-add bg behind everything
         const others = canvas.getObjects().filter((o: any) => !(o as any)._isFieldBg);
@@ -127,22 +129,22 @@ export default function TacticsPage() {
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; const bg=c.getObjects().find((o:any)=>o._isFieldBg); c.clear(); c.backgroundColor="#e0e0e0"; if(bg)c.add(bg); c.requestRenderAll(); };
+  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#e0e0e0"; c.backgroundImage = undefined as any; c.renderAll(); };
 
   const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.requestRenderAll(); }};
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.requestRenderAll(); }};
   const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.requestRenderAll(); }};
   const hField = useCallback((fn: string) => {
     const c=boardRef.current; if(!c)return;
-    c.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>c.remove(o));
     hideFieldMarkings(c);
     FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
-      img.set({left:0,top:0,scaleX:1050/img.width!,scaleY:680/img.height!,selectable:false,evented:false});
-      (img as any)._isFieldBg=true;
-      const others=c.getObjects().filter((o:any)=>!o._isFieldBg && !(o as any)._isFieldMarking);
-      others.forEach((o:any)=>c.remove(o));
-      c.add(img); others.forEach((o:any)=>c.add(o));
-      c.requestRenderAll();
+      const scaleX = c.width! / img.width!;
+      const scaleY = c.height! / img.height!;
+      const scale = Math.max(scaleX, scaleY);
+      (img as any).scaleX = scale;
+      (img as any).scaleY = scale;
+      c.backgroundImage = img;
+      c.renderAll();
     });
   }, []);
 
