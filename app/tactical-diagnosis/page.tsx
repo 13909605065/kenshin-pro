@@ -246,16 +246,22 @@ export default function TacticalDiagnosisPage() {
             {/* Tab: Analysis */}
             {activeTab === "analysis" && (
               <div className="space-y-4">
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <span className="inline-block px-2 py-0.5 rounded text-xs bg-neon-pink/20 text-neon-pink mb-2">
+                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-5">
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] bg-neon-pink/20 text-neon-pink mb-2">
                     {diagnosis.diagnosis.problem_type}
                   </span>
-                  <h2 className="text-xl font-bold mb-2">{diagnosis.diagnosis.summary}</h2>
-                  <p className="text-gray-300 leading-relaxed">{diagnosis.diagnosis.analysis}</p>
-                </div>
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-400 mb-2">📍 关键场景</h3>
-                  <p className="text-gray-300 text-sm">{diagnosis.diagnosis.key_moment}</p>
+                  <h2 className="text-lg font-bold mb-1">{diagnosis.diagnosis.summary}</h2>
+                  <div className="text-gray-300 text-sm leading-relaxed mt-3 whitespace-pre-line">
+                    {diagnosis.diagnosis.analysis.split("\n").map((line, i) => {
+                      if (/^[一二三四五六七八九十]、/.test(line.trim())) {
+                        return <p key={i} className="text-neon-pink font-bold text-sm mt-3 mb-1">{line.trim()}</p>;
+                      }
+                      if (/^\d+[、.]/.test(line.trim())) {
+                        return <p key={i} className="text-gray-300 ml-2 my-0.5">{line.trim()}</p>;
+                      }
+                      return line.trim() ? <p key={i} className="text-gray-400 my-0.5">{line.trim()}</p> : <br key={i}/>;
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -263,9 +269,21 @@ export default function TacticalDiagnosisPage() {
             {/* Tab: Solution */}
             {activeTab === "solution" && (
               <div className="space-y-4">
+                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-5">
+                  <h2 className="text-lg font-bold text-neon-pink mb-1">{diagnosis.solution.title}</h2>
+                  <div className="text-gray-300 text-sm leading-relaxed mt-3 whitespace-pre-line">
+                    {diagnosis.solution.strategy.split("\n").map((line, i) => {
+                      if (/^[一二三四五六七八九十]、/.test(line.trim())) {
+                        return <p key={i} className="text-neon-pink font-bold text-sm mt-3 mb-1">{line.trim()}</p>;
+                      }
+                      if (/^\d+[、.]/.test(line.trim())) {
+                        return <p key={i} className="text-gray-300 ml-2 my-0.5">{line.trim()}</p>;
+                      }
+                      return line.trim() ? <p key={i} className="text-gray-400 my-0.5">{line.trim()}</p> : <br key={i}/>;
+                    })}
+                  </div>
+                </div>
                 <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <h2 className="text-lg font-bold text-neon-pink mb-2">{diagnosis.solution.title}</h2>
-                  <p className="text-gray-300 leading-relaxed mb-4">{diagnosis.solution.strategy}</p>
                   <h3 className="text-sm font-bold text-gray-400 mb-2">调整要点</h3>
                   <ul className="space-y-1.5">
                     {diagnosis.solution.adjustments.map((adj, i) => (
