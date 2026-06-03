@@ -17,6 +17,7 @@ interface Pose {
   elbowL: Pt; elbowR: Pt; wristL: Pt; wristR: Pt;
   hipL: Pt; hipR: Pt; kneeL: Pt; kneeR: Pt;
   ankleL: Pt; ankleR: Pt;
+  start?: { dy: number; parts: string[] }; // which joints go up (negative dy) for start
   muscles: MuscleGroup;
   equip?: "barbell" | "dumbbell" | "body";
   move: "concentric" | "eccentric" | "static";
@@ -30,66 +31,37 @@ interface Pose {
 const POSES: Record<string, Pose> = {
   squat: {
     name: "深蹲",
-    head:{x:50,y:8}, neck:{x:50,y:16},
-    shoulderL:{x:36,y:24}, shoulderR:{x:64,y:24},
-    elbowL:{x:26,y:32}, elbowR:{x:74,y:32},
-    wristL:{x:20,y:24}, wristR:{x:80,y:24},
-    hipL:{x:38,y:54}, hipR:{x:62,y:54},
-    kneeL:{x:32,y:76}, kneeR:{x:68,y:76},
+    head:{x:50,y:8}, neck:{x:50,y:16}, shoulderL:{x:36,y:24}, shoulderR:{x:64,y:24},
+    elbowL:{x:26,y:32}, elbowR:{x:74,y:32}, wristL:{x:20,y:24}, wristR:{x:80,y:24},
+    hipL:{x:38,y:54}, hipR:{x:62,y:54}, kneeL:{x:32,y:76}, kneeR:{x:68,y:76},
     ankleL:{x:32,y:98}, ankleR:{x:68,y:98},
+    start:{dy:-10, parts:["hipL","hipR","kneeL","kneeR","ankleL","ankleR"]},
     muscles:{agonists:["quads","glutes"],synergists:["core"],stabilizers:["hams","back"]},
-    equip:"barbell", move:"concentric",
-    angleHints:[{joint:{x:32,y:76},angle:90}],
+    equip:"barbell", move:"concentric", angleHints:[{joint:{x:32,y:76},angle:90}],
   },
   deadlift: {
-    name: "硬拉",
-    head:{x:50,y:12}, neck:{x:50,y:22},
-    shoulderL:{x:34,y:30}, shoulderR:{x:66,y:30},
-    elbowL:{x:28,y:50}, elbowR:{x:72,y:50},
-    wristL:{x:26,y:68}, wristR:{x:74,y:68},
-    hipL:{x:38,y:54}, hipR:{x:62,y:54},
-    kneeL:{x:36,y:76}, kneeR:{x:64,y:76},
-    ankleL:{x:36,y:98}, ankleR:{x:64,y:98},
+    name: "硬拉", head:{x:50,y:12}, neck:{x:50,y:22}, shoulderL:{x:34,y:30}, shoulderR:{x:66,y:30}, elbowL:{x:28,y:50}, elbowR:{x:72,y:50}, wristL:{x:26,y:68}, wristR:{x:74,y:68}, hipL:{x:38,y:54}, hipR:{x:62,y:54}, kneeL:{x:36,y:76}, kneeR:{x:64,y:76}, ankleL:{x:36,y:98}, ankleR:{x:64,y:98},
+    start:{dy:-8, parts:["head","neck","shoulderL","shoulderR"]},
     muscles:{agonists:["hams","glutes"],synergists:["back"],stabilizers:["core","shoulders"]},
     equip:"barbell", move:"concentric",
   },
   bench: {
-    name: "卧推",
-    head:{x:50,y:62}, neck:{x:50,y:56},
-    shoulderL:{x:32,y:50}, shoulderR:{x:68,y:50},
-    elbowL:{x:22,y:44}, elbowR:{x:78,y:44},
-    wristL:{x:16,y:32}, wristR:{x:84,y:32},
-    hipL:{x:44,y:72}, hipR:{x:56,y:72},
-    kneeL:{x:44,y:88}, kneeR:{x:56,y:88},
-    ankleL:{x:44,y:98}, ankleR:{x:56,y:98},
+    name: "卧推", head:{x:50,y:62}, neck:{x:50,y:56}, shoulderL:{x:32,y:50}, shoulderR:{x:68,y:50}, elbowL:{x:22,y:44}, elbowR:{x:78,y:44}, wristL:{x:16,y:32}, wristR:{x:84,y:32}, hipL:{x:44,y:72}, hipR:{x:56,y:72}, kneeL:{x:44,y:88}, kneeR:{x:56,y:88}, ankleL:{x:44,y:98}, ankleR:{x:56,y:98},
+    start:{dy:8, parts:["elbowL","elbowR","wristL","wristR"]},
     muscles:{agonists:["chest"],synergists:["shoulders","arms"],stabilizers:["core"]},
-    equip:"barbell", move:"concentric",
-    angleHints:[{joint:{x:22,y:44},angle:45}],
+    equip:"barbell", move:"concentric", angleHints:[{joint:{x:22,y:44},angle:45}],
   },
   press: {
-    name: "推举",
-    head:{x:50,y:6}, neck:{x:50,y:16},
-    shoulderL:{x:34,y:22}, shoulderR:{x:66,y:22},
-    elbowL:{x:22,y:12}, elbowR:{x:78,y:12},
-    wristL:{x:14,y:4}, wristR:{x:86,y:4},
-    hipL:{x:42,y:52}, hipR:{x:58,y:52},
-    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
-    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    name: "推举", head:{x:50,y:6}, neck:{x:50,y:16}, shoulderL:{x:34,y:22}, shoulderR:{x:66,y:22}, elbowL:{x:22,y:12}, elbowR:{x:78,y:12}, wristL:{x:14,y:4}, wristR:{x:86,y:4}, hipL:{x:42,y:52}, hipR:{x:58,y:52}, kneeL:{x:42,y:80}, kneeR:{x:58,y:80}, ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    start:{dy:10, parts:["elbowL","elbowR","wristL","wristR"]},
     muscles:{agonists:["shoulders"],synergists:["arms"],stabilizers:["core"]},
     equip:"barbell", move:"concentric",
   },
   lunge: {
-    name: "弓步蹲",
-    head:{x:50,y:6}, neck:{x:50,y:16},
-    shoulderL:{x:38,y:22}, shoulderR:{x:62,y:22},
-    elbowL:{x:30,y:34}, elbowR:{x:70,y:34},
-    wristL:{x:24,y:46}, wristR:{x:76,y:46},
-    hipL:{x:40,y:52}, hipR:{x:58,y:48},
-    kneeL:{x:30,y:72}, kneeR:{x:62,y:66},
-    ankleL:{x:22,y:94}, ankleR:{x:66,y:82},
+    name: "弓步蹲", head:{x:50,y:6}, neck:{x:50,y:16}, shoulderL:{x:38,y:22}, shoulderR:{x:62,y:22}, elbowL:{x:30,y:34}, elbowR:{x:70,y:34}, wristL:{x:24,y:46}, wristR:{x:76,y:46}, hipL:{x:40,y:52}, hipR:{x:58,y:48}, kneeL:{x:30,y:72}, kneeR:{x:62,y:66}, ankleL:{x:22,y:94}, ankleR:{x:66,y:82},
+    start:{dy:-5, parts:["kneeL","kneeR","ankleL","ankleR"]},
     muscles:{agonists:["quads","glutes"],synergists:["hams"],stabilizers:["core"]},
-    equip:"dumbbell", move:"eccentric",
-    angleHints:[{joint:{x:30,y:72},angle:90}],
+    equip:"dumbbell", move:"eccentric", angleHints:[{joint:{x:30,y:72},angle:90}],
   },
   pullup: {
     name: "引体向上",
@@ -238,6 +210,24 @@ const POSES: Record<string, Pose> = {
     muscles:{agonists:["quads","hams"],synergists:["glutes"],stabilizers:["core"]},
     equip:"body", move:"concentric",
   },
+  row: {
+    name: "划船",
+    head:{x:50,y:12}, neck:{x:50,y:20}, shoulderL:{x:34,y:30}, shoulderR:{x:66,y:30},
+    elbowL:{x:26,y:42}, elbowR:{x:74,y:42}, wristL:{x:22,y:54}, wristR:{x:78,y:54},
+    hipL:{x:38,y:54}, hipR:{x:62,y:54}, kneeL:{x:36,y:76}, kneeR:{x:64,y:76},
+    ankleL:{x:36,y:98}, ankleR:{x:64,y:98},
+    muscles:{agonists:["back"],synergists:["arms"],stabilizers:["core"]},
+    equip:"dumbbell", move:"concentric",
+  },
+  raise: {
+    name: "侧平举",
+    head:{x:50,y:8}, neck:{x:50,y:16}, shoulderL:{x:30,y:24}, shoulderR:{x:78,y:24},
+    elbowL:{x:18,y:22}, elbowR:{x:82,y:22}, wristL:{x:12,y:24}, wristR:{x:86,y:24},
+    hipL:{x:42,y:54}, hipR:{x:58,y:54}, kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
+    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    muscles:{agonists:["shoulders"],synergists:[],stabilizers:["core"]},
+    equip:"dumbbell", move:"concentric",
+  },
   default: {
     name: "动作示意",
     head:{x:50,y:8}, neck:{x:50,y:18},
@@ -256,36 +246,28 @@ const POSES: Record<string, Pose> = {
    DETECTION
    ================================================================ */
 
-const DETECT: [RegExp, string][] = [
-  // Lower body
-  [/深蹲|squat|蹲|保加利亚|goblet|front\.squat|split/, "squat"],
-  [/硬拉|deadlift|rdl|romanian|硬举|早安/, "deadlift"],
-  [/弓步|lunge|箭步/, "lunge"],
-  [/臀桥|bridge|hip\.thrust|臀推/, "bridge"],
-  // Upper push
-  [/卧推|bench/, "bench"],
-  [/推举|overhead|肩推|shoulder\.press|military/, "press"],
-  [/飞鸟|fly|夹胸|crossover|pec/, "fly"],
-  // Upper pull
-  [/引体|pull.?up|chin|划船|row|lat/, "pullup"],
-  [/弯举|curl|二头|bicep/, "curl"],
-  [/臂屈伸|三头|tricep|dip|下压|pushdown/, "tricep"],
-  // Bodyweight
-  [/俯卧撑|push.?up/, "pushup"],
-  [/平板|plank|侧桥|支撑/, "plank"],
-  // Core
-  [/卷腹|crunch|sit.?up|举腿|leg.?raise/, "crunch"],
-  [/俄转|russian|twist/, "twist"],
-  // Mobility
-  [/拉伸|stretch|mobil|flexib/, "stretch"],
-  // Cardio/plyo
-  [/跳|jump|box|plyo|弹跳/, "jump"],
-  [/跑|run|sprint|冲刺/, "run"],
-];
-
 function detect(name: string): string {
-  const n = name.toLowerCase();
-  for (const [re, k] of DETECT) if (re.test(n)) return k;
+  const n = name.toLowerCase().replace(/[·\s\-_.]+/g, "");
+  if (/深蹲|squat|蹲/.test(n) && !/弓步|箭步|lunge/.test(n)) return "squat";
+  if (/硬拉|deadlift|rdl|romanian/.test(n)) return "deadlift";
+  if (/弓步|lunge|箭步/.test(n)) return "lunge";
+  if (/臀桥|bridge|hipthrust|臀推/.test(n)) return "bridge";
+  if (/卧推|benchpress/.test(n)) return "bench";
+  if (/推举|overhead|肩推|shoulderpress|military/.test(n)) return "press";
+  if (/飞鸟|fly|crossover|夹胸|pec/.test(n)) return "fly";
+  if (/弯举|curl|二头|bicep/.test(n)) return "curl";
+  if (/臂屈伸|三头|tricep|下压|pushdown|臂伸/.test(n)) return "tricep";
+  if (/俯卧撑|pushup/.test(n)) return "pushup";
+  if (/平板|plank|侧桥/.test(n)) return "plank";
+  if (/卷腹|crunch|situp|举腿|legraise/.test(n)) return "crunch";
+  if (/俄转|russian|twist|旋转/.test(n)) return "twist";
+  if (/引体|pullup|chin|垂悬/.test(n)) return "pullup";
+  if (/划船|row/.test(n) && !/俯卧撑|pushup/.test(n)) return "row";
+  if (/拉伸|stretch/.test(n)) return "stretch";
+  if (/跳|jump|box|plyo/.test(n)) return "jump";
+  if (/跑|run|sprint|冲刺/.test(n)) return "run";
+  if (/上举|raise|lateral/.test(n)) return "raise";
+  if (/推|press/.test(n) && !/卧|bench/.test(n)) return "press";
   return "default";
 }
 
@@ -340,6 +322,29 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
     return <line x1={X(j)} y1={Y(j)} x2={X(j)+Math.cos(rad)*len} y2={Y(j)+Math.sin(rad)*len} stroke="#888" strokeWidth="0.8" strokeDasharray="2,2"/>;
   };
 
+  const hasStart = p.start && !compact; // dual pose only in full view
+
+  /* Draw one pose (bones + torso + joints + muscles) */
+  const drawPose = (pose: Pose, opacity: number, offsetX: number) => {
+    const X2 = (j: Pt) => j.x * s * m + pad + offsetX;
+    const Y2 = (j: Pt) => j.y * s * m + pad;
+    const torsoPts2 = `${X2(pose.shoulderL)},${Y2(pose.shoulderL)} ${X2(pose.shoulderR)},${Y2(pose.shoulderR)} ${X2(pose.hipR)},${Y2(pose.hipR)} ${X2(pose.hipL)},${Y2(pose.hipL)}`;
+    const bone = (a: Pt, b: Pt, thick = false) =>
+      <line x1={X2(a)} y1={Y2(a)} x2={X2(b)} y2={Y2(b)} stroke={thick?BONE_MAIN:BONE_THIN} strokeWidth={thick?3:1.8} strokeLinecap="round" opacity={opacity}/>;
+    return <g opacity={opacity}>
+      <polygon points={torsoPts2} fill="rgba(20,10,10,0.6)" stroke={BONE_MAIN} strokeWidth="1" opacity={0.7*opacity}/>
+      {bone(pose.shoulderL, pose.elbowL, true)} {bone(pose.shoulderR, pose.elbowR, true)}
+      {bone(pose.elbowL, pose.wristL)} {bone(pose.elbowR, pose.wristR)}
+      {bone(pose.hipL, pose.kneeL, true)} {bone(pose.hipR, pose.kneeR, true)}
+      {bone(pose.kneeL, pose.ankleL)} {bone(pose.kneeR, pose.ankleR)}
+      <line x1={X2(pose.neck)} y1={Y2(pose.neck)} x2={X2(pose.head)} y2={Y2(pose.head)} stroke={BONE_MAIN} strokeWidth="2" opacity={opacity}/>
+      <circle cx={X2(pose.head)} cy={Y2(pose.head)} r={5.5*s} fill="none" stroke={BONE_MAIN} strokeWidth="1.5" opacity={opacity}/>
+      {[pose.shoulderL,pose.shoulderR,pose.hipL,pose.hipR].map((j,i) => <circle key={`a${i}`} cx={X2(j)} cy={Y2(j)} r="2.5" fill={JOINT} opacity={opacity}/>)}
+      {[pose.elbowL,pose.elbowR,pose.kneeL,pose.kneeR].map((j,i) => <circle key={`b${i}`} cx={X2(j)} cy={Y2(j)} r="2" fill={JOINT} opacity={opacity}/>)}
+      {[pose.wristL,pose.wristR,pose.ankleL,pose.ankleR].map((j,i) => <circle key={`c${i}`} cx={X2(j)} cy={Y2(j)} r="1.2" fill={JOINT} opacity={opacity}/>)}
+    </g>;
+  };
+
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
       <defs>
@@ -352,9 +357,22 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
       </defs>
 
       {/* Floor line */}
-      <line x1={size*.1} y1={Y(p.ankleL)+1} x2={size*.9} y2={Y(p.ankleR)+1} stroke="#333" strokeWidth="0.5"/>
+      <line x1={size*.08} y1={Y(p.ankleL)+1} x2={size*.92} y2={Y(p.ankleR)+1} stroke="#333" strokeWidth="0.5"/>
 
-      {/* Muscle groups */}
+      {hasStart && (
+        <>
+          {/* Start pose — grayed, left side */}
+          {drawPose(p, 0.35, -size*0.07)}
+          <text x={size*.22} y={Y(p.ankleL)+5} textAnchor="middle" fill="#666" fontSize={Math.max(7,size*0.06)}>起始</text>
+          {/* Arrow */}
+          <text x={size*.35} y={Y(p.head)-2} textAnchor="middle" fill="#FF2D55" fontSize={Math.max(8,size*0.07)} fontWeight="bold">→</text>
+        </>
+      )}
+
+      {/* Action pose — full color, right side if dual */}
+      {hasStart ? drawPose(p, 1, size*0.07) : drawPose(p, 1, 0)}
+
+      {/* Muscle highlights — action pose only */}
       {showMuscles && <>
         {/* Agonists — big filled circles */}
         {p.muscles.agonists.map(m => {
