@@ -304,6 +304,14 @@ export function Dashboard() {
       {/* Scene-aware quick actions */}
       {status === "idle" && (
         <div className="flex gap-2 flex-wrap">
+          {/* AI诊断 — always visible for coaches */}
+          {isCoach && (
+            <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <Brain className="w-5 h-5 text-neon-pink mb-1" />
+              <p className="text-xs font-bold text-white">AI 战术诊断</p>
+              <p className="text-[10px] text-gray-500">说问题→方案→出图</p>
+            </button>
+          )}
           {scene === "planning" && (
             <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
               <Zap className="w-5 h-5 text-neon-pink mb-1" />
