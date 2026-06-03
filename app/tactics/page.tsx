@@ -127,7 +127,7 @@ export default function TacticsPage() {
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; const bg=c.getObjects().find((o:any)=>o._isFieldBg); c.clear(); c.backgroundColor="#1a1a2e"; if(bg)c.add(bg); c.requestRenderAll(); };
+  const hClear = () => { const c=boardRef.current; if(!c)return; const bg=c.getObjects().find((o:any)=>o._isFieldBg); c.clear(); c.backgroundColor="#e0e0e0"; if(bg)c.add(bg); c.requestRenderAll(); };
 
   const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.requestRenderAll(); }};
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.requestRenderAll(); }};
