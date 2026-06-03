@@ -189,6 +189,16 @@ export interface SessionActivity {
   regression: string;
 }
 
+/** Drill context passed from training view to tactics board via localStorage */
+export interface DrillContext {
+  name: string;
+  area: string;
+  groups: string;
+  coaching_points: string[];
+  duration: number;
+  description: string;
+}
+
 export interface SSGInfo {
   id: string;
   name: string;

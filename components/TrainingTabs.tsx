@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
+import { writeDrillContext } from "@/lib/tactics-bridge";
 import { WarmupTab } from "./tabs/WarmupTab";
 import { TechniqueTab } from "./tabs/TechniqueTab";
 import { PhysicalTab } from "./tabs/PhysicalTab";
@@ -32,6 +34,7 @@ const COACH_TABS = [
 ];
 
 function CoachSessionView({ module: m }: { module: SessionPlan }) {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       {/* Session header */}
@@ -112,6 +115,15 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span className="text-green-400">⬆ 进阶: {act.progression}</span>
                   <span className="text-yellow-400">⬇ 退阶: {act.regression}</span>
                 </div>
+                <div className="flex justify-end mt-2 pt-2 border-t border-pitch-600/50">
+                  <button
+                    onClick={() => { writeDrillContext(act); router.push("/tactics"); }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-neon-pink bg-neon-pink/10 hover:bg-neon-pink/20 transition border border-neon-pink/20 hover:border-neon-pink/40"
+                    title="在战术板上打开此练习"
+                  >
+                    📋 在战术板打开
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -160,6 +172,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 }
 
 function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
+  const router = useRouter();
   return (
     <div className="space-y-4">
       <div className="bg-pitch-700/50 rounded-lg p-4">
@@ -190,6 +203,15 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
               <div className="flex gap-4 text-[10px]">
                 <span className="text-green-400">⬆ 进阶: {drill.progression}</span>
                 <span className="text-yellow-400">⬇ 退阶: {drill.regression}</span>
+              </div>
+              <div className="flex justify-end mt-2 pt-2 border-t border-pitch-600/50">
+                <button
+                  onClick={() => { writeDrillContext(drill); router.push("/tactics"); }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-neon-pink bg-neon-pink/10 hover:bg-neon-pink/20 transition border border-neon-pink/20 hover:border-neon-pink/40"
+                  title="在战术板上打开此练习"
+                >
+                  📋 在战术板打开
+                </button>
               </div>
             </div>
           ))}

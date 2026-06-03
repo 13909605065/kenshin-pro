@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Canvas, Circle, FabricText, Group, FabricImage } from "fabric";
 import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { ArrowLeft, Save, FolderOpen, X, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { readDrillContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 
 const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
   "4-3-3": [
@@ -47,6 +48,77 @@ export default function TacticsPage() {
   const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
+
+  // 从训练教案联动：自动渲染练习内容
+  useEffect(() => {
+    const ctx = readDrillContext();
+    if (!ctx) return;
+
+    let attempts = 0;
+    const tryRender = () => {
+      const canvas = boardRef.current;
+      if (!canvas) {
+        if (attempts++ < 50) requestAnimationFrame(tryRender);
+        return;
+      }
+
+      const fieldFile = mapAreaToField(ctx.area);
+      const { red, blue, neutral } = parseGroups(ctx.groups);
+      const positions = computePlayerPositions(red, blue, neutral, ctx.area);
+
+      FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
+        // Remove existing field background
+        canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
+
+        img.set({ left: 0, top: 0, scaleX: 1050 / img.width!, scaleY: 680 / img.height!, selectable: false, evented: false });
+        (img as any)._isFieldBg = true;
+
+        // Preserve layering: re-add bg behind everything
+        const others = canvas.getObjects().filter((o: any) => !(o as any)._isFieldBg);
+        others.forEach((o: any) => canvas.remove(o));
+        canvas.add(img);
+        others.forEach((o: any) => canvas.add(o));
+
+        // Clear previous drill objects
+        canvas.getObjects().filter((o: any) => (o as any)._isPlayer || (o as any)._isDrillAnnotation)
+          .forEach((o: any) => canvas.remove(o));
+
+        // Place players
+        positions.forEach((p) => {
+          const cr = new Circle({ left: p.x - 20, top: p.y - 20, radius: 20, fill: p.c, stroke: "#FFF", strokeWidth: 2.5 });
+          const tx = new FabricText(p.n, { left: p.x - 10, top: p.y - 12, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: ["#FFD700", "#FFF", "#00FF88"].includes(p.c) ? "#000" : "#FFF", selectable: false });
+          const g = new Group([cr, tx], { left: p.x - 20, top: p.y - 20 });
+          (g as any)._isPlayer = true; (g as any).number = p.n;
+          g.setControlsVisibility({ mtr: false });
+          canvas.add(g);
+        });
+
+        // Drill name annotation
+        const nameText = new FabricText(`练习: ${ctx.name}`, { left: 12, top: 8, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: "#FF2D55", backgroundColor: "rgba(0,0,0,0.6)", padding: 4 });
+        (nameText as any)._isDrillAnnotation = true; canvas.add(nameText);
+
+        // Group info
+        const infoText = new FabricText(`${ctx.groups} | ${ctx.area} | ${ctx.duration}min`, { left: 12, top: 40, fontSize: 12, fontFamily: "Arial", fill: "#CCC", backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+        (infoText as any)._isDrillAnnotation = true; canvas.add(infoText);
+
+        // Coaching points
+        if (ctx.coaching_points.length > 0) {
+          const cpHeader = new FabricText("指导要点:", { left: 860, top: 100, fontSize: 12, fontFamily: "Arial", fontWeight: "bold", fill: "#FF2D55", backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+          (cpHeader as any)._isDrillAnnotation = true; canvas.add(cpHeader);
+          ctx.coaching_points.slice(0, 8).forEach((cp, i) => {
+            const txt = new FabricText(`${i + 1}. ${cp}`, { left: 860, top: 128 + i * 28, fontSize: 11, fontFamily: "Arial", fill: "#DDD", backgroundColor: "rgba(0,0,0,0.4)", padding: 2 });
+            (txt as any)._isDrillAnnotation = true; canvas.add(txt);
+          });
+        }
+
+        canvas.requestRenderAll();
+      }).catch(() => {
+        // 场地图片加载失败，忽略
+      });
+    };
+
+    tryRender();
+  }, []);
 
   const uh = useCallback((u:boolean,r:boolean)=>{setCanUndo(u);setCanRedo(r);},[]);
   const hUndo = () => (boardRef.current as any)?._undo?.();
