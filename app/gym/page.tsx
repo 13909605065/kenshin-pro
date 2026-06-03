@@ -56,34 +56,81 @@ export default function GymPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Profile */}
-        <div className="flex items-center gap-4 p-4">
-          <div className="w-16 h-16 rounded-full bg-neon-pink/20 flex items-center justify-center text-2xl font-bold text-neon-pink flex-shrink-0">
+        {/* Profile — compact */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center text-lg font-bold text-neon-pink flex-shrink-0">
             {formData.name?.charAt(0) || (isCoach ? "C" : "A")}
           </div>
-          <div className="min-w-0">
-            <p className="text-xl font-bold text-white truncate">{formData.name || "健身者"}</p>
-            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-              {!isCoach && formData.position && <span className="text-xs text-gray-400">{t("pos." + formData.position)}</span>}
-              {formData.age && <span className="text-xs text-gray-400">{formData.age}岁</span>}
-              {formData.height && <span className="text-xs text-gray-400">{formData.height}cm</span>}
-              {formData.weight && <span className="text-xs text-gray-400">{formData.weight}kg</span>}
-              {isCoach && <span className="text-xs text-gray-400">力量教练</span>}
-              {formData.goal && <span className="text-xs text-neon-pink font-bold">{t("goal." + formData.goal)}</span>}
-            </div>
+          <div>
+            <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-500 ml-2 font-normal">{formData.position ? t("pos."+formData.position) : ""}</span></p>
+            <p className="text-[11px] text-gray-500">{formData.age}岁 · {formData.height}cm · {formData.weight}kg · 训练{formData.years || 1}年</p>
           </div>
         </div>
 
-        {/* Suggestion */}
-        <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5">
-          <p className="text-xs text-neon-pink font-bold mb-2 uppercase tracking-wide">今日推荐</p>
-          <p className="text-base text-gray-200 leading-relaxed">
-            {!isCoach && formData.goal === "strength" ? "下肢爆发力 + 核心稳定。力量期建议3-4个复合动作，组间2min。" :
-             !isCoach && formData.goal === "power" ? "爆发力训练日。奥举+跳跃类，低次数高速度，充分热身。" :
-             !isCoach && formData.goal === "speed" ? "速度力量转换。轻中重量快速完成，配合灵敏训练。" :
-             !isCoach && formData.phase === "preseason" ? "季前准备期。基础力量打底，每周3次，逐周加重。" :
-             "力量维持+专项转化。保持已有力量水平，结合运动专项需求。"}
-          </p>
+        {/* Personalized Recommendation */}
+        <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5 space-y-4">
+          <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">今日训练建议</p>
+
+          {(()=>{
+            const age = formData.age || 25;
+            const weight = formData.weight || 70;
+            const height = formData.height || 175;
+            const bmi = weight / ((height/100)**2);
+            const years = formData.years || 1;
+            const goal = formData.goal || "strength";
+            const phase = formData.phase || "preseason";
+            const isUnder18 = age < 18;
+            const isOver35 = age > 35;
+
+            // Training recommendation
+            let training = "";
+            if (goal === "strength") training = `推荐${isUnder18?"中低强度":"中高强度"}力量训练，${phase==="preseason"?"侧重基础力量打底":"保持已有水平"}。3-4个复合动作为主，组间休息${isUnder18?"2-3min":"2min"}。`;
+            else if (goal === "power") training = `爆发力训练日。奥举衍生动作+跳跃类，${isUnder18?"中等重量低速控制":"低次数高速度爆发"}，充分动态热身。`;
+            else if (goal === "speed") training = `速度力量转换。${isUnder18?"自重为主":"轻中重量"}快速完成，配合灵敏反应训练。`;
+            else training = `全身力量维持。${isUnder18?"动作质量优先，避免大重量":"根据感觉调整强度"}。`;
+
+            // Body-specific notes
+            let bodyNote = "";
+            if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌为主，蛋白摄入2.0g/kg体重，训练后补充碳水和快蛋白。`;
+            else if (bmi >= 25) bodyNote = `BMI ${bmi.toFixed(1)}偏高，如体脂偏高建议增加有氧比例，关节保护优先选择闭链动作。`;
+            if (isUnder18) bodyNote += " 未成年，禁止>85%1RM大重量训练，专注动作技术。";
+            if (isOver35) bodyNote += " 充分热身10min以上，关注关节活动度。";
+
+            // Diet suggestion
+            let diet = "";
+            if (goal === "strength" || goal === "power") diet = `训练后30min内补充蛋白${Math.round(weight*0.4)}g+碳水${Math.round(weight*0.8)}g。全天蛋白${Math.round(weight*1.8)}g。`;
+            else diet = `均衡饮食，蛋白${Math.round(weight*1.5)}g/天，多摄入富含铁锌的食物。`;
+
+            return <>
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">训练方向</p>
+                <p className="text-sm text-gray-200 leading-relaxed">{training}</p>
+              </div>
+              {bodyNote && <div>
+                <p className="text-[10px] text-gray-500 mb-1">身体状况</p>
+                <p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p>
+              </div>}
+              <div>
+                <p className="text-[10px] text-gray-500 mb-1">营养建议</p>
+                <p className="text-sm text-gray-200 leading-relaxed">{diet}</p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 pt-2">
+                <div className="text-center bg-[#111] rounded-lg p-2">
+                  <p className="text-neon-pink font-bold text-lg">{formData.age||"-"}</p>
+                  <p className="text-[10px] text-gray-500">年龄</p>
+                </div>
+                <div className="text-center bg-[#111] rounded-lg p-2">
+                  <p className="text-neon-pink font-bold text-lg">{bmi.toFixed(1)}</p>
+                  <p className="text-[10px] text-gray-500">BMI</p>
+                </div>
+                <div className="text-center bg-[#111] rounded-lg p-2">
+                  <p className="text-neon-pink font-bold text-lg">{formData.years||1}年</p>
+                  <p className="text-[10px] text-gray-500">训练年限</p>
+                </div>
+              </div>
+            </>;
+          })()}
+        </div>
         </div>
 
         {/* Main actions */}
