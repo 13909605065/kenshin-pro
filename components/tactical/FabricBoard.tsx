@@ -26,12 +26,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: "transparent",
+      backgroundColor: "#121419",
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
       cornerSize: 10,
-      cornerColor: "#FF2D55",
+      cornerColor: "#c82630",
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
     });
@@ -340,7 +340,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       g.set({
         cornerStyle: "circle",
         cornerSize: 10,
-        cornerColor: "#FF2D55",
+        cornerColor: "#c82630",
         cornerStrokeColor: "#FFF",
         transparentCorners: false,
         padding: 0,
@@ -431,7 +431,7 @@ export function drawVectorField(canvas: Canvas) {
   const grass = new Rect({
     left: margin, top: margin,
     width: fw, height: fh,
-    fill: "#2E7D32",
+    fill: "#1e4028",
     stroke: "#FFF",
     strokeWidth: 3,
     rx: 0, ry: 0,
