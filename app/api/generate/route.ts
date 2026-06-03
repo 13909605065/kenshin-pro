@@ -69,10 +69,12 @@ export async function POST(request: NextRequest) {
   // Parse and validate input
   let formData: PlayerFormData;
   let lang = "zh";
+  let scene: string | undefined;
   try {
     const body = await request.json();
     formData = body;
     lang = body.lang || "zh";
+    scene = body.scene;
     const isCoach = formData.role === "coach";
     if (isCoach) {
       if (!formData.coachCert || !formData.coachRole || !formData.leagueTag || !formData.tacticalThemes?.length) {
@@ -99,7 +101,16 @@ export async function POST(request: NextRequest) {
   const isCoach = formData.role === "coach";
   const systemPrompt = buildSystemPrompt(formData);
   const weather = await getWeather().catch(() => null);
-  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined);
+
+  // Scene hint: constrain AI output to gym-only or pitch-only
+  let sceneHint = "";
+  if (scene === "gym") {
+    sceneHint = `## 场景限制：健身房模式\n今天是健身房训练日。只输出力量训练内容（杠铃、哑铃、自重、器械）。不输出场地训练、不输出SSG对抗赛、不输出跑动训练。热身也围绕力量训练展开（动态热身、激活核心、轻重量预热）。`;
+  } else if (scene === "pitch" && formData.role === "athlete") {
+    sceneHint = `## 场景限制：球场训练日\n今天是场地训练日。只输出有球训练内容（传球、射门、盘带、战术跑位）。不输出健身房力量训练、不输出杠铃/哑铃类动作。体能训练通过有球形式完成（4v4间歇、传球循环）。`;
+  }
+
+  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint);
 
   const encoder = new TextEncoder();
 

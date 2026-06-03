@@ -18,7 +18,8 @@ export function useTraining() {
   const generate = useCallback(
     async (
       formData: PlayerFormData,
-      onStatusChange?: (status: GenerationStatus) => void
+      onStatusChange?: (status: GenerationStatus) => void,
+      scene?: string
     ): Promise<void> => {
       formDataRef.current = formData;
       modulesRef.current = [];
@@ -60,7 +61,8 @@ export function useTraining() {
             onStatusChange?.("complete");
           },
         },
-        abortRef.current.signal
+        abortRef.current.signal,
+        scene
       );
 
       // Fallback save

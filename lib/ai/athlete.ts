@@ -10,7 +10,7 @@ export const LANG_INSTRUCTIONS: Record<string, string> = {
   ja: "すべての内容を日本語で出力してください。",
 };
 
-export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string): string {
+export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
   const injurySitesStr =
     data.injurySites.length > 0
       ? data.injurySites.map((s) => INJURY_LABELS[s]).join("、")
@@ -145,6 +145,7 @@ ${isFemale ? "- 女性：热身必须含落地力学(jump-landing纠正膝外翻
 
 ${langInstruction}
 
+${sceneHint || ""}
 直接开始输出 event: module_1，不要任何开场白。
 
 **module_1 必须包含 analysis 字段**，用2-3句话解释：「基于你的[训练年龄/体型/性别/年龄]情况，你应该[可以做什么]，你不应该[避免什么]，所以我给你的方案是[核心思路]」。例如：

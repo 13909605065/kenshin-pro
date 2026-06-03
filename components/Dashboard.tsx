@@ -260,7 +260,7 @@ export function Dashboard() {
       await training.generate(formData, (s) => {
         if (s === "complete") { clearTimeout(timeout); return; }
         setStatus(s);
-      });
+      }, scene);
       clearTimeout(timeout);
       // Only show done animation if we actually got modules
       if (training.modules.length > 0) {

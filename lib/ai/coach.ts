@@ -10,7 +10,7 @@ import {
 } from "../constants";
 import { LANG_INSTRUCTIONS } from "./athlete";
 
-export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string): string {
+export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
   const langInstruction = LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.zh;
   const themes = data.tacticalThemes.map((t) => TACTICAL_THEME_LABELS[t]).join("、");
   const primaryTheme = data.tacticalThemes[0] || "possession";
@@ -111,6 +111,7 @@ ${weatherHint ? `\n${weatherHint}\n根据天气调整训练内容：高温加强
 
 ${langInstruction}
 
+${sceneHint || ""}
 直接开始输出 event: module_1，不要任何开场白。依次生成以下3个模块：
 1. session_plan — 完整训练课教案（热身→主体训练→分队比赛→冷身）
 2. tactical_focus — 战术主题专项练习（与「${TACTICAL_THEME_LABELS[primaryTheme]}」匹配的tactical drill）

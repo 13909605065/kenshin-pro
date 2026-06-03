@@ -28,7 +28,8 @@ export interface StreamCallbacks {
 export async function streamGenerate(
   formData: PlayerFormData,
   callbacks: StreamCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  scene?: string
 ): Promise<TrainingModule[]> {
   const modules: TrainingModule[] = [];
 
@@ -39,6 +40,7 @@ export async function streamGenerate(
       body: JSON.stringify({
         ...formData,
         lang: typeof window !== "undefined" ? localStorage.getItem("kenshin_lang") || "zh" : "zh",
+        scene: scene || undefined,
       }),
       signal,
     });

@@ -31,11 +31,11 @@ export function buildSystemPrompt(data: PlayerFormData): string {
 /**
  * Build user prompt based on role.
  */
-export function buildUserPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string): string {
+export function buildUserPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
   if (data.role === "coach") {
-    return buildCoachPrompt(data, lang, weatherHint);
+    return buildCoachPrompt(data, lang, weatherHint, sceneHint);
   }
-  return buildAthletePrompt(data, lang, weatherHint);
+  return buildAthletePrompt(data, lang, weatherHint, sceneHint);
 }
 
 // --- Streaming re-exports ---
