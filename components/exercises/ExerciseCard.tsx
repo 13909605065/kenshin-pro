@@ -18,7 +18,7 @@ export function ExerciseCard({ exercise, onView, onAdd }: Props) {
   return (
     <div className="glass-card-hover p-4 group">
       {/* Image: external GIF primary, stick figure fallback */}
-      <div className="relative w-full aspect-[4/3] bg-[#111] rounded-lg overflow-hidden mb-3">
+      <div className="relative w-full aspect-square bg-[#111] rounded-lg overflow-hidden mb-3">
         {exercise.image_url && !imgFailed ? (
           <img
             src={exercise.image_url}
@@ -29,7 +29,7 @@ export function ExerciseCard({ exercise, onView, onAdd }: Props) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center p-2">
-            <StickFigure name={exercise.name} size={90} />
+            <StickFigure name={exercise.name} size={64} />
           </div>
         )}
         <button

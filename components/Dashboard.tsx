@@ -305,83 +305,93 @@ export function Dashboard() {
   }, [training]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Scene Tabs — role + context switcher */}
       <SceneTabs />
 
-      {/* Scene-aware quick actions */}
+      {/* Scene-aware quick actions — one row, max 2 buttons */}
       {status === "idle" && (
         <div className="flex gap-2 flex-wrap">
-          {/* AI诊断 — always visible for coaches */}
+          {/* === COACH === */}
           {isCoach && (
-            <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-              <Brain className="w-5 h-5 text-neon-pink mb-1" />
-              <p className="text-xs font-bold text-white">AI 战术诊断</p>
-              <p className="text-[10px] text-gray-500">说问题→方案→出图</p>
-            </button>
-          )}
-          {scene === "planning" && (
-            <button onClick={() => document.getElementById("generate-section")?.scrollIntoView({ behavior: "smooth" })} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-              <Zap className="w-5 h-5 text-neon-pink mb-1" />
-              <p className="text-xs font-bold text-white">生成训练方案</p>
-              <p className="text-[10px] text-gray-500">AI 科学化备课</p>
-            </button>
-          )}
-          {scene === "pitch" && role === "coach" && (
             <>
-              <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <Timer className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">计时跟练</p>
-                <p className="text-[10px] text-gray-500">执行教案</p>
-              </button>
-              <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">快速调整</p>
-                <p className="text-[10px] text-gray-500">人数/分组/器材</p>
-              </button>
+              {/* 备课: only generate */}
+              {scene === "planning" && (
+                <button onClick={() => document.getElementById("generate-section")?.scrollIntoView({ behavior: "smooth" })} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <Zap className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">生成训练方案</p>
+                  <p className="text-[10px] text-gray-500">AI 科学化备课</p>
+                </button>
+              )}
+              {/* 训练场: timer + roster */}
+              {scene === "pitch" && (
+                <>
+                  <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                    <Timer className="w-5 h-5 text-neon-pink mb-1" />
+                    <p className="text-xs font-bold text-white">计时跟练</p>
+                    <p className="text-[10px] text-gray-500">执行教案</p>
+                  </button>
+                  <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                    <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                    <p className="text-xs font-bold text-white">花名册</p>
+                    <p className="text-[10px] text-gray-500">人数+伤病</p>
+                  </button>
+                </>
+              )}
+              {/* 健身房: only exercises */}
+              {scene === "gym" && (
+                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">动作库</p>
+                  <p className="text-[10px] text-gray-500">124个力量动作</p>
+                </button>
+              )}
+              {/* 复盘: AI诊断 + 战术板 */}
+              {scene === "review" && (
+                <>
+                  <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                    <Brain className="w-5 h-5 text-neon-pink mb-1" />
+                    <p className="text-xs font-bold text-white">AI 战术诊断</p>
+                    <p className="text-[10px] text-gray-500">说问题→方案→出图</p>
+                  </button>
+                  <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                    <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                    <p className="text-xs font-bold text-white">战术板</p>
+                    <p className="text-[10px] text-gray-500">手动绘制</p>
+                  </button>
+                </>
+              )}
             </>
           )}
-          {scene === "gym" && (
+
+          {/* === ATHLETE === */}
+          {!isCoach && (
             <>
-              <button onClick={() => window.location.href = "/strength"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">力量训练</p>
-                <p className="text-[10px] text-gray-500">动作库+跟练</p>
-              </button>
-              <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">动作库</p>
-                <p className="text-[10px] text-gray-500">124个动作+筛选</p>
-              </button>
+              {/* 球场: 我的训练 already shown above */}
+              {scene === "pitch" && (
+                <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <Timer className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">开始训练</p>
+                  <p className="text-[10px] text-gray-500">按顺序跟练</p>
+                </button>
+              )}
+              {/* 健身房: only exercises */}
+              {scene === "gym" && (
+                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">动作库</p>
+                  <p className="text-[10px] text-gray-500">124个力量动作+筛选</p>
+                </button>
+              )}
+              {/* 恢复: stretching guide */}
+              {scene === "recovery" && (
+                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <Activity className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">恢复指南</p>
+                  <p className="text-[10px] text-gray-500">拉伸+伤病评估</p>
+                </button>
+              )}
             </>
-          )}
-          {scene === "review" && (
-            <>
-              <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <Brain className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">AI 战术诊断</p>
-                <p className="text-[10px] text-gray-500">问题→方案→出图</p>
-              </button>
-              <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
-                <p className="text-xs font-bold text-white">战术板</p>
-                <p className="text-[10px] text-gray-500">手动绘制</p>
-              </button>
-            </>
-          )}
-          {role === "athlete" && (scene === "pitch" || scene === "gym") && (
-            <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-              <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
-              <p className="text-xs font-bold text-white">动作库</p>
-              <p className="text-[10px] text-gray-500">124个动作+跟练</p>
-            </button>
-          )}
-          {scene === "recovery" && (
-            <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
-              <Activity className="w-5 h-5 text-neon-pink mb-1" />
-              <p className="text-xs font-bold text-white">恢复评估</p>
-              <p className="text-[10px] text-gray-500">拉伸+伤病自评</p>
-            </button>
           )}
         </div>
       )}
