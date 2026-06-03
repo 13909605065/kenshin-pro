@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useWizard } from "@/hooks/useWizard";
 import { useTraining } from "@/hooks/useTraining";
 import { useProfiles } from "@/hooks/useProfiles";
@@ -230,9 +230,10 @@ export function Dashboard() {
   const { role, scene, setRole } = useScene();
   const isCoach = role === "coach";
 
-  // Sync wizard role with scene identity
+  // Sync wizard role with scene identity (only when identity changes)
   useEffect(() => {
     if (formData.role !== role) setWizardRole(role);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
 
   const [status, setStatus] = useState<GenerationStatus>("idle");
@@ -447,11 +448,17 @@ export function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Identity switch */}
-              <button onClick={() => setRole(role === "coach" ? "athlete" : "coach")}
-                className={"px-2 py-1 rounded text-[10px] font-bold " + (role==="coach"?"bg-neon-pink/20 text-neon-pink":"text-gray-500 hover:text-gray-300")}>
-                {role==="coach"?"教练":"球员"}
-              </button>
+              {/* Identity switch — prominent */}
+              <div className="flex bg-[#111] rounded-lg p-0.5">
+                <button onClick={() => setRole("coach")}
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  教练
+                </button>
+                <button onClick={() => setRole("athlete")}
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  球员
+                </button>
+              </div>
               <button onClick={() => setEditOpen(true)}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-pitch-500 text-gray-400 hover:text-white hover:border-pitch-400 transition text-xs">
                 <Edit3 className="w-3.5 h-3.5" />编辑
