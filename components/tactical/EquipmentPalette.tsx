@@ -149,15 +149,18 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
         {tab === "fields" && (
           <div className="p-1.5">
             {!collapsed && <p className="text-[10px] text-gray-500 mb-1 px-0.5">场地底图</p>}
-            <div className={`${collapsed ? "flex flex-col gap-1" : "grid grid-cols-3 gap-1"}`}>
+            <div className={`${collapsed ? "flex flex-col gap-1" : "grid grid-cols-2 gap-2"}`}>
               {FIELD_LIST.map((field) => (
                 <button key={field} onClick={() => handleFieldClick(field)}
-                  className="relative group" title={collapsed ? field : undefined}>
+                  className="relative group" title={collapsed ? field : "点击放大预览"}>
                   <img src={`/equipment/${field}.png`} alt={field}
-                    className="w-full aspect-[4/3] object-cover rounded border border-pitch-600 group-hover:border-neon-pink transition" />
+                    className="w-full aspect-[4/3] object-cover rounded-lg border border-pitch-600 group-hover:border-neon-pink transition" />
                   {!collapsed && (
-                    <span className="absolute bottom-0.5 left-0.5 text-[9px] bg-black/60 text-white px-0.5 rounded whitespace-nowrap">{field}</span>
+                    <span className="absolute bottom-1 left-1 text-[10px] bg-black/70 text-white px-1 py-0.5 rounded">{field.replace("场地","")}</span>
                   )}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <span className="bg-black/60 text-white text-[10px] px-2 py-1 rounded">点击放大</span>
+                  </div>
                 </button>
               ))}
             </div>
