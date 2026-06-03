@@ -79,11 +79,9 @@ export function useWizard() {
       const raw = localStorage.getItem(SAVE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        // Filter out stale equipment names from old versions
-        const validEquipment = ["标志盘","标志桶","标志杆","号坎","足球","小球门","标准门","小栏架","高栏架","绳梯","敏捷圈","弹力带","药球","瑜伽球","泡沫轴"];
-        if (saved.equipmentAvailable) {
-          saved.equipmentAvailable = saved.equipmentAvailable.filter((e: string) => validEquipment.some(v => e.includes(v) || v.includes(e)));
-        }
+        // Clear stale equipment data from old version
+        saved.equipmentAvailable = [];
+        saved.weakness = saved.weakness || "";
         setFormData((prev) => ({ ...prev, ...saved }));
         const savedStep = parseInt(localStorage.getItem("kenshin_wizard_step") || "0");
         if (savedStep > 0) setCurrentStep(savedStep);

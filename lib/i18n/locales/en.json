@@ -205,7 +205,8 @@
     "generate": "Generate Training Plan",
     "cert": "License Level",
     "role": "Role",
-    "league": "League/Team"
+    "league": "League/Team",
+    "selected": "selected"
   },
   "tab": {
     "warmup": "Warm-up",

@@ -205,7 +205,8 @@
     "generate": "トレーニングプラン生成",
     "cert": "ライセンス",
     "role": "役割",
-    "league": "リーグ"
+    "league": "リーグ",
+    "selected": "選択済"
   },
   "tab": {
     "warmup": "ウォームアップ",

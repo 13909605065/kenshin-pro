@@ -318,9 +318,9 @@ export function Dashboard() {
           {isCoach && (
             <div className="glass-card p-4">
               <p className="text-xs text-gray-500 mb-3">
-                可多选<span className="text-gray-600 ml-1">· 为空则自动推荐</span>
+                {t("coach.equipmentHint")}
                 {formData.equipmentAvailable?.length > 0 && (
-                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length}项已选</span>
+                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length} {t("coach.selected")}</span>
                 )}
               </p>
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
