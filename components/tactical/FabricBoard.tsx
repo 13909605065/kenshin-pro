@@ -25,7 +25,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     if (!canvasElRef.current || boardRef.current) return;
     const el = canvasElRef.current;
     const canvas = new Canvas(el, { width: FW, height: FH, backgroundColor: "#0A8A2E", selection: true, preserveObjectStacking: true });
-    drawFieldMarkings(canvas);
     boardRef.current = canvas;
 
     // History
