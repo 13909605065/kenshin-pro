@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Brain, Layout, Ellipsis, Users, History, Settings, Calendar, X } from "lucide-react";
+import { Home, Brain, Layout, Ellipsis, Users, History, Settings, Calendar, Dumbbell, X } from "lucide-react";
 import { useLang } from "@/components/providers/LanguageProvider";
 
 export function MobileNav() {
@@ -18,6 +18,8 @@ export function MobileNav() {
   ];
 
   const MORE_TABS = [
+    { id: "gym", label: "健身房", icon: Dumbbell, path: "/gym" },
+    { id: "exercises", label: "动作库", icon: Dumbbell, path: "/exercises" },
     { id: "schedule", label: "赛程", icon: Calendar, path: "/schedule" },
     { id: "roster", label: "花名册", icon: Users, path: "/roster" },
     { id: "history", label: "历史", icon: History, path: "/history" },
