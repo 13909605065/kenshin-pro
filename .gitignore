@@ -34,7 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-kb/books/NSCA-CSCS*.pdf
-kb/ocr_output/
+
+# knowledge base (local only, too large for GitHub)
+kb/books/
 kb/ocr_output/
 *.zip
