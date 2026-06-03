@@ -12,6 +12,7 @@ import { PhysicalTab } from "./tabs/PhysicalTab";
 import { TacticalTab } from "./tabs/TacticalTab";
 import { NutritionTab } from "./tabs/NutritionTab";
 import { ActionBar } from "./ActionBar";
+import { WorkoutTimer } from "./WorkoutTimer";
 
 interface Props {
   modules: TrainingModule[];
@@ -268,6 +269,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
   const isCoach = formData.role === "coach";
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
+  const [showTimer, setShowTimer] = useState(false);
   const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -322,6 +324,15 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
               </p>
             )}
           </div>
+          {/* Athlete start training button */}
+          {!isCoach && (
+            <button
+              onClick={() => setShowTimer(true)}
+              className="mt-3 w-full py-2.5 bg-neon-pink text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-neon-pink/90 transition active:scale-[0.98]"
+            >
+              <span className="text-base">▶</span> 开始训练
+            </button>
+          )}
         </div>
       </div>
 
@@ -409,6 +420,15 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
           onSaveTemplate={onSaveTemplate}
         />
       </div>
+
+      {/* Full-screen Workout Timer overlay */}
+      {showTimer && (
+        <WorkoutTimer
+          modules={modules}
+          planId={planId || undefined}
+          onClose={() => setShowTimer(false)}
+        />
+      )}
     </div>
   );
 }
