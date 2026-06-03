@@ -41,7 +41,7 @@ const EQUIPMENT: Item[] = [
 const FIELD_LIST = ["场地","场地2","场地3","场地4","场地5","场地6","场地7","场地8","场地9","场地10","场地11"];
 
 export function EquipmentPalette({ onFieldSelect }: Props) {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<string>("markers");
   const [previewField, setPreviewField] = useState<string | null>(null);
 

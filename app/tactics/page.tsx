@@ -69,19 +69,14 @@ export default function TacticsPage() {
 
       FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
         hideFieldMarkings(canvas);
-        const scaleX = canvas.width! / img.width!;
-        const scaleY = canvas.height! / img.height!;
-        const scale = Math.max(scaleX, scaleY);
-        (img as any).scaleX = scale;
-        (img as any).scaleY = scale;
-        canvas.backgroundImage = img;
-        canvas.renderAll();
-
-        // Preserve layering: re-add bg behind everything
-        const others = canvas.getObjects().filter((o: any) => !(o as any)._isFieldBg);
-        others.forEach((o: any) => canvas.remove(o));
+        canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
+        const s = Math.max(canvas.width!/img.width!, canvas.height!/img.height!);
+        img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
+        (img as any)._isFieldBg = true;
+        const others = canvas.getObjects().filter((o:any)=>!o._isFieldBg);
+        others.forEach((o:any)=>canvas.remove(o));
         canvas.add(img);
-        others.forEach((o: any) => canvas.add(o));
+        others.forEach((o:any)=>canvas.add(o));
 
         // Clear previous drill objects
         canvas.getObjects().filter((o: any) => (o as any)._isPlayer || (o as any)._isDrillAnnotation)
@@ -129,21 +124,26 @@ export default function TacticsPage() {
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#e0e0e0"; c.backgroundImage = undefined as any; c.renderAll(); };
+  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#ffffff"; c.renderAll(); };
 
-  const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.requestRenderAll(); }};
-  const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.requestRenderAll(); }};
-  const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.requestRenderAll(); }};
+  const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.renderAll(); }};
+  const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
+  const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.renderAll(); }};
   const hField = useCallback((fn: string) => {
     const c=boardRef.current; if(!c)return;
     hideFieldMarkings(c);
     FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
-      const scaleX = c.width! / img.width!;
-      const scaleY = c.height! / img.height!;
-      const scale = Math.max(scaleX, scaleY);
-      (img as any).scaleX = scale;
-      (img as any).scaleY = scale;
-      c.backgroundImage = img;
+      // Remove old field bg
+      c.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>c.remove(o));
+      // Scale to fill canvas exactly (cover mode, no gaps)
+      const s = Math.max(c.width!/img.width!, c.height!/img.height!);
+      img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
+      (img as any)._isFieldBg = true;
+      // Put field bg behind everything else
+      const others = c.getObjects().filter((o:any)=>!o._isFieldBg);
+      others.forEach((o:any)=>c.remove(o));
+      c.add(img);
+      others.forEach((o:any)=>c.add(o));
       c.renderAll();
     });
   }, []);
