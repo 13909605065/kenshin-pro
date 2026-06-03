@@ -5,7 +5,7 @@ import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase-client";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { LogOut, History, Settings, Dumbbell, Layout } from "lucide-react";
+import { LogOut, History, Settings, Dumbbell, Layout, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 class ErrorBoundary extends Component<
@@ -121,6 +121,14 @@ export default function Home() {
             >
               <Layout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>战术</span>
+            </button>
+            <button
+              onClick={() => router.push("/roster")}
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-pitch-700 transition flex-shrink-0"
+              title="球队花名册"
+            >
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>花名册</span>
             </button>
             <button
               onClick={() => router.push("/settings")}

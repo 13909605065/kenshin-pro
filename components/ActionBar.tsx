@@ -4,6 +4,7 @@ import { TrainingModule, PlayerFormData } from "@/lib/types";
 import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
+import { ExportTable } from "./ExportTable";
 
 interface Props {
   modules: TrainingModule[];
@@ -137,6 +138,9 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           <ThumbsDown className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Hidden export table content for print */}
+      <ExportTable modules={modules} formData={formData} />
     </div>
   );
 }
