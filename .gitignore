@@ -39,3 +39,8 @@ next-env.d.ts
 kb/books/
 kb/ocr_output/
 *.zip
+
+# Claude Code internals (not needed in repo)
+.agents/
+.claude/
+skills-lock.json
