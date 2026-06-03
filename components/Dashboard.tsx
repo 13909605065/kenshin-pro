@@ -67,17 +67,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
           <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Role switch */}
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => setRole("athlete")}
-            className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.role==="athlete"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>
-            {t("player.roleAthlete")}</button>
-          <button onClick={() => setRole("coach")}
-            className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.role==="coach"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>
-            {t("player.roleCoach")}</button>
-        </div>
-
-        {formData.role === "athlete" ? (
+        {formData.role !== "coach" ? (
           <>
             {/* Name — auto-fill from saved profiles */}
             <div className="relative">
