@@ -1767,6 +1767,7 @@ export interface TacticalDrillRef {
   progression: string;
   regression: string;
   diagram_hint: string;
+  diagram?: import("@/lib/types").DrillDiagram; // 内联示意图数据
 }
 
 export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
@@ -1779,6 +1780,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加进攻方可回传门将重组",
     regression: "限定触发信号为单一类型(仅回传时压迫)",
     diagram_hint: "半场8v8，教练在边线发球",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "40×30m", total_distance: "半场", start_label: "防守方", end_label: "进攻方", route_style: "solid", route_label: "压迫方向" },
   },
   "tac-counter-press": {
     id: "tac-counter-press", name: "丢球后5秒反抢", theme: "pressing",
@@ -1788,6 +1790,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "缩小至20×20m增加对抗密度",
     regression: "7v5人数优势反抢",
     diagram_hint: "30×30m方格，6v6自由对抗",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "30×30m", total_distance: "方格", start_label: "防守方", end_label: "进攻方", route_style: "solid", route_label: "反抢方向" },
   },
   "tac-transition-def": {
     id: "tac-transition-def", name: "攻转守瞬间落位", theme: "pressing",
@@ -1797,6 +1800,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "进攻方人数减至7人增加防守压力",
     regression: "限制反击方只能用2脚触球",
     diagram_hint: "半场8v6+GK，进攻方从中线出发",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "半场", total_distance: "半场", start_label: "进攻方", end_label: "防守落位", route_style: "solid", route_label: "回防路线" },
   },
   // ══ POSSESSION ══
   "tac-3-zone-possession": {
@@ -1807,6 +1811,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "限制2脚触球，缩小区域宽度",
     regression: "取消传球次数限制，允许自由推进",
     diagram_hint: "40×30m分3横区，9v6控球推进",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "40×30m", total_distance: "三区", start_label: "后场", end_label: "前场", route_style: "dashed", route_label: "推进方向" },
   },
   "tac-rondo-4v2": {
     id: "tac-rondo-4v2", name: "4v2抢圈进阶", theme: "possession",
@@ -1816,6 +1821,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "缩小至6×6m或限定1脚触球",
     regression: "5v2增加控球人数",
     diagram_hint: "8×8m方格×4，4v2抢圈",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "8×8m×4", total_distance: "32×32m", start_label: "控球方4人", end_label: "抢球方2人", route_style: "dashed" },
   },
   "tac-positional-rotation": {
     id: "tac-positional-rotation", name: "位置轮转控球", theme: "possession",
@@ -1825,6 +1831,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "双人同时轮转增加复杂度",
     regression: "固定位置控球不轮转",
     diagram_hint: "30×30m，8v8位置轮转控球",
+    diagram: { layout: "triangle", cone_count: 3, cone_spacing: "30m", total_distance: "30×30m", start_label: "起始位", end_label: "轮转位", route_style: "dashed" },
   },
   // ══ COUNTERATTACK ══
   "tac-counter-3v2": {
@@ -1835,6 +1842,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加回追防守者(3v3)",
     regression: "取消时间限制，强调决策质量",
     diagram_hint: "半场3v2+GK，8秒反击",
+    diagram: { layout: "linear", cone_count: 3, cone_spacing: "半场", start_label: "断球点", end_label: "球门", route_style: "solid", route_label: "反击路线" },
   },
   "tac-transition-att": {
     id: "tac-transition-att", name: "守转攻快速推进", theme: "counterattack",
@@ -1844,6 +1852,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "限定只能地面传球",
     regression: "取消时间限制，允许门将参与组织",
     diagram_hint: "全场2/3，7v7+2GK，快速转换",
+    diagram: { layout: "linear", cone_count: 3, cone_spacing: "半场", start_label: "断球区", end_label: "对方球门", route_style: "solid", route_label: "快攻路线" },
   },
   // ══ DEFENDING ══
   "tac-defensive-block": {
@@ -1863,6 +1872,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "更窄通道(8×12m)增加难度",
     regression: "进攻方仅能用非惯用脚",
     diagram_hint: "10×15m通道×4，1v1轮转",
+    diagram: { layout: "linear", cone_count: 4, cone_spacing: "10×15m", total_distance: "15m", start_label: "进攻起点", end_label: "防守底线", route_style: "solid", route_label: "突破路线" },
   },
   // ══ SET PIECES ══
   "tac-corner-routine": {
@@ -1873,6 +1883,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加防守方人数至8人",
     regression: "无防守练跑位路线",
     diagram_hint: "禁区8v6+GK，角球套路演练",
+    diagram: { layout: "triangle", cone_count: 3, cone_spacing: "禁区", total_distance: "角球区", start_label: "角球点", end_label: "球门", route_style: "dashed", route_label: "角球弧线" },
   },
   "tac-set-piece-defend": {
     id: "tac-set-piece-defend", name: "定位球防守组织", theme: "set_pieces",
@@ -1892,6 +1903,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "限定传中前不超过4次传球",
     regression: "边路3v2不设防守中场",
     diagram_hint: "半场一侧5v4，边路突破传中",
+    diagram: { layout: "l_shape", cone_count: 3, cone_spacing: "边路30m", start_label: "边路起点", end_label: "禁区", route_style: "dashed", route_label: "传中路线" },
   },
   "tac-third-man": {
     id: "tac-third-man", name: "第三人跑位配合", theme: "positional_attack",
@@ -2270,6 +2282,7 @@ function resolveSessionActivities(ids: string[]): SessionActivityRef[] {
       name: t.name, duration: t.duration, area: t.area, groups: t.players,
       description: t.description, coaching_points: t.coaching_points,
       progression: t.progression, regression: t.regression,
+      ...(t.diagram ? { diagram: t.diagram } : {}),
     } as SessionActivityRef;
   }).filter(notNull);
 }

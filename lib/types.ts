@@ -187,6 +187,7 @@ export interface SessionActivity {
   coaching_points: string[];
   progression: string;
   regression: string;
+  diagram?: DrillDiagram; // 内联训练示意图
 }
 
 /** Drill context passed from training view to tactics board via localStorage */

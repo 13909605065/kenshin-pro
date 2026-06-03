@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 import { writeDrillContext } from "@/lib/tactics-bridge";
+import { FieldDiagram } from "./FieldDiagram";
 import { WarmupTab } from "./tabs/WarmupTab";
 import { TechniqueTab } from "./tabs/TechniqueTab";
 import { PhysicalTab } from "./tabs/PhysicalTab";
@@ -103,6 +104,11 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span>分组: {act.groups}</span>
                 </div>
                 <p className="text-xs text-gray-400 mb-2">{act.description}</p>
+                {act.diagram && (
+                  <div className="mb-3">
+                    <FieldDiagram diagram={act.diagram} />
+                  </div>
+                )}
                 {act.coaching_points.length > 0 && (
                   <div className="mb-2">
                     <span className="text-[10px] text-gray-500">指导要点:</span>
@@ -192,6 +198,11 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
                 <span>分组: {drill.groups}</span>
               </div>
               <p className="text-xs text-gray-400 mb-2">{drill.description}</p>
+              {drill.diagram && (
+                <div className="mb-3">
+                  <FieldDiagram diagram={drill.diagram} />
+                </div>
+              )}
               {drill.coaching_points.length > 0 && (
                 <div className="mb-2">
                   <span className="text-[10px] text-gray-500">指导要点:</span>
