@@ -73,7 +73,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* Warmup */}
       {m.warmup.length > 0 && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">🔥 引导热身 ({m.warmup.reduce((s,w) => s+w.duration, 0)}min)</h4>
           <div className="space-y-2">
             {m.warmup.map((w, i) => (
@@ -91,7 +91,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* Activities */}
       {m.activities.length > 0 && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">⚽ 主体训练 ({m.activities.reduce((s,a) => s+a.duration, 0)}min)</h4>
           <div className="space-y-3">
             {m.activities.map((act, i) => (
@@ -139,7 +139,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* SSG */}
       {m.ssg && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">🏟️ 分队比赛: {m.ssg.name}</h4>
           <div className="bg-pitch-700/50 rounded-lg p-4">
             <div className="grid grid-cols-3 gap-3 mb-3 text-center">
@@ -186,6 +186,145 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
         <h3 className="text-white font-bold text-lg">{m.title}</h3>
         <span className="text-xs text-neon-pink bg-neon-pink/10 px-2 py-0.5 rounded">{m.tactical_theme}</span>
       </div>
+
+      {/* Tactical Analysis Bullet Points */}
+      {m.tactical_analysis && m.tactical_analysis.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-neon-pink text-xs font-bold uppercase tracking-wider">战术核心分析</h4>
+          {m.tactical_analysis.map((point, i) => (
+            <div key={i} className="bg-pitch-700/50 rounded-lg p-3 flex gap-3">
+              <span className="text-neon-pink font-bold flex-shrink-0">{i + 1}.</span>
+              <p className="text-sm text-gray-200 leading-relaxed">{point}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Formation & Pressing/Defensive Shape */}
+      {(m.formation_notes || m.pressing_triggers || m.defensive_shape) && (
+        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+          {m.formation_notes && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">阵型体系</span>
+              <p className="text-xs text-gray-300 mt-1">{m.formation_notes}</p>
+            </div>
+          )}
+          {m.pressing_triggers && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">压迫触发</span>
+              <p className="text-xs text-gray-300 mt-1">{m.pressing_triggers}</p>
+            </div>
+          )}
+          {m.defensive_shape && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">防守阵型</span>
+              <p className="text-xs text-gray-300 mt-1">{m.defensive_shape}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Phases of Play Grid */}
+      {(m.build_up_phase || m.midfield_transition || m.final_third || m.defensive_block) && (
+        <div>
+          <h4 className="text-neon-pink text-xs font-bold uppercase tracking-wider mb-2">比赛阶段</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {m.build_up_phase && (
+              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-blue-400">
+                <span className="text-[10px] text-blue-400 font-bold">组织推进</span>
+                <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.build_up_phase}</p>
+              </div>
+            )}
+            {m.midfield_transition && (
+              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-yellow-400">
+                <span className="text-[10px] text-yellow-400 font-bold">中场过渡</span>
+                <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.midfield_transition}</p>
+              </div>
+            )}
+            {m.final_third && (
+              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-green-400">
+                <span className="text-[10px] text-green-400 font-bold">前场终结</span>
+                <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.final_third}</p>
+              </div>
+            )}
+            {m.defensive_block && (
+              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-red-400">
+                <span className="text-[10px] text-red-400 font-bold">防守阵块</span>
+                <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.defensive_block}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Attacking & Counter */}
+      {(m.attacking_patterns || m.counter_structure) && (
+        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+          {m.attacking_patterns && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">进攻模式</span>
+              <p className="text-xs text-gray-300 mt-1">{m.attacking_patterns}</p>
+            </div>
+          )}
+          {m.counter_structure && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">反击结构</span>
+              <p className="text-xs text-gray-300 mt-1">{m.counter_structure}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Transition & Set Pieces */}
+      {(m.transition_moments || m.set_piece_offense || m.set_piece_defense) && (
+        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+          {m.transition_moments && (
+            <div>
+              <span className="text-xs text-neon-pink font-bold">攻守转换</span>
+              <p className="text-xs text-gray-300 mt-1">{m.transition_moments}</p>
+            </div>
+          )}
+          {(m.set_piece_offense || m.set_piece_defense) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+              {m.set_piece_offense && (
+                <div className="bg-pitch-800/50 rounded p-2 border-l-2 border-green-500">
+                  <span className="text-[10px] text-green-400 font-bold">进攻定位球</span>
+                  <p className="text-[11px] text-gray-300 mt-1">{m.set_piece_offense}</p>
+                </div>
+              )}
+              {m.set_piece_defense && (
+                <div className="bg-pitch-800/50 rounded p-2 border-l-2 border-red-500">
+                  <span className="text-[10px] text-red-400 font-bold">防守定位球</span>
+                  <p className="text-[11px] text-gray-300 mt-1">{m.set_piece_defense}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Player Roles */}
+      {m.player_roles && m.player_roles.length > 0 && (
+        <div>
+          <h4 className="text-neon-pink text-xs font-bold uppercase tracking-wider mb-2">球员战术角色</h4>
+          <div className="space-y-1.5">
+            {m.player_roles.map((role, i) => (
+              <div key={i} className="bg-pitch-700/50 rounded-lg p-2.5 flex items-start gap-2">
+                <span className="text-neon-pink text-sm flex-shrink-0">&#9733;</span>
+                <p className="text-xs text-gray-200 leading-relaxed">{role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Divider before drills */}
+      {(m.tactical_analysis || m.formation_notes || m.build_up_phase) && m.drills.length > 0 && (
+        <div className="border-t border-pitch-600 pt-2">
+          <h4 className="text-neon-pink text-xs font-bold uppercase tracking-wider mb-3">训练练习</h4>
+        </div>
+      )}
+
       {m.drills.length > 0 && (
         <div className="space-y-3">
           {m.drills.map((drill, i) => (
@@ -355,7 +494,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+            className={`px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-neon-pink text-neon-pink"
                 : "border-transparent text-gray-500 hover:text-gray-300"

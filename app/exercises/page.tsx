@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Dumbbell, ChevronUp, ChevronDown, ArrowUpFromLine } from "lucide-react";
+import { Search, Dumbbell, ChevronUp, ChevronDown, ArrowUpFromLine, Plus, Pencil, Trash2 } from "lucide-react";
 import { STRENGTH_LIBRARY, WARMUP_LIBRARY, DRILL_LIBRARY, COOLDOWN_LIBRARY } from "@/lib/training-library";
+import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
+import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
 
 // ═══════════════════════════════════════════════
 // Category Types
@@ -36,6 +38,7 @@ interface UnifiedExercise {
   image_url?: string;
   cue_points?: string[];
   progression?: string;
+  regression?: string;
   // Warmup/Cooldown/Drill fields
   duration?: number;
   description?: string;
@@ -43,6 +46,9 @@ interface UnifiedExercise {
   purpose?: string;
   key_points?: string[];
   diagram?: any;
+  // Custom exercise
+  isCustom?: boolean;
+  customDifficulty?: string;
 }
 
 // ═══════════════════════════════════════════════
@@ -196,7 +202,39 @@ function buildUnifiedExercises(): UnifiedExercise[] {
 // ═══════════════════════════════════════════════
 
 export default function ExercisesPage() {
-  const allExercises = useMemo(() => buildUnifiedExercises(), []);
+  const { exercises: customExercises, addExercise, updateExercise, deleteExercise, loaded } = useCustomExercises();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCustom, setEditingCustom] = useState<CustomExercise | null>(null);
+
+  const builtInExercises = useMemo(() => buildUnifiedExercises(), []);
+
+  // Convert custom exercises to UnifiedExercise format
+  const customUnified = useMemo(() => {
+    return customExercises.map((ce) => ({
+      id: ce.id,
+      name: ce.name,
+      bodyPart: mapCustomBodyPart(ce.body_part),
+      equipment: mapCustomEquipment(ce.equipment),
+      type: "力量" as ExType,
+      sets: (ce.sets_min && ce.sets_max ? [ce.sets_min, ce.sets_max] : [3, 4]) as [number, number],
+      reps: (ce.reps_min && ce.reps_max ? [ce.reps_min, ce.reps_max] : [8, 12]) as [number, number],
+      rest: ce.rest_min || 60,
+      description: ce.description,
+      cue_points: ce.cue_points,
+      progression: ce.progression,
+      regression: ce.regression,
+      image_url: ce.image_url,
+      isCustom: true as const,
+      customDifficulty: ce.difficulty,
+    } satisfies UnifiedExercise));
+  }, [customExercises]);
+
+  // Merge built-in + custom
+  const allExercises = useMemo(
+    () => [...builtInExercises, ...customUnified],
+    [builtInExercises, customUnified]
+  );
+
   const [bodyPart, setBodyPart] = useState<BodyPart>("all");
   const [equipment, setEquipment] = useState<Equipment>("all");
   const [exType, setExType] = useState<ExType>("all");
@@ -215,12 +253,37 @@ export default function ExercisesPage() {
     });
   }, [allExercises, bodyPart, equipment, exType, search]);
 
-  // Count by category
+  // Count by category (built-in only for tab counts)
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: allExercises.length };
-    for (const bp of BODY_PARTS) if (bp !== "all") c[bp] = allExercises.filter(e => e.bodyPart === bp).length;
+    const c: Record<string, number> = { all: builtInExercises.length };
+    for (const bp of BODY_PARTS) if (bp !== "all") c[bp] = builtInExercises.filter(e => e.bodyPart === bp).length;
     return c;
-  }, [allExercises]);
+  }, [builtInExercises]);
+
+  // Handlers
+  const handleSaveCustom = (ex: Omit<CustomExercise, "id">) => {
+    if (editingCustom) {
+      updateExercise(editingCustom.id, ex);
+      setEditingCustom(null);
+    } else {
+      addExercise(ex);
+    }
+  };
+
+  const handleEditCustom = (id: string) => {
+    const found = customExercises.find((e) => e.id === id);
+    if (found) {
+      setEditingCustom(found);
+      setModalOpen(true);
+    }
+  };
+
+  const handleDeleteCustom = (id: string) => {
+    if (typeof window !== "undefined" && window.confirm("确定删除这个自定义动作吗？")) {
+      deleteExercise(id);
+      if (expandedId === id) setExpandedId(null);
+    }
+  };
 
   // Scroll handler
   if (typeof window !== "undefined") {
@@ -235,18 +298,27 @@ export default function ExercisesPage() {
           <div>
             <h1 className="text-2xl font-bold text-white">训练动作库</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {filtered.length} / {allExercises.length} 个动作
+              动作库 ({builtInExercises.length}个内置 + {customExercises.length}个自定义) — 显示 {filtered.length} 个
             </p>
           </div>
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="搜索动作名称..."
-              className="w-48 sm:w-64 bg-pitch-800 border border-pitch-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-neon-pink transition"
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="搜索动作名称..."
+                className="w-48 sm:w-64 bg-pitch-800 border border-pitch-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-neon-pink transition"
+              />
+            </div>
+            <button
+              onClick={() => { setEditingCustom(null); setModalOpen(true); }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-neon-pink text-black text-sm font-bold rounded-lg hover:opacity-90 transition whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              添加自定义动作
+            </button>
           </div>
         </div>
 
@@ -325,11 +397,21 @@ export default function ExercisesPage() {
                 exercise={ex}
                 isExpanded={expandedId === ex.id}
                 onToggle={() => setExpandedId(expandedId === ex.id ? null : ex.id)}
+                onEdit={ex.isCustom ? () => handleEditCustom(ex.id) : undefined}
+                onDelete={ex.isCustom ? () => handleDeleteCustom(ex.id) : undefined}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Add/Edit Custom Exercise Modal */}
+      <AddExerciseModal
+        open={modalOpen}
+        onClose={() => { setModalOpen(false); setEditingCustom(null); }}
+        onSave={handleSaveCustom}
+        editingExercise={editingCustom}
+      />
 
       {/* Scroll to top */}
       {showScrollTop && (
@@ -352,10 +434,14 @@ function ExerciseCard({
   exercise,
   isExpanded,
   onToggle,
+  onEdit,
+  onDelete,
 }: {
   exercise: UnifiedExercise;
   isExpanded: boolean;
   onToggle: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }) {
   const isStrength = exercise.type === "力量";
   const isWarmup = exercise.type === "热身";
@@ -383,19 +469,31 @@ function ExerciseCard({
             <Dumbbell className="w-8 h-8 text-gray-700" />
           </div>
         )}
-        {/* Type badge */}
-        <span className={`absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-medium ${
-          isStrength ? "bg-neon-pink/80 text-black" :
-          isWarmup ? "bg-yellow-500/80 text-black" :
-          isDrill ? "bg-blue-500/80 text-white" :
-          "bg-green-500/80 text-black"
-        }`}>
-          {exercise.type}
-        </span>
-        {/* Equipment badge */}
-        <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] bg-black/50 text-gray-300">
-          {exercise.equipment}
-        </span>
+        {/* Top badges row */}
+        <div className="absolute top-2 left-2 right-2 flex items-center gap-1.5">
+          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+            isStrength ? "bg-neon-pink/80 text-black" :
+            isWarmup ? "bg-yellow-500/80 text-black" :
+            isDrill ? "bg-blue-500/80 text-white" :
+            "bg-green-500/80 text-black"
+          }`}>
+            {exercise.type}
+          </span>
+          {exercise.isCustom && (
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/80 text-white">
+              自定义
+            </span>
+          )}
+          {exercise.customDifficulty && (
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-pitch-700/80 text-gray-300">
+              {exercise.customDifficulty}
+            </span>
+          )}
+          <div className="flex-1" />
+          <span className="px-1.5 py-0.5 rounded text-[10px] bg-black/50 text-gray-300">
+            {exercise.equipment}
+          </span>
+        </div>
       </div>
 
       {/* Info */}
@@ -423,6 +521,26 @@ function ExerciseCard({
 
         {isCooldown && exercise.duration && (
           <p className="text-[11px] text-gray-400 mt-1">{exercise.duration}分钟</p>
+        )}
+
+        {/* Custom exercise actions */}
+        {exercise.isCustom && onEdit && onDelete && (
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-gray-400 hover:text-white hover:bg-pitch-700 transition"
+            >
+              <Pencil className="w-3 h-3" />
+              编辑
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-gray-400 hover:text-neon-red hover:bg-pitch-700 transition"
+            >
+              <Trash2 className="w-3 h-3" />
+              删除
+            </button>
+          </div>
         )}
 
         {/* Expand indicator */}
@@ -515,6 +633,17 @@ function ExerciseCard({
               <p className="text-xs text-gray-300 flex items-center gap-1">
                 <ChevronUp className="w-3 h-3 text-green-400" />
                 {exercise.progression}
+              </p>
+            </div>
+          )}
+
+          {/* Regression (custom exercises) */}
+          {exercise.regression && (
+            <div>
+              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">退阶变式</p>
+              <p className="text-xs text-gray-300 flex items-center gap-1">
+                <ChevronDown className="w-3 h-3 text-yellow-400" />
+                {exercise.regression}
               </p>
             </div>
           )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { Canvas, Rect, Circle, Line, IText, Text, Group, FabricImage, Path, Polygon } from "fabric";
+import { Canvas, Rect, Circle, Line, IText, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
 import { ROUTE_STYLES } from "./BoardToolbar";
 
 const FW = 1050;
@@ -19,12 +19,23 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
-  const tempLineRef = useRef<Line | null>(null);
+  const tempLineRef = useRef<Path | null>(null);
 
   useEffect(() => {
     if (!canvasElRef.current || boardRef.current) return;
     const el = canvasElRef.current;
-    const canvas = new Canvas(el, { width: FW, height: FH, backgroundColor: "#ffffff", selection: true, preserveObjectStacking: true });
+    const canvas = new Canvas(el, {
+      width: FW, height: FH,
+      backgroundColor: "#ffffff",
+      selection: true,
+      preserveObjectStacking: true,
+      // Round selection anchors
+      cornerStyle: "circle",
+      cornerSize: 10,
+      cornerColor: "#FF2D55",
+      cornerStrokeColor: "#FFF",
+      transparentCorners: false,
+    });
     boardRef.current = canvas;
 
     // History
@@ -49,7 +60,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     canvas.on("selection:updated", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:cleared", () => onObjectSelected?.(null));
 
-    // Drop
+    // Draw default vector field
+    drawVectorField(canvas);
+
+    // Drop handler — with proper scaling controls for all equipment
     const container = containerRef.current!;
     const onDrop = (e: DragEvent) => {
       e.preventDefault();
@@ -58,7 +72,51 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const rect = el.getBoundingClientRect();
       const x = (e.clientX - rect.left) * (FW / rect.width);
       const y = (e.clientY - rect.top) * (FH / rect.height);
-      FabricImage.fromURL(src).then((img) => { img.set({ left: x-25, top: y-25, scaleX: 0.15, scaleY: 0.15 }); (img as any).name = name; canvas.add(img); canvas.setActiveObject(img); canvas.requestRenderAll(); });
+
+      // Handle agility ring as vector (hollow circle, no PNG border issue)
+      if (name === "圆形环" || name === "敏捷环") {
+        const ring = new Circle({
+          left: x - 20, top: y - 20,
+          radius: 20,
+          fill: "transparent",
+          stroke: "#000",
+          strokeWidth: 3,
+          selectable: true,
+          evented: true,
+          lockUniScaling: true,
+        });
+        (ring as any).name = name;
+        ring.setControlsVisibility({
+          tl: true, tr: true, bl: true, br: true,
+          ml: true, mr: true, mt: true, mb: true,
+          mtr: false,
+        });
+        canvas.add(ring);
+        canvas.setActiveObject(ring);
+        canvas.requestRenderAll();
+        return;
+      }
+
+      // Handle wall (人墙) — load PNG with lockUniScaling
+      // Handle cones (标志盘) — load PNG with lockUniScaling
+      FabricImage.fromURL(src).then((img) => {
+        img.set({
+          left: x - 25, top: y - 25,
+          scaleX: 0.2, scaleY: 0.2,
+          lockUniScaling: true,
+          selectable: true,
+          evented: true,
+        });
+        (img as any).name = name;
+        img.setControlsVisibility({
+          tl: true, tr: true, bl: true, br: true,
+          ml: true, mr: true, mt: true, mb: true,
+          mtr: false,
+        });
+        canvas.add(img);
+        canvas.setActiveObject(img);
+        canvas.requestRenderAll();
+      });
     };
     container.addEventListener("drop", onDrop);
     container.addEventListener("dragover", (e) => { e.preventDefault(); e.dataTransfer!.dropEffect = "copy"; });
@@ -66,7 +124,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     return () => { container.removeEventListener("drop", onDrop); canvas.dispose(); boardRef.current = null; };
   }, []);
 
-  // ---- LINE/CURVE drawing (replaces freehand) ----
+  // ---- ALL ROUTE TOOLS use bezier curves ----
   const isRouteTool = activeTool === "draw_run" || activeTool === "draw_dribble" || activeTool === "draw_pass" || activeTool === "draw_curve";
 
   const getLineStyle = useCallback(() => {
@@ -78,6 +136,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       fill: "transparent",
       selectable: true,
       evented: true,
+      strokeLineCap: "round" as CanvasLineCap,
+      strokeLineJoin: "round" as CanvasLineJoin,
     };
   }, [activeTool, activeColor]);
 
@@ -91,8 +151,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const p = opt.scenePoint;
       lineStartRef.current = { x: p.x, y: p.y };
 
-      // Create temp line
-      const t = new Line([p.x, p.y, p.x, p.y], getLineStyle());
+      // Create temp visible path
+      const style = getLineStyle();
+      const pathStr = `M ${p.x} ${p.y} L ${p.x} ${p.y}`;
+      const t = new Path(pathStr, style);
       (t as any)._temp = true;
       c.add(t);
       tempLineRef.current = t;
@@ -102,47 +164,44 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const onMouseMove = (opt: any) => {
       if (!isRouteTool || !lineStartRef.current || !tempLineRef.current) return;
       const p = opt.scenePoint;
-      if (activeTool === "draw_curve" || activeTool === "draw_dribble") {
-        // Quadratic bezier curve for curve and dribble tools
-        const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
-        tempLineRef.current.set({ x1, y1, x2: p.x, y2: p.y });
-      } else {
-        tempLineRef.current.set({ x1: lineStartRef.current.x, y1: lineStartRef.current.y, x2: p.x, y2: p.y });
-      }
+      const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
+      // Show live preview as straight line (final path will be bezier)
+      tempLineRef.current.set({ path: [["M", x1, y1], ["L", p.x, p.y]] as any });
       c.requestRenderAll();
     };
 
     const onMouseUp = (opt: any) => {
       if (!isRouteTool || !lineStartRef.current) return;
       const p = opt.scenePoint;
-      // Remove temp, add final line
       if (tempLineRef.current) { c.remove(tempLineRef.current); tempLineRef.current = null; }
 
       const dx = Math.abs(p.x - lineStartRef.current.x);
       const dy = Math.abs(p.y - lineStartRef.current.y);
-      if (dx < 3 && dy < 3) { lineStartRef.current = null; return; } // too short
+      if (dx < 3 && dy < 3) { lineStartRef.current = null; return; }
 
       const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
-      const color = getLineStyle().stroke || "#FF2D55";
+      const x2 = p.x, y2 = p.y;
+      const color = (getLineStyle() as any).stroke || "#FF2D55";
 
-      if (activeTool === "draw_curve" || activeTool === "draw_dribble") {
-        // Quadratic bezier curve
-        const cx = p.x, cy = p.y;
-        const pathStr = `M ${x1} ${y1} Q ${cx} ${cy} ${p.x} ${p.y}`;
-        const path = new Path(pathStr, getLineStyle());
-        (path as any)._isRoute = true; (path as any)._routeType = activeTool;
-        c.add(path);
-        // Arrow head at endpoint
-        const angle = Math.atan2(p.y - cy, p.x - cx);
-        addArrowHead(c, p.x, p.y, angle, color);
-      } else {
-        const line = new Line([x1, y1, p.x, p.y], getLineStyle());
-        (line as any)._isRoute = true; (line as any)._routeType = activeTool;
-        c.add(line);
-        // Arrow head at endpoint
-        const angle = Math.atan2(p.y - y1, p.x - x1);
-        addArrowHead(c, p.x, p.y, angle, color);
-      }
+      // Quadratic bezier for smooth curved lines
+      // Control point = midpoint offset perpendicular for natural arc
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      const len = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      const perpX = -(y2 - y1) / (len || 1);
+      const perpY = (x2 - x1) / (len || 1);
+      const arcOffset = Math.min(len * 0.3, 80);
+      const cx = mx + perpX * arcOffset;
+      const cy = my + perpY * arcOffset;
+
+      const pathData = `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+      const path = new Path(pathData, getLineStyle());
+      (path as any)._isRoute = true; (path as any)._routeType = activeTool;
+      c.add(path);
+
+      // Arrow head at endpoint (tangent direction at end of bezier)
+      const tangAngle = Math.atan2(y2 - cy, x2 - cx);
+      addArrowHead(c, x2, y2, tangAngle, color);
+
       lineStartRef.current = null;
       c.requestRenderAll();
     };
@@ -170,7 +229,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     return () => c.off("mouse:down", h);
   }, [activeTool, activeColor]);
 
-  // Place player
+  // Place player — 8-point circular anchors, perfectly centered number
   useEffect(() => {
     const c = boardRef.current; if (!c) return;
     const h = (opt: any) => {
@@ -178,17 +237,55 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const players = c.getObjects().filter((o: any) => o._isPlayer);
       const nextNum = players.length + 1;
       const color = activeColor;
-      // Bigger circle + number
-      const cr = new Circle({ left: opt.scenePoint.x - 20, top: opt.scenePoint.y - 20, radius: 20, fill: color, stroke: "#FFF", strokeWidth: 2.5 });
-      const tx = new Text(String(nextNum), {
-        left: opt.scenePoint.x - 10, top: opt.scenePoint.y - 12,
-        fontSize: 16, fontFamily: "Arial", fontWeight: "bold",
-        fill: ["#FFD700","#FFF","#00FF88"].includes(color) ? "#000" : "#FFF",
+      const R = 20;
+      const cx = opt.scenePoint.x, cy = opt.scenePoint.y;
+      const textColor = ["#FFD700", "#FFF", "#00FF88"].includes(color) ? "#000" : "#FFF";
+
+      // Circle — centered at click
+      const cr = new Circle({
+        left: cx - R, top: cy - R,
+        radius: R,
+        fill: color,
+        stroke: "#FFF",
+        strokeWidth: 2.5,
         selectable: false,
+        evented: false,
       });
-      const g = new Group([cr, tx], { left: opt.scenePoint.x - 20, top: opt.scenePoint.y - 20 });
-      (g as any)._isPlayer = true; (g as any).number = String(nextNum);
-      g.setControlsVisibility({ mtr: false });
+
+      // Text — perfectly centered using origin
+      const tx = new FabricText(String(nextNum), {
+        left: cx, top: cy,
+        originX: "center",
+        originY: "center",
+        fontSize: R * 0.8,
+        fontFamily: "Arial",
+        fontWeight: "bold",
+        fill: textColor,
+        selectable: false,
+        evented: false,
+      });
+
+      // Group with 8-point circular anchors
+      const g = new Group([cr, tx], {
+        left: cx - R, top: cy - R,
+      });
+      (g as any)._isPlayer = true;
+      (g as any).number = String(nextNum);
+      g.setControlsVisibility({
+        tl: true, tr: true, bl: true, br: true,
+        ml: true, mr: true, mt: true, mb: true,
+        mtr: false,
+      });
+      g.set({
+        cornerStyle: "circle",
+        cornerSize: 10,
+        cornerColor: "#FF2D55",
+        cornerStrokeColor: "#FFF",
+        transparentCorners: false,
+        padding: 0,
+        lockUniScaling: true,
+      } as any);
+
       c.add(g); c.setActiveObject(g); c.requestRenderAll();
     };
     if (activeTool === "place_player") { c.on("mouse:down", h); return () => c.off("mouse:down", h); }
@@ -206,6 +303,32 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     return () => c.off("mouse:down", h);
   }, [activeTool]);
 
+  // Handle field selection from EquipmentPalette
+  useEffect(() => {
+    const c = boardRef.current; if (!c) return;
+    (c as any)._setFieldImage = (fn: string) => {
+      // Clear old field objects (both vector and image)
+      c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
+      // If 'default' or vector field, use the built-in drawing
+      if (fn === "default" || !fn) {
+        drawVectorField(c);
+        return;
+      }
+      // Otherwise load PNG field
+      FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
+        c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
+        const s = Math.max(c.width! / img.width!, c.height! / img.height!);
+        img.set({ left: 0, top: 0, scaleX: s, scaleY: s, selectable: false, evented: false });
+        (img as any)._isFieldBg = true;
+        const others = c.getObjects().filter((o: any) => !o._isFieldBg);
+        others.forEach((o: any) => c.remove(o));
+        c.add(img);
+        others.forEach((o: any) => c.add(o));
+        c.requestRenderAll();
+      });
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className="flex-1 flex items-start justify-center overflow-auto bg-pitch-900 p-2" style={{ minHeight: 0 }}>
       <canvas ref={canvasElRef} className="max-w-full" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 120px)", objectFit: "contain" }} />
@@ -213,7 +336,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   );
 }
 
-/** Draw arrow head at the end of a line */
+/** Draw arrow head at the end of a line/curve */
 function addArrowHead(c: Canvas, x: number, y: number, angle: number, color: string) {
   const s = 10;
   const tip = { x, y };
@@ -225,6 +348,139 @@ function addArrowHead(c: Canvas, x: number, y: number, angle: number, color: str
   });
   (tri as any)._isRouteArrow = true;
   c.add(tri);
+}
+
+/** Draw a complete vector football field — no PNG borders, always clean */
+export function drawVectorField(canvas: Canvas) {
+  // Remove old field bg objects
+  canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
+
+  const W = canvas.width!, H = canvas.height!;
+  const margin = 30; // margin from canvas edge
+  const fw = W - margin * 2;  // field width
+  const fh = H - margin * 2;  // field height
+
+  const field = new Group([], {
+    left: 0, top: 0,
+    selectable: false, evented: false,
+  });
+  (field as any)._isFieldBg = true;
+
+  // Grass background
+  const grass = new Rect({
+    left: margin, top: margin,
+    width: fw, height: fh,
+    fill: "#2E7D32",
+    stroke: "#FFF",
+    strokeWidth: 3,
+    rx: 0, ry: 0,
+    selectable: false, evented: false,
+  });
+
+  const halfX = margin + fw / 2;
+  const items: any[] = [grass];
+
+  // Center line
+  items.push(new Line([halfX, margin, halfX, margin + fh], {
+    stroke: "#FFF", strokeWidth: 2.5,
+    selectable: false, evented: false,
+  }));
+
+  // Center circle (radius ~60px for 1050-width field)
+  const centerR = 60;
+  items.push(new Circle({
+    left: halfX - centerR, top: margin + fh / 2 - centerR,
+    radius: centerR,
+    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    selectable: false, evented: false,
+  }));
+
+  // Center dot
+  items.push(new Circle({
+    left: halfX - 3, top: margin + fh / 2 - 3,
+    radius: 3,
+    fill: "#FFF", stroke: "",
+    selectable: false, evented: false,
+  }));
+
+  // Penalty areas (left and right)
+  const paW = fw * 0.17;
+  const paH = fh * 0.44;
+  const paTop = margin + (fh - paH) / 2;
+  // Left penalty area
+  items.push(new Rect({
+    left: margin, top: paTop,
+    width: paW, height: paH,
+    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    selectable: false, evented: false,
+  }));
+  // Right penalty area
+  items.push(new Rect({
+    left: margin + fw - paW, top: paTop,
+    width: paW, height: paH,
+    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    selectable: false, evented: false,
+  }));
+
+  // Goal areas
+  const gaW = fw * 0.06;
+  const gaH = fh * 0.22;
+  const gaTop = margin + (fh - gaH) / 2;
+  items.push(new Rect({
+    left: margin, top: gaTop,
+    width: gaW, height: gaH,
+    fill: "transparent", stroke: "#FFF", strokeWidth: 2,
+    selectable: false, evented: false,
+  }));
+  items.push(new Rect({
+    left: margin + fw - gaW, top: gaTop,
+    width: gaW, height: gaH,
+    fill: "transparent", stroke: "#FFF", strokeWidth: 2,
+    selectable: false, evented: false,
+  }));
+
+  // Goals
+  const goalW = 8;
+  const goalH = fh * 0.12;
+  const goalTop = margin + (fh - goalH) / 2;
+  items.push(new Rect({
+    left: margin - goalW / 2, top: goalTop,
+    width: goalW, height: goalH,
+    fill: "#FFF", stroke: "", rx: 2, ry: 2,
+    selectable: false, evented: false,
+  }));
+  items.push(new Rect({
+    left: margin + fw - goalW / 2, top: goalTop,
+    width: goalW, height: goalH,
+    fill: "#FFF", stroke: "", rx: 2, ry: 2,
+    selectable: false, evented: false,
+  }));
+
+  // Corner arcs (quarter circles at 4 corners)
+  const cornerR = 15;
+  const corners = [
+    { cx: margin, cy: margin },
+    { cx: margin, cy: margin + fh },
+    { cx: margin + fw, cy: margin },
+    { cx: margin + fw, cy: margin + fh },
+  ];
+  corners.forEach(({ cx: ccx, cy: ccy }) => {
+    const arcPath = new Path(
+      `M ${ccx} ${ccy + (ccy < H / 2 ? cornerR : -cornerR)} A ${cornerR} ${cornerR} 0 0 ${ccy < H / 2 ? 1 : 0} ${ccx + (ccx < W / 2 ? cornerR : -cornerR)} ${ccy}`,
+      { stroke: "#FFF", strokeWidth: 2, fill: "transparent", selectable: false, evented: false }
+    );
+    items.push(arcPath);
+  });
+
+  // Add all items to the field group
+  field.add(...items);
+
+  // Place field behind everything
+  const others = canvas.getObjects().filter((o: any) => !o._isFieldBg);
+  others.forEach((o: any) => canvas.remove(o));
+  canvas.add(field);
+  others.forEach((o: any) => canvas.add(o));
+  canvas.requestRenderAll();
 }
 
 /** Hide default field markings (when a field image is loaded) */

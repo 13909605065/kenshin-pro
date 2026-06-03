@@ -363,6 +363,49 @@ export function buildCoachSystemPrompt(): string {
 - **室内训练**：线形/敏捷圈/长凳/墙式/旋转木马射门，34种无天气限制方案
 - **锦标赛制**：冠军联赛制/4v4锦标赛/射门比赛，增加训练趣味性和竞争性
 
+### 战术分析深度要求（COACHING-QUALITY）
+
+**module_2 战术专项必须是教练级深度分析，禁止只输出标题和ID。每条内容>=30字。**
+
+**1. 阵型专项分析（formation_notes）：**
+- 说明使用的阵型体系（如4-3-3/4-4-2/3-5-2等）
+- 阵型在各比赛阶段的形态变化（如4-3-3进攻时变为3-2-5/2-3-5）
+- 阵型优缺点及其在当前战术主题下的适配性
+
+**2. 压迫体系（pressing_triggers + defensive_shape）：**
+- 压迫触发信号：什么情况下启动全队压迫？（回传/慢速球/背身接球/门将持球等）
+- 压迫强度和区域：高/中/低位压迫，在哪个区域启动
+- 第一道防线职责（前锋/边锋的逼抢角度和路线）
+- 防守阵型紧凑度：防线-中场线间距（<=25m），横向间距要求
+- 中场封锁：如何切断对方中场接球路线
+
+**3. 进攻模式（attacking_patterns + counter_structure + build_up_phase + midfield_transition + final_third）：**
+- **组织推进阶段(build_up_phase)**：后卫线如何出球、门将参与程度、中场回落接应方式
+- **中场过渡阶段(midfield_transition)**：如何通过中场、第三人跑动创造传球角度、边路/中路推进比例
+- **前场终结阶段(final_third)**：禁区渗透方式、传中策略(早传/下底/倒三角)、射门区域优先级
+- **反击结构(counter_structure)**：断球后3-5秒的快速推进路线、参与人数(通常2-4人)、边路拉宽度+中路快速插上
+
+**4. 攻守转换时刻（transition_moments）：**
+- 由攻转守：丢球后最初3-5秒的反应（就地反抢/延缓/回撤阵型）
+- 由守转攻：断球后第一传方向（最优先：直塞中路插上/次选：快速分边）
+- 转换中关键球员的决策优先级
+
+**5. 定位球组织（set_piece_offense + set_piece_defense）：**
+- 进攻角球：跑位套路（近/远门柱+点球点层次）、挡拆战术、短角球变式
+- 防守角球：区域+盯人混合比例、门柱保护、第一点解围后外压
+- 任意球进攻：直接射门范围、间接配合套路
+- 任意球防守：人墙人数和站位、越位线设置
+
+**6. 球员战术角色（player_roles, 3-5条）：**
+- 每条15-30字，为不同位置球员分配具体战术任务
+- 例如："边后卫：进攻时套边提供宽度，丢球后立即回追形成5人防线"
+- 覆盖门将/后卫/中场/前锋至少3个位置线
+
+**7. 综合战术要点（tactical_analysis, 必须>=4条，每条40-80字）：**
+- 覆盖战术体系的核心原则
+- 每条要点包含战术概念+场上执行方法+预期效果
+- 包含教练指导要点（coaching points维度）
+
 ${RAMP_WARMUP}
 
 ${INJURY_PREVENTION}
@@ -415,10 +458,13 @@ data: {"module":"session_plan","title":"压迫反击主题训练课","duration":
 
 ### cooldown_ids 可用ID: cool-light-jog, cool-static-stretch, cool-foam-roll, cool-breathing
 
-### module_2: tactical_focus（战术专项）
+### module_2: tactical_focus（战术专项 — 必须输出丰富战术分析）
+
+**以下所有字段都必须输出且每条>=30字：tactical_analysis/formation_notes/pressing_triggers/defensive_shape/attacking_patterns/transition_moments/set_piece_offense/set_piece_defense/counter_structure/build_up_phase/midfield_transition/final_third/defensive_block。player_roles 必须>=3条且每条15-30字。drill_ids 必须输出2-3个与战术主题匹配的ID。**
+
 \`\`\`
 event: module_2
-data: {"module":"tactical_focus","title":"压迫战术专项","tactical_theme":"pressing","drill_ids":["tac-pressing-trigger","tac-counter-press","tac-transition-def"],"status":"complete"}
+data: {"module":"tactical_focus","title":"压迫战术专项","tactical_theme":"pressing","drill_ids":["tac-pressing-trigger","tac-counter-press","tac-transition-def"],"tactical_analysis":["高位压迫的核心理念是将防线推至对方半场，通过压缩空间迫使对方长传失误或回传门将","压迫触发信号包括：对方回传时(最脆弱)、背身接球时(视野受限)、慢速横传时(拦截窗口)，全队同步前压是成功关键","中场球员负责切断对方后腰的接球路线，迫使对方中卫只能向边路出球，边后卫提前预判拦截","反击转换时，断球后3秒内完成第一传，边锋立即拉开宽度，中锋纵向冲刺拉扯防线，形成3v2或4v3快速反击局面"],"formation_notes":"4-3-3体系：防守时保持4-1-4-1中位压迫，进攻时两翼齐飞变2-3-5。三中场形成三角站位，单后腰在防线前扫荡，双8号位提供纵向插上和横向覆盖","pressing_triggers":"压迫触发：对方门将持球时前锋弧形逼抢封近角、对方回传中卫时全队压上至中线、对方边后卫背身接球时同侧边锋+中场包夹。5秒规则：丢球后5秒内最强反抢","defensive_shape":"防线高度维持在中圈附近(高位压迫)，防线-中场线间距<=25m，横向紧凑边后卫内收保护肋部。4后卫+1后腰形成5人防守核心，边锋回撤形成两翼","attacking_patterns":"控球进攻以中场倒三角为基础：后腰->8号位->边锋连续一脚出球推进。边路1v1突破+第三人套边传中为主要创造方式。中锋回撤做墙为双8号创造后插上射门空间","transition_moments":"攻转守：丢球后前场3人立即围抢形成第一道防线，中场2人回撤封堵中路，若3秒未抢回则全队回撤至半场阵地防守。守转攻：断球后第一传优先找边路空位加速器，中锋纵向往对方身后冲刺，5秒内形成射门","set_piece_offense":"进攻角球：采用近门柱冲顶+远门柱摆渡+点球点凌空三层包抄。两名中卫分别攻击前点和点球点，边后卫保护外围防反击。短角球变式：边锋虚晃后回传大禁区弧远射","set_piece_defense":"防守角球：区域+盯人混合，6人区域防守(近中远门柱各2)+2人盯对方头球强点。门柱各1人保护，最远球员在中线准备反击。解围后全线快速外压至18码线","player_roles":["中锋：高位压迫第一道防线，逼抢门将+中卫，弧形跑动封锁回传路线。进攻时回撤接应为双8号创造后插上空间","边锋：同侧压迫+切断对方边后卫接球路线。进攻时1v1突破底线传中，反击时第一时间全速冲刺拉开宽度","后腰：防线前扫荡者，阅读对方传球方向提前移动拦截。组织进攻时做球队第一发起点","中卫：高位防线指挥官，造越位+指挥防线滑动。定位球进攻时利用身高优势抢第一点头球"],"counter_structure":"断球后3秒内完成第一传至前场，边锋立即沿边线冲刺拉开宽度，中锋纵向冲刺拉扯中卫，持球中场选择穿透性直塞或分边。目标在7秒内完成射门，参与人数2-4人","build_up_phase":"门将短传出球给中卫，后腰回落至禁区线接应为第一接球点。双中卫拉宽至禁区两侧，边后卫前提至中场线。通过后腰->8号位->边锋的三角传递穿越对方第一道压迫","midfield_transition":"中场过渡：8号位在半空间(halbspace)接球转身为关键环节，第三人跑动创造传球三角。当对方中场线被突破后立即加速节奏，边锋内收边后卫套边形成边路人数优势","final_third":"前场终结：优先从肋部渗透进入(边锋内切+边后卫套边)。传中策略以低平快球为主(对方难以防守)，包抄三层(近门柱冲刺+点球点抢点+远门柱包抄)。禁区弧远射为第二选择","defensive_block":"低位防守时4-4-2阵型紧凑：两条防线间距<=25m，横向紧凑宽度<=35m。中场线负责封堵禁区弧区域，前锋协防对方后腰。边路1v1防守时引导对手向外侧，中卫保护禁区中央","status":"complete"}
 \`\`\`
 
 ### module_3: microcycle（微周期）
@@ -442,7 +488,9 @@ data: {"totalModules":3}
 - ssg_id 必须与战术主题匹配
 - U18及以下自动选 microcycle-youth
 - 每项活动必须有 coaching_points 和 progression/regression（文库已有）
+- **module_2 必须包含全部14个战术分析字段，每条>=30字**
+- **player_roles 必须>=3条，tactical_analysis 必须>=4条**
 - 所有数字为 number 类型
-- 每个 data 行 JSON 压缩为单行
+- 每个 data 行 JSON 压缩为单行（module_2 的 JSON 可以很长但必须是单行）
 - 只能从上述ID列表中选择，不得编造新ID`;
 }

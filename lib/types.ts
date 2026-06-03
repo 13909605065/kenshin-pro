@@ -232,6 +232,34 @@ export interface TacticalFocus {
   title: string;
   tactical_theme: string;
   drills: SessionActivity[];
+  /** Rich tactical analysis (4+ well-developed bullet points covering formation, patterns, transitions) */
+  tactical_analysis?: string[];
+  /** Formation-specific notes (e.g. "4-3-3 → 3-2-5 in attack") */
+  formation_notes?: string;
+  /** Pressing triggers — when and how to initiate the press */
+  pressing_triggers?: string;
+  /** Defensive shape and organization */
+  defensive_shape?: string;
+  /** Attacking patterns and combinations */
+  attacking_patterns?: string;
+  /** Key transition moments (attack↔defense) */
+  transition_moments?: string;
+  /** Offensive set piece organization */
+  set_piece_offense?: string;
+  /** Defensive set piece organization */
+  set_piece_defense?: string;
+  /** Player-specific tactical roles and responsibilities */
+  player_roles?: string[];
+  /** Counter-attacking structure and triggers */
+  counter_structure?: string;
+  /** Build-up phase: playing out from the back */
+  build_up_phase?: string;
+  /** Midfield transition: progressing through the middle third */
+  midfield_transition?: string;
+  /** Final third: chance creation and finishing patterns */
+  final_third?: string;
+  /** Defensive block: compactness, line spacing, pressing zones */
+  defensive_block?: string;
   status: "complete";
 }
 

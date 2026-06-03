@@ -208,6 +208,54 @@
     "tactical": "战术要点",
     "nutrition": "饮食与恢复"
   },
+  "nav": {
+    "home": "首页",
+    "tactics": "战术板",
+    "roster": "花名册",
+    "history": "历史",
+    "settings": "设置"
+  },
+  "actions": {
+    "share": "分享",
+    "copyLink": "已复制链接",
+    "exportPDF": "导出PDF",
+    "exportTable": "导出表格",
+    "startTraining": "开始训练"
+  },
+  "roster": {
+    "title": "球队花名册",
+    "import": "导入Excel",
+    "addPlayer": "添加球员",
+    "filterAll": "全部",
+    "filterHealthy": "健康",
+    "filterMinor": "轻伤",
+    "filterOut": "伤停",
+    "name": "姓名",
+    "position": "位置",
+    "number": "号码",
+    "age": "年龄",
+    "height": "身高",
+    "weight": "体重",
+    "injuryStatus": "伤病状态",
+    "delete": "删除",
+    "save": "保存",
+    "noPlayers": "暂无球员，请导入Excel或手动添加。"
+  },
+  "workout": {
+    "warmup": "热身",
+    "strength": "力量训练",
+    "technique": "技术训练",
+    "cooldown": "整理",
+    "set": "组",
+    "rest": "休息",
+    "skip": "跳过",
+    "pause": "暂停",
+    "complete": "训练完成",
+    "totalTime": "总时间",
+    "exercisesDone": "个动作已完成",
+    "backToPlan": "返回计划",
+    "recordSaved": "记录已保存"
+  },
   "tacticalBoard": {
     "title": "战术板",
     "coachMode": "教练模式",

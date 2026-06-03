@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useWizard } from "@/hooks/useWizard";
 import { useTraining } from "@/hooks/useTraining";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useTemplates } from "@/hooks/useTemplates";
+import { usePlanHistory } from "@/hooks/usePlanHistory";
 import { TrainingTabs } from "./TrainingTabs";
 import { GeneratingOverlay } from "./GeneratingOverlay";
 import { ErrorAlert } from "./ErrorAlert";
@@ -12,7 +13,7 @@ import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
 import { useLang } from "@/lib/i18n/LanguageContext";
-import { Zap, Edit3, X, Target, Clock, Activity } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown } from "lucide-react";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
@@ -50,7 +51,7 @@ function ProfileSummary({ formData, t }: any) {
   return <span className="text-xs text-gray-400">{parts.join(" · ")}</span>;
 }
 
-function EditProfileModal({ formData, updateField, setRole, t, onClose }: any) {
+function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles }: any) {
   const [subPos, setSubPos] = useState("");
 
   return (
@@ -73,9 +74,34 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose }: any) {
 
         {formData.role === "athlete" ? (
           <>
-            {/* Name */}
-            <input type="text" value={formData.name} onChange={(e: any) => updateField("name", e.target.value)}
-              placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
+            {/* Name — auto-fill from saved profiles */}
+            <div className="relative">
+              <input type="text" value={formData.name} onChange={(e: any) => updateField("name", e.target.value)}
+                onBlur={(e) => {
+                  const name = e.target.value.trim();
+                  if (!name) return;
+                  const match = profiles.findByName(name);
+                  if (match && confirm(`找到存档「${match.name}」，是否自动填入信息？`)) {
+                    const fd = match.formData;
+                    updateField("name", fd.name);
+                    if (fd.gender) updateField("gender", fd.gender);
+                    if (fd.position) updateField("position", fd.position);
+                    if (fd.age) updateField("age", fd.age);
+                    if (fd.height) updateField("height", fd.height);
+                    if (fd.weight) updateField("weight", fd.weight);
+                    if (fd.years) updateField("years", fd.years);
+                    if (fd.goal) updateField("goal", fd.goal);
+                    if (fd.phase) updateField("phase", fd.phase);
+                    if (fd.injuryTags) updateField("injuryTags", fd.injuryTags);
+                    if (fd.injuryHistory) updateField("injuryHistory", fd.injuryHistory);
+                    if (fd.weakness) updateField("weakness", fd.weakness);
+                  }
+                }}
+                placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
+              {profiles.hasProfile(formData.name) && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neon-pink">📋 已有档案</span>
+              )}
+            </div>
 
             {/* Gender */}
             <div className="grid grid-cols-2 gap-2">
@@ -163,6 +189,7 @@ export function Dashboard() {
   const training = useTraining();
   const profiles = useProfiles();
   const templates = useTemplates();
+  const planHistory = usePlanHistory();
   const { formData, updateField, setRole, isStepValid } = wizard;
   const isCoach = formData.role === "coach";
 
@@ -175,12 +202,22 @@ export function Dashboard() {
   const [templateName, setTemplateName] = useState("");
   const [showTemplateSave, setShowTemplateSave] = useState(false);
   const [injOpen, setInjOpen] = useState<Record<string,boolean>>({});
+  const [planHistoryOpen, setPlanHistoryOpen] = useState(false);
+  const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
+  const [showManualSave, setShowManualSave] = useState(false);
+  const [manualSaveName, setManualSaveName] = useState("");
   const { t } = useLang();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
 
+  /** Plans saved for the current player name (case-insensitive) */
+  const playerPlans = useMemo(
+    () => planHistory.getPlansForPlayer(formData.name || ""),
+    [planHistory, formData.name]
+  );
+
   const handleGenerate = useCallback(async () => {
     if (!isStepValid) return;
-    setStatus("generating"); setErrorCode(null); setShowDone(false);
+    setStatus("generating"); setErrorCode(null); setShowDone(false); setSavedPlanId(null);
     const timeout = setTimeout(() => { training.reset(); setStatus("error"); setErrorCode("timeout"); }, 80000);
     try {
       await training.generate(formData, (s) => {
@@ -190,6 +227,10 @@ export function Dashboard() {
       clearTimeout(timeout);
       // Only show done animation if we actually got modules
       if (training.modules.length > 0) {
+        // Auto-save to plan history with player name
+        const name = formData.name?.trim() || (isCoach ? "教练" : "未命名球员");
+        const saved = planHistory.savePlan(name, formData, training.modules);
+        setSavedPlanId(saved.id);
         setShowDone(true);
         setTimeout(() => { setShowDone(false); setStatus("complete"); }, 1500);
       } else {
@@ -197,7 +238,7 @@ export function Dashboard() {
         setErrorCode("empty-response");
       }
     } catch (err: any) { clearTimeout(timeout); setStatus("error"); setErrorCode(err.code || "api-error"); }
-  }, [formData, training, isStepValid]);
+  }, [formData, training, isStepValid, planHistory, isCoach]);
 
   const handleRetry = useCallback(async () => {
     setStatus("generating"); setErrorCode(null);
@@ -346,6 +387,74 @@ export function Dashboard() {
             </div>
           )}
 
+          {/* Plan History — idle state */}
+          {playerPlans.length > 0 && (
+            <div className="glass-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-bold text-white flex items-center gap-2">
+                  <History className="w-4 h-4 text-neon-pink" />
+                  方案历史
+                  {formData.name && (
+                    <span className="text-xs text-gray-500 font-normal">· {formData.name}</span>
+                  )}
+                </p>
+                <span className="text-[10px] text-gray-500">{playerPlans.length}条记录</span>
+              </div>
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {playerPlans.slice(0, 8).map((plan) => (
+                  <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-pitch-700/50 transition group">
+                    <button
+                      onClick={() => {
+                        training.loadModules(plan.modules, plan.formData);
+                        setStatus("complete");
+                        setErrorCode(null);
+                      }}
+                      className="text-left flex-1 min-w-0"
+                    >
+                      <p className="text-xs text-gray-200 truncate">{plan.playerName}</p>
+                      <p className="text-[10px] text-gray-500">
+                        {new Date(plan.createdAt).toLocaleString("zh-CN", {
+                          month: "numeric", day: "numeric",
+                          hour: "2-digit", minute: "2-digit"
+                        })}
+                        {" · "}{plan.modules.length}模块
+                      </p>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); }}
+                      className="text-gray-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-1 flex-shrink-0"
+                      title="删除"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick-access: Strength Templates */}
+          <a href="/strength" className="block">
+            <div className="bg-pitch-700/50 rounded-xl border border-pitch-600 hover:border-neon-pink/60 transition p-3 group cursor-pointer">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-white">💪 力量训练模板</span>
+                <span className="text-[10px] text-gray-500 group-hover:text-neon-pink transition">查看更多 →</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { n: "纯力量", d: "大重量低次数 · 5×5 · 85%1RM", c: "bg-neon-pink/10 border-neon-pink/20 text-neon-pink" },
+                  { n: "肌肥大", d: "中重量中高次数 · 4×10-12 · 70%1RM", c: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
+                  { n: "专项体能", d: "爆发力+腘绳肌保护 · 赛季中维持", c: "bg-neon-gold/10 border-neon-gold/20 text-neon-gold" },
+                  { n: "基础力量", d: "入门全身力量 · 建立基础动作模式", c: "bg-green-500/10 border-green-500/20 text-green-400" },
+                ].map((t) => (
+                  <div key={t.n} className={`text-[10px] px-2 py-1.5 rounded-lg border ${t.c} font-medium truncate`} title={t.d}>
+                    {t.n}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </a>
+
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}
             className="w-full py-3 bg-neon-pink text-black font-bold rounded-xl text-lg hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
@@ -371,6 +480,7 @@ export function Dashboard() {
           updateField={updateField}
           setRole={setRole}
           t={t}
+          profiles={profiles}
           onClose={() => setEditOpen(false)}
         />
       )}
@@ -429,7 +539,7 @@ export function Dashboard() {
       {(status === "streaming" || status === "complete" || status === "stream-interrupted") && training.modules.length > 0 && !showDone && (
         <div className="space-y-6">
           {/* Top bar */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               {training.fromCache ? (
                 <span className="text-sm text-neon-pink font-bold">⚡ 已有方案 · 秒开</span>
@@ -439,18 +549,115 @@ export function Dashboard() {
                   <p className="text-xs text-gray-500">
                     {status === "streaming" ? `AI 生成中 ${training.modules.length}/5...` : "✓ 生成完成"}
                   </p>
+                  {savedPlanId && status === "complete" && (
+                    <p className="text-[10px] text-neon-pink mt-0.5">✓ 已自动保存到方案历史</p>
+                  )}
                 </>
               )}
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); }}
+            <div className="flex gap-2 items-center">
+              {/* Save current plan button */}
+              {status === "complete" && (
+                <button
+                  onClick={() => { setManualSaveName(formData.name?.trim() || ""); setShowManualSave(true); }}
+                  className="flex items-center gap-1 px-3 py-2 bg-neon-pink/10 border border-neon-pink/30 text-neon-pink rounded-lg text-xs hover:bg-neon-pink/20 transition font-medium"
+                >
+                  <Save className="w-3.5 h-3.5" />保存当前方案
+                </button>
+              )}
+              {/* Plan history dropdown */}
+              {playerPlans.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setPlanHistoryOpen(!planHistoryOpen)}
+                    className="flex items-center gap-1 px-3 py-2 bg-pitch-700 border border-pitch-600 text-gray-300 rounded-lg text-xs hover:border-pitch-500 transition"
+                  >
+                    <History className="w-3.5 h-3.5" />
+                    方案历史 ({playerPlans.length})
+                    <ChevronDown className={`w-3 h-3 transition ${planHistoryOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {planHistoryOpen && (
+                    <div className="absolute right-0 top-full mt-1 w-72 max-h-60 overflow-y-auto glass-card p-2 z-50 space-y-1">
+                      {playerPlans.map((plan) => (
+                        <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-pitch-700/50 transition group">
+                          <button
+                            onClick={() => {
+                              training.loadModules(plan.modules, plan.formData);
+                              setPlanHistoryOpen(false);
+                              setStatus("complete");
+                            }}
+                            className="text-left flex-1 min-w-0"
+                          >
+                            <p className="text-xs text-gray-200 truncate">
+                              {plan.playerName}
+                            </p>
+                            <p className="text-[10px] text-gray-500">
+                              {new Date(plan.createdAt).toLocaleString("zh-CN", {
+                                month: "numeric", day: "numeric",
+                                hour: "2-digit", minute: "2-digit"
+                              })}
+                              {" · "}{plan.modules.length}模块
+                            </p>
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); }}
+                            className="text-gray-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-1"
+                            title="删除"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }}
                 className="px-4 py-2 bg-pitch-700 text-gray-300 rounded-lg text-sm hover:bg-pitch-600 transition font-medium">
                 ← 新建方案
               </button>
             </div>
           </div>
+
+          {/* Manual save dialog */}
+          {showManualSave && (
+            <div className="glass-card p-3 flex items-center gap-2">
+              <input
+                value={manualSaveName}
+                onChange={(e) => setManualSaveName(e.target.value)}
+                placeholder="方案名称（如：季前力量方案v2）"
+                className="input-field text-sm flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && manualSaveName.trim()) {
+                    planHistory.savePlan(manualSaveName.trim(), formData, training.modules);
+                    setManualSaveName("");
+                    setShowManualSave(false);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (manualSaveName.trim()) {
+                    planHistory.savePlan(manualSaveName.trim(), formData, training.modules);
+                    setManualSaveName("");
+                    setShowManualSave(false);
+                  }
+                }}
+                className="bg-neon-pink text-black text-xs font-bold px-4 py-2 rounded"
+              >
+                保存
+              </button>
+              <button
+                onClick={() => { setShowManualSave(false); setManualSaveName(""); }}
+                className="text-gray-500 hover:text-white text-xs px-2"
+              >
+                取消
+              </button>
+            </div>
+          )}
+
           <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} />
-          <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); }} className="w-full py-2 bg-pitch-700 text-gray-400 rounded-lg text-sm hover:bg-pitch-600 transition">← {t("dashboard.newPlan")}</button>
+          <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }} className="w-full py-2 bg-pitch-700 text-gray-400 rounded-lg text-sm hover:bg-pitch-600 transition">← {t("dashboard.newPlan")}</button>
           {!isCoach && <TrainingHistory />}
         </div>
       )}

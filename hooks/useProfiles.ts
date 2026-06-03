@@ -81,6 +81,26 @@ export function useProfiles() {
     return profiles.find((p) => p.id === activeId) || null;
   }, [profiles, activeId]);
 
+  /** Find saved profile by player name (case-insensitive) */
+  const findByName = useCallback(
+    (name: string): PlayerProfile | null => {
+      if (!name || !name.trim()) return null;
+      const normalized = name.trim().toLowerCase();
+      return profiles.find(
+        (p) => p.formData.name?.toLowerCase() === normalized
+      ) || null;
+    },
+    [profiles]
+  );
+
+  /** Check if a profile exists for this name */
+  const hasProfile = useCallback(
+    (name: string): boolean => {
+      return findByName(name) !== null;
+    },
+    [findByName]
+  );
+
   return {
     profiles,
     activeId,
@@ -88,5 +108,7 @@ export function useProfiles() {
     loadProfile,
     deleteProfile,
     getActive,
+    findByName,
+    hasProfile,
   };
 }

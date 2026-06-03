@@ -19,7 +19,7 @@ const config: Config = {
         },
         neon: {
           pink: "#FF2D55",
-          green: "#FF2D55",
+          green: "#30D158",
           gold: "#FFD700",
           red: "#FF4444",
         },

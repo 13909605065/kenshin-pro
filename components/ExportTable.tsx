@@ -205,11 +205,18 @@ function CoachTable({ modules }: { modules: TrainingModule[] }) {
 
 function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formData: PlayerFormData }) {
   const posModule = modules.find((m) => m.module === "position_training") as PositionTraining | undefined;
+  const abilityModule = modules.find((m) => m.module === "ability_training") as any;
   if (!posModule) return <p className="text-gray-500 p-8 text-center">暂无运动员方案数据</p>;
 
+  const safeWarmup = Array.isArray(posModule.warmup) ? posModule.warmup : [];
+  const safeCooldown = Array.isArray(posModule.cooldown) ? posModule.cooldown : [];
+  const safeUpper = Array.isArray((posModule as any).upper_limb) ? (posModule as any).upper_limb : [];
+  const safeLower = Array.isArray((posModule as any).lower_limb) ? (posModule as any).lower_limb : [];
+  const safeCore = Array.isArray((posModule as any).core) ? (posModule as any).core : [];
+  const safeAbility = Array.isArray(abilityModule?.exercises) ? abilityModule.exercises : [];
+
   const date = new Date().toLocaleDateString("zh-CN");
-  const totalMin = [posModule.warmup, posModule.cooldown]
-    .flat()
+  const totalMin = [...safeWarmup, ...safeCooldown]
     .reduce((s: number, w: any) => s + (w.duration || 0), 0);
 
   return (
@@ -232,7 +239,7 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
       )}
 
       {/* Warmup */}
-      <h2 className="text-base font-bold mb-2">一、热身 ({posModule.warmup?.reduce((s: number, w: any) => s + w.duration, 0) || 0}min)</h2>
+      <h2 className="text-base font-bold mb-2">一、热身 ({safeWarmup.reduce((s: number, w: any) => s + (w.duration||0), 0)}min)</h2>
       <table className="w-full border-collapse mb-4 text-sm">
         <thead>
           <tr className="bg-gray-100">
@@ -243,7 +250,7 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
           </tr>
         </thead>
         <tbody>
-          {posModule.warmup?.map((w: any, i: number) => (
+          {safeWarmup.map((w: any, i: number) => (
             <tr key={i}>
               <td className="border border-gray-300 px-2 py-1 text-center">{i + 1}</td>
               <td className="border border-gray-300 px-2 py-1">{w.name}</td>
@@ -256,13 +263,16 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
 
       {/* Strength Exercises */}
       <h2 className="text-base font-bold mb-2">二、力量训练</h2>
-      {(["upper_limb", "lower_limb", "core", "ability"] as const).map((key) => {
-        const exs = (posModule as any)[key];
-        if (!exs?.length) return null;
-        const labels: Record<string, string> = { upper_limb: "上肢", lower_limb: "下肢", core: "核心", ability: "专项能力" };
+      {([
+        ["upper_limb", safeUpper, "上肢"],
+        ["lower_limb", safeLower, "下肢"],
+        ["core", safeCore, "核心"],
+        ["ability", safeAbility, "专项能力"],
+      ] as const).map(([key, exs, label]) => {
+        if (!exs || !Array.isArray(exs) || exs.length === 0) return null;
         return (
           <div key={key} className="mb-3">
-            <h3 className="text-sm font-bold mb-1">{labels[key]}</h3>
+            <h3 className="text-sm font-bold mb-1">{label}</h3>
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="bg-gray-100">
@@ -294,9 +304,9 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
       })}
 
       {/* Cooldown */}
-      {posModule.cooldown?.length > 0 && (
+      {safeCooldown.length > 0 && (
         <>
-          <h2 className="text-base font-bold mb-2">三、冷身 ({posModule.cooldown.reduce((s: number, c: any) => s + c.duration, 0)}min)</h2>
+          <h2 className="text-base font-bold mb-2">三、冷身 ({safeCooldown.reduce((s: number, c: any) => s + (c.duration||0), 0)}min)</h2>
           <table className="w-full border-collapse mb-4 text-sm">
             <thead>
               <tr className="bg-gray-100">
@@ -306,7 +316,7 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
               </tr>
             </thead>
             <tbody>
-              {posModule.cooldown.map((c: any, i: number) => (
+              {safeCooldown.map((c: any, i: number) => (
                 <tr key={i}>
                   <td className="border border-gray-300 px-2 py-1">{c.name}</td>
                   <td className="border border-gray-300 px-2 py-1 text-center">{c.duration}min</td>

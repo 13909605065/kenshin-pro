@@ -6,6 +6,7 @@ import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import { FilterBar } from "./FilterBar";
 import { ExerciseCard } from "./ExerciseCard";
 import { ExerciseDetailPanel } from "./ExerciseDetailPanel";
+import { useCustomExercises, customToExerciseLibItem } from "@/hooks/useCustomExercises";
 import { X } from "lucide-react";
 
 interface Props {
@@ -15,17 +16,30 @@ interface Props {
 }
 
 export function ExercisePickerModal({ open, onClose, onSelect }: Props) {
+  const { exercises: customExercises } = useCustomExercises();
   const [bodyPart, setBodyPart] = useState<BodyPart | "all">("all");
   const [equipment, setEquipment] = useState<Equipment | "all">("all");
   const [detailEx, setDetailEx] = useState<ExerciseLibItem | null>(null);
 
+  // Convert custom exercises to ExerciseLibItem format
+  const customLibItems = useMemo(
+    () => customExercises.map((ce) => customToExerciseLibItem(ce)),
+    [customExercises]
+  );
+
   const filtered = useMemo(() => {
-    return EXERCISE_LIBRARY.filter((ex) => {
+    const builtIn = EXERCISE_LIBRARY.filter((ex) => {
       if (bodyPart !== "all" && ex.body_part !== bodyPart) return false;
       if (equipment !== "all" && ex.equipment !== equipment) return false;
       return true;
     });
-  }, [bodyPart, equipment]);
+    const custom = customLibItems.filter((ex) => {
+      if (bodyPart !== "all" && ex.body_part !== bodyPart) return false;
+      if (equipment !== "all" && ex.equipment !== equipment) return false;
+      return true;
+    });
+    return [...builtIn, ...custom];
+  }, [bodyPart, equipment, customLibItems]);
 
   if (!open) return null;
 

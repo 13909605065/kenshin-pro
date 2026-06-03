@@ -27,7 +27,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
         </div>
 
         {/* Thumbnail or placeholder */}
-        <div className="w-14 h-14 rounded-lg bg-pitch-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-pitch-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
           {hasImage ? (
             <img src={drill.image_url} alt={drill.name}
               className="w-full h-full object-cover cursor-pointer hover:scale-110 transition"
@@ -120,7 +120,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
 export function TechniqueTab({ modules }: Props) {
   const techModule = modules.find((m) => m.module === "technique_running");
 
-  if (!techModule || techModule.module !== "technique_running" || !techModule.drills) {
+  if (!techModule || !Array.isArray(techModule.drills) || techModule.drills.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-12 h-12 mx-auto rounded-full bg-pitch-700 flex items-center justify-center mb-3">
@@ -131,7 +131,9 @@ export function TechniqueTab({ modules }: Props) {
     );
   }
 
-  const hasAnyImage = techModule.drills.some(d => !!d.image_url);
+  const safeDrills = techModule.drills || [];
+  const running = techModule.running_profile || { total_distance: "暂无数据", intensity_zones: [] };
+  const hasAnyImage = safeDrills.some((d: any) => !!d?.image_url);
 
   return (
     <div className="space-y-5">
@@ -140,7 +142,7 @@ export function TechniqueTab({ modules }: Props) {
         <div>
           <h3 className="text-white font-bold">⚽ 技术练习</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            {techModule.drills.length} 项练习 · 点击展开查看要点
+            {safeDrills.length} 项练习 · 点击展开查看要点
           </p>
         </div>
         {!hasAnyImage && (
@@ -152,7 +154,7 @@ export function TechniqueTab({ modules }: Props) {
 
       {/* Drill cards */}
       <div className="space-y-3">
-        {techModule.drills.map((drill, i) => (
+        {safeDrills.map((drill: any, i: number) => (
           <DrillCard key={i} drill={drill} index={i} />
         ))}
       </div>
@@ -165,12 +167,12 @@ export function TechniqueTab({ modules }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-pitch-800/60 rounded-lg p-3">
             <p className="text-[10px] text-gray-500 mb-0.5">总跑动距离</p>
-            <p className="text-lg font-bold text-white">{techModule.running_profile.total_distance}</p>
+            <p className="text-lg font-bold text-white">{running.total_distance}</p>
           </div>
           <div className="bg-pitch-800/60 rounded-lg p-3">
             <p className="text-[10px] text-gray-500 mb-0.5">强度区间分布</p>
             <div className="flex flex-wrap gap-1 mt-1">
-              {techModule.running_profile.intensity_zones.map((zone, i) => (
+              {(running.intensity_zones || []).map((zone: string, i: number) => (
                 <span key={i} className="px-2 py-0.5 rounded-full bg-pitch-600 text-[10px] text-gray-300">
                   {zone}
                 </span>

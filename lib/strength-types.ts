@@ -1,5 +1,5 @@
-export type BodyPart = "chest" | "back" | "legs" | "shoulders" | "arms" | "core";
-export type Equipment = "barbell" | "dumbbell" | "cable" | "bodyweight" | "machine";
+export type BodyPart = "chest" | "back" | "legs" | "shoulders" | "arms" | "core" | "lower" | "upper_push" | "upper_pull" | "full_body";
+export type Equipment = "barbell" | "dumbbell" | "cable" | "bodyweight" | "machine" | "kettlebell" | "med_ball" | "band" | "bosu" | "bench" | "other";
 
 export interface ExerciseLibItem {
   id: string;

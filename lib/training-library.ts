@@ -185,6 +185,249 @@ export const WARMUP_LIBRARY: Record<string, WarmupRef> = {
     description: "L1持球单腿站30s→L2抛接球单腿站30s→L3对抗推搡单腿站30s, 各2组每侧",
     category: "no_ball",
   },
+
+  // ═══ ① 心肺动员 (Cardio Activation) ═══
+  "warm-slow-jog": {
+    id: "warm-slow-jog", name: "慢跑", duration: 3,
+    description: "四路纵队慢跑，听教练口令变化方向/节奏，心率逐步升至Zone2",
+    category: "no_ball",
+  },
+  "warm-high-knee-jog": {
+    id: "warm-high-knee-jog", name: "高抬腿慢跑", duration: 1.5,
+    description: "慢跑中交替高抬腿，大腿抬至水平，手臂自然摆动，激活髋屈肌",
+    category: "no_ball",
+  },
+  "warm-jumping-jacks": {
+    id: "warm-jumping-jacks", name: "开合跳", duration: 1,
+    description: "双脚开合跳跃+双手头上拍掌，30s×2组，间歇15s，心率快速提升",
+    category: "no_ball",
+  },
+  "warm-hip-rotation-skip": {
+    id: "warm-hip-rotation-skip", name: "转髋跳", duration: 1,
+    description: "原地跳跃中髋部左右旋转，20次×2组，激活髋关节旋转肌群",
+    category: "no_ball",
+  },
+  "warm-small-steps": {
+    id: "warm-small-steps", name: "小步跑", duration: 1,
+    description: "小幅度高频率碎步，前脚掌着地，10m往返×2组，激活足踝刚性",
+    category: "no_ball",
+  },
+  "warm-straight-leg-run": {
+    id: "warm-straight-leg-run", name: "直腿跑", duration: 1,
+    description: "膝关节伸直，勾脚尖，前脚掌扒地，10m×2组，激活腘绳肌",
+    category: "no_ball",
+  },
+  "warm-mach-drill": {
+    id: "warm-mach-drill", name: "马克操", duration: 2,
+    description: "A-Skip + B-Skip + C-Skip组合，15m×2组每种，提升髋膝踝协调性",
+    category: "no_ball",
+  },
+  "warm-mountain-climber": {
+    id: "warm-mountain-climber", name: "俯身登山跑", duration: 1,
+    description: "平板支撑位快速交替膝至胸，30s×2组，间歇25s",
+    category: "no_ball",
+  },
+  "warm-agility-ladder-fast": {
+    id: "warm-agility-ladder-fast", name: "绳梯快速脚步", duration: 1.5,
+    description: "绳梯一格两步→两格一步→横向进出，各2组，高步频",
+    category: "no_ball",
+  },
+  "warm-forward-back-shuffle": {
+    id: "warm-forward-back-shuffle", name: "前后快速碎步", duration: 1,
+    description: "前后方向快速交替碎步，20s×2组，训练反应与步频",
+    category: "no_ball",
+  },
+
+  // ═══ ② 胸廓&髋部激活 (Thoracic & Hip Activation) ═══
+  "warm-arm-circles": {
+    id: "warm-arm-circles", name: "双臂环绕", duration: 1,
+    description: "双臂伸直画大圆，正反向各10次，激活肩关节活动度",
+    category: "no_ball",
+  },
+  "warm-thoracic-rotation": {
+    id: "warm-thoracic-rotation", name: "胸椎旋转", duration: 1,
+    description: "侧卧上腿屈膝90°贴地，上身向对侧旋转，3次/侧×2组，打开胸廓活动度",
+    category: "no_ball",
+  },
+  "warm-ys-raise": {
+    id: "warm-ys-raise", name: "Y/T字上举", duration: 1,
+    description: "俯身Y字(拇指朝上)+T字(掌心朝下)上举，各12次×2组，激活肩胛稳定肌",
+    category: "no_ball",
+  },
+  "warm-squat-with-circles": {
+    id: "warm-squat-with-circles", name: "环转加深蹲", duration: 1,
+    description: "双臂画圆衔接深蹲至最低点，10次×2组，整合上肢与下肢活动",
+    category: "no_ball",
+  },
+  "warm-9090": {
+    id: "warm-9090", name: "9090髋关节激活", duration: 1.5,
+    description: "坐姿前腿90°后腿90°，上身前倾+转体，3次/侧×2组，打开髋内外旋",
+    category: "no_ball",
+  },
+  "warm-world-greatest-stretch": {
+    id: "warm-world-greatest-stretch", name: "最伟大拉伸", duration: 1.5,
+    description: "弓步→肘触地→转体→手臂上举→还原，3次/侧，全身大复合拉伸",
+    category: "no_ball",
+  },
+  "warm-rolling-snowball": {
+    id: "warm-rolling-snowball", name: "滚雪球", duration: 1,
+    description: "仰卧抱膝前后滚动→蹲起，6次/侧×2组，脊柱屈曲与伸髋整合",
+    category: "no_ball",
+  },
+  "warm-back-to-back-chain": {
+    id: "warm-back-to-back-chain", name: "背靠背侧表链拉伸", duration: 1,
+    description: "两人背靠背，交替侧屈拉伸侧表链，4次/侧，激活侧向活动度",
+    category: "no_ball",
+  },
+  "warm-squat-side-shuffle": {
+    id: "warm-squat-side-shuffle", name: "靠背蹲起+侧滑步", duration: 1.5,
+    description: "两人背靠背下蹲→侧向滑步移动，20m×2组，激活下肢+协调性",
+    category: "no_ball",
+  },
+  "warm-lateral-lunge": {
+    id: "warm-lateral-lunge", name: "侧弓步转脚踝", duration: 1,
+    description: "侧弓步到底+脚踝转动，3次/侧×2组，打开髋内收肌+踝活动度",
+    category: "no_ball",
+  },
+  "warm-body-side-bend": {
+    id: "warm-body-side-bend", name: "身体侧屈", duration: 1,
+    description: "站姿手臂上举侧屈，4次/侧×2组，打开侧表链",
+    category: "no_ball",
+  },
+  "warm-cradle-walk": {
+    id: "warm-cradle-walk", name: "摇篮抱", duration: 1,
+    description: "双手抱膝至胸前，支撑腿提踵，10m×2组，激活髋屈肌+踝稳定",
+    category: "no_ball",
+  },
+  "warm-shoulder-stretch": {
+    id: "warm-shoulder-stretch", name: "肩部拉伸+牵拉体转", duration: 1,
+    description: "单臂胸前横拉+躯干旋转，4次/侧×2组，肩关节+胸椎联动",
+    category: "no_ball",
+  },
+
+  // ═══ ③ 下肢动态拉伸 (Lower Body Dynamic Stretch) ═══
+  "warm-front-kick": {
+    id: "warm-front-kick", name: "前踢腿", duration: 1,
+    description: "直腿前踢至髋高，手触脚尖，10次/侧，动态拉伸腘绳肌",
+    category: "no_ball",
+  },
+  "warm-side-kick": {
+    id: "warm-side-kick", name: "侧踢腿", duration: 1,
+    description: "侧向摆腿，10次/侧，动态拉伸内收肌+外展肌",
+    category: "no_ball",
+  },
+  "warm-back-kick": {
+    id: "warm-back-kick", name: "后踢腿", duration: 1,
+    description: "向后摆腿+臀肌收缩，10次/侧，动态拉伸髋屈肌",
+    category: "no_ball",
+  },
+  "warm-leg-swing-in-out": {
+    id: "warm-leg-swing-in-out", name: "抬腿后向内+向外", duration: 1,
+    description: "单腿支撑，另一腿前后+内外摆动，15s/方向×2组",
+    category: "no_ball",
+  },
+  "warm-multi-lunge": {
+    id: "warm-multi-lunge", name: "多方向弓箭步", duration: 1.5,
+    description: "前/侧/后三个方向弓箭步，3次/侧/方向，动态拉伸下肢多平面",
+    category: "no_ball",
+  },
+  "warm-calf-stretch": {
+    id: "warm-calf-stretch", name: "小腿拉伸", duration: 1,
+    description: "弓步推墙小腿后侧拉伸，20s/侧×2组",
+    category: "no_ball",
+  },
+  "warm-thigh-stretch": {
+    id: "warm-thigh-stretch", name: "大腿拉伸", duration: 1,
+    description: "站姿屈膝拉脚至臀，3次/侧×2组，激活股四头肌",
+    category: "no_ball",
+  },
+  "warm-knee-hug-calf-raise": {
+    id: "warm-knee-hug-calf-raise", name: "抱膝提踵+燕式平衡", duration: 1,
+    description: "抱膝至胸前→支撑腿提踵→燕式平衡，3次/侧，踝稳定+本体感觉",
+    category: "no_ball",
+  },
+  "warm-wide-squat-toe-touch": {
+    id: "warm-wide-squat-toe-touch", name: "宽距摸脚", duration: 1,
+    description: "宽距站立前屈摸对侧脚，20s×2组，动态拉伸内收肌+腘绳肌",
+    category: "no_ball",
+  },
+  "warm-hip-rotation-move": {
+    id: "warm-hip-rotation-move", name: "转髋移动", duration: 1,
+    description: "行进中转髋外展+内收交替，20s×2组，动态打开髋关节",
+    category: "no_ball",
+  },
+  "warm-downward-dog": {
+    id: "warm-downward-dog", name: "下犬式", duration: 1,
+    description: "下犬式交替踩脚跟，5次/侧×2组，拉伸小腿+腘绳肌+肩带",
+    category: "no_ball",
+  },
+  "warm-frog-stretch": {
+    id: "warm-frog-stretch", name: "青蛙趴", duration: 1,
+    description: "青蛙趴姿前后移动，30s×2组，打开髋内收肌群",
+    category: "no_ball",
+  },
+  "warm-hip-open-close": {
+    id: "warm-hip-open-close", name: "开胯", duration: 1,
+    description: "坐姿蝴蝶式上下颤动+前屈，8次×2组，打开髋关节",
+    category: "no_ball",
+  },
+
+  // ═══ ④ 神经灵敏预备 (Neural Agility Prep) ═══
+  "warm-reactive-sprint": {
+    id: "warm-reactive-sprint", name: "听口令变向冲刺", duration: 2,
+    description: "碎步原地→听哨声/口令瞬间变向冲刺10m，3次，训练反应与加速",
+    category: "no_ball",
+  },
+  "warm-cone-agility": {
+    id: "warm-cone-agility", name: "标志盘绕桩跑", duration: 2,
+    description: "标志盘S形绕桩跑+转身冲刺，20m×3组，训练变向+加速",
+    category: "no_ball",
+  },
+  "warm-cone-grab": {
+    id: "warm-cone-grab", name: "抢标志盘—井字棋", duration: 2,
+    description: "两组队员抢标志盘做井字棋，训练反应+决策+竞争意识",
+    category: "no_ball",
+  },
+  "warm-high-knee-turn-sprint": {
+    id: "warm-high-knee-turn-sprint", name: "高抬腿后转身冲刺", duration: 1.5,
+    description: "原地高抬腿→听哨声转身180°→10m冲刺，2组，神经快速转换",
+    category: "no_ball",
+  },
+  "warm-backward-run-turn-sprint": {
+    id: "warm-backward-run-turn-sprint", name: "后退跑+转身冲刺", duration: 1.5,
+    description: "后退跑→听哨声→原地跳转→绕标志盘→转身冲刺20m，2组",
+    category: "no_ball",
+  },
+  "warm-forward-hop-side-shuffle": {
+    id: "warm-forward-hop-side-shuffle", name: "向前小跳+侧滑步+冲刺", duration: 1.5,
+    description: "连续小跳→侧滑步→冲刺跑，20m×2组，多模式移动整合",
+    category: "no_ball",
+  },
+  "warm-cone-hop-turn": {
+    id: "warm-cone-hop-turn", name: "标志盘侧移+栏架小跳", duration: 1.5,
+    description: "侧向移动过标志盘→栏架小跳→冲刺，20m×2组，灵敏+爆发",
+    category: "no_ball",
+  },
+  "warm-clap-react": {
+    id: "warm-clap-react", name: "拍掌听指令反应", duration: 1.5,
+    description: "队员围圈，听教练拍掌次数做对应动作，3轮，听觉反应训练",
+    category: "no_ball",
+  },
+  "warm-hand-chain-relay": {
+    id: "warm-hand-chain-relay", name: "牵手接力绕桩跑", duration: 1.5,
+    description: "两人牵手绕标志盘接力跑，20m×2组，神经兴奋+团队协作",
+    category: "no_ball",
+  },
+  "warm-color-cone-react": {
+    id: "warm-color-cone-react", name: "听指令抢指定颜色标志盘", duration: 2,
+    description: "教练喊颜色→队员冲刺抢对应颜色标志盘，1min×2组，视觉反应+加速度",
+    category: "no_ball",
+  },
+  "warm-coordination-jumps": {
+    id: "warm-coordination-jumps", name: "协调性跳跃123", duration: 1.5,
+    description: "不同模式跳跃组合(单脚/双脚/交叉)，30s×2组，神经肌肉协调",
+    category: "no_ball",
+  },
 };
 
 // ═══════════════════════════════════════════════
@@ -2312,6 +2555,20 @@ export interface CoachCompactModule {
   // tactical_focus fields
   tactical_theme?: string;
   drill_ids?: string[];
+  tactical_analysis?: string[];
+  formation_notes?: string;
+  pressing_triggers?: string;
+  defensive_shape?: string;
+  attacking_patterns?: string;
+  transition_moments?: string;
+  set_piece_offense?: string;
+  set_piece_defense?: string;
+  player_roles?: string[];
+  counter_structure?: string;
+  build_up_phase?: string;
+  midfield_transition?: string;
+  final_third?: string;
+  defensive_block?: string;
   // microcycle fields
   match_day?: string;
   microcycle_id?: string;
@@ -2387,6 +2644,20 @@ export function resolveCoachModule(c: CoachCompactModule): TrainingModule | null
         title: c.title,
         tactical_theme: c.tactical_theme || "possession",
         drills: resolveSessionActivities(drillIds),
+        tactical_analysis: c.tactical_analysis,
+        formation_notes: c.formation_notes,
+        pressing_triggers: c.pressing_triggers,
+        defensive_shape: c.defensive_shape,
+        attacking_patterns: c.attacking_patterns,
+        transition_moments: c.transition_moments,
+        set_piece_offense: c.set_piece_offense,
+        set_piece_defense: c.set_piece_defense,
+        player_roles: c.player_roles,
+        counter_structure: c.counter_structure,
+        build_up_phase: c.build_up_phase,
+        midfield_transition: c.midfield_transition,
+        final_third: c.final_third,
+        defensive_block: c.defensive_block,
         status: "complete",
       } as any;
     }

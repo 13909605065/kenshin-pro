@@ -106,6 +106,21 @@ export function useTraining() {
     setFromCache(false);
   }, []);
 
+  /** Load pre-built modules (e.g., from saved plan history) */
+  const loadModules = useCallback(
+    (loaded: TrainingModule[], fData?: PlayerFormData) => {
+      if (fData) {
+        formDataRef.current = fData;
+      }
+      modulesRef.current = [...loaded];
+      setModules([...loaded]);
+      setPlanId(`loaded_${Date.now()}`);
+      setFromCache(false);
+      setCurrentEventName("");
+    },
+    []
+  );
+
   return {
     modules,
     currentEventName,
@@ -114,5 +129,6 @@ export function useTraining() {
     generate,
     retry,
     reset,
+    loadModules,
   };
 }

@@ -2,6 +2,7 @@
 
 import { TrainingModule, Position } from "@/lib/types";
 import { ExerciseTable } from "./ExerciseTable";
+import { Printer, Table2 } from "lucide-react";
 
 interface Props {
   modules: TrainingModule[];
@@ -25,6 +26,32 @@ export function PhysicalTab({ modules, position }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* Export buttons */}
+      <div className="flex items-center justify-between">
+        <div />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
+          >
+            <Printer className="w-3.5 h-3.5" /> 导出PDF
+          </button>
+          <button
+            onClick={() => {
+              const table = document.querySelector(".export-table");
+              if (table) {
+                (table as HTMLElement).style.position = "static";
+                (table as HTMLElement).style.visibility = "visible";
+              }
+              window.print();
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
+          >
+            <Table2 className="w-3.5 h-3.5" /> 打印表格
+          </button>
+        </div>
+      </div>
+
       {isGoalkeeper && (
         <p className="text-xs text-gray-500 bg-pitch-700/50 rounded-lg p-2">
           守门员仅展示无球训练内容
@@ -32,21 +59,21 @@ export function PhysicalTab({ modules, position }: Props) {
       )}
 
       {upper.length > 0 && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">🦾 上肢训练</h4>
           <ExerciseTable exercises={upper} />
         </div>
       )}
 
       {lower.length > 0 && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">🦿 下肢训练</h4>
           <ExerciseTable exercises={lower} />
         </div>
       )}
 
       {core.length > 0 && (
-        <div>
+        <div className="border-b border-pitch-700/30 pb-4 mb-4">
           <h4 className="text-neon-pink text-sm font-bold mb-2">💪 核心训练</h4>
           <ExerciseTable exercises={core} />
         </div>

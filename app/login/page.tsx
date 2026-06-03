@@ -38,7 +38,12 @@ export default function LoginPage() {
     setLoading("login");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
-    else window.location.href = "/";
+    else {
+      // Redirect back to the page the user was on before login
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get("redirect") || "/";
+      window.location.href = redirectTo;
+    }
     setLoading(null);
   };
 

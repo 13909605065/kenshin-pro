@@ -82,13 +82,17 @@ export default function TacticsPage() {
         canvas.getObjects().filter((o: any) => (o as any)._isPlayer || (o as any)._isDrillAnnotation)
           .forEach((o: any) => canvas.remove(o));
 
-        // Place players
+        // Place players — 8-point circular anchors, centered numbers
+        const R = 20;
         positions.forEach((p) => {
-          const cr = new Circle({ left: p.x - 20, top: p.y - 20, radius: 20, fill: p.c, stroke: "#FFF", strokeWidth: 2.5 });
-          const tx = new FabricText(p.n, { left: p.x - 10, top: p.y - 12, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: ["#FFD700", "#FFF", "#00FF88"].includes(p.c) ? "#000" : "#FFF", selectable: false });
-          const g = new Group([cr, tx], { left: p.x - 20, top: p.y - 20 });
+          const cx = p.x, cy = p.y;
+          const textColor = ["#FFD700", "#FFF", "#00FF88"].includes(p.c) ? "#000" : "#FFF";
+          const cr = new Circle({ left: cx-R, top: cy-R, radius: R, fill: p.c, stroke: "#FFF", strokeWidth: 2.5, selectable: false, evented: false });
+          const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: textColor, selectable: false, evented: false });
+          const g = new Group([cr, tx], { left: cx-R, top: cy-R });
           (g as any)._isPlayer = true; (g as any).number = p.n;
-          g.setControlsVisibility({ mtr: false });
+          g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:false});
+          g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:"#FF2D55", cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
           canvas.add(g);
         });
 
@@ -130,32 +134,27 @@ export default function TacticsPage() {
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
   const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.renderAll(); }};
   const hField = useCallback((fn: string) => {
-    const c=boardRef.current; if(!c)return;
-    hideFieldMarkings(c);
-    FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
-      // Remove old field bg
-      c.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>c.remove(o));
-      // Scale to fill canvas exactly (cover mode, no gaps)
-      const s = Math.max(c.width!/img.width!, c.height!/img.height!);
-      img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
-      (img as any)._isFieldBg = true;
-      // Put field bg behind everything else
-      const others = c.getObjects().filter((o:any)=>!o._isFieldBg);
-      others.forEach((o:any)=>c.remove(o));
-      c.add(img);
-      others.forEach((o:any)=>c.add(o));
-      c.renderAll();
-    });
+    const c = boardRef.current; if (!c) return;
+    if ((c as any)._setFieldImage) {
+      (c as any)._setFieldImage(fn);
+    }
   }, []);
 
   const placePlayers = (pl: {x:number;y:number;n:string;c:string}[], color?: string) => {
     const c=boardRef.current; if(!c)return;
     const clr = color||activeColor;
+    const R = 20;
     pl.forEach((p) => {
-      const cr = new Circle({left:p.x-20,top:p.y-20,radius:20,fill:p.c||clr,stroke:"#FFF",strokeWidth:2.5});
-      const tx = new FabricText(p.n,{left:p.x-10,top:p.y-12,fontSize:16,fontFamily:"Arial",fontWeight:"bold",fill:["#FFD700","#FFF","#00FF88"].includes(p.c||clr)?"#000":"#FFF",selectable:false});
-      const g = new Group([cr,tx],{left:p.x-20,top:p.y-20});
-      (g as any)._isPlayer=true;(g as any).number=p.n;g.setControlsVisibility({mtr:false});c.add(g);
+      const fillClr = p.c||clr;
+      const cx = p.x, cy = p.y;
+      const textColor = ["#FFD700","#FFF","#00FF88"].includes(fillClr) ? "#000" : "#FFF";
+      const cr = new Circle({left:cx-R, top:cy-R, radius:R, fill:fillClr, stroke:"#FFF", strokeWidth:2.5, selectable:false, evented:false});
+      const tx = new FabricText(p.n, {left:cx, top:cy, originX:"center", originY:"center", fontSize:R*0.8, fontFamily:"Arial", fontWeight:"bold", fill:textColor, selectable:false, evented:false});
+      const g = new Group([cr,tx], {left:cx-R, top:cy-R});
+      (g as any)._isPlayer=true; (g as any).number=p.n;
+      g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:false});
+      g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:"#FF2D55", cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
+      c.add(g);
     });
     c.requestRenderAll();
   };

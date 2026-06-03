@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import type { TrainingModule, Exercise, WarmupItem } from "@/lib/types";
 import {
   X,
@@ -154,7 +154,7 @@ interface Props {
 }
 
 export function WorkoutTimer({ modules, planId, onClose }: Props) {
-  const steps = flattenWorkoutSteps(modules);
+  const steps = useMemo(() => flattenWorkoutSteps(modules), [modules]);
   const [currentStep, setCurrentStep] = useState(0);
   const [currentSet, setCurrentSet] = useState(1);
   const [phase, setPhase] = useState<"active" | "rest" | "done" | "paused">(
