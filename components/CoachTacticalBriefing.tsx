@@ -101,11 +101,10 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
                   <g><circle cx="150" cy="18" r="5" fill="#FF2D55" stroke="#fff" strokeWidth="1"/><text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text></g>
                 </>)}
                 {activeDiagram==="press" && (<>
-                  {/* Pressing arrows */}
+                  <defs><marker id="press-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10z" fill="#FF2D55"/></marker></defs>
                   {[{x1:60,y1:45,x2:80,y2:65},{x1:240,y1:45,x2:220,y2:65}].map((a,i)=>(
-                    <line key={i} x1={a.x1} y1={a.y1} x2={a.x2} y2={a.y2} stroke="#FF2D55" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#arrow)"/>
+                    <line key={i} x1={a.x1} y1={a.y1} x2={a.x2} y2={a.y2} stroke="#FF2D55" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#press-arrow)"/>
                   ))}
-                  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10z" fill="#FF2D55"/></marker></defs>
                 </>)}
               </svg>
             </div>

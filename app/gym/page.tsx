@@ -84,8 +84,18 @@ export default function GymPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <button onClick={() => router.push("/")} className="bg-neon-pink text-black font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 shadow-lg shadow-neon-pink/20"><Zap className="w-6 h-6" />智能推荐训练</button>
-          <button onClick={() => router.push("/exercises")} className="bg-[#1a1a1a] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
+          <button onClick={() => router.push("/strength")} className="bg-[#1a1a1a] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
         </div>
+
+        <button onClick={() => router.push("/strength")} className="w-full bg-[#1a1a1a] border border-neon-pink/10 hover:border-neon-pink/30 rounded-xl px-4 py-3 text-left transition group">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Dumbbell className="w-4 h-4 text-neon-pink" />
+              <span className="text-sm text-gray-300 group-hover:text-white">力量计划器</span>
+            </div>
+            <span className="text-[10px] text-gray-600 group-hover:text-neon-pink transition">自定义动作、组数与休息 →</span>
+          </div>
+        </button>
 
         {workoutRecords.length > 0 ? (
           <div>

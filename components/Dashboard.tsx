@@ -616,6 +616,13 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Hint text when generate is disabled */}
+          {!isStepValid && (
+            <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
+              {isCoach ? "请先点击「编辑」完善教练档案" : "请先填写场上位置"}
+            </p>
+          )}
+
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}
             className="w-full py-5 bg-neon-pink text-black font-bold rounded-xl text-lg hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20">
@@ -708,7 +715,7 @@ export function Dashboard() {
                 <>
                   <p className="text-white font-bold text-lg">训练方案</p>
                   <p className="text-xs text-gray-500">
-                    {status === "streaming" ? `AI 生成中 ${training.modules.length}/5...` : "✓ 生成完成"}
+                    {status === "streaming" ? `AI 生成中 ${training.modules.length}/${isCoach ? 3 : 5}...` : "✓ 生成完成"}
                   </p>
                   {savedPlanId && status === "complete" && (
                     <p className="text-[10px] text-neon-pink mt-0.5">✓ 已自动保存到方案历史</p>

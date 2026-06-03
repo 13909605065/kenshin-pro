@@ -114,6 +114,11 @@ export default function TacticalDiagnosisPage() {
     "对方打4-4-2菱形中场，我们4-3-3中路被压制，怎么破？",
   ];
 
+  // ─── Diagnosis history ────────────────────────────────
+  const [history, setHistory] = useState<any[]>(() => {
+    try { return JSON.parse(localStorage.getItem("kenshin_diagnosis_history") || "[]").slice(0, 5); } catch { return []; }
+  });
+
   // ─── Render ────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
