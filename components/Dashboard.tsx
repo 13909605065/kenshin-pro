@@ -551,9 +551,9 @@ export function Dashboard() {
           {isCoach && (
             <div className="glass-card p-4">
               <p className="text-xs text-gray-500 mb-3">
-                {t("coach.equipmentHint")}
+                {"可选器材（不选则AI自动推荐）"}
                 {formData.equipmentAvailable?.length > 0 && (
-                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length} {t("coach.selected")}</span>
+                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length} 项已选</span>
                 )}
               </p>
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
