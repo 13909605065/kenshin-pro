@@ -13,6 +13,7 @@ import { TacticalTab } from "./tabs/TacticalTab";
 import { NutritionTab } from "./tabs/NutritionTab";
 import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
+import { SequentialTrainingList } from "./SequentialTrainingList";
 
 interface Props {
   modules: TrainingModule[];
@@ -409,6 +410,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
   const [showTimer, setShowTimer] = useState(false);
+  const [viewMode, setViewMode] = useState<"sequential" | "tabs">(isCoach ? "tabs" : "sequential");
   const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -488,6 +490,40 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
         </div>
       )}
 
+      {/* View toggle — athlete only */}
+      {!isCoach && (
+        <div className="flex justify-center mb-3">
+          <div className="flex bg-[#111] rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode("sequential")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                viewMode === "sequential" ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              📋 顺序训练表
+            </button>
+            <button
+              onClick={() => setViewMode("tabs")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                viewMode === "tabs" ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"
+              }`}
+            >
+              📑 分类视图
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sequential view — athlete default */}
+      {!isCoach && viewMode === "sequential" && (
+        <div className="flex-1">
+          <SequentialTrainingList modules={modules} />
+        </div>
+      )}
+
+      {/* Tab view — coach default, or athlete switching */}
+      {(isCoach || viewMode === "tabs") && (
+      <>
       {/* Tab Bar */}
       <div className="flex flex-wrap justify-center gap-x-1 border-b border-pitch-700 mb-4">
         {tabs.map((tab) => (
@@ -549,6 +585,8 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
           </>
         )}
       </div>
+      </>
+      )}
 
       {/* Bottom: Fixed Action Bar */}
       <div className="sticky bottom-0 bg-pitch-900/95 backdrop-blur pt-4 border-t border-pitch-700 mt-4">

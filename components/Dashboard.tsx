@@ -263,7 +263,7 @@ export function Dashboard() {
               <p className="text-[10px] text-gray-500">AI 科学化备课</p>
             </button>
           )}
-          {scene === "pitch" && (
+          {scene === "pitch" && role === "coach" && (
             <>
               <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
                 <Timer className="w-5 h-5 text-neon-pink mb-1" />
@@ -274,6 +274,20 @@ export function Dashboard() {
                 <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
                 <p className="text-xs font-bold text-white">快速调整</p>
                 <p className="text-[10px] text-gray-500">人数/分组/器材</p>
+              </button>
+            </>
+          )}
+          {scene === "gym" && (
+            <>
+              <button onClick={() => window.location.href = "/strength"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">力量训练</p>
+                <p className="text-[10px] text-gray-500">动作库+跟练</p>
+              </button>
+              <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">动作库</p>
+                <p className="text-[10px] text-gray-500">124个动作+筛选</p>
               </button>
             </>
           )}
@@ -291,7 +305,7 @@ export function Dashboard() {
               </button>
             </>
           )}
-          {(scene === "pitch" || scene === "gym") && (
+          {role === "athlete" && (scene === "pitch" || scene === "gym") && (
             <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
               <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
               <p className="text-xs font-bold text-white">动作库</p>
