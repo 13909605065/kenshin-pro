@@ -23,7 +23,7 @@ export function SceneTabs() {
       <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
         {scenes.map((s) => (
           <button key={s.id} onClick={() => setScene(s.id as Scene)}
-            className={"flex-1 py-1 rounded-md text-[10px] font-medium border-b-2 " + (scene===s.id ? "bg-[#222] text-white border-[#333] " + (IND[s.id] ? "border-"+IND[s.id].split("-")[1]+"-500" : "") : "text-gray-500 border-transparent")}>
+            className={"flex-1 py-1 rounded-md text-[10px] font-medium " + (scene===s.id ? "bg-[#222] text-white" : "text-gray-500")}>
             {s.icon}{s.label}
           </button>
         ))}
