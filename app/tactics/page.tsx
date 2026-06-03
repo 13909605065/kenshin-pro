@@ -380,7 +380,7 @@ export default function TacticsPage() {
         <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1" title="返回首页">
           <ArrowLeft className="w-4 h-4"/><span className="text-[11px] hidden sm:inline">返回</span>
         </button>
-        <h1 className="text-white font-bold text-sm">📋 战术板</h1>
+        <h1 className="text-white font-bold text-sm" style={{ color: "#c8ccd4" }}>📋 战术板</h1>
         <div className="flex-1"/>
         <div className="flex items-center gap-0.5 #1e2128 rounded-lg p-0.5">
           <button onClick={hZoomOut} className="p-1 text-gray-400 hover:text-white rounded" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
