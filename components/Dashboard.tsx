@@ -235,12 +235,40 @@ export function Dashboard() {
     if (formData.role !== role) setWizardRole(role);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
-
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [showDone, setShowDone] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [coachInput, setCoachInput] = useState("");
+  const [launchTimer, setLaunchTimer] = useState(false);
+
+  // Auto-detect tactical themes from coach input keywords
+  useEffect(() => {
+    if (!isCoach || !coachInput.trim()) return;
+
+    const keywordToTheme: Record<string, string> = {
+      '防反': 'counterattack',
+      '防守': 'defending',
+      '反击': 'counterattack',
+      '压迫': 'pressing',
+      '进攻': 'positional_attack',
+      '传控': 'possession',
+      '边路': 'crossing',
+      '定位球': 'set_pieces',
+    };
+
+    const matched: string[] = [];
+    for (const [keyword, theme] of Object.entries(keywordToTheme)) {
+      if (coachInput.includes(keyword) && !formData.tacticalThemes.includes(theme as any)) {
+        matched.push(theme);
+      }
+    }
+
+    if (matched.length > 0) {
+      updateField('tacticalThemes', [...formData.tacticalThemes, ...matched] as any);
+    }
+  }, [coachInput, isCoach]);
+
   const [profileName, setProfileName] = useState("");
   const [showProfileSave, setShowProfileSave] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -327,7 +355,7 @@ export function Dashboard() {
               {/* 训练场: timer + roster */}
               {scene === "pitch" && (
                 <>
-                  <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
                     <Timer className="w-5 h-5 text-neon-pink mb-1" />
                     <p className="text-xs font-bold text-white">计时跟练</p>
                     <p className="text-[10px] text-gray-500">执行教案</p>
@@ -824,7 +852,7 @@ export function Dashboard() {
             </div>
           )}
 
-          <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} />
+          <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} launchTimer={launchTimer} onLaunchTimer={() => setLaunchTimer(false)} />
           <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }} className="w-full py-2 bg-pitch-700 text-gray-400 rounded-lg text-sm hover:bg-pitch-600 transition">← {t("dashboard.newPlan")}</button>
           {!isCoach && <TrainingHistory />}
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
@@ -23,6 +23,8 @@ interface Props {
   formData: PlayerFormData;
   planId: string | null;
   onSaveTemplate?: () => void;
+  launchTimer?: boolean;
+  onLaunchTimer?: () => void;
 }
 
 const ATHLETE_TABS = [
@@ -408,7 +410,7 @@ function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
   );
 }
 
-export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Props) {
+export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launchTimer, onLaunchTimer }: Props) {
   const router = useRouter();
   const isCoach = formData.role === "coach";
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
@@ -431,6 +433,14 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
       setActiveTab(tabs[currentIdx - 1].id);
     }
   }, [activeTab, tabs]);
+
+  // Auto-launch timer when coming from Dashboard pitch "计时跟练" / "开始训练"
+  useEffect(() => {
+    if (launchTimer) {
+      setShowTimer(true);
+      onLaunchTimer?.();
+    }
+  }, [launchTimer, onLaunchTimer]);
 
   // Coach module lookup
   const sessionPlan = modules.find(m => m.module === "session_plan") as SessionPlan | undefined;
@@ -476,6 +486,15 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
               className="mt-3 w-full py-2.5 bg-neon-pink text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-neon-pink/90 transition active:scale-[0.98]"
             >
               <span className="text-base">▶</span> 开始训练
+            </button>
+          )}
+          {/* Coach timer button */}
+          {isCoach && (
+            <button
+              onClick={() => setShowTimer(true)}
+              className="mt-3 w-full py-2.5 bg-neon-pink text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-neon-pink/90 transition active:scale-[0.98]"
+            >
+              <span className="text-base">▶</span> 计时跟练
             </button>
           )}
         </div>
