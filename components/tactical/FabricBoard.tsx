@@ -4,8 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { Canvas, Rect, Circle, Line, IText, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
 import { ROUTE_STYLES } from "./BoardToolbar";
 
-const FW = 1050;
-const FH = 680;
+const FW = 720;
+const FH = 1080;
 
 interface FabricBoardProps {
   activeTool: string;
@@ -91,17 +91,22 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
-    // Load field image — scale to fill canvas with tight margins
+    // Load field image — rotate to portrait and fill canvas
     FabricImage.fromURL("/equipment/场地.png").then((img) => {
-      const margin = 15; // small consistent margin
-      const availW = FW - margin * 2;
-      const availH = FH - margin * 2;
+      const margin = 15;
+      // Rotate 90° for portrait orientation
+      img.set({ angle: 90 });
+      // After rotation, width↔height are conceptually swapped for scaling
+      const availW = FH - margin * 2;
+      const availH = FW - margin * 2;
       const scaleX = availW / (img.width || 1);
       const scaleY = availH / (img.height || 1);
-      const scale = Math.max(scaleX, scaleY); // cover to avoid gaps
+      const scale = Math.max(scaleX, scaleY);
       img.set({
-        left: (FW - (img.width || 0) * scale) / 2,
-        top: (FH - (img.height || 0) * scale) / 2,
+        left: FW / 2,
+        top: FH / 2,
+        originX: "center",
+        originY: "center",
         scaleX: scale,
         scaleY: scale,
         selectable: false,
@@ -378,14 +383,15 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         drawVectorField(c);
         return;
       }
-      // Otherwise load PNG field — fill canvas with tight margins
+      // Otherwise load PNG field — rotate to portrait and fill
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
         c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
         const margin = 15;
-        const s = Math.max((c.width!-margin*2)/img.width!, (c.height!-margin*2)/img.height!);
+        img.set({ angle: 90 });
+        const s = Math.max((c.height!-margin*2)/img.width!, (c.width!-margin*2)/img.height!);
         img.set({
-          left: (c.width! - img.width! * s) / 2,
-          top: (c.height! - img.height! * s) / 2,
+          left: c.width! / 2, top: c.height! / 2,
+          originX: "center", originY: "center",
           scaleX: s, scaleY: s, selectable: false, evented: false,
         });
         (img as any)._isFieldBg = true;
@@ -419,132 +425,111 @@ function addArrowHead(c: Canvas, x: number, y: number, angle: number, color: str
   c.add(tri);
 }
 
-/** Draw a complete vector football field — no PNG borders, always clean */
+/** Draw a complete vector football field — portrait orientation, attacking upward */
 export function drawVectorField(canvas: Canvas) {
-  // Remove old field bg objects
   canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
 
   const W = canvas.width!, H = canvas.height!;
-  const margin = 30; // margin from canvas edge
-  const fw = W - margin * 2;  // field width
-  const fh = H - margin * 2;  // field height
+  const margin = 15;
+  const fw = W - margin * 2;  // field width (narrow)
+  const fh = H - margin * 2;  // field length (tall)
+  const cx = margin + fw / 2;
+  const cy = margin + fh / 2;
 
-  const field = new Group([], {
-    left: 0, top: 0,
-    selectable: false, evented: false,
-  });
-  (field as any)._isFieldBg = true;
-
-  // Grass background
   const grass = new Rect({
-    left: margin, top: margin,
-    width: fw, height: fh,
-    fill: "#1e4028",
-    stroke: "#FFF",
-    strokeWidth: 3,
-    rx: 0, ry: 0,
+    left: margin, top: margin, width: fw, height: fh,
+    fill: "#1e4028", stroke: "rgba(255,255,255,0.5)", strokeWidth: 2,
     selectable: false, evented: false,
   });
 
-  const halfX = margin + fw / 2;
   const items: any[] = [grass];
 
-  // Center line
-  items.push(new Line([halfX, margin, halfX, margin + fh], {
-    stroke: "#FFF", strokeWidth: 2.5,
+  // Halfway line (horizontal, across the field width)
+  items.push(new Line([margin, cy, margin + fw, cy], {
+    stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
 
-  // Center circle (radius ~60px for 1050-width field)
-  const centerR = 60;
+  // Center circle
+  const cr = 50;
   items.push(new Circle({
-    left: halfX - centerR, top: margin + fh / 2 - centerR,
-    radius: centerR,
-    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    left: cx - cr, top: cy - cr, radius: cr,
+    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
-
   // Center dot
   items.push(new Circle({
-    left: halfX - 3, top: margin + fh / 2 - 3,
-    radius: 3,
-    fill: "#FFF", stroke: "",
+    left: cx - 3, top: cy - 3, radius: 3,
+    fill: "rgba(255,255,255,0.6)", stroke: "",
     selectable: false, evented: false,
   }));
 
-  // Penalty areas (left and right)
-  const paW = fw * 0.17;
-  const paH = fh * 0.44;
-  const paTop = margin + (fh - paH) / 2;
-  // Left penalty area
+  // Penalty areas (top and bottom)
+  const paW = fw * 0.6;
+  const paH = fh * 0.17;
+  const paLeft = margin + (fw - paW) / 2;
+  // Bottom penalty area (defending end)
   items.push(new Rect({
-    left: margin, top: paTop,
-    width: paW, height: paH,
-    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    left: paLeft, top: margin, width: paW, height: paH,
+    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
-  // Right penalty area
+  // Top penalty area (attacking end)
   items.push(new Rect({
-    left: margin + fw - paW, top: paTop,
-    width: paW, height: paH,
-    fill: "transparent", stroke: "#FFF", strokeWidth: 2.5,
+    left: paLeft, top: margin + fh - paH, width: paW, height: paH,
+    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
 
   // Goal areas
-  const gaW = fw * 0.06;
-  const gaH = fh * 0.22;
-  const gaTop = margin + (fh - gaH) / 2;
+  const gaW = fw * 0.35;
+  const gaH = fh * 0.06;
+  const gaLeft = margin + (fw - gaW) / 2;
   items.push(new Rect({
-    left: margin, top: gaTop,
-    width: gaW, height: gaH,
-    fill: "transparent", stroke: "#FFF", strokeWidth: 2,
+    left: gaLeft, top: margin, width: gaW, height: gaH,
+    fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
-    left: margin + fw - gaW, top: gaTop,
-    width: gaW, height: gaH,
-    fill: "transparent", stroke: "#FFF", strokeWidth: 2,
+    left: gaLeft, top: margin + fh - gaH, width: gaW, height: gaH,
+    fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
 
   // Goals
-  const goalW = 8;
-  const goalH = fh * 0.12;
-  const goalTop = margin + (fh - goalH) / 2;
+  const goalW = gaW * 0.6;
+  const goalH = 6;
+  const goalLeft = margin + (fw - goalW) / 2;
   items.push(new Rect({
-    left: margin - goalW / 2, top: goalTop,
-    width: goalW, height: goalH,
-    fill: "#FFF", stroke: "", rx: 2, ry: 2,
+    left: goalLeft, top: margin - goalH, width: goalW, height: goalH,
+    fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
-    left: margin + fw - goalW / 2, top: goalTop,
-    width: goalW, height: goalH,
-    fill: "#FFF", stroke: "", rx: 2, ry: 2,
+    left: goalLeft, top: margin + fh, width: goalW, height: goalH,
+    fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
 
-  // Corner arcs (quarter circles at 4 corners)
-  const cornerR = 15;
+  // Corner arcs (4 corners)
+  const arcR = 12;
   const corners = [
-    { cx: margin, cy: margin },
-    { cx: margin, cy: margin + fh },
-    { cx: margin + fw, cy: margin },
-    { cx: margin + fw, cy: margin + fh },
+    [margin, margin], [margin + fw, margin],
+    [margin, margin + fh], [margin + fw, margin + fh],
   ];
-  corners.forEach(({ cx: ccx, cy: ccy }) => {
-    const arcPath = new Path(
-      `M ${ccx} ${ccy + (ccy < H / 2 ? cornerR : -cornerR)} A ${cornerR} ${cornerR} 0 0 ${ccy < H / 2 ? 1 : 0} ${ccx + (ccx < W / 2 ? cornerR : -cornerR)} ${ccy}`,
-      { stroke: "#FFF", strokeWidth: 2, fill: "transparent", selectable: false, evented: false }
+  corners.forEach(([cx2, cy2]) => {
+    const sx = cx2 === margin ? 1 : -1;
+    const sy = cy2 === margin ? 1 : -1;
+    const arc = new Path(
+      `M ${cx2} ${cy2 + sy * arcR} A ${arcR} ${arcR} 0 0 ${sy > 0 ? 1 : 0} ${cx2 + sx * arcR} ${cy2}`,
+      { stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5, fill: "transparent", selectable: false, evented: false }
     );
-    items.push(arcPath);
+    items.push(arc);
   });
 
-  // Add all items to the field group
-  field.add(...items);
+  const field = new Group(items, { left: 0, top: 0, selectable: false, evented: false });
+  (field as any)._isFieldBg = true;
 
-  // Place field behind everything
   const others = canvas.getObjects().filter((o: any) => !o._isFieldBg);
   others.forEach((o: any) => canvas.remove(o));
   canvas.add(field);

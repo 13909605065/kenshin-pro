@@ -11,43 +11,44 @@ import { useRouter } from "next/navigation";
 import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
 
-// Standard 11-a-side positions. Canvas: 1050×680, field area: x=30..1020, y=30..650, center=(525,340)
-// Zones: GK x≈55 · DF x≈175-195 · DM x≈340-360 · MF x≈400-440 · AM x≈570-590 · FW x≈700-780
-// Vertical: top-flank≈100 · top-half≈250 · center≈340 · bottom-half≈430 · bottom-flank≈580
+// Standard 11-a-side positions. Canvas: 720×1080 portrait, field area: x=15..705, y=15..1065, center=(360,540)
+// Attacking upward. y=bottom(defense)→top(attack). x=left→right.
+// Zones: GK y≈40 · DF y≈170-200 · MF y≈450-540 · FW y≈800-950 · OppGK y≈1040
+// Width: left-wing≈90 · left-half≈240 · center≈360 · right-half≈480 · right-wing≈630
 const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
   "4-3-3": [
     //         GK           RB          RCB          LCB          LB
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
+    {x:360,y:40,n:"1",c:"#c82630"},{x:600,y:170,n:"2",c:"#c82630"},{x:480,y:190,n:"4",c:"#c82630"},{x:240,y:190,n:"5",c:"#c82630"},{x:120,y:170,n:"3",c:"#c82630"},
     //         RCM         CDM          LCM          RW           ST           LW
-    {x:420,y:190,n:"8",c:"#c82630"},{x:440,y:340,n:"6",c:"#c82630"},{x:420,y:490,n:"10",c:"#c82630"},{x:700,y:100,n:"7",c:"#c82630"},{x:770,y:340,n:"9",c:"#c82630"},{x:700,y:580,n:"11",c:"#c82630"},
+    {x:500,y:450,n:"8",c:"#c82630"},{x:360,y:540,n:"6",c:"#c82630"},{x:220,y:450,n:"10",c:"#c82630"},{x:600,y:800,n:"7",c:"#c82630"},{x:360,y:920,n:"9",c:"#c82630"},{x:120,y:800,n:"11",c:"#c82630"},
   ],
   "4-4-2": [
     //         GK           RB          RCB          LCB          LB
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
+    {x:360,y:40,n:"1",c:"#c82630"},{x:600,y:170,n:"2",c:"#c82630"},{x:480,y:190,n:"4",c:"#c82630"},{x:240,y:190,n:"5",c:"#c82630"},{x:120,y:170,n:"3",c:"#c82630"},
     //         RM          RCM          LCM          LM           ST           ST
-    {x:420,y:100,n:"7",c:"#c82630"},{x:440,y:250,n:"8",c:"#c82630"},{x:440,y:430,n:"6",c:"#c82630"},{x:420,y:580,n:"11",c:"#c82630"},{x:730,y:250,n:"9",c:"#c82630"},{x:730,y:430,n:"10",c:"#c82630"},
+    {x:600,y:440,n:"7",c:"#c82630"},{x:480,y:460,n:"8",c:"#c82630"},{x:240,y:460,n:"6",c:"#c82630"},{x:120,y:440,n:"11",c:"#c82630"},{x:450,y:850,n:"9",c:"#c82630"},{x:270,y:850,n:"10",c:"#c82630"},
   ],
   "3-5-2": [
     //         GK           LCB          CB           RCB
-    {x:55,y:340,n:"1",c:"#c82630"},{x:145,y:180,n:"3",c:"#c82630"},{x:135,y:340,n:"5",c:"#c82630"},{x:145,y:500,n:"4",c:"#c82630"},
+    {x:360,y:40,n:"1",c:"#c82630"},{x:220,y:160,n:"3",c:"#c82630"},{x:360,y:180,n:"5",c:"#c82630"},{x:500,y:160,n:"4",c:"#c82630"},
     //         RWB         RCM          CDM          LCM          LWB
-    {x:320,y:70,n:"7",c:"#c82630"},{x:420,y:190,n:"8",c:"#c82630"},{x:430,y:340,n:"6",c:"#c82630"},{x:420,y:490,n:"10",c:"#c82630"},{x:320,y:610,n:"2",c:"#c82630"},
+    {x:630,y:350,n:"7",c:"#c82630"},{x:500,y:430,n:"8",c:"#c82630"},{x:360,y:480,n:"6",c:"#c82630"},{x:220,y:430,n:"10",c:"#c82630"},{x:90,y:350,n:"2",c:"#c82630"},
     //         ST           ST
-    {x:730,y:250,n:"9",c:"#c82630"},{x:730,y:430,n:"11",c:"#c82630"},
+    {x:450,y:850,n:"9",c:"#c82630"},{x:270,y:850,n:"11",c:"#c82630"},
   ],
   "4-2-3-1": [
     //         GK           RB          RCB          LCB          LB
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
+    {x:360,y:40,n:"1",c:"#c82630"},{x:600,y:170,n:"2",c:"#c82630"},{x:480,y:190,n:"4",c:"#c82630"},{x:240,y:190,n:"5",c:"#c82630"},{x:120,y:170,n:"3",c:"#c82630"},
     //         RDM          LDM          RW           CAM          LW           ST
-    {x:355,y:250,n:"6",c:"#c82630"},{x:355,y:430,n:"8",c:"#c82630"},{x:590,y:100,n:"7",c:"#c82630"},{x:590,y:340,n:"10",c:"#c82630"},{x:590,y:580,n:"11",c:"#c82630"},{x:780,y:340,n:"9",c:"#c82630"},
+    {x:450,y:380,n:"6",c:"#c82630"},{x:270,y:380,n:"8",c:"#c82630"},{x:610,y:600,n:"7",c:"#c82630"},{x:360,y:620,n:"10",c:"#c82630"},{x:110,y:600,n:"11",c:"#c82630"},{x:360,y:880,n:"9",c:"#c82630"},
   ],
   "3-4-3": [
     //         GK           LCB          CB           RCB
-    {x:55,y:340,n:"1",c:"#c82630"},{x:145,y:180,n:"3",c:"#c82630"},{x:135,y:340,n:"4",c:"#c82630"},{x:145,y:500,n:"5",c:"#c82630"},
+    {x:360,y:40,n:"1",c:"#c82630"},{x:220,y:160,n:"3",c:"#c82630"},{x:360,y:180,n:"4",c:"#c82630"},{x:500,y:160,n:"5",c:"#c82630"},
     //         RM          RCM          LCM          LM
-    {x:370,y:80,n:"7",c:"#c82630"},{x:420,y:250,n:"8",c:"#c82630"},{x:420,y:430,n:"6",c:"#c82630"},{x:370,y:600,n:"11",c:"#c82630"},
+    {x:620,y:390,n:"7",c:"#c82630"},{x:480,y:430,n:"8",c:"#c82630"},{x:240,y:430,n:"6",c:"#c82630"},{x:100,y:390,n:"11",c:"#c82630"},
     //         RW           ST           LW
-    {x:660,y:130,n:"10",c:"#c82630"},{x:740,y:340,n:"9",c:"#c82630"},{x:660,y:550,n:"2",c:"#c82630"},
+    {x:550,y:780,n:"10",c:"#c82630"},{x:360,y:900,n:"9",c:"#c82630"},{x:170,y:780,n:"2",c:"#c82630"},
   ],
 };
 
@@ -226,9 +227,9 @@ export default function TacticsPage() {
     c.getObjects().filter((o: any) => (o as any)._isAIGenerated)
       .forEach((o: any) => c.remove(o));
 
-    // Switch field if specified
-    if (result.field && result.field !== "default" && (c as any)._setFieldImage) {
-      (c as any)._setFieldImage(result.field);
+    // Always use standard 11-a-side field for auto-generated content
+    if ((c as any)._setFieldImage) {
+      (c as any)._setFieldImage(result.field || "default");
     }
 
     // Render players
