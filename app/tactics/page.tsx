@@ -65,7 +65,7 @@ export default function TacticsPage() {
   const [, setEditTick] = useState(0); // force re-render on number edit
   const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState(""); const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(""); const [aiBarOpen, setAiBarOpen] = useState(false);
+  const [aiError, setAiError] = useState("");
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
 
@@ -357,7 +357,7 @@ export default function TacticsPage() {
       setAiPrompt("");
       setAiError("");
       setAiLoading(false);
-      setAiBarOpen(false); // auto-collapse after success
+      // auto-clear prompt on success
     } catch (e: any) {
       setAiError(e.message || "网络错误");
       setAiLoading(false);
@@ -383,20 +383,20 @@ export default function TacticsPage() {
         </button>
         <h1 className="text-white font-bold text-sm">📋 战术板</h1>
         <div className="flex-1"/>
-        <div className="flex items-center gap-0.5 #1e2128 rounded-lg p-0.5">
+        <div className="flex items-center gap-0.5 rounded-lg p-0.5" style={{backgroundColor:"#1e2128"}}>
           <button onClick={hZoomOut} className="p-1 text-gray-400 hover:text-white rounded" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
           <button onClick={hZoomFit} className="p-1 text-gray-400 hover:text-white rounded text-[10px] font-mono px-1" title="重置">1:1</button>
           <button onClick={hZoomIn} className="p-1 text-gray-400 hover:text-white rounded" title="放大"><ZoomIn className="w-3.5 h-3.5"/></button>
         </div>
         <button onClick={()=>setSaveOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 #1e2128 hover:#22252d rounded-lg transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 rounded-lg transition" style={{backgroundColor:"#1e2128"}}
           title="保存当前战术">
           <Save className="w-3.5 h-3.5"/>保存战术
         </button>
         <button onClick={()=>{setScenes(JSON.parse(localStorage.getItem("tac_scenes")||"[]"));setLoadOpen(true);}}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 #1e2128 hover:#22252d rounded-lg transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 rounded-lg transition" style={{backgroundColor:"#1e2128"}}
           title="打开已保存的战术">
-          <FolderOpen className="w-3.5 h-3.5"/>战术库{scenes.length>0&&<span className="#c82630 ml-0.5">{scenes.length}</span>}
+          <FolderOpen className="w-3.5 h-3.5"/>战术库{scenes.length>0&&<span style={{color:"#c82630"}} className="ml-0.5">{scenes.length}</span>}
         </button>
         {selObj && (selObj as any)._isPlayer && (
           <div className="flex items-center gap-1 ml-2">
@@ -405,7 +405,7 @@ export default function TacticsPage() {
               defaultValue={(selObj as any).number || ""}
               onBlur={(e) => hUpdatePlayerNum(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
-              className="w-10 h-5 #1e2128 border #2a2d35 rounded text-white text-[10px] text-center"
+              className="w-10 h-5 border rounded text-white text-[10px] text-center" style={{backgroundColor:"#1e2128",borderColor:"#2a2d35"}}
               title="编辑球员号码（也可双击球员编辑）"
             />
           </div>
@@ -418,7 +418,7 @@ export default function TacticsPage() {
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           <input value={sName} onChange={(e)=>setSName(e.target.value)} placeholder="战术名称" className="input-field text-xs h-9" onKeyDown={(e)=>e.key==="Enter"&&hSave()}/>
           <div className="flex flex-wrap gap-1">{THEMES.map((t)=><button key={t} onClick={()=>setSTheme(t)} className={`px-2 py-0.5 rounded text-[10px] transition ${sTheme===t?"#c82630 text-black":"#22252d text-gray-400 hover:#2a2d35"}`}>{t}</button>)}</div>
-          <button onClick={hSave} disabled={!sName.trim()} className="w-full py-2 #c82630 text-black font-bold rounded text-xs disabled:opacity-40"><Save className="w-3 h-3 inline mr-1"/>保存</button>
+          <button onClick={hSave} disabled={!sName.trim()} className="w-full py-2 text-white font-bold rounded text-xs disabled:opacity-40" style={{backgroundColor:"#c82630"}}><Save className="w-3 h-3 inline mr-1"/>保存</button>
         </div>
       )}
 
@@ -426,47 +426,35 @@ export default function TacticsPage() {
         <div className="absolute top-11 right-3 z-50 glass-card p-3 w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           {scenes.length===0?<p className="text-gray-500 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
-            <div key={s.id} className="flex items-center gap-2 p-2 rounded #1a1d24 hover:#1e2128 group">
+            <div key={s.id} className="flex items-center gap-2 p-2 rounded group" style={{backgroundColor:"#1a1d24"}}>
               <Bookmark className="w-3.5 h-3.5 #c82630 flex-shrink-0"/>
               <div className="flex-1 min-w-0"><p className="text-xs text-white truncate">{s.name}</p><p className="text-[10px] text-gray-500">{s.theme} · {new Date(s.createdAt).toLocaleDateString()}</p></div>
-              <button onClick={()=>hLoad(s)} className="text-[10px] #c82630 hover:underline flex-shrink-0">加载</button>
-              <button onClick={()=>hDel(s.id)} className="text-gray-600 hover:#ef4444 flex-shrink-0"><X className="w-3 h-3"/></button>
+              <button onClick={()=>hLoad(s)} className="text-[10px] hover:underline flex-shrink-0" style={{color:"#c82630"}}>加载</button>
+              <button onClick={()=>hDel(s.id)} className="text-gray-600 flex-shrink-0" style={{}}><X className="w-3 h-3"/></button>
             </div>
           ))}
         </div>
       )}
 
-      {/* ─── AI 战术图生成 ─── */}
-      <div className="#1a1d2480 border-b #2a2d35 px-3 py-1.5 flex items-center gap-2 flex-shrink-0">
-        {!aiBarOpen ? (
-          <button onClick={() => setAiBarOpen(true)}
-            className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:#c82630 transition"
-            title="AI 自动生成战术图">
-            <span className="text-sm">🤖</span>
-            <span className="hidden sm:inline">AI 生成战术图</span>
-          </button>
-        ) : (
-          <>
-            <span className="text-sm flex-shrink-0">🤖</span>
-            <input
-              value={aiPrompt}
-              onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
-              onKeyDown={(e) => { if (e.key === "Enter") hAIGenerate(); if (e.key === "Escape") setAiBarOpen(false); }}
-              placeholder="描述你想要的战术图，如：4-3-3边路套上传中，右边后卫前插..."
-              disabled={aiLoading}
-              className="flex-1 #1e2128 border #2a2d35 rounded px-2.5 py-1 text-white text-xs placeholder:text-gray-500 focus:#c82630 focus:outline-none disabled:opacity-50"
-              autoFocus
-            />
-            <button onClick={hAIGenerate}
-              disabled={aiLoading || !aiPrompt.trim()}
-              className="px-3 py-1 #c82630 text-black text-xs font-bold rounded hover:bg-opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0">
-              {aiLoading ? "生成中..." : "生成"}
-            </button>
-            <button onClick={() => { setAiBarOpen(false); setAiError(""); }}
-              className="text-gray-500 hover:text-white text-xs flex-shrink-0">✕</button>
-          </>
-        )}
-        {aiError && <span className="text-[10px] #ef4444 flex-shrink-0">{aiError}</span>}
+      {/* ─── AI 自动生成战术板 ─── */}
+      <div className="px-3 py-2 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: "#16181e", borderBottom: "1px solid #2a2d35" }}>
+        <span className="text-base flex-shrink-0">🤖</span>
+        <input
+          value={aiPrompt}
+          onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
+          onKeyDown={(e) => { if (e.key === "Enter") hAIGenerate(); }}
+          placeholder="如：4-3-3 边路套上传中..."
+          disabled={aiLoading}
+          className="flex-1 px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none disabled:opacity-40 rounded-md"
+          style={{ backgroundColor: "#121419", border: `1.5px solid ${aiError ? "#ef4444" : "#2a2d35"}`, borderRadius: "6px" }}
+        />
+        <button onClick={hAIGenerate}
+          disabled={aiLoading || !aiPrompt.trim()}
+          className="px-4 py-2 text-sm font-bold rounded-md transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+          style={{ backgroundColor: "#c82630", color: "#fff", borderRadius: "6px" }}>
+          {aiLoading ? "生成中..." : "自动生成"}
+        </button>
+        {aiError && <span className="text-[11px] flex-shrink-0" style={{ color: "#ef4444" }}>{aiError}</span>}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
