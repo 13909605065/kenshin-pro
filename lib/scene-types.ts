@@ -6,7 +6,7 @@ export type Role = "coach" | "athlete";
 
 // 教练3场景
 export const COACH_SCENES = [
-  { id: "planning" as const, label: "备课", icon: "📋" },
+  { id: "planning" as const, label: "备战", icon: "🎯" },
   { id: "pitch" as const, label: "训练场", icon: "🏟️" },
   { id: "gym" as const, label: "健身房", icon: "🏋️" },
 ];
