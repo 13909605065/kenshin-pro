@@ -240,6 +240,7 @@ export function Dashboard() {
   const [showDone, setShowDone] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [coachInput, setCoachInput] = useState("");
   const [profileName, setProfileName] = useState("");
   const [showProfileSave, setShowProfileSave] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -259,7 +260,11 @@ export function Dashboard() {
   );
 
   const handleGenerate = useCallback(async () => {
-    if (!isStepValid) return;
+    if (!formData.position && !isCoach) { alert("请先编辑档案，填写场上位置"); return; }
+    // Inject coachInput into formData as weakness/notes for AI context
+    if (coachInput.trim()) {
+      (formData as any).coachInput = coachInput.trim();
+    }
     setStatus("generating"); setErrorCode(null); setShowDone(false); setSavedPlanId(null);
 
     // Build match context for AI
@@ -591,6 +596,25 @@ export function Dashboard() {
               </div>
             </div>
           )}
+
+          {/* Coach Input — direct coaching language */}
+          <div className="glass-card p-4 space-y-2">
+            <textarea
+              value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
+              placeholder={isCoach ? "今天要解决什么？\n例：上场防反被打穿，怎么练防守宽度…\n例：周三对XX队，他们边路快…" : "你想提升什么？\n例：射门力量不够…"}
+              rows={2}
+              className="w-full bg-pitch-800 border border-pitch-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
+            />
+            <div className="flex gap-1.5 flex-wrap">
+              {isCoach ? ["备训练课","解决战术问题","对手针对性"].map(s => (
+                <button key={s} onClick={() => setCoachInput(prev => prev ? prev + "，" + s : s)}
+                  className="px-2 py-0.5 rounded text-[10px] bg-pitch-700 text-gray-400 hover:text-white">{s}</button>
+              )) : GOALS.map(g => (
+                <button key={g} onClick={() => updateField("goal", g)}
+                  className={`px-2 py-0.5 rounded text-[10px] ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("goal."+g)}</button>
+              ))}
+            </div>
+          </div>
 
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}

@@ -89,7 +89,7 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", we
   const phase = data.phase || "competition";
   const comboHint = `combo_${pos}_${goal}_${phase}`;
 
-  return `${data.name ? `## 个性化方案：${data.name}` : ""}
+  return `${(data as any).coachInput ? `## 教练输入\n${(data as any).coachInput}\n` : ""}${data.name ? `## 个性化方案：${data.name}` : ""}
 球员信息:
 - 姓名: ${data.name || "运动员"}${data.position ? ` · ${POSITION_LABELS[data.position]}` : ""}
 - 身份: 运动员
