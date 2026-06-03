@@ -4,19 +4,17 @@
 
 export type Role = "coach" | "athlete";
 
-// 教练4场景
+// 教练3场景
 export const COACH_SCENES = [
   { id: "planning" as const, label: "备课", icon: "📋" },
   { id: "pitch" as const, label: "训练场", icon: "🏟️" },
   { id: "gym" as const, label: "健身房", icon: "🏋️" },
-  { id: "review" as const, label: "复盘", icon: "📊" },
 ];
 
-// 运动员3场景
+// 运动员2场景
 export const ATHLETE_SCENES = [
   { id: "pitch" as const, label: "球场", icon: "⚽" },
   { id: "gym" as const, label: "健身房", icon: "🏋️" },
-  { id: "recovery" as const, label: "恢复", icon: "🩺" },
 ];
 
 export type CoachScene = (typeof COACH_SCENES)[number]["id"];

@@ -348,21 +348,12 @@ export function Dashboard() {
                   </button>
                 </>
               )}
-              {/* 复盘: only 战术板 (AI诊断通过导航栏直达) */}
-              {scene === "review" && (
-                <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
-                  <p className="text-xs font-bold text-white">战术板</p>
-                  <p className="text-[10px] text-gray-500">手动绘制</p>
-                </button>
-              )}
             </>
           )}
 
           {/* === ATHLETE === */}
           {!isCoach && (
             <>
-              {/* 球场: 我的训练 already shown above */}
               {scene === "pitch" && (
                 <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
                   <Timer className="w-5 h-5 text-neon-pink mb-1" />
@@ -370,20 +361,11 @@ export function Dashboard() {
                   <p className="text-[10px] text-gray-500">按顺序跟练</p>
                 </button>
               )}
-              {/* 健身房: only exercises */}
               {scene === "gym" && (
                 <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
                   <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
                   <p className="text-xs font-bold text-white">动作库</p>
-                  <p className="text-[10px] text-gray-500">124个力量动作+筛选</p>
-                </button>
-              )}
-              {/* 恢复: stretching guide */}
-              {scene === "recovery" && (
-                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <Activity className="w-5 h-5 text-neon-pink mb-1" />
-                  <p className="text-xs font-bold text-white">恢复指南</p>
-                  <p className="text-[10px] text-gray-500">拉伸+伤病评估</p>
+                  <p className="text-[10px] text-gray-500">124个力量动作</p>
                 </button>
               )}
             </>
