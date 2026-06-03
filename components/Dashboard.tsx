@@ -428,8 +428,8 @@ export function Dashboard() {
       {/* ====== Idle State ====== */}
       {status === "idle" && (
         <div className="space-y-5">
-          {/* Profile Bar — prominent */}
-          <div className="glass-card px-5 py-4 flex items-center justify-between">
+          {/* Profile Bar */}
+          <div className="glass-card px-5 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-neon-pink text-xs font-bold">{isCoach ? "C" : "A"}</span>
@@ -456,20 +456,20 @@ export function Dashboard() {
 
           {/* Goal + Phase — side by side for athlete */}
           {!isCoach && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="glass-card p-4">
-                <div className="flex items-center gap-2 mb-3"><Target className="w-4 h-4 text-neon-pink" /><p className="text-sm font-bold text-white">{t("goal.title")}</p></div>
-                <div className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-5">
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{t("goal.title")}</p></div>
+                <div className="space-y-2">
                   {GOALS.map((g) => (
-                    <button key={g} onClick={() => updateField("goal", g)} className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`goal.${g}`)}</button>
+                    <button key={g} onClick={() => updateField("goal", g)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`goal.${g}`)}</button>
                   ))}
                 </div>
               </div>
-              <div className="glass-card p-4">
-                <div className="flex items-center gap-2 mb-3"><Clock className="w-4 h-4 text-neon-pink" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
-                <div className="space-y-1.5">
+              <div className="glass-card p-5">
+                <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
+                <div className="space-y-2">
                   {PHASES.map((p) => (
-                    <button key={p} onClick={() => updateField("phase", p)} className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`phase.${p}`)}</button>
+                    <button key={p} onClick={() => updateField("phase", p)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`phase.${p}`)}</button>
                   ))}
                 </div>
               </div>
@@ -609,7 +609,7 @@ export function Dashboard() {
 
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}
-            className="w-full py-3.5 bg-neon-pink text-black font-bold rounded-xl text-base hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20">
+            className="w-full py-5 bg-neon-pink text-black font-bold rounded-xl text-lg hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20">
             <Zap className="w-5 h-5" /> {t("dashboard.generate")}
           </button>
 
