@@ -1,14 +1,15 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Canvas, Circle, FabricText, Group, FabricImage } from "fabric";
+import { Canvas, Circle, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
 import { FabricBoard, exportBoardAsPNG, hideFieldMarkings } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
-import { BoardToolbar } from "@/components/tactical/BoardToolbar";
+import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
+import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
 
 // Standard 11-a-side positions. Canvas: 1050×680, field area: x=30..1020, y=30..650, center=(525,340)
 // Zones: GK x≈55 · DF x≈175-195 · DM x≈340-360 · MF x≈400-440 · AM x≈570-590 · FW x≈700-780
@@ -63,6 +64,8 @@ export default function TacticsPage() {
   const [selObj, setSelObj] = useState<any>(null);
   const [, setEditTick] = useState(0); // force re-render on number edit
   const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState(""); const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(""); const [aiBarOpen, setAiBarOpen] = useState(false);
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
 
@@ -214,6 +217,152 @@ export default function TacticsPage() {
     setEditTick(t => t + 1);
   };
 
+  // ─── AI 自动生成战术板 ─────────────────────────────────
+  const renderBoardGen = useCallback((result: BoardGenResult) => {
+    const c = boardRef.current; if (!c) return;
+
+    // Clear existing AI-generated objects (tagged with _isAIGenerated)
+    c.getObjects().filter((o: any) => (o as any)._isAIGenerated)
+      .forEach((o: any) => c.remove(o));
+
+    // Switch field if specified
+    if (result.field && result.field !== "default" && (c as any)._setFieldImage) {
+      (c as any)._setFieldImage(result.field);
+    }
+
+    // Render players
+    if (result.players) {
+      const R = 20;
+      result.players.forEach((p) => {
+        const cx = p.x, cy = p.y;
+        const textColor = ["#FFD700", "#FFF", "#00FF88"].includes(p.color) ? "#000" : "#FFF";
+        const cr = new Circle({ left: cx - R, top: cy - R, radius: R, fill: p.color, stroke: "#FFF", strokeWidth: 2.5, selectable: false, evented: false });
+        const tx = new FabricText(p.number, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R * 0.8, fontFamily: "Arial", fontWeight: "bold", fill: textColor, selectable: false, evented: false });
+        const g = new Group([cr, tx], { left: cx - R, top: cy - R });
+        (g as any)._isPlayer = true; (g as any)._isAIGenerated = true; (g as any).number = p.number;
+        if (p.label) (g as any).label = p.label;
+        g.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: false });
+        g.set({ cornerStyle: "circle", cornerSize: 10, cornerColor: "#FF2D55", cornerStrokeColor: "#FFF", transparentCorners: false, padding: 0, lockUniScaling: true } as any);
+        c.add(g);
+      });
+    }
+
+    // Render routes
+    if (result.routes) {
+      result.routes.forEach((r) => {
+        const style = ROUTE_STYLES[r.type] || ROUTE_STYLES.draw_curve;
+        const strokeColor = r.color || "#000";
+        let pathData: string;
+        let arrowAngle: number;
+
+        if (r.type === "draw_dribble") {
+          // Curved bezier for dribble
+          const mx = (r.x1 + r.x2) / 2, my = (r.y1 + r.y2) / 2;
+          const len = Math.sqrt((r.x2 - r.x1) ** 2 + (r.y2 - r.y1) ** 2);
+          const perpX = -(r.y2 - r.y1) / (len || 1), perpY = (r.x2 - r.x1) / (len || 1);
+          const arcOffset = Math.min(len * 0.5, 150);
+          pathData = `M ${r.x1} ${r.y1} Q ${mx + perpX * arcOffset} ${my + perpY * arcOffset} ${r.x2} ${r.y2}`;
+          arrowAngle = Math.atan2(r.y2 - (my + perpY * arcOffset), r.x2 - (mx + perpX * arcOffset));
+        } else {
+          // Straight line
+          pathData = `M ${r.x1} ${r.y1} L ${r.x2} ${r.y2}`;
+          arrowAngle = Math.atan2(r.y2 - r.y1, r.x2 - r.x1);
+        }
+
+        const path = new Path(pathData, {
+          stroke: strokeColor,
+          strokeWidth: style.width,
+          strokeDashArray: style.strokeDash || undefined,
+          fill: "transparent",
+          selectable: true,
+          evented: true,
+          strokeLineCap: "round" as CanvasLineCap,
+          strokeLineJoin: "round" as CanvasLineJoin,
+        });
+        (path as any)._isRoute = true; (path as any)._isAIGenerated = true; (path as any)._routeType = r.type;
+        c.add(path);
+
+        // Arrow head
+        const s = 10;
+        const tip = { x: r.x2, y: r.y2 };
+        const left = { x: r.x2 - s * Math.cos(arrowAngle - Math.PI / 6), y: r.y2 - s * Math.sin(arrowAngle - Math.PI / 6) };
+        const right = { x: r.x2 - s * Math.cos(arrowAngle + Math.PI / 6), y: r.y2 - s * Math.sin(arrowAngle + Math.PI / 6) };
+        const tri = new Polygon([tip, left, right], { fill: strokeColor, stroke: strokeColor, strokeWidth: 1, selectable: false, evented: false });
+        (tri as any)._isAIGenerated = true;
+        c.add(tri);
+      });
+    }
+
+    // Render texts
+    if (result.texts) {
+      result.texts.forEach((t) => {
+        const txt = new FabricText(t.content, {
+          left: t.x, top: t.y,
+          fontSize: t.fontSize || 18,
+          fontFamily: "Arial",
+          fontWeight: "bold",
+          fill: t.color || "#FF2D55",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: 4,
+        });
+        (txt as any)._isAIGenerated = true;
+        c.add(txt);
+      });
+    }
+
+    // Render equipment
+    if (result.equipment) {
+      result.equipment.forEach((eq) => {
+        FabricImage.fromURL(`/equipment/${eq.type}.png`).then((img) => {
+          img.set({
+            left: eq.x - 25, top: eq.y - 25,
+            scaleX: 0.2, scaleY: 0.2,
+            lockUniScaling: true,
+            selectable: true, evented: true,
+          });
+          (img as any)._isAIGenerated = true; (img as any).name = eq.type;
+          img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: false });
+          c.add(img);
+          c.requestRenderAll();
+        });
+      });
+    }
+
+    c.requestRenderAll();
+  }, []);
+
+  const hAIGenerate = useCallback(async () => {
+    if (!aiPrompt.trim() || aiLoading) return;
+    setAiLoading(true); setAiError("");
+
+    try {
+      const res = await fetch("/api/tactical-board-generate/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: aiPrompt.trim() }),
+      });
+      const json = await res.json();
+
+      if (!res.ok || json.code !== "ok") {
+        setAiError(json.message || "AI 生成失败");
+        setAiLoading(false);
+        return;
+      }
+
+      const result: BoardGenResult = json.data;
+      renderBoardGen(result);
+
+      // Show a brief confirmation in the AI bar
+      setAiPrompt("");
+      setAiError("");
+      setAiLoading(false);
+      setAiBarOpen(false); // auto-collapse after success
+    } catch (e: any) {
+      setAiError(e.message || "网络错误");
+      setAiLoading(false);
+    }
+  }, [aiPrompt, aiLoading, renderBoardGen]);
+
   const hSave = () => {
     const c=boardRef.current; if(!c||!sName.trim())return;
     const json=JSON.stringify(c.toJSON());
@@ -285,6 +434,39 @@ export default function TacticsPage() {
           ))}
         </div>
       )}
+
+      {/* ─── AI 战术图生成 ─── */}
+      <div className="bg-pitch-800/80 border-b border-pitch-600 px-3 py-1.5 flex items-center gap-2 flex-shrink-0">
+        {!aiBarOpen ? (
+          <button onClick={() => setAiBarOpen(true)}
+            className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-neon-pink transition"
+            title="AI 自动生成战术图">
+            <span className="text-sm">🤖</span>
+            <span className="hidden sm:inline">AI 生成战术图</span>
+          </button>
+        ) : (
+          <>
+            <span className="text-sm flex-shrink-0">🤖</span>
+            <input
+              value={aiPrompt}
+              onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
+              onKeyDown={(e) => { if (e.key === "Enter") hAIGenerate(); if (e.key === "Escape") setAiBarOpen(false); }}
+              placeholder="描述你想要的战术图，如：4-3-3边路套上传中，右边后卫前插..."
+              disabled={aiLoading}
+              className="flex-1 bg-pitch-700 border border-pitch-500 rounded px-2.5 py-1 text-white text-xs placeholder:text-gray-500 focus:border-neon-pink focus:outline-none disabled:opacity-50"
+              autoFocus
+            />
+            <button onClick={hAIGenerate}
+              disabled={aiLoading || !aiPrompt.trim()}
+              className="px-3 py-1 bg-neon-pink text-black text-xs font-bold rounded hover:bg-opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0">
+              {aiLoading ? "生成中..." : "生成"}
+            </button>
+            <button onClick={() => { setAiBarOpen(false); setAiError(""); }}
+              className="text-gray-500 hover:text-white text-xs flex-shrink-0">✕</button>
+          </>
+        )}
+        {aiError && <span className="text-[10px] text-neon-red flex-shrink-0">{aiError}</span>}
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         <EquipmentPalette onFieldSelect={hField}/>
