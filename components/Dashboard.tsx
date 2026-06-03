@@ -13,7 +13,9 @@ import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
 import { useLang } from "@/components/providers/LanguageProvider";
-import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown } from "lucide-react";
+import { useScene } from "@/components/providers/SceneProvider";
+import { SceneTabs } from "./SceneTabs";
+import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Brain, Timer, Dumbbell, ClipboardList } from "lucide-react";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
@@ -190,8 +192,9 @@ export function Dashboard() {
   const profiles = useProfiles();
   const templates = useTemplates();
   const planHistory = usePlanHistory();
-  const { formData, updateField, setRole, isStepValid } = wizard;
-  const isCoach = formData.role === "coach";
+  const { formData, updateField, setRole: setWizardRole, isStepValid } = wizard;
+  const { role, scene } = useScene();
+  const isCoach = role === "coach";
 
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [showDone, setShowDone] = useState(false);
@@ -247,6 +250,64 @@ export function Dashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Scene Tabs — role + context switcher */}
+      <SceneTabs />
+
+      {/* Scene-aware quick actions */}
+      {status === "idle" && (
+        <div className="flex gap-2 flex-wrap">
+          {scene === "planning" && (
+            <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <Zap className="w-5 h-5 text-neon-pink mb-1" />
+              <p className="text-xs font-bold text-white">生成训练方案</p>
+              <p className="text-[10px] text-gray-500">AI 科学化备课</p>
+            </button>
+          )}
+          {scene === "pitch" && (
+            <>
+              <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <Timer className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">计时跟练</p>
+                <p className="text-[10px] text-gray-500">执行教案</p>
+              </button>
+              <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">快速调整</p>
+                <p className="text-[10px] text-gray-500">人数/分组/器材</p>
+              </button>
+            </>
+          )}
+          {scene === "review" && (
+            <>
+              <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <Brain className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">AI 战术诊断</p>
+                <p className="text-[10px] text-gray-500">问题→方案→出图</p>
+              </button>
+              <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+                <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                <p className="text-xs font-bold text-white">战术板</p>
+                <p className="text-[10px] text-gray-500">手动绘制</p>
+              </button>
+            </>
+          )}
+          {(scene === "pitch" || scene === "gym") && (
+            <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
+              <p className="text-xs font-bold text-white">动作库</p>
+              <p className="text-[10px] text-gray-500">124个动作+跟练</p>
+            </button>
+          )}
+          {scene === "recovery" && (
+            <button onClick={() => {}} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-xl p-3 text-left hover:bg-neon-pink/20 transition">
+              <Activity className="w-5 h-5 text-neon-pink mb-1" />
+              <p className="text-xs font-bold text-white">恢复评估</p>
+              <p className="text-[10px] text-gray-500">拉伸+伤病自评</p>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* ====== Idle State ====== */}
       {status === "idle" && (
         <div className="space-y-3">
@@ -478,7 +539,7 @@ export function Dashboard() {
         <EditProfileModal
           formData={formData}
           updateField={updateField}
-          setRole={setRole}
+          setRole={setWizardRole}
           t={t}
           profiles={profiles}
           onClose={() => setEditOpen(false)}
