@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X } from "lucide-react";
-import { STRENGTH_LIBRARY, WARMUP_LIBRARY, DRILL_LIBRARY, COOLDOWN_LIBRARY } from "@/lib/training-library";
+import { STRENGTH_LIBRARY } from "@/lib/training-library";
 import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
 import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
 import { StickFigure } from "@/components/StickFigure";
@@ -150,50 +150,6 @@ function buildUnifiedExercises(): UnifiedExercise[] {
     });
   }
 
-  // Warmups
-  for (const [id, w] of Object.entries(WARMUP_LIBRARY)) {
-    list.push({
-      id,
-      name: w.name,
-      bodyPart: "全身",
-      equipment: detectEquipment(id),
-      type: "热身",
-      duration: w.duration,
-      description: w.description,
-      category: w.category,
-    });
-  }
-
-  // Drills
-  for (const [id, d] of Object.entries(DRILL_LIBRARY)) {
-    list.push({
-      id,
-      name: d.name,
-      bodyPart: "全身",
-      equipment: "自重",
-      type: "技术训练",
-      duration: d.duration,
-      description: d.description,
-      purpose: d.purpose,
-      key_points: d.key_points,
-      image_url: d.image_url,
-      diagram: d.diagram,
-    });
-  }
-
-  // Cooldowns
-  for (const [id, c] of Object.entries(COOLDOWN_LIBRARY)) {
-    list.push({
-      id,
-      name: c.name,
-      bodyPart: "全身",
-      equipment: "自重",
-      type: "整理",
-      duration: c.duration,
-      description: c.description,
-    });
-  }
-
   return list;
 }
 
@@ -319,13 +275,6 @@ export default function ExercisesPage() {
             <button key={eq} onClick={() => setEquipment(eq)}
               className={`px-2 py-1 rounded text-[10px] font-medium ${equipment===eq?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300"}`}>
               {eq==="all"?"全部":eq}
-            </button>
-          ))}
-          <span className="text-gray-700 mx-1">|</span>
-          {EX_TYPES.map((t) => (
-            <button key={t} onClick={() => setExType(t)}
-              className={`px-2 py-1 rounded text-[10px] font-medium ${exType===t?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300"}`}>
-              {t==="all"?"全部":t}
             </button>
           ))}
         </div>
