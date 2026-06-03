@@ -625,23 +625,37 @@ export function Dashboard() {
             </div>
           )}
 
-          {/* Coach Input — direct coaching language */}
-          <div className="glass-card p-4 space-y-2">
+          {/* Coach Input */}
+          <div className="glass-card p-4 space-y-3">
+            {/* Quick selects for context */}
+            {isCoach && (
+              <div className="flex gap-1 flex-wrap">
+                <span className="text-[10px] text-gray-500 mt-1">主题:</span>
+                {["力量","速度","体能","战术","恢复"].map(s => (
+                  <button key={s} onClick={() => updateField("goal", s==="力量"?"strength":s==="速度"?"speed":s==="体能"?"mas_endurance":"combat")}
+                    className="px-2 py-0.5 rounded text-[10px] bg-pitch-700 text-gray-400 hover:text-white">{s}</button>
+                ))}
+                <span className="text-[10px] text-gray-500 mt-1 ml-2">阶段:</span>
+                {PHASES.map(p => (
+                  <button key={p} onClick={() => updateField("phase", p)}
+                    className={`px-2 py-0.5 rounded text-[10px] ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("phase."+p)}</button>
+                ))}
+              </div>
+            )}
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
-              placeholder={isCoach ? "今天要解决什么？\n例：上场防反被打穿，怎么练防守宽度…\n例：周三对XX队，他们边路快…" : "你想提升什么？\n例：射门力量不够…"}
+              placeholder={isCoach ? "今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…" : "你想提升什么？"}
               rows={2}
               className="w-full bg-pitch-800 border border-pitch-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
             />
-            <div className="flex gap-1.5 flex-wrap">
-              {isCoach ? ["备训练课","解决战术问题","对手针对性"].map(s => (
-                <button key={s} onClick={() => setCoachInput(prev => prev ? prev + "，" + s : s)}
-                  className="px-2 py-0.5 rounded text-[10px] bg-pitch-700 text-gray-400 hover:text-white">{s}</button>
-              )) : GOALS.map(g => (
-                <button key={g} onClick={() => updateField("goal", g)}
-                  className={`px-2 py-0.5 rounded text-[10px] ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("goal."+g)}</button>
-              ))}
-            </div>
+            {!isCoach && (
+              <div className="flex gap-1.5 flex-wrap">
+                {GOALS.map(g => (
+                  <button key={g} onClick={() => updateField("goal", g)}
+                    className={`px-2 py-0.5 rounded text-[10px] ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("goal."+g)}</button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Hint text when generate is disabled */}
