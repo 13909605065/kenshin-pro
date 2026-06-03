@@ -227,7 +227,7 @@ export function Dashboard() {
   const templates = useTemplates();
   const planHistory = usePlanHistory();
   const { formData, updateField, setRole: setWizardRole, isStepValid } = wizard;
-  const { role, scene } = useScene();
+  const { role, scene, setRole } = useScene();
   const isCoach = role === "coach";
 
   const [status, setStatus] = useState<GenerationStatus>("idle");
@@ -442,13 +442,11 @@ export function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {profiles.profiles.length > 0 && (
-                <select onChange={(e: any) => { if(e.target.value) profiles.loadProfile(e.target.value); }}
-                  className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1 text-[10px] text-gray-300 max-w-[100px]" defaultValue="">
-                  <option value="" disabled>档案</option>
-                  {profiles.profiles.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              )}
+              {/* Identity switch */}
+              <button onClick={() => setRole(role === "coach" ? "athlete" : "coach")}
+                className={"px-2 py-1 rounded text-[10px] font-bold " + (role==="coach"?"bg-neon-pink/20 text-neon-pink":"text-gray-500 hover:text-gray-300")}>
+                {role==="coach"?"教练":"球员"}
+              </button>
               <button onClick={() => setEditOpen(true)}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-pitch-500 text-gray-400 hover:text-white hover:border-pitch-400 transition text-xs">
                 <Edit3 className="w-3.5 h-3.5" />编辑
