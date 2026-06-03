@@ -26,14 +26,15 @@ export async function middleware(request: NextRequest) {
 
   const isLoginPage = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/login/";
   const isAuthCallback = request.nextUrl.pathname.startsWith("/auth/") || request.nextUrl.pathname.startsWith("/auth");
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
+  const isSharePage = request.nextUrl.pathname.startsWith("/share");
 
-  // Allow auth callback to proceed
-  if (isAuthCallback) return response;
+  // Allow auth callback, API routes, and share pages to proceed (they handle auth themselves)
+  if (isAuthCallback || isApiRoute || isSharePage) return response;
 
   // Redirect to login if not authenticated
   if (!user && !isLoginPage) {
-    const redirectUrl = new URL("/login", request.url);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Redirect to home if already authenticated and on login page
