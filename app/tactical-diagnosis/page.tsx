@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { TacticalDiagnosis } from "@/lib/ai/tactical-diagnosis";
 import { MobileNav } from "@/components/MobileNav";
 import { writeDiagnosisContext } from "@/lib/tactics-bridge";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 type Status = "idle" | "loading" | "done" | "error";
 
@@ -18,6 +19,7 @@ export default function TacticalDiagnosisPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"analysis" | "solution" | "training" | "board">("analysis");
   const [isListening, setIsListening] = useState(false);
+  const [supabaseSaved, setSupabaseSaved] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   // ─── Voice input ───────────────────────────────────────
@@ -55,6 +57,7 @@ export default function TacticalDiagnosisPage() {
     setStatus("loading");
     setErrorMessage("");
     setDiagnosis(null);
+    setSupabaseSaved(false);
 
     try {
       const res = await fetch("/api/tactical-diagnosis/", {
@@ -79,6 +82,20 @@ export default function TacticalDiagnosisPage() {
           const history = JSON.parse(localStorage.getItem(key) || "[]");
           history.unshift({ problem: problem.trim(), diagnosis: json.data, date: new Date().toISOString() });
           localStorage.setItem(key, JSON.stringify(history.slice(0, 10)));
+        } catch {}
+
+        // Sync to Supabase
+        try {
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from("diagnosis_history").insert({
+              user_id: user.id,
+              problem: problem.trim(),
+              diagnosis: json.data,
+            });
+            setSupabaseSaved(true);
+          }
         } catch {}
       } else {
         setErrorMessage(json.message || "诊断失败，请重试");
@@ -316,6 +333,18 @@ export default function TacticalDiagnosisPage() {
               </div>
             )}
 
+            {/* Cloud save indicator */}
+            {supabaseSaved && (
+              <div className="flex items-center justify-end gap-1.5 mt-3 text-xs text-green-400/80">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9" />
+                  <polyline points="16 12 12 16 8 12" />
+                  <line x1="12" y1="16" x2="12" y2="9" />
+                </svg>
+                已保存到云端
+              </div>
+            )}
+
             {/* Share button */}
             <div className="mt-6 flex gap-2">
               <button
@@ -338,6 +367,7 @@ export default function TacticalDiagnosisPage() {
                   setDiagnosis(null);
                   setStatus("idle");
                   setErrorMessage("");
+                  setSupabaseSaved(false);
                 }}
                 className="flex-1 bg-[#222] hover:bg-[#333] text-white font-medium py-3 rounded-xl transition-colors"
               >

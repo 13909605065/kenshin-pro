@@ -19,10 +19,13 @@ export default function SchedulePage() {
   const [filter, setFilter] = useState<"all" | "upcoming" | "played">("upcoming");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setMatches(getMatches()); }, []);
-
-  const nextMatch = getNextMatch();
+  const [nextMatch, setNextMatch] = useState<MatchRecord | null>(null);
   const days = daysUntilNextMatch(matches);
+
+  useEffect(() => {
+    setMatches(getMatches());
+    setNextMatch(getNextMatch());
+  }, []);
 
   const filtered = filter === "all"
     ? matches
