@@ -341,7 +341,6 @@ export function Dashboard() {
                   <p className="text-[10px] text-gray-500">按顺序跟练</p>
                 </button>
               )}
-              )}
             </>
           )}
         </div>
