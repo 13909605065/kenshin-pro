@@ -19,7 +19,7 @@ interface Pose {
   ankleL: Pt; ankleR: Pt;
   start?: { dy: number; parts: string[] }; // which joints go up (negative dy) for start
   muscles: MuscleGroup;
-  equip?: "barbell" | "dumbbell" | "body" | "bench";
+  equip?: "barbell" | "dumbbell" | "body" | "bench" | "cable" | "trx" | "medball" | "pullupbar" | "band";
   move: "concentric" | "eccentric" | "static";
   angleHints?: { joint: Pt; angle: number }[];
 }
@@ -282,13 +282,20 @@ function detect(name: string): string {
 }
 
 // Equipment detection from name
-function detectEquip(name: string): "barbell" | "dumbbell" | "body" | "bench" | undefined {
+function detectEquip(name: string, poseKey: string): Pose["equip"] {
   const n = name.toLowerCase();
-  if (/杠铃|barbell|硬拉|深蹲|卧推|推举/.test(n)) return "barbell";
+  if (/杠铃|barbell/.test(n)) return "barbell";
   if (/哑铃|dumbbell/.test(n)) return "dumbbell";
-  if (/悬吊|trx|绳索|cable|面拉/.test(n)) return "dumbbell"; // cables shown as dumbbell-style
-  if (/卧推|飞鸟|臀推|保加利亚/.test(n)) return "bench";
-  return undefined; // use pose default
+  if (/悬吊|trx/.test(n)) return "trx";
+  if (/绳索|cable|龙门|面拉|pallof/.test(n)) return "cable";
+  if (/药球|medball|砸击|抛掷/.test(n)) return "medball";
+  if (/引体|pullup|chin/.test(n)) return "pullupbar";
+  if (/弹力带|band/.test(n)) return "band";
+  if (/卧推|飞鸟|臀推/.test(n)) return "bench";
+  if (poseKey === "bench" || poseKey === "bridge") return "bench";
+  if (poseKey === "pullup") return "pullupbar";
+  if (poseKey === "lunge") return "bench"; // Bulgarian needs box
+  return undefined;
 }
 
 /* ================================================================
@@ -311,8 +318,9 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
 }) {
   const key = detect(name);
   const p = POSES[key];
+  const equip = detectEquip(name, key) || p.equip; // name overrides pose default
   const s = size / 100;
-  const m = compact ? 0.75 : 1; // 75% scale for card view
+  const m = compact ? 0.75 : 1;
   const pad = size * (1 - m) / 2;
 
   const X = (j: Pt) => j.x * s * m + pad;
@@ -452,23 +460,56 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
       <polygon points={torsoPts} fill="rgba(20,10,10,0.6)" stroke={BONE_MAIN} strokeWidth="1" opacity="0.7"/>
 
       {/* Equipment */}
-      {p.equip === "barbell" && <>
+      {equip === "barbell" && <>
         <line x1={X(p.wristL)-3*s} y1={Y(p.shoulderL)-1*s} x2={X(p.wristR)+3*s} y2={Y(p.shoulderR)-1*s} stroke="#ddd" strokeWidth="2" strokeLinecap="round"/>
         <rect x={X(p.wristL)-5*s} y={Y(p.shoulderL)-4*s} width={10*s} height={6*s} rx="1.5" fill="#333" stroke="#888" strokeWidth="0.8"/>
         <rect x={X(p.wristR)-5*s} y={Y(p.shoulderR)-4*s} width={10*s} height={6*s} rx="1.5" fill="#333" stroke="#888" strokeWidth="0.8"/>
       </>}
-      {p.equip === "dumbbell" && <>
+      {equip === "dumbbell" && <>
         <rect x={X(p.wristL)-1.2*s} y={Y(p.wristL)-6*s} width={2.4*s} height={8*s} rx="1" fill="#ccc"/>
         <rect x={X(p.wristR)-1.2*s} y={Y(p.wristR)-6*s} width={2.4*s} height={8*s} rx="1" fill="#ccc"/>
       </>}
-      {/* Bench/box — for exercises needing support */}
-      {(p.equip === "bench" || key === "bench" || key === "bridge" || key === "fly") && (
+      {/* Bench */}
+      {(equip === "bench" || key === "bench" || key === "bridge" || key === "fly") && (
         <rect x={X(p.hipL)-8*s} y={Y(p.hipL)-2*s} width={(X(p.hipR)-X(p.hipL))+16*s} height={10*s} rx="2" fill="#2a2a2a" stroke="#555" strokeWidth="1"/>
       )}
-      {key === "lunge" && (  // Bulgarian split squat box
+      {/* Bulgarian split squat box */}
+      {key === "lunge" && (
         <rect x={X(p.ankleL)-6*s} y={Y(p.ankleL)-8*s} width={12*s} height={10*s} rx="2" fill="#2a2a2a" stroke="#555" strokeWidth="0.8"/>
       )}
-      {p.equip === "bench" && <>
+      {/* TRX/suspension straps */}
+      {equip === "trx" && (
+        <g>
+          <line x1={size*.3} y1={0} x2={X(p.shoulderL)} y2={Y(p.shoulderL)} stroke="#888" strokeWidth="0.8" strokeDasharray="2,2"/>
+          <line x1={size*.7} y1={0} x2={X(p.shoulderR)} y2={Y(p.shoulderR)} stroke="#888" strokeWidth="0.8" strokeDasharray="2,2"/>
+          <rect x={size*.27} y={-1} width={size*.46} height={3} rx="1" fill="#444" stroke="#666" strokeWidth="0.5"/>
+        </g>
+      )}
+      {/* Cable/pulley machine */}
+      {equip === "cable" && (
+        <g>
+          <rect x={X(p.wristL)-4*s} y={-2} width={8*s} height={Y(p.wristL)+2} fill="none" stroke="#666" strokeWidth="1" rx="2"/>
+          <circle cx={X(p.wristL)} cy={Y(p.wristL)-4*s} r="2*s" fill="#444" stroke="#888" strokeWidth="0.8"/>
+          <line x1={X(p.wristL)} y1={Y(p.wristL)-2*s} x2={X(p.wristL)} y2={Y(p.wristL)} stroke="#888" strokeWidth="1"/>
+        </g>
+      )}
+      {/* Medicine ball */}
+      {equip === "medball" && (
+        <circle cx={X(p.wristR)} cy={Y(p.wristR)+3*s} r="5*s" fill="#8B4513" stroke="#5C3010" strokeWidth="1"/>
+      )}
+      {/* Pull-up bar */}
+      {equip === "pullupbar" && (
+        <g>
+          <line x1={size*.15} y1={4*s} x2={size*.85} y2={4*s} stroke="#ddd" strokeWidth="2.5" strokeLinecap="round"/>
+          <line x1={size*.2} y1={4*s} x2={size*.2} y2={0} stroke="#888" strokeWidth="1.5"/>
+          <line x1={size*.8} y1={4*s} x2={size*.8} y2={0} stroke="#888" strokeWidth="1.5"/>
+        </g>
+      )}
+      {/* Resistance band */}
+      {equip === "band" && (
+        <path d={`M ${X(p.ankleL)} ${Y(p.ankleL)} Q ${(X(p.ankleL)+X(p.ankleR))/2} ${Y(p.ankleR)+8*s} ${X(p.ankleR)} ${Y(p.ankleR)}`} fill="none" stroke="#ff6666" strokeWidth="3" strokeLinecap="round"/>
+      )}
+      {equip === "bench" && <>
         {key === "lunge" && (
           <rect x={X(p.ankleL)-5*s} y={Y(p.ankleL)-3*s} width={10*s} height={8*s} rx="1.5" fill="#2a2a2a" stroke="#555" strokeWidth="1"/>
         )}
