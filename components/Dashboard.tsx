@@ -655,9 +655,24 @@ export function Dashboard() {
             </div>
           </a>
 
+          {/* Equipment — scene-aware */}
+          {scene !== "review" && (
+            <div className="glass-card p-3">
+              <p className="text-[10px] text-gray-500 mb-2">可用器材（{scene==="gym"?"健身房":"训练场"}）</p>
+              <div className="flex flex-wrap gap-1.5">
+                {(scene === "gym"
+                  ? ["弹力带","药球","泡沫轴","瑜伽球","哑铃","杠铃","TRX","卧推凳"]
+                  : ["标志盘","标志桶","标志杆","号坎","足球","小球门","小栏架","绳梯","敏捷圈","角旗杆"]
+                ).map((eq) => (
+                  <span key={eq} className="px-2 py-1 rounded text-[10px] bg-pitch-700 text-gray-400 border border-pitch-600">{eq}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}
-            className="w-full py-3 bg-neon-pink text-black font-bold rounded-xl text-lg hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            className="w-full py-3.5 bg-neon-pink text-black font-bold rounded-xl text-base hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20">
             <Zap className="w-5 h-5" /> {t("dashboard.generate")}
           </button>
 
