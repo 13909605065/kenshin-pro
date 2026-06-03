@@ -65,7 +65,7 @@ export default function GymPage() {
 
   // ---- Form completeness check ----
   const canGenerate = isCoach
-    ? !!(formData.coachCert && formData.coachRole && formData.leagueTag && (formData.tacticalThemes || []).length > 0)
+    ? !!(formData.coachCert && formData.coachRole && formData.leagueTag)
     : !!(formData.position && formData.goal && formData.phase);
 
   const handleGenerate = useCallback(async () => {
