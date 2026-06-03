@@ -353,49 +353,16 @@ export function Dashboard() {
       )}
 
 
-      {/* ====== Gym: 健身房助手 ====== */}
+      {/* ====== Gym: redirect to full page ====== */}
       {status === "idle" && scene === "gym" && (
-        <div className="space-y-5">
-          {/* Profile + AI Suggestion */}
-          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 space-y-5">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-neon-pink/20 flex items-center justify-center text-2xl font-bold text-neon-pink">{isCoach ? "C" : "A"}</div>
-              <div>
-                <p className="text-white font-bold text-lg">{formData.name || "健身者"}</p>
-                <div className="flex gap-3 mt-1">
-                  {!isCoach && formData.position && <span className="text-xs text-gray-400">{t("pos." + formData.position)}</span>}
-                  {formData.age && <span className="text-xs text-gray-400">{formData.age}岁</span>}
-                  {formData.height && <span className="text-xs text-gray-400">{formData.height}cm</span>}
-                  {formData.weight && <span className="text-xs text-gray-400">{formData.weight}kg</span>}
-                  {isCoach && <span className="text-xs text-gray-400">力量教练</span>}
-                </div>
-              </div>
-            </div>
-
-            {/* AI Recommendation */}
-            <div className="bg-[#111] border border-neon-pink/20 rounded-lg p-4">
-              <p className="text-xs text-neon-pink font-bold mb-2">今日建议</p>
-              <p className="text-sm text-gray-300 leading-relaxed">
-                {!isCoach && formData.goal === "strength" ? "下肢爆发力 + 核心稳定。你正处于力量期，建议3-4个复合动作，组间2min。" :
-                 !isCoach && formData.goal === "power" ? "爆发力训练日。推荐奥举+跳跃类，低次数高速度，充分热身。" :
-                 !isCoach && formData.goal === "speed" ? "速度力量转换。轻中重量快速完成，配合灵敏训练。" :
-                 "根据你的档案和赛季阶段，今日推荐力量维持+专项转化训练。"}
-              </p>
-            </div>
-
-            {/* Quick actions */}
-            <div className="grid grid-cols-3 gap-3">
-              <button onClick={handleGenerate} className="bg-neon-pink text-black font-bold py-4 rounded-xl text-sm flex flex-col items-center gap-2">
-                <Zap className="w-5 h-5"/> 按建议练
-              </button>
-              <button onClick={() => window.location.href = "/exercises"} className="bg-[#222] border border-[#444] text-white font-medium py-4 rounded-xl text-sm flex flex-col items-center gap-2">
-                <Dumbbell className="w-5 h-5"/> 选动作
-              </button>
-              <button onClick={() => window.location.href = "/history"} className="bg-[#222] border border-[#444] text-white font-medium py-4 rounded-xl text-sm flex flex-col items-center gap-2">
-                <History className="w-5 h-5"/> 训练记录
-              </button>
-            </div>
-          </div>
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 text-center space-y-3">
+          <Dumbbell className="w-10 h-10 text-neon-pink mx-auto"/>
+          <p className="text-white font-bold text-lg">健身房</p>
+          <p className="text-xs text-gray-500">智能推荐 + 动作库 + 训练记录</p>
+          <button onClick={() => window.location.href = "/gym"}
+            className="w-full py-3 bg-neon-pink text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2">
+            进入健身房 →
+          </button>
         </div>
       )}
 
