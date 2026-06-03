@@ -1,10 +1,10 @@
 "use client";
-import ExerciseSvg from '@/components/ExerciseSvg'
 import { useState, useMemo } from "react";
-import { Search, Dumbbell, ChevronUp, ChevronDown, ArrowUpFromLine, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X } from "lucide-react";
 import { STRENGTH_LIBRARY, WARMUP_LIBRARY, DRILL_LIBRARY, COOLDOWN_LIBRARY } from "@/lib/training-library";
 import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
 import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
+import { StickFigure } from "@/components/StickFigure";
 
 // ═══════════════════════════════════════════════
 // Category Types
@@ -239,7 +239,7 @@ export default function ExercisesPage() {
   const [equipment, setEquipment] = useState<Equipment>("all");
   const [exType, setExType] = useState<ExType>("all");
   const [search, setSearch] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Filter
@@ -281,7 +281,7 @@ export default function ExercisesPage() {
   const handleDeleteCustom = (id: string) => {
     if (typeof window !== "undefined" && window.confirm("确定删除这个自定义动作吗？")) {
       deleteExercise(id);
-      if (expandedId === id) setExpandedId(null);
+      if (selectedId === id) setSelectedId(null);
     }
   };
 
@@ -296,6 +296,9 @@ export default function ExercisesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
+            <div className="flex items-center gap-2 mb-1">
+              <a href="/" className="text-xs text-gray-500 hover:text-gray-300">← 返回首页</a>
+            </div>
             <h1 className="text-2xl font-bold text-white">训练动作库</h1>
             <p className="text-sm text-gray-500 mt-1">
               动作库 ({builtInExercises.length}个内置 + {customExercises.length}个自定义) — 显示 {filtered.length} 个
@@ -395,8 +398,7 @@ export default function ExercisesPage() {
               <ExerciseCard
                 key={ex.id}
                 exercise={ex}
-                isExpanded={expandedId === ex.id}
-                onToggle={() => setExpandedId(expandedId === ex.id ? null : ex.id)}
+                onSelect={() => setSelectedId(ex.id)}
                 onEdit={ex.isCustom ? () => handleEditCustom(ex.id) : undefined}
                 onDelete={ex.isCustom ? () => handleDeleteCustom(ex.id) : undefined}
               />
@@ -404,6 +406,11 @@ export default function ExercisesPage() {
           </div>
         )}
       </div>
+
+      {/* Detail side panel */}
+      {selectedId && (
+        <ExerciseDetailSheet exercise={filtered.find(e => e.id === selectedId)!} onClose={() => setSelectedId(null)}/>
+      )}
 
       {/* Add/Edit Custom Exercise Modal */}
       <AddExerciseModal
@@ -431,240 +438,54 @@ export default function ExercisesPage() {
 // ═══════════════════════════════════════════════
 
 function ExerciseCard({
-  exercise,
-  isExpanded,
-  onToggle,
-  onEdit,
-  onDelete,
+  exercise, onSelect, onEdit, onDelete,
 }: {
-  exercise: UnifiedExercise;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
+  exercise: UnifiedExercise; onSelect: () => void; onEdit?: () => void; onDelete?: () => void;
 }) {
   const isStrength = exercise.type === "力量";
-  const isWarmup = exercise.type === "热身";
-  const isDrill = exercise.type === "技术训练";
-  const isCooldown = exercise.type === "整理";
-
   return (
-    <div
-      className={`glass-card overflow-hidden transition-all duration-200 cursor-pointer ${
-        isExpanded ? "ring-1 ring-neon-pink/50 col-span-2 sm:col-span-2 lg:col-span-3 xl:col-span-3" : "hover:ring-1 hover:ring-pitch-600"
-      }`}
-      onClick={onToggle}
-    >
-      {/* Image / Placeholder */}
-      <div className="aspect-[4/3] bg-pitch-800 relative overflow-hidden">
-        {exercise.image_url ? (
-          <img
-            src={exercise.image_url}
-            alt={exercise.name}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Dumbbell className="w-8 h-8 text-gray-700" />
-          </div>
-        )}
-        {/* Top badges row */}
-        <div className="absolute top-2 left-2 right-2 flex items-center gap-1.5">
-          <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
-            isStrength ? "bg-neon-pink/80 text-black" :
-            isWarmup ? "bg-yellow-500/80 text-black" :
-            isDrill ? "bg-blue-500/80 text-white" :
-            "bg-green-500/80 text-black"
-          }`}>
-            {exercise.type}
-          </span>
-          {exercise.isCustom && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/80 text-white">
-              自定义
-            </span>
-          )}
-          {exercise.customDifficulty && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-pitch-700/80 text-gray-300">
-              {exercise.customDifficulty}
-            </span>
-          )}
-          <div className="flex-1" />
-          <span className="px-1.5 py-0.5 rounded text-[10px] bg-black/50 text-gray-300">
-            {exercise.equipment}
-          </span>
-        </div>
+    <div className="glass-card overflow-hidden hover:ring-1 hover:ring-neon-pink/50 cursor-pointer transition-all" onClick={onSelect}>
+      <div className="aspect-square bg-[#111] flex items-center justify-center p-2">
+        <StickFigure name={exercise.name} size={60}/>
       </div>
-
-      {/* Info */}
-      <div className="p-3">
-        <h3 className="text-white font-bold text-sm truncate">{exercise.name}</h3>
-
+      <div className="p-2">
+        <h3 className="text-white font-bold text-xs truncate">{exercise.name}</h3>
+        <div className="flex items-center gap-1 mt-1">
+          <span className={`px-1 py-0 rounded text-[9px] font-medium ${isStrength?"bg-neon-pink/80 text-black":"bg-pitch-600 text-gray-400"}`}>{exercise.type}</span>
+          <span className="text-[9px] text-gray-500">{exercise.equipment}</span>
+        </div>
         {isStrength && exercise.sets && exercise.reps && (
-          <div className="flex items-center gap-2 mt-1.5 text-[11px] text-gray-400">
-            <span className="bg-pitch-700 px-1.5 py-0.5 rounded">
-              {exercise.sets[0]}-{exercise.sets[1]}×{exercise.reps[0]}-{exercise.reps[1]}
-            </span>
-            {exercise.rpe && (
-              <span className="bg-pitch-700 px-1.5 py-0.5 rounded">RPE {exercise.rpe}</span>
-            )}
+          <p className="text-[10px] text-gray-500 mt-0.5">{exercise.sets[0]}-{exercise.sets[1]}×{exercise.reps[0]}-{exercise.reps[1]}</p>
+        )}
+        {exercise.duration && (
+          <p className="text-[10px] text-gray-500 mt-0.5">{exercise.duration}分钟</p>
+        )}
+        {exercise.isCustom && (
+          <div className="flex gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
+            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-pitch-700 text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
+            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-pitch-700 text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
           </div>
         )}
-
-        {isWarmup && exercise.duration && (
-          <p className="text-[11px] text-gray-400 mt-1">{exercise.duration}分钟</p>
-        )}
-
-        {isDrill && exercise.duration && (
-          <p className="text-[11px] text-gray-400 mt-1">{exercise.duration}分钟</p>
-        )}
-
-        {isCooldown && exercise.duration && (
-          <p className="text-[11px] text-gray-400 mt-1">{exercise.duration}分钟</p>
-        )}
-
-        {/* Custom exercise actions */}
-        {exercise.isCustom && onEdit && onDelete && (
-          <div className="flex items-center gap-2 mt-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); onEdit(); }}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-gray-400 hover:text-white hover:bg-pitch-700 transition"
-            >
-              <Pencil className="w-3 h-3" />
-              编辑
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-gray-400 hover:text-neon-red hover:bg-pitch-700 transition"
-            >
-              <Trash2 className="w-3 h-3" />
-              删除
-            </button>
-          </div>
-        )}
-
-        {/* Expand indicator */}
-        <div className="flex items-center justify-center mt-2">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-gray-600" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-gray-600" />
-          )}
-        </div>
       </div>
-
-      {/* Expanded Details */}
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-pitch-700 pt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
-          {/* Description */}
-          {exercise.description && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">说明</p>
-              <p className="text-sm text-gray-300">{exercise.description}</p>
-            </div>
-          )}
-
-          {/* Purpose (drills) */}
-          {exercise.purpose && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">训练目的</p>
-              <p className="text-sm text-gray-300">{exercise.purpose}</p>
-            </div>
-          )}
-
-          {/* Strength params */}
-          {isStrength && (
-            <div className="grid grid-cols-3 gap-2">
-              {exercise.load_default && (
-                <div className="bg-pitch-800 rounded-lg p-2">
-                  <p className="text-[10px] text-gray-500">负荷</p>
-                  <p className="text-xs text-white font-medium">{exercise.load_default}</p>
-                </div>
-              )}
-              {exercise.rest && (
-                <div className="bg-pitch-800 rounded-lg p-2">
-                  <p className="text-[10px] text-gray-500">间歇</p>
-                  <p className="text-xs text-white font-medium">{exercise.rest}s</p>
-                </div>
-              )}
-              {exercise.heart_rate_zone && (
-                <div className="bg-pitch-800 rounded-lg p-2">
-                  <p className="text-[10px] text-gray-500">心率区间</p>
-                  <p className="text-xs text-white font-medium">{exercise.heart_rate_zone}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Cue Points */}
-          {exercise.cue_points && exercise.cue_points.length > 0 && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">动作要点</p>
-              <ul className="space-y-0.5">
-                {exercise.cue_points.map((cue, i) => (
-                  <li key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <span className="text-neon-pink mt-0.5">•</span>
-                    {cue}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Key Points (drills) */}
-          {exercise.key_points && exercise.key_points.length > 0 && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">技术要点</p>
-              <ul className="space-y-0.5">
-                {exercise.key_points.map((kp, i) => (
-                  <li key={i} className="text-xs text-gray-400 flex items-start gap-1.5">
-                    <span className="text-neon-pink mt-0.5">•</span>
-                    {kp}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Progression */}
-          {exercise.progression && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">进阶变式</p>
-              <p className="text-xs text-gray-300 flex items-center gap-1">
-                <ChevronUp className="w-3 h-3 text-green-400" />
-                {exercise.progression}
-              </p>
-            </div>
-          )}
-
-          {/* Regression (custom exercises) */}
-          {exercise.regression && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">退阶变式</p>
-              <p className="text-xs text-gray-300 flex items-center gap-1">
-                <ChevronDown className="w-3 h-3 text-yellow-400" />
-                {exercise.regression}
-              </p>
-            </div>
-          )}
-
-          {/* Diagram (drills) */}
-          {exercise.diagram && (
-            <div>
-              <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">场地设置</p>
-              <div className="bg-pitch-800 rounded-lg p-2 grid grid-cols-2 gap-1 text-xs text-gray-400">
-                <span>布局: {exercise.diagram.layout}</span>
-                <span>标志盘: {exercise.diagram.cone_count}个</span>
-                <span>间距: {exercise.diagram.cone_spacing}</span>
-                {exercise.diagram.total_distance && <span>总距: {exercise.diagram.total_distance}</span>}
-              </div>
-            </div>
-          )}
-
-          {/* ID */}
-          <p className="text-[10px] text-gray-700 font-mono">{exercise.id}</p>
-        </div>
-      )}
     </div>
   );
+}
+
+/* Detail sheet */
+function ExerciseDetailSheet({ exercise, onClose }: { exercise: UnifiedExercise; onClose: () => void }) {
+  return (<>
+    <div className="fixed inset-0 bg-black/60 z-40" onClick={onClose}/>
+    <div className="fixed right-0 top-0 h-full w-full sm:w-[380px] bg-[#1a1a1a] border-l border-[#333] z-50 overflow-y-auto">
+      <div className="sticky top-0 bg-[#1a1a1a]/95 backdrop-blur border-b border-[#333] p-3 flex items-center justify-between">
+        <h2 className="text-base font-bold text-white truncate">{exercise.name}</h2>
+        <button onClick={onClose} className="p-1 text-gray-400 hover:text-white"><X className="w-5 h-5"/></button>
+      </div>
+      <div className="p-4 space-y-4">
+        <div className="max-w-[180px] mx-auto bg-[#111] rounded-xl p-4"><StickFigure name={exercise.name} size={160} showMuscles={true}/></div>
+        {exercise.description && <div><p className="text-[10px] text-gray-600 mb-1">说明</p><p className="text-sm text-gray-300">{exercise.description}</p></div>}
+        {exercise.cue_points && exercise.cue_points.length > 0 && <div><p className="text-[10px] text-gray-600 mb-1">要点</p><ol className="space-y-1">{exercise.cue_points.map((c: string,i: number) => <li key={i} className="text-sm text-gray-300 flex gap-1"><span className="text-neon-pink font-bold">{i+1}.</span>{c}</li>)}</ol></div>}
+        {exercise.progression && <div className="bg-pitch-700/50 rounded-lg p-3 border border-pitch-600"><p className="text-xs text-neon-pink font-bold">进阶</p><p className="text-xs text-gray-400">{exercise.progression}</p></div>}
+      </div>
+    </div>
+  </>);
 }
