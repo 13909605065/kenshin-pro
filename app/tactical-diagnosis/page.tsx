@@ -121,7 +121,7 @@ export default function TacticalDiagnosisPage() {
         {/* Header */}
         <div className="mb-6">
           <a href="/" className="text-xs text-gray-500 hover:text-gray-300 mb-1 inline-block">← 返回</a>
-          <h1 className="text-2xl font-bold text-neon-pink">⚽ Kenshin AI 战术诊断</h1>
+          <h1 className="text-2xl font-bold text-neon-pink">⚽ 战术诊断</h1>
           <p className="text-gray-400 text-sm mt-1">描述你遇到的进攻或防守问题，AI 基于运动科学知识库给出方案并自动画图</p>
         </div>
 

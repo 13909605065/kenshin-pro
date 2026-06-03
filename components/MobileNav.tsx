@@ -13,7 +13,7 @@ export function MobileNav() {
 
   const TABS = [
     { id: "home", label: t("nav.home"), icon: Home, path: "/" },
-    { id: "diagnosis", label: "Kenshin AI", icon: Brain, path: "/tactical-diagnosis" },
+    { id: "diagnosis", label: "战术诊断", icon: Brain, path: "/tactical-diagnosis" },
     { id: "tactics", label: "战术板", icon: Layout, path: "/tactics" },
   ];
 
