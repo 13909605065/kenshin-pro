@@ -230,6 +230,11 @@ export function Dashboard() {
   const { role, scene, setRole } = useScene();
   const isCoach = role === "coach";
 
+  // Sync wizard role with scene identity
+  useEffect(() => {
+    if (formData.role !== role) setWizardRole(role);
+  }, [role]);
+
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [showDone, setShowDone] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
