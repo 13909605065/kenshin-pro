@@ -149,10 +149,10 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
           <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
             <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">攻防要点</h3>
             <div className="space-y-1 text-[10px] text-gray-400">
-              {module.attacking_patterns && <p>攻: {module.attacking_patterns.slice(0,40)}</p>}
-              {module.defensive_shape && <p>防: {module.defensive_shape.slice(0,40)}</p>}
-              {module.transition_moments && <p>转换: {module.transition_moments.slice(0,40)}</p>}
-              {module.pressing_triggers && <p>压迫: {module.pressing_triggers.slice(0,40)}</p>}
+              {module.attacking_patterns && <p className="mb-1"><span className="text-gray-500">攻</span> {module.attacking_patterns}</p>}
+              {module.defensive_shape && <p className="mb-1"><span className="text-gray-500">防</span> {module.defensive_shape}</p>}
+              {module.transition_moments && <p className="mb-1"><span className="text-gray-500">转换</span> {module.transition_moments}</p>}
+              {module.pressing_triggers && <p><span className="text-gray-500">压迫</span> {module.pressing_triggers}</p>}
             </div>
           </div>
         </div>
