@@ -348,20 +348,13 @@ export function Dashboard() {
                   </button>
                 </>
               )}
-              {/* 复盘: AI诊断 + 战术板 */}
+              {/* 复盘: only 战术板 (AI诊断通过导航栏直达) */}
               {scene === "review" && (
-                <>
-                  <button onClick={() => window.location.href = "/tactical-diagnosis"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                    <Brain className="w-5 h-5 text-neon-pink mb-1" />
-                    <p className="text-xs font-bold text-white">AI 战术诊断</p>
-                    <p className="text-[10px] text-gray-500">说问题→方案→出图</p>
-                  </button>
-                  <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                    <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
-                    <p className="text-xs font-bold text-white">战术板</p>
-                    <p className="text-[10px] text-gray-500">手动绘制</p>
-                  </button>
-                </>
+                <button onClick={() => window.location.href = "/tactics"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                  <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                  <p className="text-xs font-bold text-white">战术板</p>
+                  <p className="text-[10px] text-gray-500">手动绘制</p>
+                </button>
               )}
             </>
           )}
