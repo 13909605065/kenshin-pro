@@ -55,7 +55,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
               {module.player_roles?.slice(0, 5).map((role, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="w-4 h-4 rounded bg-neon-pink/20 text-[8px] flex items-center justify-center text-neon-pink font-bold">{i+1}</span>
-                  <span className="text-gray-300 truncate">{role}</span>
+                  <span className="text-gray-300 text-xs">{role}</span>
                 </div>
               ))}
             </div>
@@ -119,7 +119,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
                   <Flag className="w-3 h-3 text-gray-600"/>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-white font-medium truncate">{drill}</p>
+                  <p className="text-[10px] text-white font-medium">{drill}</p>
                   <p className="text-[9px] text-gray-600">15min</p>
                 </div>
               </div>
