@@ -199,7 +199,13 @@
     "leagueLabel": "League / Team Level *",
     "certTooltip": "Not available with current certificate",
     "summaryLabel": "Coach Plan",
-    "summaryThemes": "Tactical Themes"
+    "summaryThemes": "Tactical Themes",
+    "equipment": "Equipment",
+    "equipmentHint": "Multi-select · Auto-recommend if empty",
+    "generate": "Generate Training Plan",
+    "cert": "License Level",
+    "role": "Role",
+    "league": "League/Team"
   },
   "tab": {
     "warmup": "Warm-up",
@@ -240,5 +246,53 @@
     "selected": "Selected",
     "clickSelect": "Click object to select",
     "playerLabel": "Player"
+  },
+  "nav": {
+    "home": "Home",
+    "tactics": "Tactics",
+    "roster": "Roster",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "actions": {
+    "share": "Share",
+    "copyLink": "Link Copied",
+    "exportPDF": "Export PDF",
+    "exportTable": "Export Table",
+    "startTraining": "Start Training"
+  },
+  "workout": {
+    "warmup": "Warm-up",
+    "strength": "Strength",
+    "technique": "Technique",
+    "cooldown": "Cool-down",
+    "set": "Set",
+    "rest": "Rest",
+    "skip": "Skip",
+    "pause": "Pause",
+    "complete": "Workout Complete",
+    "totalTime": "Total Time",
+    "exercisesDone": "exercises done",
+    "backToPlan": "Back to Plan",
+    "recordSaved": "Record saved"
+  },
+  "roster": {
+    "title": "Team Roster",
+    "import": "Import Excel",
+    "addPlayer": "Add Player",
+    "filterAll": "All",
+    "filterHealthy": "Healthy",
+    "filterMinor": "Minor Injury",
+    "filterOut": "Out",
+    "name": "Name",
+    "position": "Position",
+    "number": "Number",
+    "age": "Age",
+    "height": "Height",
+    "weight": "Weight",
+    "injuryStatus": "Injury Status",
+    "delete": "Delete",
+    "save": "Save",
+    "noPlayers": "No players yet. Import Excel or add a player."
   }
 }

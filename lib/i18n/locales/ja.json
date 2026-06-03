@@ -199,7 +199,13 @@
     "leagueLabel": "リーグ / チームレベル *",
     "certTooltip": "現在の資格では選択不可",
     "summaryLabel": "コーチプラン",
-    "summaryThemes": "戦術テーマ"
+    "summaryThemes": "戦術テーマ",
+    "equipment": "用具",
+    "equipmentHint": "複数選択 · 空欄で自動推奨",
+    "generate": "トレーニングプラン生成",
+    "cert": "ライセンス",
+    "role": "役割",
+    "league": "リーグ"
   },
   "tab": {
     "warmup": "ウォームアップ",
@@ -240,5 +246,53 @@
     "selected": "選択中",
     "clickSelect": "クリックでオブジェクト選択",
     "playerLabel": "選手"
+  },
+  "nav": {
+    "home": "ホーム",
+    "tactics": "戦術",
+    "roster": "名簿",
+    "history": "履歴",
+    "settings": "設定"
+  },
+  "actions": {
+    "share": "共有",
+    "copyLink": "リンクコピー",
+    "exportPDF": "PDF出力",
+    "exportTable": "表出力",
+    "startTraining": "トレーニング開始"
+  },
+  "workout": {
+    "warmup": "ウォームアップ",
+    "strength": "筋力",
+    "technique": "技術",
+    "cooldown": "クールダウン",
+    "set": "セット",
+    "rest": "休憩",
+    "skip": "スキップ",
+    "pause": "一時停止",
+    "complete": "完了",
+    "totalTime": "合計時間",
+    "exercisesDone": "種目完了",
+    "backToPlan": "プランに戻る",
+    "recordSaved": "記録保存済"
+  },
+  "roster": {
+    "title": "チーム名簿",
+    "import": "Excel取込",
+    "addPlayer": "選手追加",
+    "filterAll": "全員",
+    "filterHealthy": "健康",
+    "filterMinor": "軽傷",
+    "filterOut": "離脱",
+    "name": "名前",
+    "position": "ポジション",
+    "number": "番号",
+    "age": "年齢",
+    "height": "身長",
+    "weight": "体重",
+    "injuryStatus": "怪我",
+    "delete": "削除",
+    "save": "保存",
+    "noPlayers": "選手未登録。Excel取込または選手追加してください"
   }
 }

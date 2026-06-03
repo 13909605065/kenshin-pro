@@ -2,18 +2,20 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { Home, Layout, Users, History, Settings } from "lucide-react";
-
-const TABS = [
-  { id: "home", label: "首页", icon: Home, path: "/" },
-  { id: "tactics", label: "战术", icon: Layout, path: "/tactics" },
-  { id: "roster", label: "花名册", icon: Users, path: "/roster" },
-  { id: "history", label: "历史", icon: History, path: "/history" },
-  { id: "settings", label: "设置", icon: Settings, path: "/settings" },
-];
+import { useLang } from "@/lib/i18n/LanguageContext";
 
 export function MobileNav() {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useLang();
+
+  const TABS = [
+    { id: "home", label: t("nav.home"), icon: Home, path: "/" },
+    { id: "tactics", label: t("nav.tactics"), icon: Layout, path: "/tactics" },
+    { id: "roster", label: t("nav.roster"), icon: Users, path: "/roster" },
+    { id: "history", label: t("nav.history"), icon: History, path: "/history" },
+    { id: "settings", label: t("nav.settings"), icon: Settings, path: "/settings" },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-pitch-900/95 backdrop-blur border-t border-pitch-700 lg:hidden">
