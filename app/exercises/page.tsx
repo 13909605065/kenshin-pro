@@ -446,7 +446,7 @@ function ExerciseCard({
   return (
     <div className="glass-card overflow-hidden hover:ring-1 hover:ring-neon-pink/50 cursor-pointer transition-all" onClick={onSelect}>
       <div className="aspect-square bg-[#111] flex items-center justify-center p-2">
-        <StickFigure name={exercise.name} size={60}/>
+        <StickFigure name={exercise.name} size={80} compact={true}/>
       </div>
       <div className="p-2">
         <h3 className="text-white font-bold text-xs truncate">{exercise.name}</h3>

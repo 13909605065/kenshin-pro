@@ -29,7 +29,7 @@ export function ExerciseCard({ exercise, onView, onAdd }: Props) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center p-2">
-            <StickFigure name={exercise.name} size={64} />
+            <StickFigure name={exercise.name} size={80} compact={true} />
           </div>
         )}
         <button
