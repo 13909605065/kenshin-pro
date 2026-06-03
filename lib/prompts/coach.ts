@@ -10,7 +10,7 @@ import {
 } from "../constants";
 import { LANG_INSTRUCTIONS } from "./athlete";
 
-export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh"): string {
+export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string): string {
   const langInstruction = LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.zh;
   const themes = data.tacticalThemes.map((t) => TACTICAL_THEME_LABELS[t]).join("、");
   const primaryTheme = data.tacticalThemes[0] || "possession";
@@ -106,6 +106,8 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh"): str
 - ${physicalNote}
 
 你是一位持有${COACH_CERT_LABELS[cert]}证书的${COACH_ROLE_LABELS[role]}，正在为${LEAGUE_TAG_LABELS[league]}级别设计一堂以「${TACTICAL_THEME_LABELS[primaryTheme]}」为主题的训练课。
+${data.equipmentAvailable?.length ? `\n器材约束：你只有以下器材可用：${data.equipmentAvailable.join("、")}。必须只使用这些器材设计练习。` : ""}
+${weatherHint ? `\n${weatherHint}\n根据天气调整训练内容：高温加强补水、低温延长热身、雨天考虑室内替代。` : ""}
 
 ${langInstruction}
 

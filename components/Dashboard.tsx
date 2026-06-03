@@ -237,6 +237,19 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Coach quick panel */}
+          {isCoach && (
+            <div className="glass-card p-4 flex items-center gap-3 flex-wrap">
+              <a href="/roster" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pitch-700 hover:bg-pitch-600 text-xs text-gray-300 transition">
+                📋 球队花名册
+              </a>
+              <a href="/tactics" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pitch-700 hover:bg-pitch-600 text-xs text-gray-300 transition">
+                📐 战术板
+              </a>
+              <span className="text-[10px] text-gray-500">快速入口 · 设置档案后生成训练方案 ↓</span>
+            </div>
+          )}
+
           {/* Goal */}
           {!isCoach && (
             <div className="glass-card p-4 flex items-center gap-4">
@@ -309,6 +322,22 @@ export function Dashboard() {
                           : "bg-pitch-700 border-pitch-600 text-gray-300 hover:border-pitch-500"
                       }`}>{v}</button>
                   );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Equipment selector — coach only */}
+          {isCoach && (
+            <div className="glass-card p-4">
+              <p className="text-sm font-bold text-white mb-3">可用器材（多选，为空则AI自动推荐）</p>
+              <div className="flex flex-wrap gap-2">
+                {["标志盘","标志桶","标志杆","号坎/背心","球(充足)","小球门","标准球门","栏架(小)","栏架(高)","绳梯","敏捷圈","弹力带","药球","Pezzi球/瑜伽球","泡沫轴"].map((eq) => {
+                  const act = formData.equipmentAvailable?.includes(eq);
+                  return <button key={eq} onClick={() => {
+                    const next = act ? formData.equipmentAvailable.filter((x: string) => x !== eq) : [...(formData.equipmentAvailable || []), eq];
+                    updateField("equipmentAvailable", next);
+                  }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition border ${act ? "bg-neon-pink border-neon-pink text-black" : "bg-pitch-700 border-pitch-600 text-gray-300 hover:border-pitch-500"}`}>{eq}</button>;
                 })}
               </div>
             </div>

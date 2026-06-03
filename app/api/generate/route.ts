@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { buildSystemPrompt, buildUserPrompt } from "@/lib/prompt";
 import { PlayerFormData } from "@/lib/types";
 import { resolveModule, resolveCoachModule, resolveCombo, type CompactModule, type CoachCompactModule } from "@/lib/training-library";
+import { getWeather, weatherHint } from "@/lib/weather";
 
 // Rate limiting: simple in-memory map (resets on cold start)
 const rateLimitMap = new Map<string, number>();
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
 
   const isCoach = formData.role === "coach";
   const systemPrompt = buildSystemPrompt(formData);
-  const userMessage = buildUserPrompt(formData, lang);
+  const weather = await getWeather().catch(() => null);
+  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined);
 
   const encoder = new TextEncoder();
 

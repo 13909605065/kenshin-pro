@@ -10,7 +10,7 @@ import {
 const SAVE_KEY = "kenshin_player_data";
 
 const DEFAULT_DATA: PlayerFormData = {
-  role: "athlete",
+  role: "coach",
   name: "",
   gender: "male",
   position: null,
@@ -27,6 +27,7 @@ const DEFAULT_DATA: PlayerFormData = {
   coachRole: null,
   leagueTag: null,
   tacticalThemes: [],
+  equipmentAvailable: [],
 };
 
 function validateStep1(data: PlayerFormData): Partial<Record<keyof PlayerFormData, string>> {

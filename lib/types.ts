@@ -45,6 +45,7 @@ export interface PlayerFormData {
   coachRole: CoachRole | null;
   leagueTag: LeagueTag | null;
   tacticalThemes: TacticalTheme[];
+  equipmentAvailable: string[]; // 可用器材列表
 }
 
 // ---- Training Module Output ----

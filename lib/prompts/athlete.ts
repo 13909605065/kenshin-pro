@@ -10,7 +10,7 @@ export const LANG_INSTRUCTIONS: Record<string, string> = {
   ja: "すべての内容を日本語で出力してください。",
 };
 
-export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): string {
+export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string): string {
   const injurySitesStr =
     data.injurySites.length > 0
       ? data.injurySites.map((s) => INJURY_LABELS[s]).join("、")
@@ -161,5 +161,6 @@ ${langInstruction}
 ${isUnder18 ? "- 该球员未成年，禁止使用>85%1RM负荷。用 db-goblet-squat/sus-squat 替代 back-squat。" : ""}
 ${isGoalkeeper ? "- 守门员专项：upper必须含 shoulder-press + face-pull；core必须含 cable-woodchop(旋转爆发) + pallof-press(抗旋转)；lower必须含 box-jump(爆发力)。" : ""}
 ${data.injurySites.includes("knee") || data.injurySites.includes("thigh") ? "- 含膝/大腿伤病：禁止大重量深蹲和跳跃类。替代为 leg-press(闭链安全)+hip-thrust(臀肌)+nordic-hamstring(轻型离心)。" : ""}
-${isFemale ? "- 女性运动员：热身必含落地力学训练(膝勿内扣)；营养方案加铁/钙建议；上肢初始负荷保守(-15%)。每节必练北欧弯举。" : ""}`;
+${isFemale ? "- 女性运动员：热身必含落地力学训练(膝勿内扣)；营养方案加铁/钙建议；上肢初始负荷保守(-15%)。每节必练北欧弯举。" : ""}
+${weatherHint ? `\n⚠️ 天气因素：${weatherHint}\n根据天气调整：高温加强补水策略，低温延长热身，雨天减少户外冲刺/变向练习。` : ""}`;
 }

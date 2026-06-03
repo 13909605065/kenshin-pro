@@ -10,12 +10,12 @@ import { buildCoachPrompt } from "./prompts/coach";
 import { buildAthleteSystemPrompt, buildCoachSystemPrompt } from "./prompts/system";
 
 /** Build user prompt based on role */
-export function buildUserPrompt(data: PlayerFormData, lang?: string): string {
+export function buildUserPrompt(data: PlayerFormData, lang?: string, weatherHint?: string): string {
   const l = lang || "zh";
   if (data.role === "coach") {
-    return buildCoachPrompt(data, l);
+    return buildCoachPrompt(data, l, weatherHint);
   }
-  return buildAthletePrompt(data, l);
+  return buildAthletePrompt(data, l, weatherHint);
 }
 
 /** Build system prompt based on role */
