@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Canvas, Circle, FabricText, Group, FabricImage } from "fabric";
-import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard";
+import { FabricBoard, exportBoardAsPNG, hideFieldMarkings } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { ArrowLeft, Save, FolderOpen, X, Bookmark } from "lucide-react";
@@ -67,8 +67,9 @@ export default function TacticsPage() {
       const positions = computePlayerPositions(red, blue, neutral, ctx.area);
 
       FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
-        // Remove existing field background
+        // Remove existing field background + hide markings
         canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
+        hideFieldMarkings(canvas);
 
         img.set({ left: 0, top: 0, scaleX: 1050 / img.width!, scaleY: 680 / img.height!, selectable: false, evented: false });
         (img as any)._isFieldBg = true;
@@ -130,10 +131,11 @@ export default function TacticsPage() {
   const hField = useCallback((fn: string) => {
     const c=boardRef.current; if(!c)return;
     c.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>c.remove(o));
+    hideFieldMarkings(c);
     FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
       img.set({left:0,top:0,scaleX:1050/img.width!,scaleY:680/img.height!,selectable:false,evented:false});
       (img as any)._isFieldBg=true;
-      const others=c.getObjects().filter((o:any)=>!o._isFieldBg);
+      const others=c.getObjects().filter((o:any)=>!o._isFieldBg && !(o as any)._isFieldMarking);
       others.forEach((o:any)=>c.remove(o));
       c.add(img); others.forEach((o:any)=>c.add(o));
       c.requestRenderAll();

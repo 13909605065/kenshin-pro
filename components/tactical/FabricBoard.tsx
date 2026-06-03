@@ -210,7 +210,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
 function drawFieldMarkings(c: Canvas) {
   const CX = 525, CY = 340;
-  const mk = (o: any) => { o.selectable = false; o.evented = false; };
+  const mk = (o: any) => { o.selectable = false; o.evented = false; (o as any)._isFieldMarking = true; };
   for (let i = 0; i < 1050; i += 55) { const s = new Rect({ left: i, top: 0, width: 27.5, height: 680, fill: i%110===0?"#088024":"#0A8A2E" }); mk(s); c.add(s); }
   [new Rect({left:0,top:0,width:1050,height:680,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
    new Line([525,0,525,680],{stroke:"#FFF",strokeWidth:2}),
@@ -223,6 +223,12 @@ function drawFieldMarkings(c: Canvas) {
    new Rect({left:-12,top:(680-73)/2,width:12,height:73,fill:"rgba(255,255,255,0.3)",stroke:"#FFF",strokeWidth:2}),
    new Rect({left:1050,top:(680-73)/2,width:12,height:73,fill:"rgba(255,255,255,0.3)",stroke:"#FFF",strokeWidth:2}),
   ].forEach((o) => { mk(o); c.add(o); });
+  c.requestRenderAll();
+}
+
+/** Hide default field markings (when a field image is loaded) */
+export function hideFieldMarkings(c: Canvas) {
+  c.getObjects().filter((o: any) => o._isFieldMarking).forEach((o: any) => (o.visible = false));
   c.requestRenderAll();
 }
 

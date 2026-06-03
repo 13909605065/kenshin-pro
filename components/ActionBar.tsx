@@ -15,9 +15,21 @@ interface Props {
 
 export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) {
   const [copyAllDone, setCopyAllDone] = useState(false);
+  const [shareDone, setShareDone] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const supabase = createClient();
+
+  const handleShare = async () => {
+    try {
+      const payload = { m: modules, f: { role: formData.role, name: formData.name, gender: formData.gender, position: formData.position, age: formData.age, height: formData.height, weight: formData.weight, goal: formData.goal, phase: formData.phase } };
+      const hash = btoa(encodeURIComponent(JSON.stringify(payload)));
+      const url = `${window.location.origin}/share/#${hash}`;
+      await navigator.clipboard.writeText(url);
+      setShareDone(true);
+      setTimeout(() => setShareDone(false), 2000);
+    } catch {}
+  };
 
   const copyAll = async () => {
     const text = modules
@@ -85,6 +97,11 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         >
           <Heart className={`w-4 h-4 ${favorited ? "fill-neon-gold" : ""}`} />
           {favorited ? "已收藏" : "收藏"}
+        </button>
+
+        <button onClick={handleShare}
+          className={`btn-secondary flex items-center gap-2 text-sm py-2 px-4 ${shareDone ? "border-neon-pink text-neon-pink" : ""}`}>
+          {shareDone ? "链接已复制" : "📤 分享"}
         </button>
 
         <button

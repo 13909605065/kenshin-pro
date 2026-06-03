@@ -8,6 +8,7 @@ import { useTemplates } from "@/hooks/useTemplates";
 import { TrainingTabs } from "./TrainingTabs";
 import { GeneratingOverlay } from "./GeneratingOverlay";
 import { ErrorAlert } from "./ErrorAlert";
+import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
 import { useLang } from "@/lib/i18n/LanguageContext";
@@ -418,6 +419,7 @@ export function Dashboard() {
           </div>
           <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} />
           <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); }} className="w-full py-2 bg-pitch-700 text-gray-400 rounded-lg text-sm hover:bg-pitch-600 transition">← {t("dashboard.newPlan")}</button>
+          {!isCoach && <TrainingHistory />}
         </div>
       )}
 
