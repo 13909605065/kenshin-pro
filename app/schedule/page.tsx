@@ -37,7 +37,7 @@ export default function SchedulePage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        const wb = XLSX.read(ev.target?.result, { type: "binary" });
+        const wb = XLSX.read(ev.target?.result, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws) as Record<string, string>[];
         const created = importMatches(data);
@@ -45,7 +45,7 @@ export default function SchedulePage() {
         alert(`成功导入 ${created.length} 场比赛`);
       } catch { alert("导入失败，请检查文件格式（需包含：日期、对手、主/客 列）"); }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
     e.target.value = "";
   };
 
