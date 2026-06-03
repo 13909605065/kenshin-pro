@@ -142,6 +142,114 @@ const POSES: Record<string, Pose> = {
     equip:"body", move:"concentric",
     angleHints:[{joint:{x:38,y:38},angle:90}],
   },
+  fly: {
+    name: "飞鸟",
+    head:{x:50,y:8}, neck:{x:50,y:16},
+    shoulderL:{x:30,y:24}, shoulderR:{x:70,y:24},
+    elbowL:{x:18,y:28}, elbowR:{x:82,y:28},
+    wristL:{x:14,y:34}, wristR:{x:86,y:34},
+    hipL:{x:42,y:54}, hipR:{x:58,y:54},
+    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
+    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    muscles:{agonists:["chest"],synergists:["shoulders"],stabilizers:["core"]},
+    equip:"dumbbell", move:"concentric",
+  },
+  curl: {
+    name: "弯举",
+    head:{x:50,y:8}, neck:{x:50,y:16},
+    shoulderL:{x:38,y:24}, shoulderR:{x:62,y:24},
+    elbowL:{x:30,y:30}, elbowR:{x:70,y:30},
+    wristL:{x:26,y:22}, wristR:{x:76,y:42},
+    hipL:{x:42,y:54}, hipR:{x:58,y:54},
+    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
+    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    muscles:{agonists:["arms"],synergists:[],stabilizers:["core","shoulders"]},
+    equip:"dumbbell", move:"concentric",
+  },
+  tricep: {
+    name: "臂屈伸",
+    head:{x:50,y:8}, neck:{x:50,y:16},
+    shoulderL:{x:36,y:24}, shoulderR:{x:64,y:24},
+    elbowL:{x:26,y:20}, elbowR:{x:74,y:28},
+    wristL:{x:20,y:16}, wristR:{x:80,y:22},
+    hipL:{x:42,y:54}, hipR:{x:58,y:54},
+    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
+    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    muscles:{agonists:["arms"],synergists:["shoulders"],stabilizers:["core"]},
+    equip:"dumbbell", move:"concentric",
+  },
+  crunch: {
+    name: "卷腹",
+    head:{x:50,y:30}, neck:{x:50,y:38},
+    shoulderL:{x:36,y:42}, shoulderR:{x:64,y:42},
+    elbowL:{x:28,y:50}, elbowR:{x:72,y:50},
+    wristL:{x:24,y:56}, wristR:{x:76,y:56},
+    hipL:{x:44,y:62}, hipR:{x:56,y:62},
+    kneeL:{x:44,y:58}, kneeR:{x:56,y:58},
+    ankleL:{x:44,y:54}, ankleR:{x:56,y:54},
+    muscles:{agonists:["core"],synergists:[],stabilizers:[]},
+    equip:"body", move:"concentric",
+  },
+  twist: {
+    name: "俄转",
+    head:{x:50,y:20}, neck:{x:50,y:28},
+    shoulderL:{x:30,y:34}, shoulderR:{x:60,y:34},
+    elbowL:{x:24,y:42}, elbowR:{x:66,y:38},
+    wristL:{x:20,y:50}, wristR:{x:70,y:44},
+    hipL:{x:44,y:56}, hipR:{x:56,y:56},
+    kneeL:{x:44,y:74}, kneeR:{x:56,y:74},
+    ankleL:{x:44,y:94}, ankleR:{x:56,y:94},
+    muscles:{agonists:["core"],synergists:[],stabilizers:[]},
+    equip:"body", move:"static",
+  },
+  stretch: {
+    name: "拉伸",
+    head:{x:50,y:10}, neck:{x:50,y:18},
+    shoulderL:{x:30,y:26}, shoulderR:{x:66,y:26},
+    elbowL:{x:22,y:20}, elbowR:{x:78,y:36},
+    wristL:{x:16,y:18}, wristR:{x:88,y:34},
+    hipL:{x:44,y:54}, hipR:{x:56,y:52},
+    kneeL:{x:44,y:80}, kneeR:{x:56,y:78},
+    ankleL:{x:44,y:98}, ankleR:{x:56,y:96},
+    muscles:{agonists:[],synergists:[],stabilizers:["core"]},
+    equip:"body", move:"static",
+  },
+  jump: {
+    name: "跳跃",
+    head:{x:50,y:4}, neck:{x:50,y:12},
+    shoulderL:{x:34,y:20}, shoulderR:{x:66,y:20},
+    elbowL:{x:24,y:14}, elbowR:{x:76,y:14},
+    wristL:{x:18,y:10}, wristR:{x:82,y:10},
+    hipL:{x:40,y:44}, hipR:{x:60,y:44},
+    kneeL:{x:36,y:60}, kneeR:{x:64,y:60},
+    ankleL:{x:32,y:80}, ankleR:{x:68,y:80},
+    muscles:{agonists:["quads","glutes"],synergists:["hams"],stabilizers:["core"]},
+    equip:"body", move:"concentric",
+  },
+  run: {
+    name: "跑步",
+    head:{x:50,y:10}, neck:{x:50,y:18},
+    shoulderL:{x:34,y:24}, shoulderR:{x:60,y:24},
+    elbowL:{x:26,y:20}, elbowR:{x:70,y:20},
+    wristL:{x:20,y:22}, wristR:{x:76,y:24},
+    hipL:{x:40,y:48}, hipR:{x:58,y:48},
+    kneeL:{x:30,y:66}, kneeR:{x:64,y:62},
+    ankleL:{x:22,y:84}, ankleR:{x:70,y:78},
+    muscles:{agonists:["quads","hams"],synergists:["glutes"],stabilizers:["core"]},
+    equip:"body", move:"concentric",
+  },
+  default: {
+    name: "动作示意",
+    head:{x:50,y:8}, neck:{x:50,y:18},
+    shoulderL:{x:36,y:26}, shoulderR:{x:64,y:26},
+    elbowL:{x:28,y:42}, elbowR:{x:72,y:42},
+    wristL:{x:24,y:56}, wristR:{x:76,y:56},
+    hipL:{x:42,y:54}, hipR:{x:58,y:54},
+    kneeL:{x:42,y:80}, kneeR:{x:58,y:80},
+    ankleL:{x:42,y:98}, ankleR:{x:58,y:98},
+    muscles:{agonists:[],synergists:[],stabilizers:["core"]},
+    equip:"body", move:"static",
+  },
 };
 
 /* ================================================================
@@ -149,20 +257,36 @@ const POSES: Record<string, Pose> = {
    ================================================================ */
 
 const DETECT: [RegExp, string][] = [
-  [/深蹲|squat|蹲|保加利亚|goblet|front.squat/, "squat"],
-  [/硬拉|deadlift|rdl|romanian|硬举/, "deadlift"],
+  // Lower body
+  [/深蹲|squat|蹲|保加利亚|goblet|front\.squat|split/, "squat"],
+  [/硬拉|deadlift|rdl|romanian|硬举|早安/, "deadlift"],
+  [/弓步|lunge|箭步/, "lunge"],
+  [/臀桥|bridge|hip\.thrust|臀推/, "bridge"],
+  // Upper push
   [/卧推|bench/, "bench"],
-  [/推举|overhead|肩推|shoulder.press|military/, "press"],
-  [/弓步|lunge|箭步|split/, "lunge"],
+  [/推举|overhead|肩推|shoulder\.press|military/, "press"],
+  [/飞鸟|fly|夹胸|crossover|pec/, "fly"],
+  // Upper pull
   [/引体|pull.?up|chin|划船|row|lat/, "pullup"],
+  [/弯举|curl|二头|bicep/, "curl"],
+  [/臂屈伸|三头|tricep|dip|下压|pushdown/, "tricep"],
+  // Bodyweight
   [/俯卧撑|push.?up/, "pushup"],
   [/平板|plank|侧桥|支撑/, "plank"],
-  [/臀桥|bridge|hip.thrust|臀推/, "bridge"],
+  // Core
+  [/卷腹|crunch|sit.?up|举腿|leg.?raise/, "crunch"],
+  [/俄转|russian|twist/, "twist"],
+  // Mobility
+  [/拉伸|stretch|mobil|flexib/, "stretch"],
+  // Cardio/plyo
+  [/跳|jump|box|plyo|弹跳/, "jump"],
+  [/跑|run|sprint|冲刺/, "run"],
 ];
 
 function detect(name: string): string {
-  for (const [re, k] of DETECT) if (re.test(name.toLowerCase())) return k;
-  return "squat";
+  const n = name.toLowerCase();
+  for (const [re, k] of DETECT) if (re.test(n)) return k;
+  return "default";
 }
 
 /* ================================================================
