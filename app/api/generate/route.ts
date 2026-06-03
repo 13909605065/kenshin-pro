@@ -138,11 +138,12 @@ export async function POST(request: NextRequest) {
 ✅ 可输出：杠铃/哑铃/悬吊/药球/弹力带等器械力量训练、原地自重热身(9090髋激活/最伟大拉伸/开合跳/高抬腿等)、泡沫轴整理放松
 ❌ 禁止：足球技术训练(传球/射门/盘带/1v1)、需要标志盘/敏捷梯/大片跑动空间的场地热身、SSG对抗赛、跑动训练
 器材：杠铃、哑铃、卧推凳、TRX悬吊带、弹力带、泡沫轴`;
-  } else if (scene === "pitch" && formData.role === "athlete") {
-    sceneHint = `## 场景限制：球场训练日
-今天只在球场。严格限制：
-✅ 可输出：有球技术训练(传球/射门/盘带/控球)、场地热身(标志盘绕桩/绳梯/变向冲刺)、战术跑位、SSG对抗赛
-❌ 禁止：健身房力量训练(杠铃/哑铃/卧推凳)，不输出需要器械的力量动作。力量训练通过有球/自重形式完成(如箭步蹲、俯卧撑、平板支撑等自重动作可以在球场做)`;
+  } else if (scene === "pitch") {
+    sceneHint = `## ⚠️ 场景限制：球场训练（最重要规则！）
+今天在球场训练，禁止输出任何健身房内容：
+✅ 只能输出：有球技术训练(传球/射门/盘带/控球)、场地热身、战术跑位、SSG对抗赛
+❌ 绝对禁止：杠铃、哑铃、TRX、卧推凳、器械、弹力带等任何健身房器材动作
+❌ 禁止输出力量训练模块(upper_limb/lower_limb/core)，改为自重训练或SSG`;
   }
 
   const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +
