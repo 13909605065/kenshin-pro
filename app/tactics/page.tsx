@@ -111,7 +111,7 @@ export default function TacticsPage() {
           const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: textColor, selectable: false, evented: false });
           const g = new Group([cr, tx], { left: cx-R, top: cy-R });
           (g as any)._isPlayer = true; (g as any).number = p.n;
-          g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:false});
+          g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
           g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:"#c82630", cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
           canvas.add(g);
         });
@@ -200,7 +200,7 @@ export default function TacticsPage() {
       const tx = new FabricText(p.n, {left:cx, top:cy, originX:"center", originY:"center", fontSize:R*0.8, fontFamily:"Arial", fontWeight:"bold", fill:textColor, selectable:false, evented:false});
       const g = new Group([cr,tx], {left:cx-R, top:cy-R});
       (g as any)._isPlayer=true; (g as any).number=p.n;
-      g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:false});
+      g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
       g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:"#c82630", cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
       c.add(g);
     });
@@ -242,7 +242,7 @@ export default function TacticsPage() {
         const g = new Group([cr, tx], { left: cx - R, top: cy - R });
         (g as any)._isPlayer = true; (g as any)._isAIGenerated = true; (g as any).number = p.number;
         if (p.label) (g as any).label = p.label;
-        g.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: false });
+        g.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
         g.set({ cornerStyle: "circle", cornerSize: 10, cornerColor: "#c82630", cornerStrokeColor: "#FFF", transparentCorners: false, padding: 0, lockUniScaling: true } as any);
         c.add(g);
       });
@@ -322,7 +322,7 @@ export default function TacticsPage() {
             selectable: true, evented: true,
           });
           (img as any)._isAIGenerated = true; (img as any).name = eq.type;
-          img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: false });
+          img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
           c.add(img);
           c.requestRenderAll();
         });

@@ -143,7 +143,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         ring.setControlsVisibility({
           tl: true, tr: true, bl: true, br: true,
           ml: true, mr: true, mt: true, mb: true,
-          mtr: false,
+          mtr: true,
         });
         canvas.add(ring);
         canvas.setActiveObject(ring);
@@ -165,7 +165,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         img.setControlsVisibility({
           tl: true, tr: true, bl: true, br: true,
           ml: true, mr: true, mt: true, mb: true,
-          mtr: false,
+          mtr: true,
         });
         canvas.add(img);
         canvas.setActiveObject(img);
@@ -338,7 +338,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       g.setControlsVisibility({
         tl: true, tr: true, bl: true, br: true,
         ml: true, mr: true, mt: true, mb: true,
-        mtr: false,
+        mtr: true,
       });
       g.set({
         cornerStyle: "circle",
