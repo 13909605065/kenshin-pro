@@ -6,7 +6,7 @@ import { FabricBoard, exportBoardAsPNG, hideFieldMarkings } from "@/components/t
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { MobileNav } from "@/components/MobileNav";
-import { ArrowLeft, Save, FolderOpen, X, Bookmark } from "lucide-react";
+import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { readDrillContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 
@@ -127,8 +127,11 @@ export default function TacticsPage() {
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; const bg=c.getObjects().find((o:any)=>o._isFieldBg); c.clear(); c.backgroundColor="#0A8A2E"; if(bg)c.add(bg); c.requestRenderAll(); };
+  const hClear = () => { const c=boardRef.current; if(!c)return; const bg=c.getObjects().find((o:any)=>o._isFieldBg); c.clear(); c.backgroundColor="#1a1a2e"; if(bg)c.add(bg); c.requestRenderAll(); };
 
+  const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.requestRenderAll(); }};
+  const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.requestRenderAll(); }};
+  const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.requestRenderAll(); }};
   const hField = useCallback((fn: string) => {
     const c=boardRef.current; if(!c)return;
     c.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>c.remove(o));
@@ -176,6 +179,11 @@ export default function TacticsPage() {
         </button>
         <h1 className="text-white font-bold text-sm">📋 战术板</h1>
         <div className="flex-1"/>
+        <div className="flex items-center gap-0.5 bg-pitch-700 rounded-lg p-0.5">
+          <button onClick={hZoomOut} className="p-1 text-gray-400 hover:text-white rounded" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
+          <button onClick={hZoomFit} className="p-1 text-gray-400 hover:text-white rounded text-[10px] font-mono px-1" title="重置">1:1</button>
+          <button onClick={hZoomIn} className="p-1 text-gray-400 hover:text-white rounded" title="放大"><ZoomIn className="w-3.5 h-3.5"/></button>
+        </div>
         <button onClick={()=>setSaveOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
           title="保存当前战术">

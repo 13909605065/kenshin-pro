@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, User, Flag, Grid3X3 } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Flag, Grid3X3, X, Check } from "lucide-react";
 
 interface Item {
   name: string; filename: string;
@@ -43,8 +43,18 @@ const FIELD_LIST = ["场地","场地2","场地3","场地4","场地5","场地6","
 export function EquipmentPalette({ onFieldSelect }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<string>("markers");
+  const [previewField, setPreviewField] = useState<string | null>(null);
 
   const w = collapsed ? "w-[52px]" : "w-[112px]";
+
+  const handleFieldClick = (field: string) => {
+    setPreviewField(field);
+  };
+
+  const handleUseField = () => {
+    if (previewField) onFieldSelect?.(previewField);
+    setPreviewField(null);
+  };
 
   const handleDragStart = (e: React.DragEvent, item: Item) => {
     e.dataTransfer.setData("application/equipment", JSON.stringify({
@@ -141,7 +151,7 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
             {!collapsed && <p className="text-[10px] text-gray-500 mb-1 px-0.5">场地底图</p>}
             <div className={`${collapsed ? "flex flex-col gap-1" : "grid grid-cols-3 gap-1"}`}>
               {FIELD_LIST.map((field) => (
-                <button key={field} onClick={() => onFieldSelect?.(field)}
+                <button key={field} onClick={() => handleFieldClick(field)}
                   className="relative group" title={collapsed ? field : undefined}>
                   <img src={`/equipment/${field}.png`} alt={field}
                     className="w-full aspect-[4/3] object-cover rounded border border-pitch-600 group-hover:border-neon-pink transition" />
@@ -150,6 +160,30 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
                   )}
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Field Preview Modal */}
+        {previewField && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setPreviewField(null)}>
+            <div className="bg-pitch-800 rounded-xl overflow-hidden max-w-lg w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-4 py-2 border-b border-pitch-600">
+                <h3 className="text-white text-sm font-bold">{previewField}</h3>
+                <button onClick={() => setPreviewField(null)} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+              </div>
+              <img src={`/equipment/${previewField}.png`} alt={previewField}
+                className="w-full object-contain" style={{ maxHeight: "60vh" }} />
+              <div className="flex gap-2 p-3 border-t border-pitch-600">
+                <button onClick={handleUseField}
+                  className="flex-1 py-2 bg-neon-pink text-black font-bold rounded-lg text-sm flex items-center justify-center gap-1 hover:bg-neon-pink/90 transition">
+                  <Check className="w-4 h-4" />使用此场地
+                </button>
+                <button onClick={() => setPreviewField(null)}
+                  className="px-4 py-2 bg-pitch-700 text-gray-300 rounded-lg text-sm hover:bg-pitch-600 transition">
+                  取消
+                </button>
+              </div>
             </div>
           </div>
         )}
