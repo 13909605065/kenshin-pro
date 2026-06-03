@@ -14,6 +14,7 @@ import { NutritionTab } from "./tabs/NutritionTab";
 import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
 import { SequentialTrainingList } from "./SequentialTrainingList";
+import { CoachSessionTable } from "./CoachSessionTable";
 
 interface Props {
   modules: TrainingModule[];
@@ -406,6 +407,7 @@ function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
 }
 
 export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Props) {
+  const router = useRouter();
   const isCoach = formData.role === "coach";
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
@@ -547,7 +549,9 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
         {isCoach ? (
           <>
             {activeTab === "session" && sessionPlan && (
-              <CoachSessionView module={sessionPlan} />
+              <CoachSessionTable modules={[sessionPlan]} onOpenDiagram={(d) => {
+                if (d) { writeDrillContext(d as any); router.push("/tactics"); }
+              }} />
             )}
             {activeTab === "session" && !sessionPlan && (
               <p className="text-sm text-gray-500 py-8 text-center">暂无训练教案内容</p>
