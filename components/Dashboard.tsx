@@ -410,7 +410,12 @@ export function Dashboard() {
               </div>
               <div className="min-w-0">
                 <p className="text-white text-sm font-bold truncate">
-                  {formData.name || (isCoach ? "教练" : (formData.position ? t(`pos.${formData.position}`) : t("dashboard.notSet")))}
+                  {formData.name || (isCoach ? "教练" : t("dashboard.notSet"))}
+                </p>
+                <p className="text-[10px] text-gray-500 truncate">
+                  {isCoach ? "今天为球队准备了什么训练？" :
+                   formData.position ? `${t("pos."+formData.position)} · 今天想提升什么？` :
+                   "完善档案以获得个性化建议"}
                 </p>
                 <ProfileSummary formData={formData} t={t} />
               </div>

@@ -262,6 +262,11 @@ export default function ExercisesPage() {
           <span className="text-[11px] text-gray-600">{filtered.length}个</span>
         </div>
 
+        {/* Personalized hint */}
+        <div className="text-[11px] text-gray-500 mb-3 flex items-center gap-1">
+          <span className="text-neon-pink">●</span> 对比你的档案推荐优先显示匹配动作
+        </div>
+
         {/* Filters — all in one line */}
         <div className="flex gap-1.5 mb-4 flex-wrap">
           {BODY_PARTS.map((bp) => (

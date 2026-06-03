@@ -89,9 +89,11 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", we
   const phase = data.phase || "competition";
   const comboHint = `combo_${pos}_${goal}_${phase}`;
 
-  return `球员信息:
+  return `${data.name ? `## 个性化方案：${data.name}` : ""}
+球员信息:
+- 姓名: ${data.name || "运动员"}${data.position ? ` · ${POSITION_LABELS[data.position]}` : ""}
 - 身份: 运动员
-- 场上位置: ${POSITION_LABELS[data.position!]}${isGoalkeeper ? "（守门员专项：肩部力量+背部保护+下肢爆发力+扑救技术。热身含球感和手臂活动。体能通过比赛情境练，非孤立跑圈）" : ""}
+- 场上位置: ${data.position ? POSITION_LABELS[data.position] : "未设置"}${isGoalkeeper ? "（守门员专项：肩部力量+背部保护+下肢爆发力+扑救技术。热身含球感和手臂活动。体能通过比赛情境练，非孤立跑圈）" : ""}
 - 年龄: ${age}岁${isUnder18 ? "（未成年，控制训练强度，禁止>85%1RM）" : ""}
 - 身高: ${height}cm
 - 体重: ${weight}kg
