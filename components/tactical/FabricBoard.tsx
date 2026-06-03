@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { Canvas, Rect, Circle, Line, IText, Text, Group, FabricImage, Path } from "fabric";
+import { Canvas, Rect, Circle, Line, IText, Text, Group, FabricImage, Path, Polygon } from "fabric";
 import { ROUTE_STYLES } from "./BoardToolbar";
 
 const FW = 1050;
@@ -102,12 +102,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const onMouseMove = (opt: any) => {
       if (!isRouteTool || !lineStartRef.current || !tempLineRef.current) return;
       const p = opt.scenePoint;
-      if (activeTool === "draw_curve") {
-        // Quadratic curve: convert to path for curve rendering
+      if (activeTool === "draw_curve" || activeTool === "draw_dribble") {
+        // Quadratic bezier curve for curve and dribble tools
         const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
-        const cx = p.x, cy = p.y;
-        const mx = (x1 + cx) / 2, my = (y1 + cy) / 2;
-        tempLineRef.current.set({ x1, y1, x2: cx, y2: cy });
+        tempLineRef.current.set({ x1, y1, x2: p.x, y2: p.y });
       } else {
         tempLineRef.current.set({ x1: lineStartRef.current.x, y1: lineStartRef.current.y, x2: p.x, y2: p.y });
       }
@@ -124,18 +122,26 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const dy = Math.abs(p.y - lineStartRef.current.y);
       if (dx < 3 && dy < 3) { lineStartRef.current = null; return; } // too short
 
-      if (activeTool === "draw_curve") {
-        // Draw quadratic bezier as Path
-        const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
+      const x1 = lineStartRef.current.x, y1 = lineStartRef.current.y;
+      const color = getLineStyle().stroke || "#FF2D55";
+
+      if (activeTool === "draw_curve" || activeTool === "draw_dribble") {
+        // Quadratic bezier curve
         const cx = p.x, cy = p.y;
         const pathStr = `M ${x1} ${y1} Q ${cx} ${cy} ${p.x} ${p.y}`;
         const path = new Path(pathStr, getLineStyle());
         (path as any)._isRoute = true; (path as any)._routeType = activeTool;
         c.add(path);
+        // Arrow head at endpoint
+        const angle = Math.atan2(p.y - cy, p.x - cx);
+        addArrowHead(c, p.x, p.y, angle, color);
       } else {
-        const line = new Line([lineStartRef.current.x, lineStartRef.current.y, p.x, p.y], getLineStyle());
+        const line = new Line([x1, y1, p.x, p.y], getLineStyle());
         (line as any)._isRoute = true; (line as any)._routeType = activeTool;
         c.add(line);
+        // Arrow head at endpoint
+        const angle = Math.atan2(p.y - y1, p.x - x1);
+        addArrowHead(c, p.x, p.y, angle, color);
       }
       lineStartRef.current = null;
       c.requestRenderAll();
@@ -207,22 +213,18 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   );
 }
 
-function drawFieldMarkings(c: Canvas) {
-  const CX = 525, CY = 340;
-  const mk = (o: any) => { o.selectable = false; o.evented = false; (o as any)._isFieldMarking = true; };
-  for (let i = 0; i < 1050; i += 55) { const s = new Rect({ left: i, top: 0, width: 27.5, height: 680, fill: i%110===0?"#088024":"#0A8A2E" }); mk(s); c.add(s); }
-  [new Rect({left:0,top:0,width:1050,height:680,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Line([525,0,525,680],{stroke:"#FFF",strokeWidth:2}),
-   new Circle({left:525-91.5,top:340-91.5,radius:91.5,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Circle({left:522,top:337,radius:3,fill:"#FFF"}),
-   new Rect({left:0,top:(680-403)/2,width:165,height:403,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Rect({left:1050-165,top:(680-403)/2,width:165,height:403,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Rect({left:0,top:(680-183)/2,width:55,height:183,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Rect({left:1050-55,top:(680-183)/2,width:55,height:183,fill:"transparent",stroke:"#FFF",strokeWidth:2}),
-   new Rect({left:-12,top:(680-73)/2,width:12,height:73,fill:"rgba(255,255,255,0.3)",stroke:"#FFF",strokeWidth:2}),
-   new Rect({left:1050,top:(680-73)/2,width:12,height:73,fill:"rgba(255,255,255,0.3)",stroke:"#FFF",strokeWidth:2}),
-  ].forEach((o) => { mk(o); c.add(o); });
-  c.requestRenderAll();
+/** Draw arrow head at the end of a line */
+function addArrowHead(c: Canvas, x: number, y: number, angle: number, color: string) {
+  const s = 10;
+  const tip = { x, y };
+  const left = { x: x - s * Math.cos(angle - Math.PI / 6), y: y - s * Math.sin(angle - Math.PI / 6) };
+  const right = { x: x - s * Math.cos(angle + Math.PI / 6), y: y - s * Math.sin(angle + Math.PI / 6) };
+  const tri = new Polygon([tip, left, right], {
+    fill: color, stroke: color, strokeWidth: 1,
+    selectable: false, evented: false,
+  });
+  (tri as any)._isRouteArrow = true;
+  c.add(tri);
 }
 
 /** Hide default field markings (when a field image is loaded) */
