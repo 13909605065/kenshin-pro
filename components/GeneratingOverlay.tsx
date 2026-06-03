@@ -26,38 +26,57 @@ interface Props {
   onCancel?: () => void;
 }
 
-function moduleToTarget(module: string, count: number): number {
-  if (!module) return 3;
-  const idx = parseInt(module.replace("module_", "")) - 1; // 0-4
-  const base = idx * 20; // 0, 20, 40, 60, 80
-  const within = Math.min(count * 2, 18); // up to 18% within module
-  return Math.min(base + within, 97);
+/** How many percent to bump when a module event fires (diminishing by position). */
+function moduleEventBump(idx: number, total: number): number {
+  if (idx < 0 || total <= 0) return 0;
+  // First modules get bigger bumps, later ones smaller — reflects real progress
+  return 5 - (idx / Math.max(total - 1, 1)) * 3.5; // 5% → 1.5%
+}
+
+/** Continuous counter tick increment — fast early, slow near 95%. */
+function tickIncrement(currentPct: number, tickIntervalMs: number): number {
+  const progress = Math.max(currentPct / 95, 0); // 0..1
+  // ~10%/s at 0%, ~1%/s at 90%, ~0.3%/s at 94% — cubic ease-out
+  const perSecond = 10 * Math.pow(1 - progress, 2) + 0.3;
+  return Math.max((perSecond * tickIntervalMs) / 1000, 0.03);
 }
 
 export function GeneratingOverlay({ currentModule, isCoach, moduleCount = 0, onCancel }: Props) {
   const labels = isCoach ? COACH_EVENT_LABELS : EVENT_LABELS;
   const label = labels[currentModule] || "正在分析球员数据...";
 
-  // Smooth progress animation
-  const target = moduleToTarget(currentModule, moduleCount);
-  const [display, setDisplay] = useState(0);
-  const animRef = useRef<number>(0);
+  const totalModules = isCoach ? 3 : 5;
 
+  const [display, setDisplay] = useState(3); // start at 3%
+
+  // Track previous module to trigger bumps on change
+  const prevModuleRef = useRef(currentModule);
+
+  // ---- Continuous timer-based counter ----
   useEffect(() => {
-    const step = () => {
+    const INTERVAL = 180; // ms per tick
+
+    const id = window.setInterval(() => {
       setDisplay((prev) => {
-        const next = prev + (target - prev) * 0.08;
-        if (Math.abs(next - target) < 0.3) {
-          cancelAnimationFrame(animRef.current);
-          return target;
-        }
-        animRef.current = requestAnimationFrame(step);
-        return next;
+        if (prev >= 95) return 95;
+        return Math.min(prev + tickIncrement(prev, INTERVAL), 95);
       });
-    };
-    animRef.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [target]);
+    }, INTERVAL);
+
+    return () => window.clearInterval(id);
+  }, []); // runs for the full lifetime of the overlay
+
+  // ---- Small bump when a module event fires ----
+  useEffect(() => {
+    if (currentModule && currentModule !== prevModuleRef.current) {
+      prevModuleRef.current = currentModule;
+      const idx = parseInt(currentModule.replace("module_", "")) - 1;
+      const bump = moduleEventBump(idx, totalModules);
+      if (bump > 0) {
+        setDisplay((prev) => Math.min(prev + bump, 95));
+      }
+    }
+  }, [currentModule, totalModules]);
 
   const pct = Math.round(display);
 

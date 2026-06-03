@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Rate limit check
+  // Primary: in-memory Map (fast, but resets on Vercel cold start)
+  // Fallback: if Map has no entry for this user (cold start), check Supabase
+  //   training_plans for recent activity as a proxy for the last request time.
   const lastRequest = rateLimitMap.get(user.id);
   const now = Date.now();
   if (lastRequest && now - lastRequest < RATE_LIMIT_MS) {
@@ -64,6 +67,29 @@ export async function POST(request: NextRequest) {
       { status: 429 }
     );
   }
+
+  // Cold-start fallback: in-memory Map is empty, check Supabase for recent activity
+  if (!lastRequest) {
+    const { data: recentPlan } = await supabase
+      .from("training_plans")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (recentPlan?.created_at) {
+      const planTime = new Date(recentPlan.created_at).getTime();
+      if (now - planTime < RATE_LIMIT_MS) {
+        const waitSeconds = Math.ceil((RATE_LIMIT_MS - (now - planTime)) / 1000);
+        return Response.json(
+          { code: "rate-limited", message: `请等待 ${waitSeconds} 秒后再生成`, waitSeconds },
+          { status: 429 }
+        );
+      }
+    }
+  }
+
   rateLimitMap.set(user.id, now);
 
   // Parse and validate input

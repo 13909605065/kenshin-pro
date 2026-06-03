@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
 import { Upload, Plus, X, Trash2, ChevronRight, Zap } from "lucide-react";
 import {
-  getMatches, saveMatches, addMatch, updateMatch, deleteMatch,
+  getMatches, addMatch, updateMatch, deleteMatch,
   importMatches, getNextMatch, type MatchRecord,
 } from "@/lib/match-store";
-import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
+import { daysUntilNextMatch, matchDayTrainingHint } from "@/lib/match-types";
 import * as XLSX from "xlsx";
 
 export default function SchedulePage() {

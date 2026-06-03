@@ -192,6 +192,94 @@ export default function RosterPage() {
           </div>
         </div>
       )}
+      {/* Preview Import Dialog */}
+      {preview && (() => {
+        const headers = (preview.rawRows[0] || []).map((h) => String(h || "").trim());
+        const headerLower = headers.map((h) => h.toLowerCase());
+        const mapping: { field: string; header: string; found: boolean }[] = [
+          { field: "姓名", header: headers[headerLower.findIndex((h) => h.includes("姓名") || h.includes("name"))] || "", found: headerLower.some((h) => h.includes("姓名") || h.includes("name")) },
+          { field: "位置", header: headers[headerLower.findIndex((h) => h.includes("位置") || h.includes("position"))] || "", found: headerLower.some((h) => h.includes("位置") || h.includes("position")) },
+          { field: "号码", header: headers[headerLower.findIndex((h) => h.includes("号码") || h.includes("number") || h.includes("编号"))] || "", found: headerLower.some((h) => h.includes("号码") || h.includes("number") || h.includes("编号")) },
+          { field: "年龄", header: headers[headerLower.findIndex((h) => h.includes("年龄") || h.includes("age"))] || "", found: headerLower.some((h) => h.includes("年龄") || h.includes("age")) },
+          { field: "身高", header: headers[headerLower.findIndex((h) => h.includes("身高") || h.includes("height"))] || "", found: headerLower.some((h) => h.includes("身高") || h.includes("height")) },
+          { field: "体重", header: headers[headerLower.findIndex((h) => h.includes("体重") || h.includes("weight"))] || "", found: headerLower.some((h) => h.includes("体重") || h.includes("weight")) },
+          { field: "伤病", header: headers[headerLower.findIndex((h) => h.includes("伤病") || h.includes("injury"))] || "", found: headerLower.some((h) => h.includes("伤病") || h.includes("injury")) },
+          { field: "备注", header: headers[headerLower.findIndex((h) => h.includes("备注") || h.includes("notes"))] || "", found: headerLower.some((h) => h.includes("备注") || h.includes("notes")) },
+        ];
+        const previewRows = preview.parsed.slice(0, 3);
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="glass-card p-5 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-bold text-sm">预览导入数据</h2>
+                <button onClick={handleCancelImport} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+              </div>
+
+              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-neon-pink font-bold">{preview.parsed.length}</span> 名球员</p>
+
+              {/* Column mapping */}
+              <div>
+                <h3 className="text-xs text-gray-400 mb-2">列映射检测</h3>
+                <div className="grid grid-cols-2 gap-1 text-xs">
+                  {mapping.map((m) => (
+                    <div key={m.field} className="flex items-center gap-1.5 bg-pitch-800 rounded px-2 py-1">
+                      <span className="text-gray-400 w-8">{m.field}</span>
+                      <span className="text-gray-500">→</span>
+                      <span className={m.found ? "text-green-400" : "text-red-400/60"}>{m.header || "未检测到"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview table */}
+              <div>
+                <h3 className="text-xs text-gray-400 mb-2">前 {previewRows.length} 行预览</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-gray-300 border-collapse">
+                    <thead>
+                      <tr className="bg-pitch-700 text-gray-400">
+                        <th className="py-1.5 px-2 text-left rounded-l">姓名</th>
+                        <th className="py-1.5 px-2 text-left">位置</th>
+                        <th className="py-1.5 px-2 text-left">号码</th>
+                        <th className="py-1.5 px-2 text-left">年龄</th>
+                        <th className="py-1.5 px-2 text-left">身高</th>
+                        <th className="py-1.5 px-2 text-left">体重</th>
+                        <th className="py-1.5 px-2 text-left rounded-r">备注</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {previewRows.map((p, i) => (
+                        <tr key={i} className="border-t border-pitch-700/50 hover:bg-pitch-800/50">
+                          <td className="py-1 px-2 text-white font-medium">{p.name}</td>
+                          <td className="py-1 px-2">{p.position}</td>
+                          <td className="py-1 px-2">{p.number}</td>
+                          <td className="py-1 px-2">{p.age ?? ""}</td>
+                          <td className="py-1 px-2">{p.height ?? ""}</td>
+                          <td className="py-1 px-2">{p.weight ?? ""}</td>
+                          <td className="py-1 px-2 text-gray-400 max-w-[100px] truncate">{p.notes}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleCancelImport}
+                  className="flex-1 py-2 bg-pitch-700 hover:bg-pitch-600 text-gray-300 rounded-lg text-sm transition">
+                  取消
+                </button>
+                <button onClick={handleConfirmImport}
+                  className="flex-1 py-2 bg-neon-pink hover:bg-neon-pink/90 text-black font-bold rounded-lg text-sm transition">
+                  确认导入 {preview.parsed.length} 名球员
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       <MobileNav />
     </div>
   );
