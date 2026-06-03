@@ -15,6 +15,7 @@ import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
 import { SequentialTrainingList } from "./SequentialTrainingList";
 import { CoachSessionTable } from "./CoachSessionTable";
+import { AthleteSequentialView, AthleteCategoryView } from "./AthleteTrainingView";
 
 interface Props {
   modules: TrainingModule[];
@@ -492,39 +493,38 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
         </div>
       )}
 
-      {/* View toggle — athlete only */}
+      {/* View toggle — athlete dual view */}
       {!isCoach && (
         <div className="flex justify-center mb-3">
           <div className="flex bg-[#111] rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode("sequential")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                viewMode === "sequential" ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"
-              }`}
-            >
-              📋 顺序训练表
+            <button onClick={() => setViewMode("sequential")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium ${viewMode==="sequential"?"bg-neon-pink text-black":"text-gray-400 hover:text-white"}`}>
+              📋 顺序跟练
             </button>
-            <button
-              onClick={() => setViewMode("tabs")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
-                viewMode === "tabs" ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"
-              }`}
-            >
-              📑 分类视图
+            <button onClick={() => setViewMode("tabs")}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium ${viewMode==="tabs"?"bg-neon-pink text-black":"text-gray-400 hover:text-white"}`}>
+              📑 分类数据
             </button>
           </div>
         </div>
       )}
 
-      {/* Sequential view — athlete default */}
+      {/* Athlete sequential — clean card view */}
       {!isCoach && viewMode === "sequential" && (
         <div className="flex-1">
-          <SequentialTrainingList modules={modules} />
+          <AthleteSequentialView modules={modules} formData={formData}/>
         </div>
       )}
 
-      {/* Tab view — coach default, or athlete switching */}
-      {(isCoach || viewMode === "tabs") && (
+      {/* Athlete category — table + export */}
+      {!isCoach && viewMode === "tabs" && (
+        <div className="flex-1">
+          <AthleteCategoryView modules={modules}/>
+        </div>
+      )}
+
+      {/* Tab view — coach only */}
+      {isCoach && (
       <>
       {/* Tab Bar */}
       <div className="flex flex-wrap justify-center gap-x-1 border-b border-pitch-700 mb-4">
