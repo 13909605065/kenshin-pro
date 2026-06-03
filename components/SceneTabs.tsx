@@ -2,12 +2,18 @@
 
 import { useScene } from "@/components/providers/SceneProvider";
 import type { Scene } from "@/lib/scene-types";
-import { COACH_SCENES, ATHLETE_SCENES } from "@/lib/scene-types";
+import { ATHLETE_SCENES } from "@/lib/scene-types";
+
+/* Coach: no tabs — one page does everything.
+   Athlete: 球场 / 健身房 */
 
 export function SceneTabs() {
   const { role, scene, setScene } = useScene();
-  const scenes = role === "coach" ? COACH_SCENES : ATHLETE_SCENES;
 
+  // Coach doesn't need scene tabs at all
+  if (role === "coach") return null;
+
+  const scenes = ATHLETE_SCENES;
   return (
     <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
       {scenes.map((s) => (
