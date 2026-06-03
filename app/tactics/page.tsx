@@ -8,7 +8,7 @@ import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { readDrillContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
+import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 
 const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
   "4-3-3": [
@@ -120,6 +120,34 @@ export default function TacticsPage() {
       });
     };
 
+    tryRender();
+  }, []);
+
+  // 从AI诊断联动：自动渲染战术分析图
+  useEffect(() => {
+    const d = readDiagnosisContext();
+    if (!d) return;
+
+    let attempts = 0;
+    const tryRender = () => {
+      const canvas = boardRef.current;
+      if (!canvas) { if (attempts++ < 50) requestAnimationFrame(tryRender); return; }
+
+      hideFieldMarkings(canvas);
+      // Remove existing diagnosis objects
+      canvas.getObjects().filter((o: any) => (o as any)._isDrillAnnotation)
+        .forEach((o: any) => canvas.remove(o));
+
+      // Title annotation
+      const titleText = new FabricText(`诊断: ${d.title}`, {
+        left: 12, top: 8, fontSize: 16, fontFamily: "Arial",
+        fontWeight: "bold", fill: "#FF2D55",
+        backgroundColor: "rgba(0,0,0,0.6)", padding: 4,
+      });
+      (titleText as any)._isDrillAnnotation = true; canvas.add(titleText);
+
+      canvas.requestRenderAll();
+    };
     tryRender();
   }, []);
 

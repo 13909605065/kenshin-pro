@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { TacticalDiagnosis } from "@/lib/ai/tactical-diagnosis";
 import { MobileNav } from "@/components/MobileNav";
+import { writeDiagnosisContext } from "@/lib/tactics-bridge";
 
 type Status = "idle" | "loading" | "done" | "error";
 
 export default function TacticalDiagnosisPage() {
+  const router = useRouter();
   const [problem, setProblem] = useState("");
   const [formation, setFormation] = useState("");
   const [opponentFormation, setOpponentFormation] = useState("");
@@ -292,7 +295,18 @@ export default function TacticalDiagnosisPage() {
 
             {/* Tab: Tactical Board */}
             {activeTab === "board" && (
-              <TacticalBoardRender render={diagnosis.render} />
+              <div>
+                <TacticalBoardRender render={diagnosis.render} />
+                <button
+                  onClick={() => {
+                    writeDiagnosisContext(diagnosis.render as any);
+                    router.push("/tactics");
+                  }}
+                  className="mt-3 w-full py-2.5 bg-[#222] hover:bg-[#333] border border-[#444] text-white font-medium rounded-xl text-sm transition"
+                >
+                  🎯 在战术板中打开编辑
+                </button>
+              </div>
             )}
 
             {/* Share button */}

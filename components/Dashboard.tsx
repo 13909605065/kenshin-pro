@@ -322,6 +322,39 @@ export function Dashboard() {
         </div>
       )}
 
+      {/* ====== Athlete: My Training ====== */}
+      {status === "idle" && !isCoach && playerPlans.length > 0 && (
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4 space-y-3">
+          <h3 className="text-sm font-bold text-white">📋 我的训练</h3>
+          {playerPlans.slice(0, 3).map((plan) => (
+            <button
+              key={plan.id}
+              onClick={() => {
+                training.loadModules(plan.modules, plan.formData);
+                setStatus("complete");
+              }}
+              className="w-full bg-[#111] hover:bg-[#222] border border-[#333] rounded-lg p-3 text-left transition"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-white font-medium truncate">{plan.playerName}</span>
+                <span className="text-[10px] text-gray-500">
+                  {new Date(plan.createdAt).toLocaleDateString("zh-CN")}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-500">
+                <span>{plan.modules.length}个模块</span>
+                <span className="text-neon-pink">▶ 开始训练</span>
+              </div>
+            </button>
+          ))}
+          {playerPlans.length > 3 && (
+            <p className="text-[10px] text-gray-600 text-center">
+              还有 {playerPlans.length - 3} 个历史方案，去「历史」页面查看
+            </p>
+          )}
+        </div>
+      )}
+
       {/* ====== Idle State ====== */}
       {status === "idle" && (
         <div className="space-y-3">

@@ -86,6 +86,34 @@ export function mapAreaToField(area: string): string {
   return "场地"; // 默认全场
 }
 
+// ---------- AI 诊断 → 战术板 ----------
+
+const DIAGNOSIS_KEY = "tac_diagnosis_context";
+
+export interface DiagnosisRenderData {
+  title: string;
+  players: { x: number; y: number; number: string; label: string; color: string }[];
+  opponents: { x: number; y: number; number: string; label: string; color: string }[];
+  ball: { x: number; y: number };
+  arrows: { from: { x: number; y: number }; to: { x: number; y: number }; color: string; type: string; label: string; dashed: boolean }[];
+  zones: { x: number; y: number; width: number; height: number; color: string; label: string }[];
+}
+
+/** 将 AI 诊断渲染数据写入 localStorage，战术板页面读取并渲染 */
+export function writeDiagnosisContext(data: DiagnosisRenderData): void {
+  try { localStorage.setItem(DIAGNOSIS_KEY, JSON.stringify(data)); } catch {}
+}
+
+/** 读取并清除诊断渲染上下文 */
+export function readDiagnosisContext(): DiagnosisRenderData | null {
+  try {
+    const raw = localStorage.getItem(DIAGNOSIS_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(DIAGNOSIS_KEY);
+    return JSON.parse(raw) as DiagnosisRenderData;
+  } catch { return null; }
+}
+
 // ---------- 球员站位计算 ----------
 
 /** 画布尺寸（与 FabricBoard 保持一致） */
