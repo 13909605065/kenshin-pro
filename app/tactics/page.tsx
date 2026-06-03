@@ -5,6 +5,7 @@ import { Canvas, Circle, FabricText, Group, FabricImage } from "fabric";
 import { FabricBoard, exportBoardAsPNG, hideFieldMarkings } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
+import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft, Save, FolderOpen, X, Bookmark } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { readDrillContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
@@ -217,6 +218,7 @@ export default function TacticsPage() {
       </div>
 
       <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear}/>
+      <MobileNav />
     </div>
   );
 }

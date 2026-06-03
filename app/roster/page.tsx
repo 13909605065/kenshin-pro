@@ -12,6 +12,7 @@ import {
 } from "@/lib/roster-utils";
 import { ArrowLeft, Upload, Plus, X, Save, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { MobileNav } from "@/components/MobileNav";
 
 const POSITION_OPTIONS = [
   "门将", "中后卫", "左后卫", "右后卫", "后腰", "中前卫", "前腰",
@@ -70,7 +71,7 @@ export default function RosterPage() {
   const statusLabel = (s: string) => s === "healthy" ? "健康" : s === "minor" ? "轻伤" : "重伤缺阵";
 
   return (
-    <div className="min-h-screen bg-pitch-900 p-4">
+    <div className="min-h-screen bg-pitch-900 p-4 pb-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
@@ -177,6 +178,7 @@ export default function RosterPage() {
           </div>
         </div>
       )}
+      <MobileNav />
     </div>
   );
 }

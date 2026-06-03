@@ -237,19 +237,6 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Coach quick panel */}
-          {isCoach && (
-            <div className="glass-card p-4 flex items-center gap-3 flex-wrap">
-              <a href="/roster" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pitch-700 hover:bg-pitch-600 text-xs text-gray-300 transition">
-                📋 球队花名册
-              </a>
-              <a href="/tactics" className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pitch-700 hover:bg-pitch-600 text-xs text-gray-300 transition">
-                📐 战术板
-              </a>
-              <span className="text-[10px] text-gray-500">快速入口 · 设置档案后生成训练方案 ↓</span>
-            </div>
-          )}
-
           {/* Goal */}
           {!isCoach && (
             <div className="glass-card p-4 flex items-center gap-4">
