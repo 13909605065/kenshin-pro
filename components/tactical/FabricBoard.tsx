@@ -4,8 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { Canvas, Rect, Circle, Line, IText, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
 import { ROUTE_STYLES } from "./BoardToolbar";
 
-const FW = 720;
-const FH = 1080;
+const FW = 1050;
+const FH = 680;
 
 interface FabricBoardProps {
   activeTool: string;
@@ -91,22 +91,15 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
-    // Load field image — rotate to portrait and fill canvas
+    // Load field image — scale to fill canvas with tight margins
     FabricImage.fromURL("/equipment/场地.png").then((img) => {
       const margin = 15;
-      // Rotate 90° for portrait orientation
-      img.set({ angle: 90 });
-      // After rotation, width↔height are conceptually swapped for scaling
-      const availW = FH - margin * 2;
-      const availH = FW - margin * 2;
-      const scaleX = availW / (img.width || 1);
-      const scaleY = availH / (img.height || 1);
+      const scaleX = (FW - margin * 2) / (img.width || 1);
+      const scaleY = (FH - margin * 2) / (img.height || 1);
       const scale = Math.max(scaleX, scaleY);
       img.set({
-        left: FW / 2,
-        top: FH / 2,
-        originX: "center",
-        originY: "center",
+        left: (FW - (img.width || 0) * scale) / 2,
+        top: (FH - (img.height || 0) * scale) / 2,
         scaleX: scale,
         scaleY: scale,
         selectable: false,
@@ -383,15 +376,14 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         drawVectorField(c);
         return;
       }
-      // Otherwise load PNG field — rotate to portrait and fill
+      // Otherwise load PNG field — fill canvas with tight margins
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
         c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
         const margin = 15;
-        img.set({ angle: 90 });
-        const s = Math.max((c.height!-margin*2)/img.width!, (c.width!-margin*2)/img.height!);
+        const s = Math.max((c.width!-margin*2)/img.width!, (c.height!-margin*2)/img.height!);
         img.set({
-          left: c.width! / 2, top: c.height! / 2,
-          originX: "center", originY: "center",
+          left: (c.width! - img.width! * s) / 2,
+          top: (c.height! - img.height! * s) / 2,
           scaleX: s, scaleY: s, selectable: false, evented: false,
         });
         (img as any)._isFieldBg = true;
@@ -425,14 +417,14 @@ function addArrowHead(c: Canvas, x: number, y: number, angle: number, color: str
   c.add(tri);
 }
 
-/** Draw a complete vector football field — portrait orientation, attacking upward */
+/** Draw a complete vector football field — horizontal, attacking left→right */
 export function drawVectorField(canvas: Canvas) {
   canvas.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => canvas.remove(o));
 
   const W = canvas.width!, H = canvas.height!;
   const margin = 15;
-  const fw = W - margin * 2;  // field width (narrow)
-  const fh = H - margin * 2;  // field length (tall)
+  const fw = W - margin * 2;
+  const fh = H - margin * 2;
   const cx = margin + fw / 2;
   const cy = margin + fh / 2;
 
@@ -444,75 +436,72 @@ export function drawVectorField(canvas: Canvas) {
 
   const items: any[] = [grass];
 
-  // Halfway line (horizontal, across the field width)
-  items.push(new Line([margin, cy, margin + fw, cy], {
+  // Halfway line (vertical line at center)
+  items.push(new Line([cx, margin, cx, margin + fh], {
     stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
 
   // Center circle
-  const cr = 50;
+  const cr = 55;
   items.push(new Circle({
     left: cx - cr, top: cy - cr, radius: cr,
     fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
-  // Center dot
   items.push(new Circle({
     left: cx - 3, top: cy - 3, radius: 3,
     fill: "rgba(255,255,255,0.6)", stroke: "",
     selectable: false, evented: false,
   }));
 
-  // Penalty areas (top and bottom)
-  const paW = fw * 0.6;
-  const paH = fh * 0.17;
-  const paLeft = margin + (fw - paW) / 2;
-  // Bottom penalty area (defending end)
+  // Penalty areas (left and right)
+  const paW = fw * 0.16;
+  const paH = fh * 0.44;
+  const paTop = margin + (fh - paH) / 2;
   items.push(new Rect({
-    left: paLeft, top: margin, width: paW, height: paH,
+    left: margin, top: paTop, width: paW, height: paH,
     fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
-  // Top penalty area (attacking end)
   items.push(new Rect({
-    left: paLeft, top: margin + fh - paH, width: paW, height: paH,
+    left: margin + fw - paW, top: paTop, width: paW, height: paH,
     fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
     selectable: false, evented: false,
   }));
 
   // Goal areas
-  const gaW = fw * 0.35;
-  const gaH = fh * 0.06;
-  const gaLeft = margin + (fw - gaW) / 2;
+  const gaW = fw * 0.06;
+  const gaH = fh * 0.22;
+  const gaTop = margin + (fh - gaH) / 2;
   items.push(new Rect({
-    left: gaLeft, top: margin, width: gaW, height: gaH,
+    left: margin, top: gaTop, width: gaW, height: gaH,
     fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
-    left: gaLeft, top: margin + fh - gaH, width: gaW, height: gaH,
+    left: margin + fw - gaW, top: gaTop, width: gaW, height: gaH,
     fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
 
   // Goals
-  const goalW = gaW * 0.6;
-  const goalH = 6;
-  const goalLeft = margin + (fw - goalW) / 2;
+  const goalW = 7;
+  const goalH = fh * 0.12;
+  const goalTop = margin + (fh - goalH) / 2;
   items.push(new Rect({
-    left: goalLeft, top: margin - goalH, width: goalW, height: goalH,
+    left: margin - goalW / 2, top: goalTop, width: goalW, height: goalH,
     fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
-    left: goalLeft, top: margin + fh, width: goalW, height: goalH,
+    left: margin + fw - goalW / 2, top: goalTop, width: goalW, height: goalH,
     fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
 
-  // Corner arcs (4 corners)
-  const arcR = 12;
+  // Corner arcs
+  const arcR = 14;
   const corners = [
     [margin, margin], [margin + fw, margin],
     [margin, margin + fh], [margin + fw, margin + fh],
