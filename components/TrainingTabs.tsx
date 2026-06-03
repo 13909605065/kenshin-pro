@@ -16,6 +16,7 @@ import { WorkoutTimer } from "./WorkoutTimer";
 import { SequentialTrainingList } from "./SequentialTrainingList";
 import { CoachSessionTable } from "./CoachSessionTable";
 import { AthleteSequentialView, AthleteCategoryView } from "./AthleteTrainingView";
+import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
 
 interface Props {
   modules: TrainingModule[];
@@ -557,7 +558,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate }: Prop
               <p className="text-sm text-gray-500 py-8 text-center">暂无训练教案内容</p>
             )}
             {activeTab === "tactical" && tacticalFocus && (
-              <CoachTacticalView module={tacticalFocus} />
+              <CoachTacticalBriefing module={tacticalFocus} onOpenBoard={() => { writeDrillContext(tacticalFocus.drills[0] as any); router.push("/tactics"); }}/>
             )}
             {activeTab === "tactical" && !tacticalFocus && (
               <p className="text-sm text-gray-500 py-8 text-center">暂无战术专项内容</p>
