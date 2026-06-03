@@ -15,6 +15,7 @@ import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/l
 import { getPlayers } from "@/lib/roster-utils";
 import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
+import { STRENGTH_TEMPLATES } from "@/lib/exercise-data";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
 import { SceneTabs } from "./SceneTabs";
@@ -338,13 +339,15 @@ export function Dashboard() {
                   </button>
                 </>
               )}
-              {/* 健身房: only exercises */}
+              {/* 健身房: strength templates + exercise library */}
               {scene === "gym" && (
-                <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
-                  <p className="text-xs font-bold text-white">动作库</p>
-                  <p className="text-[10px] text-gray-500">124个力量动作</p>
-                </button>
+                <>
+                  <button onClick={() => window.location.href = "/exercises"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
+                    <Dumbbell className="w-5 h-5 text-neon-pink mb-1" />
+                    <p className="text-xs font-bold text-white">动作库</p>
+                    <p className="text-[10px] text-gray-500">124个力量动作</p>
+                  </button>
+                </>
               )}
               {/* 复盘: AI诊断 + 战术板 */}
               {scene === "review" && (
@@ -393,6 +396,23 @@ export function Dashboard() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* ====== Gym: Strength Templates ====== */}
+      {status === "idle" && scene === "gym" && (
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4 space-y-3">
+          <h3 className="text-sm font-bold text-white flex items-center gap-2"><Dumbbell className="w-4 h-4 text-neon-pink"/>力量训练模板</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {STRENGTH_TEMPLATES.slice(0, 4).map((tmpl) => (
+              <button key={tmpl.id} onClick={() => window.location.href = "/strength"}
+                className="bg-[#111] hover:bg-[#222] border border-[#333] rounded-lg p-3 text-left transition">
+                <p className="text-xs font-bold text-white">{tmpl.name}</p>
+                <p className="text-[10px] text-gray-500 mt-1">{tmpl.description.slice(0, 20)}</p>
+                <p className="text-[10px] text-gray-600 mt-1">{tmpl.exercise_ids.length}个动作</p>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
