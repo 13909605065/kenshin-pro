@@ -317,14 +317,30 @@ export function Dashboard() {
           {/* Equipment selector — coach only */}
           {isCoach && (
             <div className="glass-card p-4">
-              <p className="text-sm font-bold text-white mb-3">可用器材（多选，为空则AI自动推荐）</p>
-              <div className="flex flex-wrap gap-2">
-                {["标志盘","标志桶","标志杆","号坎/背心","球(充足)","小球门","标准球门","栏架(小)","栏架(高)","绳梯","敏捷圈","弹力带","药球","Pezzi球/瑜伽球","泡沫轴"].map((eq) => {
-                  const act = formData.equipmentAvailable?.includes(eq);
-                  return <button key={eq} onClick={() => {
-                    const next = act ? formData.equipmentAvailable.filter((x: string) => x !== eq) : [...(formData.equipmentAvailable || []), eq];
-                    updateField("equipmentAvailable", next);
-                  }} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition border ${act ? "bg-neon-pink border-neon-pink text-black" : "bg-pitch-700 border-pitch-600 text-gray-300 hover:border-pitch-500"}`}>{eq}</button>;
+              <p className="text-xs text-gray-500 mb-3">
+                可多选<span className="text-gray-600 ml-1">· 为空则自动推荐</span>
+                {formData.equipmentAvailable?.length > 0 && (
+                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length}项已选</span>
+                )}
+              </p>
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                {[
+                  { n:"标志盘",e:"🔶"},{n:"标志桶",e:"🪣"},{n:"标志杆",e:"🥅"},{n:"号坎",e:"👕"},{n:"足球",e:"⚽"},
+                  {n:"小球门",e:"🥅"},{n:"标准门",e:"🏟️"},{n:"小栏架",e:"🚧"},{n:"高栏架",e:"📏"},{n:"绳梯",e:"🪜"},
+                  {n:"敏捷圈",e:"⭕"},{n:"弹力带",e:"🩹"},{n:"药球",e:"🏐"},{n:"瑜伽球",e:"🎈"},{n:"泡沫轴",e:"🫧"},
+                ].map(({n,e}) => {
+                  const act = formData.equipmentAvailable?.includes(n);
+                  return (
+                    <button key={n} onClick={() => {
+                      const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
+                      updateField("equipmentAvailable", next);
+                    }} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg text-[11px] transition border ${
+                      act ? "bg-neon-pink/15 border-neon-pink/40 text-neon-pink" : "bg-pitch-800 border-pitch-700 text-gray-500 hover:border-pitch-500 hover:text-gray-300"
+                    }`}>
+                      <span className="text-base">{e}</span>
+                      <span>{n}</span>
+                    </button>
+                  );
                 })}
               </div>
             </div>
