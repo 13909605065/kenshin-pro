@@ -248,29 +248,47 @@ const POSES: Record<string, Pose> = {
    ================================================================ */
 
 function detect(name: string): string {
-  const n = name.toLowerCase().replace(/[·\s\-_.]+/g, "");
-  if (/保加利亚|弓步|lunge|箭步|split/.test(n)) return "lunge";
-  if (/深蹲|squat|蹲/.test(n)) return "squat";
+  const n = name.toLowerCase().replace(/[·\s\-_.()（）]+/g, "");
+  // Multi-step: lunge variants FIRST (避免"蹲"误匹配)
+  if (/保加利亚|弓步|lunge|箭步|split|分腿/.test(n)) return "lunge";
   if (/硬拉|deadlift|rdl|romanian/.test(n)) return "deadlift";
-  if (/弓步|lunge|箭步/.test(n)) return "lunge";
   if (/臀桥|bridge|hipthrust|臀推/.test(n)) return "bridge";
+  // Press types
   if (/卧推|benchpress/.test(n)) return "bench";
-  if (/推举|overhead|肩推|shoulderpress|military/.test(n)) return "press";
-  if (/飞鸟|fly|crossover|夹胸|pec/.test(n)) return "fly";
+  if (/飞鸟|fly|crossover|夹胸/.test(n)) return "fly";
+  if (/推举|overhead|肩推|shoulderpress|military|上举|raise|lateral|前平/.test(n)) return "press";
+  // Pull types
   if (/弯举|curl|二头|bicep/.test(n)) return "curl";
-  if (/臂屈伸|三头|tricep|下压|pushdown|臂伸/.test(n)) return "tricep";
-  if (/俯卧撑|pushup/.test(n)) return "pushup";
-  if (/平板|plank|侧桥/.test(n)) return "plank";
-  if (/卷腹|crunch|situp|举腿|legraise/.test(n)) return "crunch";
-  if (/俄转|russian|twist|旋转/.test(n)) return "twist";
+  if (/臂屈伸|三头|tricep|下压|pushdown|臂伸|颈后/.test(n)) return "tricep";
   if (/引体|pullup|chin|垂悬/.test(n)) return "pullup";
-  if (/划船|row/.test(n) && !/俯卧撑|pushup/.test(n)) return "row";
-  if (/拉伸|stretch/.test(n)) return "stretch";
-  if (/跳|jump|box|plyo/.test(n)) return "jump";
-  if (/跑|run|sprint|冲刺/.test(n)) return "run";
-  if (/上举|raise|lateral/.test(n)) return "raise";
-  if (/推|press/.test(n) && !/卧|bench/.test(n)) return "press";
+  if (/划船|row/.test(n)) return "row";
+  // Bodyweight
+  if (/俯卧撑|pushup/.test(n)) return "pushup";
+  if (/平板|plank|侧桥|支撑/.test(n)) return "plank";
+  if (/俯身登山|登山跑/.test(n)) return "run";
+  // Core
+  if (/卷腹|crunch|situp|举腿|legraise/.test(n)) return "crunch";
+  if (/俄转|russian|twist|旋转|转体/.test(n)) return "twist";
+  if (/死虫|deadbug/.test(n)) return "crunch";
+  // Lower
+  if (/深蹲|squat|蹲/.test(n)) return "squat";
+  // Plyo/cardio
+  if (/跳|jump|plyo|砸击|抛掷|药球|medball/.test(n)) return "jump";
+  if (/跑|run|sprint|冲刺|碎步|小步|高抬/.test(n)) return "run";
+  if (/拉伸|stretch|摇篮|最伟|放松|泡沫|呼吸/.test(n)) return "stretch";
+  if (/马克操|开合跳|转髋/.test(n)) return "jump";
+  // Default
   return "default";
+}
+
+// Equipment detection from name
+function detectEquip(name: string): "barbell" | "dumbbell" | "body" | "bench" | undefined {
+  const n = name.toLowerCase();
+  if (/杠铃|barbell|硬拉|深蹲|卧推|推举/.test(n)) return "barbell";
+  if (/哑铃|dumbbell/.test(n)) return "dumbbell";
+  if (/悬吊|trx|绳索|cable|面拉/.test(n)) return "dumbbell"; // cables shown as dumbbell-style
+  if (/卧推|飞鸟|臀推|保加利亚/.test(n)) return "bench";
+  return undefined; // use pose default
 }
 
 /* ================================================================

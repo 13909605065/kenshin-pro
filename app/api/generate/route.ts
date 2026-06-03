@@ -133,9 +133,16 @@ export async function POST(request: NextRequest) {
   // Scene hint: constrain AI output to gym-only or pitch-only
   let sceneHint = "";
   if (scene === "gym") {
-    sceneHint = `## 场景限制：健身房模式\n今天是健身房训练日。只输出力量训练内容（杠铃、哑铃、自重、器械）。不输出场地训练、不输出SSG对抗赛、不输出跑动训练。热身也围绕力量训练展开（动态热身、激活核心、轻重量预热）。`;
+    sceneHint = `## 场景限制：健身房训练日
+今天只在健身房。严格限制：
+✅ 可输出：杠铃/哑铃/悬吊/药球/弹力带等器械力量训练、原地自重热身(9090髋激活/最伟大拉伸/开合跳/高抬腿等)、泡沫轴整理放松
+❌ 禁止：足球技术训练(传球/射门/盘带/1v1)、需要标志盘/敏捷梯/大片跑动空间的场地热身、SSG对抗赛、跑动训练
+器材：杠铃、哑铃、卧推凳、TRX悬吊带、弹力带、泡沫轴`;
   } else if (scene === "pitch" && formData.role === "athlete") {
-    sceneHint = `## 场景限制：球场训练日\n今天是场地训练日。只输出有球训练内容（传球、射门、盘带、战术跑位）。不输出健身房力量训练、不输出杠铃/哑铃类动作。体能训练通过有球形式完成（4v4间歇、传球循环）。`;
+    sceneHint = `## 场景限制：球场训练日
+今天只在球场。严格限制：
+✅ 可输出：有球技术训练(传球/射门/盘带/控球)、场地热身(标志盘绕桩/绳梯/变向冲刺)、战术跑位、SSG对抗赛
+❌ 禁止：健身房力量训练(杠铃/哑铃/卧推凳)，不输出需要器械的力量动作。力量训练通过有球/自重形式完成(如箭步蹲、俯卧撑、平板支撑等自重动作可以在球场做)`;
   }
 
   const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +
