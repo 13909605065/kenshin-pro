@@ -57,9 +57,19 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
   const height = data.height ?? 175;
   const weight = data.weight ?? 70;
   const bmi = height > 0 ? weight / ((height / 100) ** 2) : 22;
+  // Calculate personalized nutrition grams
+  const proteinG = Math.round(weight * 1.8);
+  const carbG = Math.round(weight * 6);
+  const postWorkoutCarb = Math.round(weight * 1.0);
+  const postWorkoutProtein = Math.round(weight * 0.4);
+  const nutritionCalc = `👤 基于${weight}kg体重计算：
+- 每日蛋白: ${proteinG}g (${weight}×1.8g，训练日)
+- 每日碳水: ${carbG}g (${weight}×6g，训练日)
+- 赛后30min: 快碳${postWorkoutCarb}g + 蛋白${postWorkoutProtein}g`;
+
   let bodyNote = "";
   if (bmi < 18.5) {
-    bodyNote = `偏瘦体型(BMI ${bmi.toFixed(1)})：需加强力量训练和营养补充，目标增肌增重。蛋白质摄入建议2.0-2.2g/kg。`;
+    bodyNote = `偏瘦体型(BMI ${bmi.toFixed(1)})：需加强力量训练和营养补充，目标增肌增重。蛋白质摄入建议${Math.round(weight * 2.1)}g/天(${weight}×2.1g/kg)。`;
   } else if (bmi >= 25) {
     bodyNote = `BMI ${bmi.toFixed(1)}偏高。注意：BMI无法区分肌肉和脂肪。如体脂也偏高，增加有氧/灵敏成分+关节负荷管理。如为肌肉型（体脂正常），维持当前力量训练方向，忽略BMI偏高提示。`;
   } else {
@@ -86,6 +96,7 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
 - 身高: ${height}cm
 - 体重: ${weight}kg
 - 训练年限: ${years}年
+- 自述短板/想提升: ${data.weakness || "未填写"}
 
 个性化分析:
 - 训练经验等级: ${expLevel}。${expNote}
@@ -98,6 +109,10 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh"): s
 目标能力: ${GOAL_LABELS[data.goal!]}
 赛季阶段: ${PHASE_LABELS[data.phase!]}
 推荐套餐: ${comboHint}
+
+## 营养精确计算（必须输出到 module_5 nutrition 中）
+${nutritionCalc}
+${isFemale ? "- 女性：额外补铁18mg/天（月经铁流失），补钙1000mg/天" : ""}
 
 ## 个性化调整指令（必须执行）
 

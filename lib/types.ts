@@ -38,6 +38,8 @@ export interface PlayerFormData {
   goal: TrainingGoal | null;
   phase: SeasonPhase | null;
   injurySites: InjurySite[];
+  // Athlete-specific
+  weakness: string; // "我的短板/想提升什么"
   // Coach-specific
   coachCert: CoachCert | null;
   coachRole: CoachRole | null;

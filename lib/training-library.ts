@@ -1096,7 +1096,7 @@ export interface DrillRef {
   description: string;
   purpose: string;
   key_points: string[];
-  image_url: string;
+  image_url?: string;
   diagram: {
     layout: "linear" | "zigzag" | "square" | "t_shape" | "l_shape" | "triangle";
     cone_count: number;
@@ -1104,7 +1104,8 @@ export interface DrillRef {
     total_distance: string;
     start_label: string;
     end_label: string;
-    route_style: "solid" | "dashed";
+    route_style?: "solid" | "dashed";
+    route_label?: string;
   };
 }
 
@@ -1193,6 +1194,59 @@ export const DRILL_LIBRARY: Record<string, DrillRef> = {
     key_points: ["低重心准备姿态", "第一步向球移动", "侧扑落地滚翻", "快速起身"],
     image_url: "https://www.soccercoachingpro.com/wp-content/uploads/2021/03/goalkeeper-diving-drill.jpg",
     diagram: { layout: "linear", cone_count: 2, cone_spacing: "6-8m教练距离", total_distance: "2-3m侧扑", start_label: "GK站位", end_label: "教练射门点", route_style: "dashed" },
+  },
+  // ══ 新增 from Seeger 足球技战术训练全书 ══
+  "drill-mf-triangle": {
+    id: "drill-mf-triangle", name: "三角形传球循环", duration: 12,
+    description: "三角顶点各站1人，一脚出球后跑向接球点，练习一脚触球和跑位配合",
+    purpose: "提高中场球员一脚触球精度和无球跑位意识",
+    key_points: ["传球后立即移动", "保持三角形站位", "一脚触球减少调整"],
+    image_url: "https://www.soccercoachingpro.com/wp-content/uploads/2021/03/triangle-passing-drill.jpg",
+    diagram: { layout: "triangle", cone_count: 3, cone_spacing: "8m", total_distance: "循环", start_label: "传球起点", end_label: "跑动方向", route_style: "solid" },
+  },
+  "drill-mf-diamond": {
+    id: "drill-mf-diamond", name: "菱形套边插上", duration: 15,
+    description: "菱形四角站位，边路球员套边插上接直塞球传中，中锋包抄",
+    purpose: "提高边路套边时机和中路包抄配合",
+    key_points: ["套边时全速冲刺", "直塞球传到跑动路线上", "传中前观察包抄点"],
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "15×20m", total_distance: "约40m", start_label: "传球起点", end_label: "传中落点", route_style: "dashed", route_label: "套边路线" },
+  },
+  "drill-fw-triple-shot": {
+    id: "drill-fw-triple-shot", name: "连续三次射门", duration: 15,
+    description: "禁区外三点依次射门：第一点接传中→第二点接回敲→第三点个人突破射门，间隔8秒",
+    purpose: "模拟比赛快节奏中连续射门场景，提高转换射门能力",
+    key_points: ["每次射门后快速回位", "调整步点不超过2步", "三脚射门不同脚法"],
+    image_url: "https://www.soccercoachingpro.com/wp-content/uploads/2021/03/finishing-drill.jpg",
+    diagram: { layout: "triangle", cone_count: 3, cone_spacing: "大禁区弧三点", total_distance: "约25m", start_label: "起点", end_label: "球门", route_style: "solid", route_label: "射击路线" },
+  },
+  "drill-fw-combo-5shot": {
+    id: "drill-fw-combo-5shot", name: "5次射门组合", duration: 18,
+    description: "5种射门顺序：远射→头球→单刀→凌空→补射，模拟比赛各种射门场景",
+    purpose: "全面提升前锋射门手段多样性",
+    key_points: ["每种射门技术切换", "保持射门质量不下降", "补射意识"],
+    diagram: { layout: "linear", cone_count: 5, cone_spacing: "禁区外到禁区内", total_distance: "约40m", start_label: "远射点", end_label: "补射点", route_style: "solid" },
+  },
+  "drill-df-chase": {
+    id: "drill-df-chase", name: "追赶与拦截", duration: 12,
+    description: "两人组防守：一人追赶持球者延缓，第二人预判拦截传球路线。15×20m区域",
+    purpose: "提高后卫协同防守的追赶速度和拦截预判",
+    key_points: ["追赶者弧线跑封锁内线", "拦截者观察传球角度", "两人沟通"],
+    diagram: { layout: "linear", cone_count: 4, cone_spacing: "15×20m", total_distance: "20m", start_label: "进攻起点", end_label: "防守底线", route_style: "dashed", route_label: "追赶路线" },
+  },
+  "drill-wb-overlap": {
+    id: "drill-wb-overlap", name: "套边下底传中", duration: 15,
+    description: "边路接球→内切吸引防守→边后卫套边→直塞→下底传中，禁区内双人包抄",
+    purpose: "提高翼卫套边传中的时机和精度",
+    key_points: ["内切带动防守者", "套边全速冲刺", "传中避开第一防守者"],
+    image_url: "https://www.soccercoachingpro.com/wp-content/uploads/2021/03/crossing-drill.jpg",
+    diagram: { layout: "l_shape", cone_count: 3, cone_spacing: "边路30m", total_distance: "约40m", start_label: "边路起点", end_label: "禁区", route_style: "dashed", route_label: "套边→传中" },
+  },
+  "drill-gk-reaction": {
+    id: "drill-gk-reaction", name: "GK快速反应训练", duration: 10,
+    description: "距GK 6m快速连射，扑救后立即起身准备下一次，6球一组×3组",
+    purpose: "提高守门员连续扑救的反应速度和起身回位速度",
+    key_points: ["扑救后立即起身", "保持重心前倾", "脚步快速调整"],
+    diagram: { layout: "linear", cone_count: 3, cone_spacing: "6m教练距离", total_distance: "2-4m扑救范围", start_label: "GK站位", end_label: "教练射门点", route_style: "solid" },
   },
 };
 
@@ -1913,6 +1967,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加至2名防守中场施压",
     regression: "无防守练配合路线",
     diagram_hint: "40×30m，8v6第三人配合",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "40×30m", total_distance: "40m", start_label: "控球方", end_label: "第三人跑位", route_style: "dashed", route_label: "第三人数跑动" },
   },
   // ══ SHOOTING ══
   "tac-combination-finish": {
@@ -1923,6 +1978,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加防守者干扰",
     regression: "无防守定点射门",
     diagram_hint: "禁区弧-球门，墙式配合后射门",
+    diagram: { layout: "linear", cone_count: 3, cone_spacing: "禁区弧-球门", total_distance: "约20m", start_label: "传球起点", end_label: "球门", route_style: "solid", route_label: "墙式配合" },
   },
   "tac-crossing-finish": {
     id: "tac-crossing-finish", name: "传中包抄射门", theme: "shooting",
@@ -1932,6 +1988,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加2名防守中卫",
     regression: "无防守传中+包抄",
     diagram_hint: "半场6v4+GK，传中包抄",
+    diagram: { layout: "square", cone_count: 4, cone_spacing: "半场6v4", total_distance: "半场", start_label: "边路传中区", end_label: "球门", route_style: "dashed", route_label: "传中路线" },
   },
   // ══ CROSSING ══
   "tac-overlap-cross": {
@@ -1942,6 +1999,7 @@ export const TACTICAL_DRILL_LIBRARY: Record<string, TacticalDrillRef> = {
     progression: "增加防守边前卫回追",
     regression: "无防守练套边+传中节奏",
     diagram_hint: "半场边路3v2，套边传中",
+    diagram: { layout: "l_shape", cone_count: 3, cone_spacing: "边路30m", total_distance: "约40m", start_label: "边路起点", end_label: "禁区", route_style: "dashed", route_label: "套边→传中" },
   },
 };
 

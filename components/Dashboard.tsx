@@ -121,6 +121,11 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose }: any) {
 
             {/* Years */}
             <input type="number" value={formData.years??""} onChange={(e: any) => updateField("years", e.target.value?Number(e.target.value):null)} placeholder={t("player.years")} className="input-field text-sm w-full" />
+
+            {/* Weakness */}
+            <input type="text" value={formData.weakness||""} onChange={(e: any) => updateField("weakness", e.target.value)}
+              placeholder="我的短板 / 想提升什么（如：核心弱、左脚差、转身慢）" maxLength={100}
+              className="input-field text-sm w-full" />
           </>
         ) : (
           /* Coach fields */

@@ -22,6 +22,7 @@ const DEFAULT_DATA: PlayerFormData = {
   goal: null,
   phase: null,
   injurySites: [],
+  weakness: "",
   coachCert: null,
   coachRole: null,
   leagueTag: null,
