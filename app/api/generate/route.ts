@@ -25,11 +25,15 @@ const PROVIDERS = {
   },
 } as const;
 
-function resolveProviders() {
-  const list: { base: string; model: string; key: string | undefined }[] = [];
-  if (PROVIDERS.deepseek.key) list.push(PROVIDERS.deepseek);
-  if (PROVIDERS.doubao.key && PROVIDERS.doubao.model) list.push(PROVIDERS.doubao);
-  return list;
+function getPrimaryProvider() {
+  if (PROVIDERS.deepseek.key) return PROVIDERS.deepseek;
+  if (PROVIDERS.doubao.key && PROVIDERS.doubao.model) return PROVIDERS.doubao;
+  return null;
+}
+function getFallbackProvider() {
+  // Return the OTHER provider if both are available
+  if (PROVIDERS.deepseek.key && PROVIDERS.doubao.key && PROVIDERS.doubao.model) return PROVIDERS.doubao;
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -40,9 +44,10 @@ export async function POST(request: NextRequest) {
     return Response.json({ code: "auth-required", message: "请先登录" }, { status: 401 });
   }
 
-  // API key check — try primary first, fallback to secondary
-  const providers = resolveProviders();
-  if (providers.length === 0) {
+  // API key check — primary + optional fallback
+  const primary = getPrimaryProvider();
+  const fallback = getFallbackProvider();
+  if (!primary) {
     return Response.json(
       { code: "no-api-key", message: "服务器未配置 AI 接口" },
       { status: 500 }
@@ -102,40 +107,30 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
       try {
-        // Try providers in order — primary first, fallback on failure
+        // Try primary, fallback to secondary on failure
         let response: Response | null = null;
-        let lastErr: Error | null = null;
-        for (let i = 0; i < providers.length; i++) {
-          const prov = providers[i];
-          const abortController = new AbortController();
-          timeoutId = setTimeout(() => abortController.abort(), 60000);
-          try {
-            response = await fetch(prov.base, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${prov.key}` },
-              body: JSON.stringify({
-                model: prov.model,
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: userMessage },
-                ],
-                max_tokens: MAX_TOKENS, stream: true, temperature: 0.7,
-                thinking: { type: "disabled" },
-              }),
-              signal: abortController.signal,
-            });
-            clearTimeout(timeoutId);
-            if (response.ok) break; // Success
-            const errText = await response.text();
-            lastErr = new Error(`${prov.model}: ${response.status} ${errText.slice(0, 200)}`);
-            if (i < providers.length - 1) continue; // Try next
-          } catch (e: any) {
-            clearTimeout(timeoutId);
-            lastErr = e;
-            if (i < providers.length - 1) continue;
+        let lastError: Error | null = null;
+
+        const tryProvider = async (prov: { base: string; model: string; key?: string }) => {
+          const ac = new AbortController();
+          timeoutId = setTimeout(() => ac.abort(), 60000);
+          const r = await fetch(prov.base, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${prov.key}` },
+            body: JSON.stringify({ model: prov.model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMessage }], max_tokens: MAX_TOKENS, stream: true, temperature: 0.7, thinking: { type: "disabled" } }),
+            signal: ac.signal,
+          });
+          clearTimeout(timeoutId);
+          return r;
+        };
+
+        try { response = await tryProvider(primary); } catch (e: any) { lastError = e; }
+        if (!response || !response.ok) {
+          if (fallback) {
+            try { response = await tryProvider(fallback); } catch (e: any) { lastError = e; }
           }
         }
-        if (!response || !response.ok) throw lastErr || new Error("所有 AI 接口均不可用");
+        if (!response || !response.ok) throw lastError || new Error("AI 接口不可用");
 
         const reader = response.body?.getReader();
         if (!reader) throw new Error("No response body");
