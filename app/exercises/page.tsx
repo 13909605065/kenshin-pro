@@ -292,98 +292,42 @@ export default function ExercisesPage() {
 
   return (
     <div className="min-h-screen bg-pitch-900">
-      <div className="max-w-7xl mx-auto px-4 py-6 pb-24">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <a href="/" className="text-xs text-gray-500 hover:text-gray-300">← 返回首页</a>
-            </div>
-            <h1 className="text-2xl font-bold text-white">训练动作库</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              动作库 ({builtInExercises.length}个内置 + {customExercises.length}个自定义) — 显示 {filtered.length} 个
-            </p>
+      <div className="max-w-7xl mx-auto px-4 py-4 pb-24">
+        {/* Header — compact */}
+        <div className="flex items-center gap-3 mb-4">
+          <a href="/" className="text-gray-500 hover:text-white text-sm">←</a>
+          <h1 className="text-lg font-bold text-white">动作库</h1>
+          <div className="relative flex-1 max-w-[200px]">
+            <Search className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="搜索..."
+              className="w-full bg-pitch-800 border border-pitch-700 rounded-lg pl-8 pr-2 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-neon-pink"/>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜索动作名称..."
-                className="w-48 sm:w-64 bg-pitch-800 border border-pitch-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-neon-pink transition"
-              />
-            </div>
-            <button
-              onClick={() => { setEditingCustom(null); setModalOpen(true); }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-neon-pink text-black text-sm font-bold rounded-lg hover:opacity-90 transition whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4" />
-              添加自定义动作
-            </button>
-          </div>
+          <span className="text-[11px] text-gray-600">{filtered.length}个</span>
         </div>
 
-        {/* Filters */}
-        <div className="space-y-3 mb-6">
-          {/* Body Part Tabs */}
-          <div className="flex gap-1.5 flex-wrap">
-            {BODY_PARTS.map((bp) => (
-              <button
-                key={bp}
-                onClick={() => setBodyPart(bp)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                  bodyPart === bp
-                    ? "bg-neon-pink text-black"
-                    : "bg-pitch-800 text-gray-400 hover:text-white hover:bg-pitch-700"
-                }`}
-              >
-                {bp === "all" ? "全部" : bp}
-                <span className="ml-1 opacity-60">{counts[bp] || 0}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Equipment Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider">器材</span>
-            <div className="flex gap-1">
-              {EQUIPMENTS.map((eq) => (
-                <button
-                  key={eq}
-                  onClick={() => setEquipment(eq)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
-                    equipment === eq
-                      ? "bg-pitch-600 text-white"
-                      : "bg-pitch-800/50 text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {eq === "all" ? "全部器材" : eq}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Type Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider">类型</span>
-            <div className="flex gap-1">
-              {EX_TYPES.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setExType(t)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
-                    exType === t
-                      ? "bg-pitch-600 text-white"
-                      : "bg-pitch-800/50 text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {t === "all" ? "全部类型" : t}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Filters — all in one line */}
+        <div className="flex gap-1.5 mb-4 flex-wrap">
+          {BODY_PARTS.map((bp) => (
+            <button key={bp} onClick={() => setBodyPart(bp)}
+              className={`px-2 py-1 rounded text-[10px] font-medium ${bodyPart===bp?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300"}`}>
+              {bp==="all"?"全部":bp}
+            </button>
+          ))}
+          <span className="text-gray-700 mx-1">|</span>
+          {EQUIPMENTS.map((eq) => (
+            <button key={eq} onClick={() => setEquipment(eq)}
+              className={`px-2 py-1 rounded text-[10px] font-medium ${equipment===eq?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300"}`}>
+              {eq==="all"?"全部":eq}
+            </button>
+          ))}
+          <span className="text-gray-700 mx-1">|</span>
+          {EX_TYPES.map((t) => (
+            <button key={t} onClick={() => setExType(t)}
+              className={`px-2 py-1 rounded text-[10px] font-medium ${exType===t?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300"}`}>
+              {t==="all"?"全部":t}
+            </button>
+          ))}
         </div>
 
         {/* Exercise Grid */}
@@ -393,7 +337,7 @@ export default function ExercisesPage() {
             <p className="text-sm">没有匹配的动作</p>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {filtered.map((ex) => (
               <ExerciseCard
                 key={ex.id}
