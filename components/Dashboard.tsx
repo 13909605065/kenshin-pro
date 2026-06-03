@@ -310,7 +310,7 @@ export function Dashboard() {
                 <button onClick={() => document.getElementById("generate-section")?.scrollIntoView({ behavior: "smooth" })} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
                   <Zap className="w-5 h-5 text-neon-pink mb-1" />
                   <p className="text-xs font-bold text-white">生成训练方案</p>
-                  <p className="text-[10px] text-gray-500">AI 科学化备课</p>
+                  <p className="text-[10px] text-gray-500">Kenshin AI 备课</p>
                 </button>
               )}
               {/* 训练场: timer + roster */}
@@ -367,7 +367,7 @@ export function Dashboard() {
 
             {/* AI Recommendation */}
             <div className="bg-[#111] border border-neon-pink/20 rounded-lg p-3">
-              <p className="text-[10px] text-neon-pink font-bold mb-1">今日AI建议</p>
+              <p className="text-[10px] text-neon-pink font-bold mb-1">Kenshin AI 今日建议</p>
               <p className="text-sm text-gray-300">
                 {!isCoach && formData.goal === "strength" ? "下肢爆发力 + 核心稳定。你正处于力量期，建议3-4个复合动作，组间2min。" :
                  !isCoach && formData.goal === "power" ? "爆发力训练日。推荐奥举+跳跃类，低次数高速度，充分热身。" :
