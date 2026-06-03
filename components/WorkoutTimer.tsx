@@ -240,24 +240,45 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
     };
   }, [phase, currentStep, currentSet, step, completed]);
 
+  // ═══ SAVE ═══
+  const saveRecord = (stepsDone: number, totalDuration: number, isComplete: boolean) => {
+    try {
+      const records: WorkoutRecord[] = JSON.parse(localStorage.getItem("workout_records") || "[]");
+      records.unshift({
+        date: new Date().toISOString(),
+        totalDuration,
+        stepsCompleted: stepsDone,
+        planId,
+      });
+      localStorage.setItem("workout_records", JSON.stringify(records.slice(0, 50)));
+    } catch {}
+  };
+
+  // Save progress periodically
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!completed && elapsed > 0) {
+        saveRecord(currentStep, elapsed, false);
+      }
+    }, 30000); // every 30s
+    return () => clearInterval(id);
+  }, [elapsed, currentStep, completed]);
+
+  // Save on exit
+  useEffect(() => {
+    return () => {
+      if (!completed && elapsed > 10) {
+        saveRecord(currentStep, elapsed, false);
+      }
+    };
+  }, []);
+
   // ═══ ADVANCE ═══
   const advanceStep = useCallback(() => {
     if (currentStep + 1 >= steps.length) {
       completeSound();
       setCompleted(true);
-      // Save record
-      try {
-        const records: WorkoutRecord[] = JSON.parse(
-          localStorage.getItem("workout_records") || "[]"
-        );
-        records.unshift({
-          date: new Date().toISOString(),
-          totalDuration: elapsed + 1,
-          stepsCompleted: steps.length,
-          planId,
-        });
-        localStorage.setItem("workout_records", JSON.stringify(records.slice(0, 50)));
-      } catch {}
+      saveRecord(steps.length, elapsed + 1, true);
       return;
     }
     setCurrentStep((s) => s + 1);
