@@ -4,14 +4,9 @@ import { useScene } from "@/components/providers/SceneProvider";
 import type { Role, Scene } from "@/lib/scene-types";
 import { COACH_SCENES, ATHLETE_SCENES } from "@/lib/scene-types";
 
-const IND: Record<string, string> = {
-  pitch: "bg-green-500", gym: "bg-orange-500", review: "bg-blue-500",
-};
-
 export function SceneTabs() {
   const { role, setRole, scene, setScene } = useScene();
   const scenes = role === "coach" ? COACH_SCENES : ATHLETE_SCENES;
-  const ind = IND[scene] || "bg-[#333]";
 
   return (
     <div className="space-y-1">
@@ -33,8 +28,6 @@ export function SceneTabs() {
           </button>
         ))}
       </div>
-      {/* Indicator bar */}
-      <div className={"h-0.5 rounded-full transition-colors " + ind}/>
     </div>
   );
 }

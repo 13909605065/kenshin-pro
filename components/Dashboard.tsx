@@ -15,7 +15,6 @@ import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/l
 import { getPlayers } from "@/lib/roster-utils";
 import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
-import { STRENGTH_TEMPLATES } from "@/lib/exercise-data";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
 import { SceneTabs } from "./SceneTabs";
@@ -399,22 +398,6 @@ export function Dashboard() {
         </div>
       )}
 
-      {/* ====== Gym: Strength Templates ====== */}
-      {status === "idle" && scene === "gym" && (
-        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4 space-y-3">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2"><Dumbbell className="w-4 h-4 text-neon-pink"/>力量训练模板</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {STRENGTH_TEMPLATES.slice(0, 4).map((tmpl) => (
-              <button key={tmpl.id} onClick={() => window.location.href = "/strength"}
-                className="bg-[#111] hover:bg-[#222] border border-[#333] rounded-lg p-3 text-left transition">
-                <p className="text-xs font-bold text-white">{tmpl.name}</p>
-                <p className="text-[10px] text-gray-500 mt-1">{tmpl.description.slice(0, 20)}</p>
-                <p className="text-[10px] text-gray-600 mt-1">{tmpl.exercises.length}个动作</p>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ====== Athlete: My Training ====== */}
       {status === "idle" && !isCoach && playerPlans.length > 0 && (
@@ -632,28 +615,6 @@ export function Dashboard() {
               </div>
             </div>
           )}
-
-          {/* Quick-access: Strength Templates */}
-          <a href="/strength" className="block">
-            <div className="bg-pitch-700/50 rounded-xl border border-pitch-600 hover:border-neon-pink/60 transition p-3 group cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-white">💪 力量训练模板</span>
-                <span className="text-[10px] text-gray-500 group-hover:text-neon-pink transition">查看更多 →</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  { n: "纯力量", d: "大重量低次数 · 5×5 · 85%1RM", c: "bg-neon-pink/10 border-neon-pink/20 text-neon-pink" },
-                  { n: "肌肥大", d: "中重量中高次数 · 4×10-12 · 70%1RM", c: "bg-blue-500/10 border-blue-500/20 text-blue-400" },
-                  { n: "专项体能", d: "爆发力+腘绳肌保护 · 赛季中维持", c: "bg-neon-gold/10 border-neon-gold/20 text-neon-gold" },
-                  { n: "基础力量", d: "入门全身力量 · 建立基础动作模式", c: "bg-green-500/10 border-green-500/20 text-green-400" },
-                ].map((t) => (
-                  <div key={t.n} className={`text-[10px] px-2 py-1.5 rounded-lg border ${t.c} font-medium truncate`} title={t.d}>
-                    {t.n}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </a>
 
           {/* Equipment — scene-aware */}
           {scene !== "review" && (
