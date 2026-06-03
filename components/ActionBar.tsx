@@ -22,13 +22,43 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
 
   const handleShare = async () => {
     try {
-      const payload = { m: modules, f: { role: formData.role, name: formData.name, gender: formData.gender, position: formData.position, age: formData.age, height: formData.height, weight: formData.weight, goal: formData.goal, phase: formData.phase } };
-      const hash = btoa(encodeURIComponent(JSON.stringify(payload)));
-      const url = `${window.location.origin}/share/#${hash}`;
-      await navigator.clipboard.writeText(url);
-      setShareDone(true);
-      setTimeout(() => setShareDone(false), 2000);
-    } catch {}
+      const payload = {
+        modules,
+        formData: {
+          role: formData.role, name: formData.name, gender: formData.gender,
+          position: formData.position, age: formData.age, height: formData.height,
+          weight: formData.weight, goal: formData.goal, phase: formData.phase,
+        },
+      };
+      const res = await fetch("/api/share/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (json.code === "ok" && json.id) {
+        const url = `${window.location.origin}/share/?id=${json.id}`;
+        await navigator.clipboard.writeText(url);
+        setShareDone(true);
+        setTimeout(() => setShareDone(false), 2000);
+      } else {
+        // Fallback to old base64 method
+        const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: payload.formData })));
+        const url = `${window.location.origin}/share/#${hash}`;
+        await navigator.clipboard.writeText(url);
+        setShareDone(true);
+        setTimeout(() => setShareDone(false), 2000);
+      }
+    } catch {
+      // Last resort fallback
+      try {
+        const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: { role: formData.role } })));
+        const url = `${window.location.origin}/share/#${hash}`;
+        await navigator.clipboard.writeText(url);
+        setShareDone(true);
+        setTimeout(() => setShareDone(false), 2000);
+      } catch {}
+    }
   };
 
   const copyAll = async () => {

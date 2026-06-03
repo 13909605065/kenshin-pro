@@ -86,13 +86,33 @@ export default function SharePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    try {
-      const hash = window.location.hash.slice(1);
-      if (!hash) { setError("无效的分享链接"); return; }
-      const decoded = JSON.parse(decodeURIComponent(atob(hash)));
-      if (!decoded.m || !decoded.f) { setError("分享数据不完整"); return; }
-      setData({ modules: decoded.m, formData: decoded.f });
-    } catch { setError("链接解析失败，请检查链接是否完整"); }
+    const load = async () => {
+      // New API-based share (?id=xxx)
+      const params = new URLSearchParams(window.location.search);
+      const shareId = params.get("id");
+      if (shareId) {
+        try {
+          const res = await fetch(`/api/share/?id=${shareId}`);
+          const json = await res.json();
+          if (json.code === "ok" && json.data) {
+            setData({ modules: json.data.modules, formData: json.data.formData });
+            return;
+          }
+          setError(json.message || "方案不存在");
+          return;
+        } catch { setError("网络错误，请重试"); return; }
+      }
+
+      // Old hash-based share (backward compat)
+      try {
+        const hash = window.location.hash.slice(1);
+        if (!hash) { setError("无效的分享链接"); return; }
+        const decoded = JSON.parse(decodeURIComponent(atob(hash)));
+        if (!decoded.m || !decoded.f) { setError("分享数据不完整"); return; }
+        setData({ modules: decoded.m, formData: decoded.f });
+      } catch { setError("链接解析失败，请检查链接是否完整"); }
+    };
+    load();
   }, []);
 
   if (error) return <div className="min-h-screen bg-pitch-900 flex items-center justify-center"><p className="text-gray-500">{error}</p></div>;
