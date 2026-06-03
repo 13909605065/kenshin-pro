@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useScene } from "@/components/providers/SceneProvider";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { MobileNav } from "@/components/MobileNav";
 import { useWizard } from "@/hooks/useWizard";
 import { usePlanHistory } from "@/hooks/usePlanHistory";
-import { Zap, Dumbbell, History, Clock, ArrowLeft } from "lucide-react";
+import { GeneratingOverlay } from "@/components/GeneratingOverlay";
+import { TrainingTabs } from "@/components/TrainingTabs";
+import { streamGenerate } from "@/lib/ai";
+import type { TrainingModule } from "@/lib/types";
+import { Zap, Dumbbell, History, Clock, ArrowLeft, RefreshCw, AlertTriangle } from "lucide-react";
 
 export default function GymPage() {
   const router = useRouter();
@@ -20,6 +24,13 @@ export default function GymPage() {
 
   const [recentPlans, setRecentPlans] = useState<any[]>([]);
   const [workoutRecords, setWorkoutRecords] = useState<any[]>([]);
+
+  // ---- Generation state ----
+  const [generating, setGenerating] = useState(false);
+  const [modules, setModules] = useState<TrainingModule[]>([]);
+  const [currentModule, setCurrentModule] = useState("");
+  const [genError, setGenError] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(null);
 
   useEffect(() => {
     setScene("gym");
@@ -52,6 +63,66 @@ export default function GymPage() {
 
   const dietRec = `训练后30min内: 蛋白${Math.round(weight * 0.4)}g + 碳水${Math.round(weight * 0.8)}g。全天蛋白${Math.round(weight * 1.6)}g。${hasInjury ? "伤病恢复期，蛋白增至" + Math.round(weight * 2.0) + "g/天。" : ""}`;
 
+  // ---- Form completeness check ----
+  const canGenerate = isCoach
+    ? !!(formData.coachCert && formData.coachRole && formData.leagueTag && (formData.tacticalThemes || []).length > 0)
+    : !!(formData.position && formData.goal && formData.phase);
+
+  const handleGenerate = useCallback(async () => {
+    if (!canGenerate) {
+      setGenError("请先在首页完善个人档案信息（位置、目标、阶段等必填项）");
+      return;
+    }
+
+    setGenerating(true);
+    setModules([]);
+    setGenError(null);
+    setCurrentModule("");
+    setPlanId(null);
+
+    try {
+      await streamGenerate(
+        formData,
+        {
+          onModule(module, eventName) {
+            setModules((prev) => [...prev, module]);
+            setCurrentModule(eventName);
+          },
+          onDone(id) {
+            setPlanId(id);
+            setGenerating(false);
+          },
+          onError(err) {
+            setGenError(err.message || "AI 生成失败");
+            setGenerating(false);
+          },
+          onStatusChange(status) {
+            if (status === "complete") {
+              setGenerating(false);
+            }
+          },
+        },
+        undefined,
+        "gym"
+      );
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        setGenError(err.message || "生成失败，请重试");
+      }
+      setGenerating(false);
+    }
+  }, [canGenerate, formData]);
+
+  const handleResetGeneration = useCallback(() => {
+    setModules([]);
+    setGenError(null);
+    setCurrentModule("");
+    setPlanId(null);
+  }, []);
+
+  const showResults = modules.length > 0;
+  const showGenerateButtons = !generating && !showResults;
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
       <div className="bg-[#0a0a0a] border-b border-[#333] px-4 py-3 flex items-center gap-3">
@@ -61,6 +132,7 @@ export default function GymPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* ---- Profile Card (always visible) ---- */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center text-lg font-bold text-neon-pink flex-shrink-0">{formData.name?.charAt(0) || "A"}</div>
           <div>
@@ -69,6 +141,7 @@ export default function GymPage() {
           </div>
         </div>
 
+        {/* ---- Recommendation Card (always visible) ---- */}
         <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5 space-y-4">
           <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">今日训练建议</p>
           <div><p className="text-[10px] text-gray-500 mb-1">训练方向</p><p className="text-sm text-gray-200 leading-relaxed">{trainRec}</p></div>
@@ -82,20 +155,94 @@ export default function GymPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <button onClick={() => router.push("/")} className="bg-neon-pink text-black font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 shadow-lg shadow-neon-pink/20"><Zap className="w-6 h-6" />智能推荐训练</button>
-          <button onClick={() => router.push("/strength")} className="bg-[#1a1a1a] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
-        </div>
+        {/* ---- Generating Overlay ---- */}
+        {generating && (
+          <GeneratingOverlay
+            currentModule={currentModule}
+            isCoach={isCoach}
+            moduleCount={isCoach ? 3 : 5}
+            onCancel={() => setGenerating(false)}
+          />
+        )}
 
-        <button onClick={() => router.push("/strength")} className="w-full bg-[#1a1a1a] border border-neon-pink/10 hover:border-neon-pink/30 rounded-xl px-4 py-3 text-left transition group">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Dumbbell className="w-4 h-4 text-neon-pink" />
-              <span className="text-sm text-gray-300 group-hover:text-white">力量计划器</span>
+        {/* ---- Error State ---- */}
+        {genError && !generating && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-red-300">{genError}</p>
+              <button
+                onClick={handleGenerate}
+                className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg text-xs font-medium transition"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> 重试
+              </button>
             </div>
-            <span className="text-[10px] text-gray-600 group-hover:text-neon-pink transition">自定义动作、组数与休息 →</span>
           </div>
-        </button>
+        )}
+
+        {/* ---- Results: Inline TrainingTabs ---- */}
+        {showResults && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">AI 生成训练方案</p>
+              <button
+                onClick={handleResetGeneration}
+                className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 transition"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> 返回建议
+              </button>
+            </div>
+            <TrainingTabs
+              modules={modules}
+              formData={formData}
+              planId={planId}
+            />
+            <button
+              onClick={handleGenerate}
+              className="w-full bg-neon-pink text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20 hover:bg-neon-pink/90 transition active:scale-[0.98]"
+            >
+              <RefreshCw className="w-5 h-5" /> 重新生成训练方案
+            </button>
+          </div>
+        )}
+
+        {/* ---- Generate / Free Select Buttons (shown when no results yet) ---- */}
+        {showGenerateButtons && (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate}
+                className="bg-neon-pink text-black font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 shadow-lg shadow-neon-pink/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neon-pink/90 transition"
+                title={!canGenerate ? "请先在首页完善个人档案" : undefined}
+              >
+                <Zap className="w-6 h-6" />智能推荐训练
+              </button>
+              <button onClick={() => router.push("/strength")} className="bg-[#1a1a1a] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
+            </div>
+
+            <button onClick={() => router.push("/strength")} className="w-full bg-[#1a1a1a] border border-neon-pink/10 hover:border-neon-pink/30 rounded-xl px-4 py-3 text-left transition group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Dumbbell className="w-4 h-4 text-neon-pink" />
+                  <span className="text-sm text-gray-300 group-hover:text-white">力量计划器</span>
+                </div>
+                <span className="text-[10px] text-gray-600 group-hover:text-neon-pink transition">自定义动作、组数与休息 →</span>
+              </div>
+            </button>
+          </>
+        )}
+
+        {/* ---- Incomplete Profile Hint ---- */}
+        {showGenerateButtons && !canGenerate && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-yellow-300 leading-relaxed">
+              智能推荐需要完整的个人档案。请先在首页填写{isCoach ? "教练证书、执教身份、联赛、战术主题" : "场上位置、训练目标、赛季阶段"}等必填信息。
+            </p>
+          </div>
+        )}
 
         {workoutRecords.length > 0 ? (
           <div>

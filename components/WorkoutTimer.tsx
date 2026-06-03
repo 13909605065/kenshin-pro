@@ -87,7 +87,7 @@ function flattenWorkoutSteps(modules: TrainingModule[]): WorkoutStep[] {
   const steps: WorkoutStep[] = [];
 
   for (const m of modules) {
-    // Warmup
+    // ═══ ATHLETE: position_training ═══
     if (m.module === "position_training" && "warmup" in m) {
       (m as any).warmup?.forEach((w: WarmupItem, i: number) => {
         steps.push({
@@ -97,6 +97,64 @@ function flattenWorkoutSteps(modules: TrainingModule[]): WorkoutStep[] {
           category: "warmup",
           mode: "countdown",
           duration: (w.duration || 3) * 60,
+        });
+      });
+    }
+
+    // ═══ COACH: session_plan ═══
+    if (m.module === "session_plan") {
+      const sp = m as any;
+      // Warmup
+      sp.warmup?.forEach((w: WarmupItem, i: number) => {
+        steps.push({
+          id: `coach-warm-${i}`,
+          name: w.name,
+          description: w.description || "",
+          category: "warmup",
+          mode: "countdown",
+          duration: (w.duration || 3) * 60,
+        });
+      });
+      // Activities
+      sp.activities?.forEach((act: any, i: number) => {
+        steps.push({
+          id: `coach-act-${i}`,
+          name: act.name,
+          description: [
+            act.description || "",
+            act.area ? `场地: ${act.area}` : "",
+            act.groups ? `分组: ${act.groups}` : "",
+            act.coaching_points?.join("；") || "",
+          ].filter(Boolean).join(" · "),
+          category: "technique",
+          mode: "countdown",
+          duration: (act.duration || 10) * 60,
+        });
+      });
+      // SSG (Small-Sided Game)
+      if (sp.ssg) {
+        steps.push({
+          id: "coach-ssg",
+          name: `分队比赛: ${sp.ssg.name}`,
+          description: [
+            sp.ssg.rules || "",
+            `场地: ${sp.ssg.area}`,
+            `人数: ${sp.ssg.players}`,
+          ].filter(Boolean).join(" · "),
+          category: "technique",
+          mode: "countdown",
+          duration: (sp.ssg.duration || 15) * 60,
+        });
+      }
+      // Cooldown
+      sp.cooldown?.forEach((c: WarmupItem, i: number) => {
+        steps.push({
+          id: `coach-cool-${i}`,
+          name: c.name,
+          description: c.description || "",
+          category: "cooldown",
+          mode: "countdown",
+          duration: (c.duration || 3) * 60,
         });
       });
     }
@@ -125,7 +183,7 @@ function flattenWorkoutSteps(modules: TrainingModule[]): WorkoutStep[] {
       });
     }
 
-    // Cool down
+    // Cool down (athlete)
     if (m.module === "position_training" && "cooldown" in m) {
       (m as any).cooldown?.forEach((c: WarmupItem, i: number) => {
         steps.push({
