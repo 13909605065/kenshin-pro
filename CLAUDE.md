@@ -129,3 +129,19 @@ AI 只输出紧凑 ID → 服务器用 training-library.ts 展开为完整数据
 - Vercel: kenshin-pro.vercel.app（自动从 GitHub master 分支部署）
 - 自定义域名: llwdsg2004.qzz.io
 - Supabase 数据库: 训练历史 + 用户档案 + 反馈
+
+### ⚠️ 中国网络约束（严禁破坏）
+
+**kenshin 在国内，以下域名统统被墙：**
+- `supabase.co` — Supabase API
+- `github.com` — Git SSH/HTTPS
+- `vercel.app` — Vercel 默认域名
+
+**铁律：**
+1. **`NEXT_PUBLIC_SUPABASE_URL` 永远保持 `https://gqjzrrwcxukpzilkjqke.supabase.co`**，绝不改成相对路径或代理路径
+2. **浏览器端 Supabase 请求必须走代理**：`lib/supabase/supabase-client.ts` 中的 `browserFetch` 函数会在 `typeof window !== 'undefined'` 时自动把 Supabase URL 替换为 `/api/supabase`（经 next.config.js rewrite 转发到 Vercel 服务端 → Supabase）
+3. **不要删除 `next.config.js` 中的 `/api/supabase/:path*` rewrite**
+4. **不要删除 `supabase-client.ts` 中的 `global: { fetch: browserFetch }`**
+5. **Vercel 构建时不能有静态页面在构建期调用 Supabase**：SSR/SSG 用 `NEXT_PUBLIC_SUPABASE_URL`（真实 URL），Vercel 构建机在境外可直连，只有浏览器端走代理
+6. **本地 `npm run dev` 仍需 VPN**（本地服务器也连不上 supabase.co）
+7. **Git 操作走 HTTPS + 代理**：`git -c http.proxy=http://127.0.0.1:1082 push`
