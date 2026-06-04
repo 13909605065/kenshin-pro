@@ -26,11 +26,27 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 
   // Inject scene constraint at system prompt level (highest priority for LLM)
   if (scene === "pitch") {
-    return base + "\n## 场景：球场训练。禁止杠铃/哑铃/绳索/TRX器械。仅自重+药球+跳箱。禁止combo_id，逐项指定ID。";
+    const pitchRule = `\n\n## ⚠️⚠️⚠️ 场景铁律：球场训练 - 以下规则优先级最高 ⚠️⚠️⚠️
+你正在为球场训练生成方案。严禁出现任何健身房内容。
+- 🔴 禁止输出 upper_ids（上肢力量在球场用SSG对抗替代）
+- 🔴 禁止所有 ex-db-* ex-sus-* ex-bench-press ex-cable-* ex-back-squat ex-front-squat ex-deadlift ex-trap-bar-deadlift ex-power-clean ex-leg-press ex-hip-thrust ex-hanging-leg-raise ex-pallof-press ex-face-pull
+- 🔴 禁止使用 combo_id（套餐含健身房动作）
+- 🟢 lower_ids仅限: ex-nordic-hamstring ex-box-jump ex-bulgarian-split-squat ex-single-leg-rdl
+- 🟢 core_ids仅限: ex-plank ex-dead-bug
+- 🟢 ability仅限: ex-sled-sprint ex-box-jump ex-nordic-hamstring
+- 🟢 多输出 drill_ids（有球训练是球场核心）`;
+    return pitchRule + "\n" + base;
   }
 
   if (scene === "gym") {
-    return base + "\n## 场景：健身房训练。禁止所有有球热身(warm-ball-touch/dribble/rondo)、足球技术、SSG对抗、跑动训练。热身仅限健身房自重动作(9090/伟大拉伸/开合跳/泡沫轴)。专注器械力量。优先combo_id。";
+    const gymRule = `\n\n## ⚠️⚠️⚠️ 场景铁律：健身房训练 - 以下规则优先级最高 ⚠️⚠️⚠️
+你正在为健身房生成方案。严禁出现任何球场内容。
+- 🔴 禁止 warm-ball-touch warm-ball-dribble warm-rondo warm-agility-ladder warm-skip-variations warm-accel-drill
+- 🔴 禁止所有 drill_ids SSG对抗赛 跑动训练 战术内容 有球技术
+- 🔴 热身仅限: warm-hip-open warm-dynamic-stretch warm-glute-activation warm-plank-series warm-side-plank-series warm-single-leg-balance
+- 🟢 专注器械力量训练，优先使用 combo_id
+- 🟢 全部力量动作可用`;
+    return gymRule + "\n" + base;
   }
 
   return base;
