@@ -158,11 +158,7 @@ export default function AIAssistant() {
       {open && (
         <div
           className="fixed z-40 w-[320px] rounded-2xl shadow-2xl border border-[#333] overflow-hidden"
-          style={{ left: Math.max(0, pos.x - 140), top: Math.max(0, pos.y - 420) }}
-          style={{
-            height: "400px",
-            animation: "aiPopupIn 300ms ease-out",
-          }}
+          style={{ left: Math.max(0, pos.x - 140), top: Math.max(0, pos.y - 420), height: "400px", animation: "aiPopupIn 300ms ease-out" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-3 border-b border-[#222]">
