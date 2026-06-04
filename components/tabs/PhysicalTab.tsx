@@ -7,9 +7,10 @@ import { Printer, Table2 } from "lucide-react";
 interface Props {
   modules: TrainingModule[];
   position: Position | null;
+  onUpdateExercise?: (moduleType: string, category: string, index: number, exercise: any) => void;
 }
 
-export function PhysicalTab({ modules, position }: Props) {
+export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
   const posModule = modules.find((m) => m.module === "position_training");
   const abilityModule = modules.find((m) => m.module === "ability_training");
   const isGoalkeeper = position === "goalkeeper";
@@ -61,21 +62,30 @@ export function PhysicalTab({ modules, position }: Props) {
       {upper.length > 0 && (
         <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🦾 上肢训练</h4>
-          <ExerciseTable exercises={upper} />
+          <ExerciseTable
+            exercises={upper}
+            onEditExercise={onUpdateExercise ? (i, ex) => onUpdateExercise("position_training", "upper_limb", i, ex) : undefined}
+          />
         </div>
       )}
 
       {lower.length > 0 && (
         <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🦿 下肢训练</h4>
-          <ExerciseTable exercises={lower} />
+          <ExerciseTable
+            exercises={lower}
+            onEditExercise={onUpdateExercise ? (i, ex) => onUpdateExercise("position_training", "lower_limb", i, ex) : undefined}
+          />
         </div>
       )}
 
       {core.length > 0 && (
         <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">💪 核心训练</h4>
-          <ExerciseTable exercises={core} />
+          <ExerciseTable
+            exercises={core}
+            onEditExercise={onUpdateExercise ? (i, ex) => onUpdateExercise("position_training", "core", i, ex) : undefined}
+          />
         </div>
       )}
 

@@ -80,7 +80,9 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222] hidden lg:block">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <h1 className="text-lg font-bold text-white">Kenshinpro</h1>
+            <a href="/" className="flex items-center" title="KenshinPro">
+              <img src="/logo.svg" alt="KenshinPro" className="h-5 w-auto" />
+            </a>
             <nav className="flex items-center gap-1">
               <a href="/" className="px-3 py-1.5 text-sm text-[#d92525] font-semibold relative transition">
                 首页

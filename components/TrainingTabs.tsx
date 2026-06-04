@@ -17,6 +17,8 @@ import { AthleteCategoryView } from "./AthleteTrainingView";
 import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
 import AIAssistant from "./AIAssistant";
 import MobileTrainingMode from "./MobileTrainingMode";
+import { ExerciseEditor } from "./ExerciseEditor";
+import type { EditableExercise } from "./ExerciseEditor";
 
 interface Props {
   modules: TrainingModule[];
@@ -458,6 +460,65 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const [showTimer, setShowTimer] = useState(false);
   const [showMobileMode, setShowMobileMode] = useState(false);
 
+  // Editable modules state — deep copy on init
+  const [editableModules, setEditableModules] = useState<TrainingModule[]>(() =>
+    JSON.parse(JSON.stringify(modules))
+  );
+  // Reset editableModules when modules prop changes (new plan generated)
+  const [prevModulesRef, setPrevModulesRef] = useState(modules);
+  if (modules !== prevModulesRef) {
+    setPrevModulesRef(modules);
+    setEditableModules(JSON.parse(JSON.stringify(modules)));
+  }
+
+  // Exercise editor state
+  const [editingExercise, setEditingExercise] = useState<{
+    moduleType: string;
+    category: string;
+    index: number;
+    exercise: EditableExercise;
+  } | null>(null);
+
+  const handleUpdateExercise = (
+    moduleType: string,
+    category: string,
+    index: number,
+    updated: EditableExercise
+  ) => {
+    setEditableModules((prev) => {
+      const next = JSON.parse(JSON.stringify(prev)) as TrainingModule[];
+      const mod = next.find((m: any) => m.module === moduleType);
+      if (mod) {
+        const arr = (mod as any)[category];
+        if (arr && arr[index]) {
+          arr[index] = { ...arr[index], ...updated };
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleOpenExerciseEditor = (
+    moduleType: string,
+    category: string,
+    index: number,
+    exercise: any
+  ) => {
+    setEditingExercise({
+      moduleType,
+      category,
+      index,
+      exercise: {
+        name: exercise.name || "",
+        sets: exercise.sets || 0,
+        reps: exercise.reps || 0,
+        load: exercise.load || "",
+        rest: exercise.rest || 0,
+        rpe: exercise.rpe || 0,
+      },
+    });
+  };
+
   const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -483,12 +544,12 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
     }
   }, [launchTimer, onLaunchTimer]);
 
-  // Coach module lookup
-  const sessionPlan = modules.find(m => m.module === "session_plan") as SessionPlan | undefined;
-  const tacticalFocus = modules.find(m => m.module === "tactical_focus") as TacticalFocus | undefined;
-  const microcycle = modules.find(m => m.module === "microcycle") as Microcycle | undefined;
+  // Coach module lookup — use editableModules
+  const sessionPlan = editableModules.find(m => m.module === "session_plan") as SessionPlan | undefined;
+  const tacticalFocus = editableModules.find(m => m.module === "tactical_focus") as TacticalFocus | undefined;
+  const microcycle = editableModules.find(m => m.module === "microcycle") as Microcycle | undefined;
   // Athlete module lookup
-  const posModule = modules.find(m => m.module === "position_training") as import("@/lib/types").PositionTraining | undefined;
+  const posModule = editableModules.find(m => m.module === "position_training") as import("@/lib/types").PositionTraining | undefined;
 
   return (
     <div className="flex flex-col">
@@ -536,15 +597,14 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
         </div>
       )}
 
-      {/* Athlete category view — only tab-based display */}
+      {/* Athlete category view — simplified mobile-friendly cards */}
       {!isCoach && (
-        <div className="flex-1">
-          <AthleteCategoryView modules={modules}/>
+        <div className="flex-1 mb-4 lg:hidden">
+          <AthleteCategoryView modules={editableModules}/>
         </div>
       )}
 
-      {/* Tab view — coach only */}
-      {isCoach && (
+      {/* Tab view — all roles */}
       <>
       {/* Tab Bar */}
       <div className="flex flex-wrap justify-center gap-x-1 border-b border-[#1e1e1e] mb-4">
@@ -604,31 +664,34 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
               </div>
             )}
             {activeTab === "nutrition" && (
-              <NutritionTabContent modules={modules} role="coach" />
+              <NutritionTabContent modules={editableModules} role="coach" />
             )}
           </>
         ) : (
           <>
             {activeTab === "warmup" && (
-              <WarmupTab modules={modules} position={formData.position} />
+              <WarmupTab modules={editableModules} position={formData.position} />
             )}
             {activeTab === "technique" && (
-              <TechniqueTab modules={modules} />
+              <TechniqueTab modules={editableModules} />
             )}
             {activeTab === "physical" && (
-              <PhysicalTab modules={modules} position={formData.position} />
+              <PhysicalTab
+                modules={editableModules}
+                position={formData.position}
+                onUpdateExercise={handleOpenExerciseEditor}
+              />
             )}
             {activeTab === "tactical" && (
-              <TacticalTab modules={modules} />
+              <TacticalTab modules={editableModules} />
             )}
             {activeTab === "nutrition" && (
-              <NutritionTabContent modules={modules} role="athlete" />
+              <NutritionTabContent modules={editableModules} role="athlete" />
             )}
           </>
         )}
       </div>
       </>
-      )}
 
       {/* Bottom: Training Actions + Action Bar */}
       <div className="sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
@@ -643,7 +706,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
           </button>
         </div>
         <ActionBar
-          modules={modules}
+          modules={editableModules}
           formData={formData}
           planId={planId}
           onSaveTemplate={onSaveTemplate}
@@ -653,18 +716,36 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
       {/* Full-screen Workout Timer overlay */}
       {showTimer && (
         <WorkoutTimer
-          modules={modules}
+          modules={editableModules}
           planId={planId || undefined}
           onClose={() => setShowTimer(false)}
         />
       )}
       {showMobileMode && (
         <MobileTrainingMode
-          modules={modules}
+          modules={editableModules}
           planId={planId}
           onClose={() => setShowMobileMode(false)}
         />
       )}
+
+      {/* Exercise Editor Modal */}
+      {editingExercise && (
+        <ExerciseEditor
+          exercise={editingExercise.exercise}
+          onSave={(updated) => {
+            handleUpdateExercise(
+              editingExercise.moduleType,
+              editingExercise.category,
+              editingExercise.index,
+              updated
+            );
+            setEditingExercise(null);
+          }}
+          onCancel={() => setEditingExercise(null)}
+        />
+      )}
+
       <AIAssistant />
     </div>
   );

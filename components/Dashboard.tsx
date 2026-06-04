@@ -18,7 +18,10 @@ import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
-import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell, Minus, Plus, GitCompare } from "lucide-react";
+import { OnboardingGuide } from "./OnboardingGuide";
+import { PlanCompareModal } from "./PlanCompareModal";
+import { useEquipmentInventory } from "@/hooks/useEquipmentInventory";
 import { useRouter } from "next/navigation";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
@@ -399,6 +402,29 @@ export function Dashboard() {
   const router = useRouter();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
 
+  // Onboarding guide
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("kenshin_onboarding_done")) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  // Equipment inventory
+  const equipmentInv = useEquipmentInventory();
+
+  // Plan compare
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  const toggleCompareId = (id: string) => {
+    setCompareIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 2) return [prev[1], id];
+      return [...prev, id];
+    });
+  };
+
   // Initialize fitnessGoals from saved formData.goal
   useEffect(() => {
     if (isFitness && formData.goal && fitnessGoals.length === 0) {
@@ -456,6 +482,11 @@ export function Dashboard() {
     // Inject coachInput into formData as weakness/notes for AI context
     if (coachInput.trim()) {
       (formData as any).coachInput = coachInput.trim();
+    }
+    // Inject equipment inventory counts
+    const eqSummary = equipmentInv.getSummaryForSelected(formData.equipmentAvailable || []);
+    if (eqSummary) {
+      (formData as any).equipmentInventorySummary = eqSummary;
     }
     setStatus("generating"); setErrorCode(null); setShowDone(false); setSavedPlanId(null);
 
@@ -823,34 +854,65 @@ export function Dashboard() {
                 ].map(({ n, color }) => {
                   const act = formData.equipmentAvailable?.includes(n);
                   const iconColor = act ? "#d92525" : color;
+                  const count = equipmentInv.getCount(n);
                   return (
-                    <button key={n} onClick={() => {
-                      const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
-                      updateField("equipmentAvailable", next);
-                    }} className={`flex flex-col items-center justify-center gap-1 rounded-lg transition-all duration-150 border py-1.5 ${
+                    <div key={n} className={`flex flex-col items-center justify-center rounded-lg transition-all duration-150 border py-1.5 relative ${
                       act
                         ? "bg-[#261818] border-[#d92525]/30"
                         : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
                     }`}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                        {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                        {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                        {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                        {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
-                        {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                        {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                        {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                        {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                        {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
-                        {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
-                        {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
-                        {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                        {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
-                        {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                      </svg>
-                      <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
-                    </button>
+                      <button
+                        onClick={() => {
+                          const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
+                          updateField("equipmentAvailable", next);
+                          if (!act) {
+                            equipmentInv.ensureDefault(n);
+                          } else {
+                            equipmentInv.remove(n);
+                          }
+                        }}
+                        className="flex flex-col items-center justify-center gap-1 w-full"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
+                          {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
+                          {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
+                          {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
+                          {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
+                          {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        </svg>
+                        <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
+                      </button>
+                      {/* Count controls — only shown when selected */}
+                      {act && (
+                        <div className="flex items-center gap-0.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); if (c > 1) equipmentInv.setCount(n, c - 1); }}
+                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            aria-label={`减少${n}数量`}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-[10px] text-white font-bold min-w-[14px] text-center">{count || equipmentInv.getCount(n) || "?"}</span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); equipmentInv.setCount(n, (c || 0) + 1); }}
+                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            aria-label={`增加${n}数量`}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -868,30 +930,49 @@ export function Dashboard() {
                     <span className="text-xs text-gray-400 font-normal">· {formData.name}</span>
                   )}
                 </p>
-                <span className="text-[10px] text-gray-400">{playerPlans.length}条记录</span>
+                <div className="flex items-center gap-2">
+                  {compareIds.length === 2 && (
+                    <button
+                      onClick={() => setCompareOpen(true)}
+                      className="flex items-center gap-1 px-2 py-1 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded text-[10px] font-medium hover:bg-[#d92525]/20 transition"
+                    >
+                      <GitCompare className="w-3 h-3" />对比选中方案
+                    </button>
+                  )}
+                  <span className="text-[10px] text-gray-400">{playerPlans.length}条记录</span>
+                </div>
               </div>
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {playerPlans.slice(0, 8).map((plan) => (
                   <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-[#1e1e1e]/50 transition group">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={compareIds.includes(plan.id)}
+                        onChange={() => toggleCompareId(plan.id)}
+                        className="w-4 h-4 accent-[#d92525] flex-shrink-0"
+                        aria-label={`对比 ${plan.playerName}`}
+                      />
+                      <button
+                        onClick={() => {
+                          training.loadModules(plan.modules, plan.formData);
+                          setStatus("complete");
+                          setErrorCode(null);
+                        }}
+                        className="text-left flex-1 min-w-0"
+                      >
+                        <p className="text-xs text-gray-200 truncate">{plan.playerName}</p>
+                        <p className="text-[10px] text-gray-400">
+                          {new Date(plan.createdAt).toLocaleString("zh-CN", {
+                            month: "numeric", day: "numeric",
+                            hour: "2-digit", minute: "2-digit"
+                          })}
+                          {" · "}{plan.modules.length}模块
+                        </p>
+                      </button>
+                    </div>
                     <button
-                      onClick={() => {
-                        training.loadModules(plan.modules, plan.formData);
-                        setStatus("complete");
-                        setErrorCode(null);
-                      }}
-                      className="text-left flex-1 min-w-0"
-                    >
-                      <p className="text-xs text-gray-200 truncate">{plan.playerName}</p>
-                      <p className="text-[10px] text-gray-400">
-                        {new Date(plan.createdAt).toLocaleString("zh-CN", {
-                          month: "numeric", day: "numeric",
-                          hour: "2-digit", minute: "2-digit"
-                        })}
-                        {" · "}{plan.modules.length}模块
-                      </p>
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); }}
+                      onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); if (compareIds.includes(plan.id)) setCompareIds(prev => prev.filter(id => id !== plan.id)); }}
                       className="text-gray-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-1 flex-shrink-0"
                       title="删除"
                     >
@@ -1101,30 +1182,47 @@ export function Dashboard() {
                     <ChevronDown className={`w-3 h-3 transition ${planHistoryOpen ? "rotate-180" : ""}`} />
                   </button>
                   {planHistoryOpen && (
-                    <div className="absolute right-0 top-full mt-1 w-72 max-h-60 overflow-y-auto glass-card p-2 z-50 space-y-1">
+                    <div className="absolute right-0 top-full mt-1 w-80 max-h-60 overflow-y-auto glass-card p-2 z-50 space-y-1">
+                      {compareIds.length === 2 && (
+                        <button
+                          onClick={() => { setCompareOpen(true); setPlanHistoryOpen(false); }}
+                          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded text-xs font-medium hover:bg-[#d92525]/20 transition mb-1"
+                        >
+                          <GitCompare className="w-3.5 h-3.5" />对比选中方案
+                        </button>
+                      )}
                       {playerPlans.map((plan) => (
                         <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-[#1e1e1e]/50 transition group">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={compareIds.includes(plan.id)}
+                              onChange={() => toggleCompareId(plan.id)}
+                              className="w-4 h-4 accent-[#d92525] flex-shrink-0"
+                              aria-label={`对比 ${plan.playerName}`}
+                            />
+                            <button
+                              onClick={() => {
+                                training.loadModules(plan.modules, plan.formData);
+                                setPlanHistoryOpen(false);
+                                setStatus("complete");
+                              }}
+                              className="text-left flex-1 min-w-0"
+                            >
+                              <p className="text-xs text-gray-200 truncate">
+                                {plan.playerName}
+                              </p>
+                              <p className="text-[10px] text-gray-400">
+                                {new Date(plan.createdAt).toLocaleString("zh-CN", {
+                                  month: "numeric", day: "numeric",
+                                  hour: "2-digit", minute: "2-digit"
+                                })}
+                                {" · "}{plan.modules.length}模块
+                              </p>
+                            </button>
+                          </div>
                           <button
-                            onClick={() => {
-                              training.loadModules(plan.modules, plan.formData);
-                              setPlanHistoryOpen(false);
-                              setStatus("complete");
-                            }}
-                            className="text-left flex-1 min-w-0"
-                          >
-                            <p className="text-xs text-gray-200 truncate">
-                              {plan.playerName}
-                            </p>
-                            <p className="text-[10px] text-gray-400">
-                              {new Date(plan.createdAt).toLocaleString("zh-CN", {
-                                month: "numeric", day: "numeric",
-                                hour: "2-digit", minute: "2-digit"
-                              })}
-                              {" · "}{plan.modules.length}模块
-                            </p>
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); }}
+                            onClick={(e) => { e.stopPropagation(); planHistory.deletePlan(plan.id); if (compareIds.includes(plan.id)) setCompareIds(prev => prev.filter(id => id !== plan.id)); }}
                             className="text-gray-600 hover:text-red-400 transition opacity-0 group-hover:opacity-100 p-1"
                             title="删除"
                           >
@@ -1216,6 +1314,41 @@ export function Dashboard() {
           onClose={() => setShowTemplates(false)}
         />
       )}
+
+      {/* Onboarding Guide */}
+      {showOnboarding && status === "idle" && (
+        <OnboardingGuide
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
+
+      {/* Plan Compare Modal */}
+      {compareOpen && compareIds.length === 2 && (() => {
+        const planA = planHistory.loadPlan(compareIds[0]);
+        const planB = planHistory.loadPlan(compareIds[1]);
+        if (!planA || !planB) return null;
+        return (
+          <PlanCompareModal
+            planA={{
+              name: planA.playerName,
+              modules: planA.modules,
+              date: new Date(planA.createdAt).toLocaleString("zh-CN", {
+                month: "numeric", day: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              }),
+            }}
+            planB={{
+              name: planB.playerName,
+              modules: planB.modules,
+              date: new Date(planB.createdAt).toLocaleString("zh-CN", {
+                month: "numeric", day: "numeric",
+                hour: "2-digit", minute: "2-digit",
+              }),
+            }}
+            onClose={() => { setCompareOpen(false); setCompareIds([]); }}
+          />
+        );
+      })()}
     </div>
   );
 }

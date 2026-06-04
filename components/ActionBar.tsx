@@ -1,10 +1,11 @@
 "use client";
 
 import { TrainingModule, PlayerFormData } from "@/lib/types";
-import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus, Share2 } from "lucide-react";
+import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus, Share2, Image } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { ExportTable } from "./ExportTable";
+import { ShareCard } from "./ShareCard";
 
 interface Props {
   modules: TrainingModule[];
@@ -19,6 +20,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
   const [shareFailed, setShareFailed] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
   const supabase = createClient();
 
   const copyToClipboard = async (text: string): Promise<boolean> => {
@@ -180,6 +182,15 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
             <Share2 className="w-3.5 h-3.5" />
             {shareFailed ? "复制失败，请手动复制链接" : shareDone ? "已复制" : "分享"}
           </button>
+
+          <button
+            onClick={() => setShowShareCard(true)}
+            className={btnBase}
+            title="生成微信分享图"
+          >
+            <Image className="w-3.5 h-3.5" />
+            分享图
+          </button>
         </div>
 
         {/* ── Divider ── */}
@@ -240,6 +251,15 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           <ThumbsDown className="w-3.5 h-3.5" />
         </button>
       </div>
+
+      {/* Share Card Modal */}
+      {showShareCard && (
+        <ShareCard
+          modules={modules}
+          formData={formData}
+          onClose={() => setShowShareCard(false)}
+        />
+      )}
     </div>
   );
 }

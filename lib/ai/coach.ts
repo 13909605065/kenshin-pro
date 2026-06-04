@@ -111,7 +111,7 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
 - ${physicalNote}
 
 你是一位持有${COACH_CERT_LABELS[cert]}证书的${COACH_ROLE_LABELS[role]}，正在为${LEAGUE_TAG_LABELS[league]}级别设计一堂以「${TACTICAL_THEME_LABELS[primaryTheme]}」为主题的训练课。
-${data.equipmentAvailable?.length ? `\n器材约束：你只有以下器材可用：${data.equipmentAvailable.join("、")}。必须只使用这些器材设计练习。` : ""}
+${(data as any).equipmentInventorySummary ? `\n可用器材及数量: ${(data as any).equipmentInventorySummary}` : data.equipmentAvailable?.length ? `\n器材约束：你只有以下器材可用：${data.equipmentAvailable.join("、")}。必须只使用这些器材设计练习。` : ""}
 	${weatherHint ? `\n${weatherHint}\n根据天气调整训练内容：高温加强补水、低温延长热身、雨天考虑室内替代。` : ""}
 	${(data as any).coachInput?.trim() ? `\n## 教练自由输入（最高优先级）\n${(data as any).coachInput.trim()}\n\n以上是教练的具体要求。必须严格据此设计训练课，如果教练指定了内容，优先执行教练指令。` : ""}
 

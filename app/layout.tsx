@@ -9,6 +9,17 @@ export const metadata: Metadata = {
   title: "KenshinPro - 足球训练助手",
   description: "职业级 AI 足球训练方案生成器 · 战术诊断 · 智能备课 · 战术板",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.svg",
+    apple: "/icons/icon-192.png",
+  },
+  openGraph: {
+    title: "KenshinPro - 足球训练助手",
+    description: "职业级 AI 足球训练方案生成器 · 战术诊断 · 智能备课 · 战术板",
+    type: "website",
+    locale: "zh_CN",
+    siteName: "KenshinPro",
+  },
   appleWebApp: {
     capable: true,
     title: "KenshinPro",

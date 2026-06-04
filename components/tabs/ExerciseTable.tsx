@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { ExerciseIcon } from "./ExerciseIcon";
 import { ImageModal } from "../ImageModal";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9,9 +9,10 @@ type ExerciseItem = any;
 
 interface Props {
   exercises: ExerciseItem[];
+  onEditExercise?: (index: number, exercise: ExerciseItem) => void;
 }
 
-export function ExerciseTable({ exercises }: Props) {
+export function ExerciseTable({ exercises, onEditExercise }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState("");
 
@@ -44,7 +45,16 @@ export function ExerciseTable({ exercises }: Props) {
                   <td className="py-2">
                     <div className="flex items-center gap-2">
                       <ExerciseIcon name={ex.name} imageUrl={ex.image_url} />
-                      <span className="text-white">{ex.name}</span>
+                      <button
+                        onClick={() => onEditExercise?.(i, ex)}
+                        className="text-white hover:text-[#d92525] hover:underline cursor-pointer transition text-left"
+                        title="点击编辑此动作"
+                      >
+                        {ex.name}
+                      </button>
+                      {onEditExercise && (
+                        <Pencil className="w-3 h-3 text-gray-600 flex-shrink-0" />
+                      )}
                     </div>
                   </td>
                   <td className="py-2 text-center text-gray-300">{ex.sets}</td>
