@@ -640,7 +640,7 @@ function ExerciseCard({
 
       {/* Image area */}
       <div className="aspect-square bg-[#111] flex items-center justify-center p-2 relative">
-        <StickFigure name={exercise.name} size={56} compact={true} />
+        <StickFigure name={exercise.name} size={56} compact={true} bodyPart={exercise.bodyPart === "上肢" ? "upper" : exercise.bodyPart === "下肢" ? "lower" : exercise.bodyPart === "核心" ? "core" : exercise.bodyPart === "背部" ? "back" : undefined} />
 
         {/* Football badge */}
         {exercise.isFootballRelevant && (

@@ -313,9 +313,11 @@ const JOINT = "#999999";        // 关节 — gray
    COMPONENT
    ================================================================ */
 
-export function StickFigure({ name, size = 120, showMuscles = true, compact = false }: {
+export function StickFigure({ name, size = 120, showMuscles = true, compact = false, bodyPart }: {
   name: string; size?: number; showMuscles?: boolean; compact?: boolean;
+  bodyPart?: "upper" | "lower" | "core" | "back" | "full";
 }) {
+  const highlightColor = bodyPart && bodyPart !== "full" ? "#d92525" : undefined;
   const key = detect(name);
   const p = POSES[key];
   const equip = detectEquip(name, key) || p.equip; // name overrides pose default
@@ -357,10 +359,12 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
     const X2 = (j: Pt) => j.x * s * m + pad + offsetX;
     const Y2 = (j: Pt) => j.y * s * m + pad;
     const torsoPts2 = `${X2(pose.shoulderL)},${Y2(pose.shoulderL)} ${X2(pose.shoulderR)},${Y2(pose.shoulderR)} ${X2(pose.hipR)},${Y2(pose.hipR)} ${X2(pose.hipL)},${Y2(pose.hipL)}`;
+    const bc = highlightColor || BONE_MAIN;
+    const boneColor = (thick: boolean) => thick ? bc : BONE_THIN;
     const bone = (a: Pt, b: Pt, thick = false) =>
-      <line x1={X2(a)} y1={Y2(a)} x2={X2(b)} y2={Y2(b)} stroke={thick?BONE_MAIN:BONE_THIN} strokeWidth={thick?3:1.8} strokeLinecap="round" opacity={opacity}/>;
+      <line x1={X2(a)} y1={Y2(a)} x2={X2(b)} y2={Y2(b)} stroke={boneColor(thick)} strokeWidth={thick?3:1.8} strokeLinecap="round" opacity={opacity}/>;
     return <g opacity={opacity}>
-      <polygon points={torsoPts2} fill="rgba(20,10,10,0.6)" stroke={BONE_MAIN} strokeWidth="1" opacity={0.7*opacity}/>
+      <polygon points={torsoPts2} fill="rgba(20,10,10,0.6)" stroke={bc} strokeWidth="1" opacity={0.7*opacity}/>
       {bone(pose.shoulderL, pose.elbowL, true)} {bone(pose.shoulderR, pose.elbowR, true)}
       {bone(pose.elbowL, pose.wristL)} {bone(pose.elbowR, pose.wristR)}
       {bone(pose.hipL, pose.kneeL, true)} {bone(pose.hipR, pose.kneeR, true)}
