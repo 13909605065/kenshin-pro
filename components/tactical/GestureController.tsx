@@ -181,7 +181,8 @@ export function GestureController({ fabricRef, enabled }: Props) {
       const ratio = dist / twoBaseRef.current;
       let z = fc.getZoom() * Math.max(0.3, Math.min(3, ratio));
       z = Math.min(Math.max(z, 0.3), 5);
-      fc.zoomToPoint({ x: (i1.x + i2.x) / 2 * W, y: (i1.y + i2.y) / 2 * H } as any, z);
+      // Flip X for mirrored camera
+      fc.zoomToPoint({ x: (1 - (i1.x + i2.x) / 2) * W, y: (i1.y + i2.y) / 2 * H } as any, z);
       fc.requestRenderAll();
       return;
     }
@@ -191,7 +192,8 @@ export function GestureController({ fabricRef, enabled }: Props) {
     if (!lm?.length || !lm[4] || !lm[8]) return;
 
     const thumb = lm[4], index = lm[8];
-    const cx = index.x * W, cy = index.y * H;
+    // Flip X — camera is mirrored (scaleX(-1)), compensate
+    const cx = (1 - index.x) * W, cy = index.y * H;
     const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
     const isPinching = pinchDist < PINCH_THRESHOLD;
 
