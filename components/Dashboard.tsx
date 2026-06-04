@@ -871,18 +871,31 @@ export function Dashboard() {
           {/* Training Duration Selector — all roles */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3"><Timer className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">训练时长</p></div>
-            <div className="flex gap-2">
-              {[30, 45, 60, 90].map((mins) => {
-                const isSelected = (formData.trainingDuration || 60) === mins;
-                return (
-                  <button key={mins} onClick={() => updateField("trainingDuration", mins)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-150 border ${
-                      isSelected
-                        ? "bg-[#d92525] text-white border-[#d92525]"
-                        : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#d92525]/30"
-                    }`}>{mins}min</button>
-                );
-              })}
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={15}
+                max={180}
+                step={5}
+                value={formData.trainingDuration ?? ""}
+                onChange={(e) => updateField("trainingDuration", e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="60"
+                className="w-20 bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white text-center focus:border-[#d92525] focus:outline-none"
+              />
+              <span className="text-sm text-gray-400">分钟</span>
+              <div className="flex gap-1.5 ml-2">
+                {[45, 60, 90].map((mins) => {
+                  const isSelected = (formData.trainingDuration || 60) === mins;
+                  return (
+                    <button key={mins} onClick={() => updateField("trainingDuration", mins)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 border ${
+                        isSelected
+                          ? "bg-[#d92525] text-white border-[#d92525]"
+                          : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#d92525]/30"
+                      }`}>{mins}min</button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

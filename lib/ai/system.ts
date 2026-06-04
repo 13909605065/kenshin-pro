@@ -58,7 +58,18 @@ const INJURY_PREVENTION = `### 损伤预防（Soccer Anatomy + NSCA）
 - 北欧弯举必练：初级3-5次→中级7-10次→高级12-15次,离心3-5s
 - 伤病史是最大预测因子(腘绳肌再伤风险×8)
 - 女性ACL：膝关节外翻角+落地力学=可改变风险因素
-- FIFA 11+核心：平板3级+侧桥3级+北欧弯举+单腿平衡3级+跳跃落地`;
+- FIFA 11+核心：平板3级+侧桥3级+北欧弯举+单腿平衡3级+跳跃落地
+
+### 伤病动作排除规则
+有伤病时必须执行。禁止对伤病部位施加>50%强度：
+| 伤病部位 | 禁止动作 | 安全替代 |
+|---------|---------|---------|
+| 腰(waist) | 硬拉、RDL、深蹲、划船、高翻、抓举 | 臀推、单腿RDL(轻量)、高脚杯深蹲、坐姿划船 |
+| 膝(knee) | 深蹲、弓步、跳箱、折返跑 | 臀推、北欧弯举(等长)、腿举(轻量) |
+| 踝(ankle) | 跳箱、跳栏、折返跑、T字跑 | 箱上静态支撑、单车、游泳 |
+| 跟腱(achilles) | 跳箱、跳栏、冲刺跑 | 上肢训练、单车 |
+| 大腿(thigh) | 深蹲、弓步、冲刺 | 上肢训练、轻量臀推 |
+| 髋(hip) | 深蹲、宽距RDL、侧向跳栏 | 窄距变式、等长训练 |`;
 
 const NUTRITION = `### 营养速查（NSCA运动营养指南）
 - 蛋白：1.6-2.0g/kg/天(康复期至2.2g/kg)
@@ -297,19 +308,28 @@ data: {"totalModules":5}
 
 ### ID参考（不使用套餐时从以下列表选择）
 
+### 足球核心15动作（优先从以下选择）
+爆发: ex-power-clean, ex-box-depth-drop, ex-mb-rotational-throw
+下肢: ex-back-squat, ex-romanian-dl, ex-single-leg-rdl, ex-nordic-hamstring
+上肢: ex-bench-press, ex-barbell-row, ex-standing-press
+核心: ex-plank, ex-dead-bug
+Plyo/速度: ex-hurdle-jump, ex-pro-agility, ex-sprint-start
+
+每个动作都有周期化参数，包含准备期/赛季期/休赛期的负荷区间和变式策略。
+
 warmup_ids: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-ball-touch, warm-ball-dribble, warm-rondo, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
 
-upper_ids: ex-bench-press, ex-pull-up, ex-dumbbell-shoulder-press, ex-cable-row, ex-face-pull, ex-med-ball-slam, ex-dumbbell-pullover, ex-mb-rotational-throw, ex-db-bench-press, ex-db-flye, ex-db-incline-press, ex-db-tricep-extension, ex-db-skull-crusher, ex-db-kickback, ex-db-curl, ex-db-hammer-curl, ex-db-overhead-press, ex-db-close-flye, ex-db-shrug, ex-db-upright-row, ex-db-front-raise, ex-db-rear-flye, ex-sus-bicep-curl, ex-sus-chest-press, ex-sus-tricep-press, ex-sus-face-pull, ex-sus-shoulder-press, ex-sus-y-fly, ex-sus-cable-fly, ex-sus-standing-dip
+upper_ids: ex-bench-press, ex-pull-up, ex-dumbbell-shoulder-press, ex-cable-row, ex-face-pull, ex-med-ball-slam, ex-dumbbell-pullover, ex-mb-rotational-throw, ex-mb-overhead-slam, ex-mb-kneeling-throw, ex-mb-backward-throw, ex-mb-squat-throw, ex-mb-single-leg-slam, ex-db-bench-press, ex-db-flye, ex-db-incline-press, ex-db-tricep-extension, ex-db-skull-crusher, ex-db-kickback, ex-db-curl, ex-db-hammer-curl, ex-db-overhead-press, ex-db-close-flye, ex-db-shrug, ex-db-upright-row, ex-db-front-raise, ex-db-rear-flye, ex-sus-bicep-curl, ex-sus-chest-press, ex-sus-tricep-press, ex-sus-face-pull, ex-sus-shoulder-press, ex-sus-y-fly, ex-sus-cable-fly, ex-sus-standing-dip
 
-lower_ids: ex-back-squat, ex-deadlift, ex-trap-bar-deadlift, ex-front-squat, ex-bulgarian-split-squat, ex-nordic-hamstring, ex-box-jump, ex-dumbbell-lunges, ex-single-leg-rdl, ex-leg-press, ex-hip-thrust, ex-db-glute-bridge, ex-db-prone-leg-raise, ex-db-sumo-squat, ex-db-step-up, ex-db-single-dl, ex-db-reverse-lunge, ex-db-shallow-squat, ex-db-goblet-squat, ex-db-romanian-dl, ex-db-calf-raise, ex-sus-supine-support, ex-sus-supine-high-knee, ex-sus-calf-squat, ex-sus-lunge, ex-sus-side-squat, ex-sus-squat, ex-sus-pistol-squat, ex-sus-jump-squat, ex-sus-t-balance, ex-sus-side-split
+lower_ids: ex-back-squat, ex-deadlift, ex-trap-bar-deadlift, ex-front-squat, ex-bulgarian-split-squat, ex-barbell-lunge, ex-nordic-hamstring, ex-box-jump, ex-depth-jump, ex-lateral-hurdle, ex-single-leg-box-jump, ex-bound-landing, ex-box-drop-jump, ex-dumbbell-lunges, ex-single-leg-rdl, ex-leg-press, ex-hip-thrust, ex-t-drill, ex-z-slide, ex-db-glute-bridge, ex-db-prone-leg-raise, ex-db-sumo-squat, ex-db-step-up, ex-db-single-dl, ex-db-reverse-lunge, ex-db-shallow-squat, ex-db-goblet-squat, ex-db-romanian-dl, ex-db-calf-raise, ex-sus-supine-support, ex-sus-supine-high-knee, ex-sus-calf-squat, ex-sus-lunge, ex-sus-side-squat, ex-sus-squat, ex-sus-pistol-squat, ex-sus-jump-squat, ex-sus-t-balance, ex-sus-side-split
 
-core_ids: ex-plank, ex-hanging-leg-raise, ex-pallof-press, ex-cable-woodchop, ex-dead-bug, ex-db-russian-twist, ex-db-v-up, ex-db-cross-crunch, ex-db-side-bend, ex-db-cross-push, ex-sus-crunch, ex-sus-situp, ex-sus-side-plank-core, ex-sus-oblique-roll, ex-sus-prone-roll, ex-sus-body-saw, ex-sus-plank, ex-sus-side-hold, ex-sus-standing-side-reach, ex-sus-body-saw-full
+core_ids: ex-plank, ex-hanging-leg-raise, ex-pallof-press, ex-cable-woodchop, ex-dead-bug, ex-mb-lunge-rotation, ex-mb-squat-throw, ex-mb-single-leg-slam, ex-db-russian-twist, ex-db-v-up, ex-db-cross-crunch, ex-db-side-bend, ex-db-cross-push, ex-sus-crunch, ex-sus-situp, ex-sus-side-plank-core, ex-sus-oblique-roll, ex-sus-prone-roll, ex-sus-body-saw, ex-sus-plank, ex-sus-side-hold, ex-sus-standing-side-reach, ex-sus-body-saw-full
 
 back_ids: ex-db-one-arm-row, ex-db-bent-row, ex-db-pullover, ex-db-floor-raise, ex-db-plank-row, ex-sus-row, ex-sus-inverted-row, ex-sus-one-arm-row, ex-sus-pull-up, ex-sus-seated-pull
 
-full_body_ids: ex-db-snatch, ex-db-thruster, ex-db-woodchop, ex-db-plank-hold, ex-db-bear-crawl, ex-sus-tuck-support, ex-sus-squat-row, ex-sus-rollout-tuck, ex-sus-mountain-climber, ex-sus-seated-climber
+full_body_ids: ex-db-snatch, ex-db-thruster, ex-db-woodchop, ex-db-plank-hold, ex-db-bear-crawl, ex-power-clean-high-pull, ex-snatch-high-pull, ex-kb-clean, ex-kb-swing, ex-kb-snatch, ex-jerk, ex-barbell-snatch, ex-mb-backward-throw, ex-mb-squat-throw, ex-mb-single-leg-slam, ex-sus-tuck-support, ex-sus-squat-row, ex-sus-rollout-tuck, ex-sus-mountain-climber, ex-sus-seated-climber
 
-ability_exercise_ids: ex-sled-sprint, ex-box-jump, ex-power-clean, ex-nordic-hamstring, ex-med-ball-slam, ex-mb-rotational-throw, ex-bulgarian-split-squat, ex-db-snatch, ex-db-thruster, ex-sus-jump-squat, ex-sus-mountain-climber
+ability_exercise_ids: ex-sled-sprint, ex-box-jump, ex-power-clean, ex-nordic-hamstring, ex-med-ball-slam, ex-mb-rotational-throw, ex-bulgarian-split-squat, ex-db-snatch, ex-db-thruster, ex-sus-jump-squat, ex-sus-mountain-climber, ex-power-clean-high-pull, ex-snatch-high-pull, ex-kb-clean, ex-kb-snatch, ex-jerk, ex-barbell-snatch, ex-depth-jump, ex-lateral-hurdle, ex-single-leg-box-jump, ex-box-drop-jump, ex-mb-overhead-slam, ex-mb-backward-throw, ex-mb-squat-throw, ex-t-drill, ex-z-slide
 
 drill_ids: drill-mf-turn-pressure, drill-mf-wall-pass, drill-mf-possession, drill-fw-finishing, drill-fw-back-to-goal, drill-df-1v1, drill-wb-cross, drill-gk-diving
 
