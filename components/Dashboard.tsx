@@ -711,6 +711,24 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 </div>
               )}
 
+              {/* Scene selector — athlete picks scene FIRST before goals */}
+              {!isCoach && !isFitness && (
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] text-gray-500 mr-1">训练场景：</span>
+                  <button onClick={() => setScene("pitch")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "pitch" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    <MapPin className="w-3.5 h-3.5" /> 球场
+                  </button>
+                  <button onClick={() => setScene("gym")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    <Dumbbell className="w-3.5 h-3.5" /> 健身房
+                  </button>
+                  <span className="text-[10px] text-gray-600 ml-2">
+                    {scene === "pitch" ? "有球训练 · 速度/灵敏" : "体能训练 · 力量/对抗"}
+                  </span>
+                </div>
+              )}
+
               <div className={isFitness ? "" : "grid grid-cols-2 gap-3"}>
                 {/* Left: Training Goals */}
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
