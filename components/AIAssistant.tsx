@@ -154,12 +154,19 @@ export default function AIAssistant() {
         🦋
       </button>
 
-      {/* Chat popup */}
+      {/* Chat popup — smart positioning, never off-screen */}
       {open && (
-        <div
-          className="fixed z-40 w-[320px] rounded-2xl shadow-2xl border border-[#333] overflow-hidden"
-          style={{ left: Math.max(0, pos.x - 140), top: Math.max(0, pos.y - 420), height: "400px", animation: "aiPopupIn 300ms ease-out" }}
-        >
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="fixed z-50 w-[320px] rounded-2xl shadow-2xl border border-[#333] overflow-hidden"
+            style={{
+              left: pos.x > window.innerWidth - 200 ? Math.max(0, pos.x - 300) : Math.max(0, pos.x - 20),
+              top: pos.y > window.innerHeight - 200 ? Math.max(0, pos.y - 440) : Math.max(0, pos.y + 30),
+              height: "400px",
+              animation: "aiPopupIn 300ms ease-out",
+            }}
+          >
           {/* Header */}
           <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-3 border-b border-[#222]">
             <span className="text-sm font-bold text-white">🦋 AI 训练助手</span>
@@ -245,6 +252,8 @@ export default function AIAssistant() {
             </div>
           </div>
         </div>
+        </>
+      )}
       )}
 
       {/* Scale-in animation */}
