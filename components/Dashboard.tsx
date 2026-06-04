@@ -21,6 +21,14 @@ import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronD
 import { useRouter } from "next/navigation";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
+const FITNESS_GOALS = [
+  { id: "hypertrophy", label: "肌肥大", desc: "增加肌肉围度" },
+  { id: "fat_loss", label: "减脂", desc: "降低体脂率" },
+  { id: "body_shaping", label: "塑形", desc: "雕刻身体线条" },
+  { id: "general_fitness", label: "锻炼身体", desc: "全面提升体质" },
+  { id: "strength_fitness", label: "增力", desc: "提升绝对力量" },
+  { id: "endurance_fitness", label: "耐力", desc: "提升心肺耐力" },
+] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
 
 const SUB_POS: Record<string, string[]> = {
@@ -229,6 +237,7 @@ export function Dashboard() {
   const { formData, updateField, setRole: setWizardRole, isStepValid } = wizard;
   const { role, scene, setRole, setScene } = useScene();
   const isCoach = role === "coach";
+  const isFitness = role === "fitness";
 
   // Sync wizard role with scene identity (only when identity changes)
   useEffect(() => {
@@ -384,14 +393,15 @@ export function Dashboard() {
           <div className="glass-card px-5 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-neon-pink text-xs font-bold">{isCoach ? "C" : "A"}</span>
+                <span className="text-neon-pink text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
               </div>
               <div className="min-w-0">
                 <p className="text-white text-sm font-bold truncate">
-                  {formData.name || (isCoach ? "教练" : t("dashboard.notSet"))}
+                  {formData.name || (isCoach ? "教练" : isFitness ? "健身者" : t("dashboard.notSet"))}
                 </p>
                 <p className="text-[10px] text-gray-500 truncate">
                   {isCoach ? "准备今天的训练" :
+                   isFitness ? (formData.goal ? t(`goal.${formData.goal}`) : "设定健身目标") :
                    formData.position ? `${t("pos."+formData.position)}` :
                    "完善档案以获得个性化建议"}
                 </p>
@@ -409,18 +419,37 @@ export function Dashboard() {
                   className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
                   球员
                 </button>
+                <button onClick={() => setRole("fitness")}
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  健身
+                </button>
               </div>
-              {/* Scene switch — athlete only */}
+              {/* Scene switch — athlete or fitness */}
               {!isCoach && (
                 <div className="flex bg-[#111] rounded-lg p-0.5">
-                  <button onClick={() => setScene("pitch")}
-                    className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="pitch"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
-                    <MapPin className="w-3 h-3" />球场
-                  </button>
-                  <button onClick={() => router.push("/gym")}
-                    className="px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
-                    <Dumbbell className="w-3 h-3" />健身
-                  </button>
+                  {isFitness ? (
+                    <>
+                      <button onClick={() => setScene("workout")}
+                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="workout"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        <Dumbbell className="w-3 h-3" />训练
+                      </button>
+                      <button onClick={() => setScene("nutrition")}
+                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="nutrition"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        🥗 营养
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => setScene("pitch")}
+                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="pitch"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        <MapPin className="w-3 h-3" />球场
+                      </button>
+                      <button onClick={() => router.push("/gym")}
+                        className="px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
+                        <Dumbbell className="w-3 h-3" />健身
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
               <button onClick={() => setEditOpen(true)}
@@ -430,13 +459,18 @@ export function Dashboard() {
             </div>
           </div>
 
-          {/* Goal + Phase — side by side for athlete */}
+          {/* Goal — for athlete or fitness */}
           {!isCoach && (
             <div className="grid grid-cols-2 gap-5">
               <div className="glass-card p-5">
-                <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{t("goal.title")}</p></div>
+                <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
                 <div className="space-y-2">
-                  {GOALS.map((g) => (
+                  {isFitness ? FITNESS_GOALS.map((g) => (
+                    <button key={g.id} onClick={() => updateField("goal", g.id)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.goal===g.id?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>
+                      <span className="block">{g.label}</span>
+                      <span className="block text-[10px] opacity-60">{g.desc}</span>
+                    </button>
+                  )) : GOALS.map((g) => (
                     <button key={g} onClick={() => updateField("goal", g)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`goal.${g}`)}</button>
                   ))}
                 </div>

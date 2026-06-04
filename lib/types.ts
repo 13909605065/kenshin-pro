@@ -6,9 +6,10 @@ export type TacticalTool = "select" | "place_player" | "place_cone" | "place_bal
 // ---- Form Input ----
 export type Position = "goalkeeper" | "defender" | "midfielder" | "forward" | "wingback";
 export type TrainingGoal = "strength" | "power" | "speed" | "agility" | "mas_endurance" | "combat";
+export type FitnessGoal = "hypertrophy" | "fat_loss" | "body_shaping" | "general_fitness" | "strength_fitness" | "endurance_fitness";
 export type SeasonPhase = "preseason" | "competition" | "recovery" | "offseason";
 export type InjurySite = "knee" | "ankle" | "achilles" | "waist" | "thigh" | "hip" | "finger" | "wrist" | "shoulder";
-export type UserRole = "athlete" | "coach";
+export type UserRole = "athlete" | "coach" | "fitness";
 // 六档教练证书等级
 export type CoachCert = "pro" | "a" | "b" | "c" | "d" | "none";
 
@@ -35,7 +36,7 @@ export interface PlayerFormData {
   weight: number | null;
   years: number | null;
   injuryHistory: string;
-  goal: TrainingGoal | null;
+  goal: TrainingGoal | FitnessGoal | null;
   phase: SeasonPhase | null;
   injurySites: InjurySite[];
   // Athlete-specific

@@ -196,9 +196,9 @@ const FIELD_LIST = ["default", "场地", "场地2", "场地3", "场地4", "场�
 
 // ─── Component ───────────────────────────────────────────
 
-interface Props { onFieldSelect?: (filename: string) => void; }
+interface Props { onFieldSelect?: (filename: string) => void; onPlaceEquipment?: (filename: string, name: string) => void; }
 
-export function EquipmentPalette({ onFieldSelect }: Props) {
+export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<string>("equipment");
   const [previewField, setPreviewField] = useState<string | null>(null);
@@ -238,7 +238,8 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
         key={item.filename}
         draggable
         onDragStart={(e) => handleDragStart(e, item)}
-        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-colors group"
+        onClick={() => onPlaceEquipment?.(item.filename, item.name)}
+        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-pointer transition-colors group active:scale-95"
         style={{ borderRadius: "6px" }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = "#22252d";

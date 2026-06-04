@@ -1,6 +1,8 @@
 "use client";
 
-import { TrainingGoal } from "@/lib/types";
+import { TrainingGoal, FitnessGoal } from "@/lib/types";
+
+type AnyGoal = TrainingGoal | FitnessGoal;
 import { Dumbbell, Zap, Gauge, Timer, Heart, Swords } from "lucide-react";
 
 const GOALS: { value: TrainingGoal; label: string; icon: React.ReactNode; desc: string }[] = [
@@ -13,8 +15,8 @@ const GOALS: { value: TrainingGoal; label: string; icon: React.ReactNode; desc: 
 ];
 
 interface Props {
-  selected: TrainingGoal | null;
-  onChange: (goal: TrainingGoal) => void;
+  selected: AnyGoal | null;
+  onChange: (goal: AnyGoal) => void;
   error?: string;
 }
 

@@ -127,10 +127,10 @@ export function useWizard() {
     setFormData((prev) => ({
       ...prev,
       role,
-      // Clear athlete fields when switching to coach
-      ...(role === "coach" ? { injurySites: [], injuryHistory: "", position: null, goal: null, phase: null } : {}),
-      // Clear coach fields when switching to athlete
-      ...(role === "athlete" ? { coachCert: null, coachRole: null, leagueTag: null, tacticalThemes: [] } : {}),
+      // Clear athlete fields when switching to coach or fitness
+      ...(role === "coach" || role === "fitness" ? { injurySites: [], injuryHistory: "", position: null, goal: null, phase: null } : {}),
+      // Clear coach fields when switching to athlete or fitness
+      ...(role === "athlete" || role === "fitness" ? { coachCert: null, coachRole: null, leagueTag: null, tacticalThemes: [] } : {}),
     }));
     setErrors({});
   }, []);

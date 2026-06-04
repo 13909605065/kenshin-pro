@@ -229,6 +229,41 @@ export default function TacticsPage() {
   const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.renderAll(); }};
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
   const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.renderAll(); }};
+  // ─── Click-to-place equipment (no drag needed) ───
+  const eqCountRef = useRef<Record<string, number>>({});
+  const hPlaceEquipment = useCallback((filename: string, name: string) => {
+    const c = boardRef.current; if (!c) return;
+    const cnt = (eqCountRef.current[filename] || 0) + 1;
+    eqCountRef.current[filename] = cnt;
+
+    // Place at center with slight offset per count to avoid stacking
+    const cx = 525 + ((cnt - 1) % 5) * 25;
+    const cy = 340 + Math.floor((cnt - 1) / 5) * 25;
+
+    // Handle agility ring as vector
+    if (name === "圆形环" || name === "敏捷环") {
+      const ring = new Circle({
+        left: cx - 20, top: cy - 20, radius: 20,
+        fill: "transparent", stroke: "#000", strokeWidth: 3,
+        selectable: true, evented: true, lockUniScaling: true,
+      });
+      (ring as any).name = name;
+      ring.setControlsVisibility({tl:true,tr:true,bl:true,br:true,ml:true,mr:true,mt:true,mb:true,mtr:true});
+      c.add(ring); c.setActiveObject(ring); c.requestRenderAll(); autoSave();
+      return;
+    }
+
+    FabricImage.fromURL(`/equipment/${filename}.png`).then((img) => {
+      img.set({
+        left: cx - 35, top: cy - 35, scaleX: 0.3, scaleY: 0.3,
+        lockUniScaling: true, selectable: true, evented: true,
+      });
+      (img as any).name = name;
+      img.setControlsVisibility({tl:true,tr:true,bl:true,br:true,ml:true,mr:true,mt:true,mb:true,mtr:true});
+      c.add(img); c.setActiveObject(img); c.requestRenderAll(); autoSave();
+    });
+  }, [autoSave]);
+
   const hField = useCallback((fn: string) => {
     const c = boardRef.current; if (!c) return;
     if ((c as any)._setFieldImage) {
@@ -538,7 +573,7 @@ export default function TacticsPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <EquipmentPalette onFieldSelect={hField}/>
+        <EquipmentPalette onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment}/>
         <FabricBoard activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} boardRef={boardRef}/>
       </div>
 

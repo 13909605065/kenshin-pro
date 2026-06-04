@@ -171,7 +171,7 @@ export function usePlanHistory() {
 
   /** Get plans by current role */
   const getPlansByRole = useCallback(
-    (currentRole: "coach" | "athlete"): SavedPlan[] => {
+    (currentRole: "coach" | "athlete" | "fitness"): SavedPlan[] => {
       return plans.filter((p) => p.role === currentRole);
     },
     [plans]

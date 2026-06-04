@@ -1,4 +1,4 @@
-import { Position, TrainingGoal, SeasonPhase, InjurySite, CoachCert, CoachRole, LeagueTag, TacticalTheme } from "./types";
+import { Position, SeasonPhase, InjurySite, CoachCert, CoachRole, LeagueTag, TacticalTheme } from "./types";
 
 // ====== Simple Label Maps (shared with prompt.ts) ======
 
@@ -10,13 +10,19 @@ export const POSITION_LABELS: Record<Position, string> = {
   wingback: "翼卫",
 };
 
-export const GOAL_LABELS: Record<TrainingGoal, string> = {
+export const GOAL_LABELS: Record<string, string> = {
   strength: "纯力量",
   power: "爆发力",
   speed: "速度",
   agility: "灵敏",
   mas_endurance: "耐力",
   combat: "对抗能力",
+  hypertrophy: "肌肥大",
+  fat_loss: "减脂",
+  body_shaping: "塑形",
+  general_fitness: "锻炼身体",
+  strength_fitness: "增力",
+  endurance_fitness: "耐力体能",
 };
 
 export const PHASE_LABELS: Record<SeasonPhase, string> = {
