@@ -78,7 +78,34 @@ export default function AIAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Start at bottom-right
+    setPos({ x: window.innerWidth - 60, y: window.innerHeight - 180 });
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragging.current = true;
+    dragStart.current = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPos({
+      x: Math.max(0, Math.min(window.innerWidth - 48, dragStart.current.px + dx)),
+      y: Math.max(0, Math.min(window.innerHeight - 48, dragStart.current.py + dy)),
+    });
+  };
+  const onPointerUp = () => {
+    dragging.current = false;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -111,12 +138,17 @@ export default function AIAssistant() {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Draggable floating button — just the butterfly, no background */}
       <button
-        onClick={() => setOpen(!open)}
-        className={`fixed bottom-20 right-4 w-10 h-10 rounded-full bg-[#d92525] shadow-lg z-40 flex items-center justify-center text-lg transition-transform duration-200 hover:scale-110 active:scale-95 ${
-          open ? "scale-0" : "scale-100"
+        ref={btnRef}
+        onClick={() => { if (!dragging.current) setOpen(!open); }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        className={`fixed z-40 flex items-center justify-center text-2xl transition-transform duration-200 hover:scale-125 active:scale-95 select-none ${
+          open ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
+        style={{ left: pos.x, top: pos.y, width: 44, height: 44, touchAction: "none" }}
         aria-label="AI 训练助手"
       >
         🦋
@@ -125,7 +157,8 @@ export default function AIAssistant() {
       {/* Chat popup */}
       {open && (
         <div
-          className="fixed bottom-20 right-4 z-40 w-[320px] rounded-2xl shadow-2xl border border-[#333] overflow-hidden"
+          className="fixed z-40 w-[320px] rounded-2xl shadow-2xl border border-[#333] overflow-hidden"
+          style={{ left: Math.max(0, pos.x - 140), top: Math.max(0, pos.y - 420) }}
           style={{
             height: "400px",
             animation: "aiPopupIn 300ms ease-out",

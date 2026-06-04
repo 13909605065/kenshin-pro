@@ -8,7 +8,7 @@ import { getWeather, weatherHint } from "@/lib/weather";
 // Rate limiting: simple in-memory map (resets on cold start)
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 60_000; // 1 minute per user
-const MAX_TOKENS = 6000;
+const MAX_TOKENS = 8000;
 const API_TIMEOUT_MS = 90_000; // 90s
 
 // Provider configs — auto-detect from env vars
