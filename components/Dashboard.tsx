@@ -17,8 +17,8 @@ import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
-import { SceneTabs } from "./SceneTabs";
-import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Timer, ClipboardList } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
@@ -279,6 +279,7 @@ export function Dashboard() {
   const [showManualSave, setShowManualSave] = useState(false);
   const [manualSaveName, setManualSaveName] = useState("");
   const { t } = useLang();
+  const router = useRouter();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
 
   /** Plans saved for the current player name (case-insensitive) */
@@ -335,8 +336,6 @@ export function Dashboard() {
 
   return (
     <div className="space-y-3">
-      {/* Scene Tabs — role + context switcher */}
-      <SceneTabs />
 
       {/* Scene-aware quick actions — one row, max 2 buttons */}
       {status === "idle" && (
@@ -441,7 +440,7 @@ export function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {/* Identity switch — prominent */}
+              {/* Identity switch */}
               <div className="flex bg-[#111] rounded-lg p-0.5">
                 <button onClick={() => setRole("coach")}
                   className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
@@ -452,6 +451,19 @@ export function Dashboard() {
                   球员
                 </button>
               </div>
+              {/* Scene switch — athlete only */}
+              {!isCoach && (
+                <div className="flex bg-[#111] rounded-lg p-0.5">
+                  <button onClick={() => setScene("pitch")}
+                    className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="pitch"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                    <MapPin className="w-3 h-3" />球场
+                  </button>
+                  <button onClick={() => router.push("/gym")}
+                    className="px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
+                    <Dumbbell className="w-3 h-3" />健身
+                  </button>
+                </div>
+              )}
               <button onClick={() => setEditOpen(true)}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-pitch-500 text-gray-400 hover:text-white hover:border-pitch-400 transition text-xs">
                 <Edit3 className="w-3.5 h-3.5" />编辑
