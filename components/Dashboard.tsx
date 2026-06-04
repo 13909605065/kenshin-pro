@@ -460,18 +460,7 @@ export function Dashboard() {
             </>
           )}
 
-          {/* === ATHLETE === */}
-          {!isCoach && (
-            <>
-              {scene === "pitch" && (
-                <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
-                  <Timer className="w-5 h-5 text-[#d92525] mb-1" />
-                  <p className="text-xs font-bold text-white">开始训练</p>
-                  <p className="text-[10px] text-gray-500">按顺序跟练</p>
-                </button>
-              )}
-            </>
-          )}
+          {/* === ATHLETE: 跟练按钮已统一在方案底部，这里不再显示 === */}
         </div>
       )}
 
