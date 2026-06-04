@@ -527,48 +527,67 @@ export function drawVectorField(canvas: Canvas) {
     selectable: false, evented: false,
   }));
 
-  // Penalty areas (left and right)
+  // Field line color — gray-white for all lines
+  const LINE = TAC_THEME.fieldLine;
+  const LINE_W = 1.5;
+  // Accent red — ONLY for penalty spot + center dot
+  const ACCENT = TAC_THEME.accent;
+
+  // Penalty areas (left and right) — gray-white
   const paW = fw * 0.16;
   const paH = fh * 0.44;
   const paTop = margin + (fh - paH) / 2;
   items.push(new Rect({
     left: margin, top: paTop, width: paW, height: paH,
-    fill: "transparent", stroke: TAC_THEME.fieldLineStrong, strokeWidth: 2,
+    fill: "transparent", stroke: LINE, strokeWidth: LINE_W,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - paW, top: paTop, width: paW, height: paH,
-    fill: "transparent", stroke: TAC_THEME.fieldLineStrong, strokeWidth: 2,
+    fill: "transparent", stroke: LINE, strokeWidth: LINE_W,
     selectable: false, evented: false,
   }));
 
-  // Goal areas
+  // Goal areas — gray-white
   const gaW = fw * 0.06;
   const gaH = fh * 0.22;
   const gaTop = margin + (fh - gaH) / 2;
   items.push(new Rect({
     left: margin, top: gaTop, width: gaW, height: gaH,
-    fill: "transparent", stroke: TAC_THEME.goalFill, strokeWidth: 1.5,
+    fill: "transparent", stroke: LINE, strokeWidth: LINE_W,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - gaW, top: gaTop, width: gaW, height: gaH,
-    fill: "transparent", stroke: TAC_THEME.goalFill, strokeWidth: 1.5,
+    fill: "transparent", stroke: LINE, strokeWidth: LINE_W,
     selectable: false, evented: false,
   }));
 
-  // Goals
+  // Goals — gray-white (NOT red)
   const goalW = 7;
   const goalH = fh * 0.12;
   const goalTop = margin + (fh - goalH) / 2;
   items.push(new Rect({
     left: margin - goalW / 2, top: goalTop, width: goalW, height: goalH,
-    fill: TAC_THEME.goalFill, stroke: "", rx: 2, ry: 2,
+    fill: LINE, stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - goalW / 2, top: goalTop, width: goalW, height: goalH,
-    fill: TAC_THEME.goalFill, stroke: "", rx: 2, ry: 2,
+    fill: LINE, stroke: "", rx: 2, ry: 2,
+    selectable: false, evented: false,
+  }));
+
+  // Penalty spots — accent red (only red dots on field)
+  const penSpotX = margin + paW + fw * 0.08;
+  items.push(new Circle({
+    left: penSpotX - 2, top: cy - 2, radius: 2,
+    fill: ACCENT, stroke: "",
+    selectable: false, evented: false,
+  }));
+  items.push(new Circle({
+    left: (margin + fw - paW - fw * 0.08) - 2, top: cy - 2, radius: 2,
+    fill: ACCENT, stroke: "",
     selectable: false, evented: false,
   }));
 

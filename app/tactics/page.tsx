@@ -12,32 +12,50 @@ import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, co
 import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
 import { TAC_THEME } from "@/lib/tactical-theme";
 
-// Standard 11-a-side positions. Canvas: 1050×680, field area: x=15..1035, y=15..665, center=(525,340)
-// Attacking left→right. x=left(defense)→right(attack). y=top→bottom.
-// Zones: GK x≈55 · DF x≈175-195 · MF x≈420-450 · FW x≈700-780
-// Vertical: top-flank≈100 · top-half≈250 · center≈340 · bottom-half≈430 · bottom-flank≈580
+// Canvas: 1050×680, attack left→right. center=(525,340)
+// Zones: GK x≈55 · DF x≈170-200 · DM x≈355-400 · MF x≈390-440 · AM x≈520-590 · FW x≈660-780
+// Y: flank≈80-100 · half≈160-260 · center≈340 · half≈420-520 · flank≈550-610
+// Canvas: 1050×680, attack left→right. x=15..1035, y=15..665, center=(525,340)
+// Player colors: GK=orange, outfield=red (own team)
+const OWN = TAC_THEME.playerOwn;
+const GK = TAC_THEME.playerGK;
+
 const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
   "4-3-3": [
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
-    {x:420,y:190,n:"8",c:"#c82630"},{x:440,y:340,n:"6",c:"#c82630"},{x:420,y:490,n:"10",c:"#c82630"},{x:700,y:100,n:"7",c:"#c82630"},{x:770,y:340,n:"9",c:"#c82630"},{x:700,y:580,n:"11",c:"#c82630"},
+    // GK · Back 4 · Mid 3 · Front 3
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:420,y:190,n:"8",c:OWN},{x:440,y:340,n:"6",c:OWN},{x:420,y:490,n:"10",c:OWN},
+    {x:700,y:100,n:"7",c:OWN},{x:770,y:340,n:"9",c:OWN},{x:700,y:580,n:"11",c:OWN},
   ],
   "4-4-2": [
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
-    {x:420,y:100,n:"7",c:"#c82630"},{x:440,y:250,n:"8",c:"#c82630"},{x:440,y:430,n:"6",c:"#c82630"},{x:420,y:580,n:"11",c:"#c82630"},{x:730,y:250,n:"9",c:"#c82630"},{x:730,y:430,n:"10",c:"#c82630"},
+    // GK · Back 4 · Mid 4 · Front 2
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:420,y:100,n:"7",c:OWN},{x:440,y:250,n:"8",c:OWN},{x:440,y:430,n:"6",c:OWN},{x:420,y:580,n:"11",c:OWN},
+    {x:730,y:230,n:"9",c:OWN},{x:730,y:450,n:"10",c:OWN},
   ],
   "3-5-2": [
-    {x:55,y:340,n:"1",c:"#c82630"},{x:145,y:180,n:"3",c:"#c82630"},{x:135,y:340,n:"5",c:"#c82630"},{x:145,y:500,n:"4",c:"#c82630"},
-    {x:320,y:70,n:"7",c:"#c82630"},{x:420,y:190,n:"8",c:"#c82630"},{x:430,y:340,n:"6",c:"#c82630"},{x:420,y:490,n:"10",c:"#c82630"},{x:320,y:610,n:"2",c:"#c82630"},
-    {x:730,y:250,n:"9",c:"#c82630"},{x:730,y:430,n:"11",c:"#c82630"},
+    // GK · 3 CBs · 5 MFs (WB+DM+DM+DM+WB) · 2 FWs
+    {x:55,y:340,n:"1",c:GK},
+    {x:170,y:160,n:"3",c:OWN},{x:160,y:340,n:"5",c:OWN},{x:170,y:520,n:"4",c:OWN},
+    {x:370,y:70,n:"7",c:OWN},{x:390,y:230,n:"8",c:OWN},{x:400,y:340,n:"6",c:OWN},{x:390,y:450,n:"10",c:OWN},{x:370,y:610,n:"2",c:OWN},
+    {x:720,y:220,n:"9",c:OWN},{x:720,y:460,n:"11",c:OWN},
   ],
   "4-2-3-1": [
-    {x:55,y:340,n:"1",c:"#c82630"},{x:185,y:100,n:"2",c:"#c82630"},{x:175,y:250,n:"4",c:"#c82630"},{x:175,y:430,n:"5",c:"#c82630"},{x:185,y:580,n:"3",c:"#c82630"},
-    {x:355,y:250,n:"6",c:"#c82630"},{x:355,y:430,n:"8",c:"#c82630"},{x:590,y:100,n:"7",c:"#c82630"},{x:590,y:340,n:"10",c:"#c82630"},{x:590,y:580,n:"11",c:"#c82630"},{x:780,y:340,n:"9",c:"#c82630"},
+    // GK · Back 4 · 2 DMs · 3 AMs · 1 ST
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:355,y:250,n:"6",c:OWN},{x:355,y:430,n:"8",c:OWN},
+    {x:590,y:100,n:"7",c:OWN},{x:590,y:340,n:"10",c:OWN},{x:590,y:580,n:"11",c:OWN},
+    {x:780,y:340,n:"9",c:OWN},
   ],
   "3-4-3": [
-    {x:55,y:340,n:"1",c:"#c82630"},{x:145,y:180,n:"3",c:"#c82630"},{x:135,y:340,n:"4",c:"#c82630"},{x:145,y:500,n:"5",c:"#c82630"},
-    {x:370,y:80,n:"7",c:"#c82630"},{x:420,y:250,n:"8",c:"#c82630"},{x:420,y:430,n:"6",c:"#c82630"},{x:370,y:600,n:"11",c:"#c82630"},
-    {x:660,y:130,n:"10",c:"#c82630"},{x:740,y:340,n:"9",c:"#c82630"},{x:660,y:550,n:"2",c:"#c82630"},
+    // GK · 3 CBs · 4 MFs · 3 FWs
+    {x:55,y:340,n:"1",c:GK},
+    {x:170,y:160,n:"3",c:OWN},{x:160,y:340,n:"4",c:OWN},{x:170,y:520,n:"5",c:OWN},
+    {x:390,y:80,n:"7",c:OWN},{x:430,y:240,n:"8",c:OWN},{x:430,y:440,n:"6",c:OWN},{x:390,y:600,n:"11",c:OWN},
+    {x:660,y:130,n:"10",c:OWN},{x:740,y:340,n:"9",c:OWN},{x:660,y:550,n:"2",c:OWN},
   ],
 };
 
@@ -201,8 +219,6 @@ export default function TacticsPage() {
     if ((c as any)._setFieldImage) (c as any)._setFieldImage("default");
     // Place formation players (ring style via placePlayers)
     placePlayers(FORMATION_DATA[f] || FORMATION_DATA["4-3-3"]);
-    // Auto-fill AI prompt
-    setAiPrompt(`${f} 战术`);
     c.requestRenderAll();
   };
 
