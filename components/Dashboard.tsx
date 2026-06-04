@@ -227,7 +227,7 @@ export function Dashboard() {
   const templates = useTemplates();
   const planHistory = usePlanHistory();
   const { formData, updateField, setRole: setWizardRole, isStepValid } = wizard;
-  const { role, scene, setRole } = useScene();
+  const { role, scene, setRole, setScene } = useScene();
   const isCoach = role === "coach";
 
   // Sync wizard role with scene identity (only when identity changes)
