@@ -6,8 +6,7 @@ import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
 import { MobileNav } from "@/components/MobileNav";
-import { GestureController } from "@/components/tactical/GestureController";
-import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut, Hand } from "lucide-react";
+import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
@@ -83,8 +82,6 @@ export default function TacticsPage() {
   const [autoSaveTs, setAutoSaveTs] = useState<string | null>(() => {
     try { const d = localStorage.getItem(AUTOSAVE_KEY); return d ? JSON.parse(d).ts : null; } catch { return null; }
   });
-  // Gesture control
-  const [gestureOn, setGestureOn] = useState(false);
 
   // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
@@ -499,13 +496,6 @@ export default function TacticsPage() {
         </button>
         <h1 className="text-white font-semibold text-sm tracking-wide hidden sm:block">战术板</h1>
         <div className="flex-1"/>
-        {/* Gesture toggle */}
-        <button onClick={() => setGestureOn(!gestureOn)}
-          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition touch-target ${gestureOn ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
-          style={{ backgroundColor: gestureOn ? TAC_THEME.accent : "transparent", borderRadius: TAC_THEME.radius }}
-          title="手势控制（需摄像头）">
-          <Hand className="w-3.5 h-3.5" />{gestureOn ? "手势开" : "手势"}
-        </button>
         <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{backgroundColor:TAC_THEME.bgCard, borderRadius: TAC_THEME.radius}}>
           <button onClick={hZoomOut} className="p-1.5 text-gray-400 hover:text-white rounded touch-target flex items-center justify-center" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
           <button onClick={hZoomFit} className="p-1.5 text-gray-400 hover:text-white rounded text-[10px] font-mono touch-target flex items-center justify-center" title="重置">1:1</button>
@@ -588,7 +578,6 @@ export default function TacticsPage() {
       </div>
 
       <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear}/>
-      <GestureController fabricRef={boardRef} enabled={gestureOn} />
       <MobileNav />
     </div>
   );
