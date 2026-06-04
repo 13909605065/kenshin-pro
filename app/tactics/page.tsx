@@ -195,7 +195,18 @@ export default function TacticsPage() {
     c.requestRenderAll();
   };
 
-  const hFormation = (f: string) => placePlayers(FORMATION_DATA[f]||FORMATION_DATA["4-3-3"]);
+  const hFormation = (f: string) => {
+    const c = boardRef.current; if (!c) return;
+    // Clear everything except field background
+    c.getObjects().filter((o: any) => !o._isFieldBg).forEach((o: any) => c.remove(o));
+    // Switch to standard full field
+    if ((c as any)._setFieldImage) (c as any)._setFieldImage("default");
+    // Place formation players (ring style via placePlayers)
+    placePlayers(FORMATION_DATA[f] || FORMATION_DATA["4-3-3"]);
+    // Auto-fill AI prompt
+    setAiPrompt(`${f} 战术`);
+    c.requestRenderAll();
+  };
 
   const hUpdatePlayerNum = (newNum: string) => {
     if (!selObj || !(selObj as any)._isPlayer) return;
