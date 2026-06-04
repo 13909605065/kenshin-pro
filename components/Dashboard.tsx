@@ -626,15 +626,10 @@ export function Dashboard() {
 
           {/* Coach Input */}
           <div className="glass-card p-4 space-y-3">
-            {/* Quick selects for context */}
+            {/* Phase quick-select — coach only (theme is already in Tactical Themes above) */}
             {isCoach && (
-              <div className="flex gap-1 flex-wrap">
-                <span className="text-[10px] text-gray-500 mt-1">主题:</span>
-                {["力量","速度","体能","战术","恢复"].map(s => (
-                  <button key={s} onClick={() => updateField("goal", s==="力量"?"strength":s==="速度"?"speed":s==="体能"?"mas_endurance":"combat")}
-                    className="px-2 py-0.5 rounded text-[10px] bg-pitch-700 text-gray-400 hover:text-white">{s}</button>
-                ))}
-                <span className="text-[10px] text-gray-500 mt-1 ml-2">阶段:</span>
+              <div className="flex gap-1 flex-wrap items-center">
+                <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
                 {PHASES.map(p => (
                   <button key={p} onClick={() => updateField("phase", p)}
                     className={`px-2 py-0.5 rounded text-[10px] ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("phase."+p)}</button>
