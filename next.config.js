@@ -17,6 +17,14 @@ const nextConfig = {
   trailingSlash: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  async rewrites() {
+    return [
+      {
+        source: '/api/supabase/:path*',
+        destination: 'https://gqjzrrwcxukpzilkjqke.supabase.co/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = withPWA(nextConfig);
