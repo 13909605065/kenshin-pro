@@ -721,7 +721,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                   </button>
                   <button onClick={() => setScene("gym")}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
-                    <Dumbbell className="w-3.5 h-3.5" /> 健身房
+                    <Dumbbell className="w-3.5 h-3.5" /> 体能房
                   </button>
                   <span className="text-[10px] text-gray-600 ml-2">
                     {scene === "pitch" ? "有球训练 · 速度/灵敏" : "体能训练 · 力量/对抗"}
@@ -732,7 +732,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               {/* Gym scene — show gym-specific panel instead of goals */}
               {!isCoach && !isFitness && scene === "gym" ? (
                 <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-2xl p-5 space-y-4">
-                  <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">🏋️ 健身房训练</p>
+                  <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">🏋️ 体能房训练</p>
                   {(() => {
                     const age = formData.age || 25;
                     const weight = formData.weight || 70;
@@ -749,7 +749,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
                           <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
                         </div>
-                        {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(>85%1RM)，专注动作质量</p>}
+                        {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(&gt;85%1RM)，专注动作质量</p>}
                         {isO35 && <p className="text-xs text-amber-400">热身延长至20min，关节保护优先</p>}
                         {hasInjury && <p className="text-xs text-red-400">检测到伤病部位，训练时避开直接负重</p>}
                       </>
