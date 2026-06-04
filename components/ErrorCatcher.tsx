@@ -23,7 +23,7 @@ export class ErrorCatcher extends Component<
     if (this.state.error) {
       return (
         <html lang="zh-CN">
-          <body className="min-h-screen bg-pitch-900 flex items-center justify-center p-8">
+          <body className="min-h-screen bg-[#121212] flex items-center justify-center p-8">
             <div className="glass-card p-6 max-w-2xl w-full">
               <p className="text-neon-red font-bold text-lg mb-3">
                 ⚠️ 客户端渲染错误
@@ -41,7 +41,7 @@ export class ErrorCatcher extends Component<
               </details>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 px-4 py-2 bg-neon-pink text-white rounded-lg text-sm"
+                className="mt-4 px-4 py-2 bg-[#d92525] text-white rounded-lg text-sm"
               >
                 刷新页面
               </button>

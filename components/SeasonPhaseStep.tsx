@@ -28,8 +28,8 @@ export function SeasonPhaseStep({ selected, onChange, error }: Props) {
               onClick={() => onChange(phase.value)}
               className={`w-full p-4 rounded-xl border transition-all text-left flex items-start gap-4 ${
                 selected === phase.value
-                  ? "border-neon-pink bg-neon-pink/10"
-                  : "border-pitch-600 hover:border-pitch-500 bg-pitch-800"
+                  ? "border-[#d92525] bg-[#d92525]/10"
+                  : "border-[#222] hover:border-[#d92525] bg-[#1e1e1e]"
               }`}
             >
               <div className="text-2xl">{phase.icon}</div>
@@ -41,8 +41,8 @@ export function SeasonPhaseStep({ selected, onChange, error }: Props) {
                 <div
                   className={`w-5 h-5 rounded-full border-2 ${
                     selected === phase.value
-                      ? "border-neon-pink bg-neon-pink"
-                      : "border-pitch-500"
+                      ? "border-[#d92525] bg-[#d92525]"
+                      : "border-[#d92525]"
                   }`}
                 />
               </div>

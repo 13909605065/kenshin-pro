@@ -97,9 +97,9 @@ export function GeneratingOverlay({ currentModule, isCoach, moduleCount = 0, onC
           <span>{label}</span>
           <span className="tabular-nums">{pct}%</span>
         </div>
-        <div className="h-1.5 bg-pitch-600 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
           <div
-            className="h-full bg-neon-pink rounded-full transition-all duration-300 ease-out"
+            className="h-full bg-[#d92525] rounded-full transition-all duration-300 ease-out"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -109,7 +109,7 @@ export function GeneratingOverlay({ currentModule, isCoach, moduleCount = 0, onC
       <div className="flex gap-1">
         {[...Array(3)].map((_, i) => (
           <div key={i}
-            className="w-2 h-2 bg-neon-pink rounded-full animate-bounce"
+            className="w-2 h-2 bg-[#d92525] rounded-full animate-bounce"
             style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
       </div>

@@ -24,7 +24,7 @@ export function InjuryStep({ selected, onToggle, injuryHistory, onHistoryChange 
             className={`p-4 rounded-xl border transition-all text-center ${
               selected.includes(site.value)
                 ? "border-neon-red bg-neon-red/10 text-neon-red"
-                : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                : "border-[#222] text-gray-400 hover:border-[#d92525]"
             }`}
           >
             <div className="text-lg font-bold">{site.region}</div>

@@ -10,7 +10,7 @@ export function ExerciseIcon({ name, imageUrl }: { name: string; imageUrl?: stri
       <img
         src={imageUrl}
         alt={name}
-        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-pitch-600"
+        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-[#222]"
         loading="lazy"
         onError={() => setImgFailed(true)}
       />
@@ -28,7 +28,7 @@ export function ExerciseIcon({ name, imageUrl }: { name: string; imageUrl?: stri
   else if (/balance|稳定|stability|single/.test(lower)) emoji = "🎯";
 
   return (
-    <div className="w-10 h-10 rounded-lg bg-pitch-600 flex items-center justify-center flex-shrink-0 text-lg">
+    <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center flex-shrink-0 text-lg">
       {emoji}
     </div>
   );

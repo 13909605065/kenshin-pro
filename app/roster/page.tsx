@@ -90,7 +90,7 @@ export default function RosterPage() {
   const statusLabel = (s: string) => s === "healthy" ? "健康" : s === "minor" ? "轻伤" : "重伤缺阵";
 
   return (
-    <div className="min-h-screen bg-pitch-900 p-4 pb-20">
+    <div className="min-h-screen bg-[#121212] p-4 pb-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
@@ -99,11 +99,11 @@ export default function RosterPage() {
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcel} className="hidden" />
         <button onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition">
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
           <Upload className="w-3.5 h-3.5" />导入Excel
         </button>
         <button onClick={() => { setEditing({ id: "", name: "", position: "", number: "", age: null, height: null, weight: null, injuryStatus: "healthy", injuryNote: "", notes: "" }); setShowAdd(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-neon-pink hover:bg-neon-pink/90 rounded-lg transition font-bold">
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-[#d92525] hover:bg-[#d92525]/90 rounded-lg transition font-bold">
           <Plus className="w-3.5 h-3.5" />添加球员
         </button>
       </div>
@@ -112,7 +112,7 @@ export default function RosterPage() {
       <div className="flex gap-2 mb-4">
         {(["all", "healthy", "minor", "out"] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded-lg text-xs transition ${filter === f ? "bg-neon-pink/20 text-neon-pink border border-neon-pink/40" : "bg-pitch-700 text-gray-400 hover:text-white"}`}>
+            className={`px-3 py-1 rounded-lg text-xs transition ${filter === f ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
             {f === "all" ? "全部" : `${statusEmoji(f)} ${statusLabel(f)}`}
           </button>
         ))}
@@ -121,9 +121,9 @@ export default function RosterPage() {
       {/* Player cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {filtered.map((p) => (
-          <div key={p.id} className="bg-pitch-800 rounded-xl p-3 border border-pitch-600/50 hover:border-pitch-500 transition group">
+          <div key={p.id} className="bg-[#1e1e1e] rounded-xl p-3 border border-[#222]/50 hover:border-[#d92525] transition group">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
+              <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-medium truncate">{p.name}</p>
                 <p className="text-[10px] text-gray-500">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
@@ -133,7 +133,7 @@ export default function RosterPage() {
             <div className="flex items-center justify-between text-[10px] text-gray-500">
               <span>{p.age ? `${p.age}岁` : ""} {p.height ? `${p.height}cm` : ""} {p.weight ? `${p.weight}kg` : ""}</span>
               <select value={p.injuryStatus} onChange={(e) => handleUpdate(p.id, "injuryStatus", e.target.value)}
-                className="bg-pitch-700 rounded px-1 py-0.5 text-[10px] border-none outline-none">
+                className="bg-[#1e1e1e] rounded px-1 py-0.5 text-[10px] border-none outline-none">
                 <option value="healthy">🟢 健康</option>
                 <option value="minor">🟡 轻伤</option>
                 <option value="out">🔴 缺阵</option>
@@ -162,7 +162,7 @@ export default function RosterPage() {
             <input value={editing?.name || ""} onChange={(e) => setEditing((p) => p ? { ...p, name: e.target.value } : null)} placeholder="姓名" className="input-field text-sm" />
             <div className="grid grid-cols-2 gap-2">
               <select value={editing?.position || ""} onChange={(e) => setEditing((p) => p ? { ...p, position: e.target.value } : null)}
-                className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1.5 text-xs text-gray-300">
+                className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1.5 text-xs text-gray-300">
                 <option value="">位置</option>
                 {POSITION_OPTIONS.map((pos) => <option key={pos} value={pos}>{pos}</option>)}
               </select>
@@ -176,7 +176,7 @@ export default function RosterPage() {
             <div>
               <label className="text-[10px] text-gray-500 mb-1 block">伤病状态</label>
               <select value={editing?.injuryStatus || "healthy"} onChange={(e) => setEditing((p) => p ? { ...p, injuryStatus: e.target.value as any } : null)}
-                className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1.5 text-xs text-gray-300 w-full">
+                className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1.5 text-xs text-gray-300 w-full">
                 <option value="healthy">🟢 健康</option>
                 <option value="minor">🟡 轻伤</option>
                 <option value="out">🔴 重伤缺阵</option>
@@ -185,7 +185,7 @@ export default function RosterPage() {
             <input value={editing?.injuryNote || ""} onChange={(e) => setEditing((p) => p ? { ...p, injuryNote: e.target.value } : null)} placeholder="伤病备注（如：右脚踝扭伤，预计2周恢复）" className="input-field text-sm" />
             <input value={editing?.notes || ""} onChange={(e) => setEditing((p) => p ? { ...p, notes: e.target.value } : null)} placeholder="备注" className="input-field text-sm" />
             <button onClick={handleAdd}
-              className="w-full py-2 bg-neon-pink text-black font-bold rounded-lg text-sm flex items-center justify-center gap-1">
+              className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1">
               <Save className="w-3.5 h-3.5" />{editing?.id ? "保存" : "添加"}
             </button>
             {editing?.id && (
@@ -221,14 +221,14 @@ export default function RosterPage() {
                 <button onClick={handleCancelImport} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
 
-              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-neon-pink font-bold">{preview.parsed.length}</span> 名球员</p>
+              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-[#d92525] font-bold">{preview.parsed.length}</span> 名球员</p>
 
               {/* Column mapping */}
               <div>
                 <h3 className="text-xs text-gray-400 mb-2">列映射检测</h3>
                 <div className="grid grid-cols-2 gap-1 text-xs">
                   {mapping.map((m) => (
-                    <div key={m.field} className="flex items-center gap-1.5 bg-pitch-800 rounded px-2 py-1">
+                    <div key={m.field} className="flex items-center gap-1.5 bg-[#1e1e1e] rounded px-2 py-1">
                       <span className="text-gray-400 w-8">{m.field}</span>
                       <span className="text-gray-500">→</span>
                       <span className={m.found ? "text-green-400" : "text-red-400/60"}>{m.header || "未检测到"}</span>
@@ -243,7 +243,7 @@ export default function RosterPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-gray-300 border-collapse">
                     <thead>
-                      <tr className="bg-pitch-700 text-gray-400">
+                      <tr className="bg-[#1e1e1e] text-gray-400">
                         <th className="py-1.5 px-2 text-left rounded-l">姓名</th>
                         <th className="py-1.5 px-2 text-left">位置</th>
                         <th className="py-1.5 px-2 text-left">号码</th>
@@ -255,7 +255,7 @@ export default function RosterPage() {
                     </thead>
                     <tbody>
                       {previewRows.map((p, i) => (
-                        <tr key={i} className="border-t border-pitch-700/50 hover:bg-pitch-800/50">
+                        <tr key={i} className="border-t border-[#1e1e1e]/50 hover:bg-[#1e1e1e]/50">
                           <td className="py-1 px-2 text-white font-medium">{p.name}</td>
                           <td className="py-1 px-2">{p.position}</td>
                           <td className="py-1 px-2">{p.number}</td>
@@ -273,11 +273,11 @@ export default function RosterPage() {
               {/* Actions */}
               <div className="flex gap-3 pt-2">
                 <button onClick={handleCancelImport}
-                  className="flex-1 py-2 bg-pitch-700 hover:bg-pitch-600 text-gray-300 rounded-lg text-sm transition">
+                  className="flex-1 py-2 bg-[#1e1e1e] hover:bg-[#222] text-gray-300 rounded-lg text-sm transition">
                   取消
                 </button>
                 <button onClick={handleConfirmImport}
-                  className="flex-1 py-2 bg-neon-pink hover:bg-neon-pink/90 text-black font-bold rounded-lg text-sm transition">
+                  className="flex-1 py-2 bg-[#d92525] hover:bg-[#d92525]/90 text-black font-bold rounded-lg text-sm transition">
                   确认导入 {preview.parsed.length} 名球员
                 </button>
               </div>

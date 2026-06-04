@@ -133,16 +133,6 @@ function IconWall() {
     </svg>
   );
 }
-function IconMedBall() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-      <circle cx="14" cy="14" r="11" stroke={TEXT_DIM} strokeWidth="2" />
-      <text x="14" y="18" textAnchor="middle" fontSize="10" fill={TEXT_DIM} fontWeight="600">kg</text>
-      <line x1="8" y1="10" x2="20" y2="10" stroke={TEXT_DIM} strokeWidth="0.8" strokeDasharray="2 2" />
-    </svg>
-  );
-}
-
 // ─── Icon mapping ────────────────────────────────────────
 
 function getEquipmentIcon(name: string) {
@@ -159,7 +149,6 @@ function getEquipmentIcon(name: string) {
     case "长绳梯": return <IconLongLadder />;
     case "敏捷环": return <IconRing />;
     case "人墙": return <IconWall />;
-    case "药球": return <IconMedBall />;
     default: return <IconBall />;
   }
 }
@@ -195,7 +184,6 @@ const EQUIPMENT: Item[] = [
   { name: "长绳梯", filename: "长绳梯" },
   { name: "敏捷环", filename: "圆形环" },
   { name: "人墙", filename: "人墙" },
-  { name: "药球", filename: "药球" },
 ];
 
 const FIELD_LIST = ["default", "场地", "场地2", "场地3", "场地4", "场地5", "场地6", "场地7", "场地8", "场地9", "场地10", "场地11", "场地12", "场地13", "场地14"];

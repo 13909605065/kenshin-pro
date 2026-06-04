@@ -72,14 +72,14 @@ export default function LoginPage() {
   // Loading while checking existing session
   if (checking) {
     return (
-      <div className="min-h-screen bg-pitch-900 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-neon-pink border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#d92525] border-t-transparent animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-pitch-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#121212] flex items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-8">
         {/* Title */}
         <div className="text-center space-y-1">
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
         )}
         {message && (
-          <div className="bg-neon-pink/10 border border-neon-pink/20 text-neon-pink px-4 py-3 rounded-xl text-sm text-center">
+          <div className="bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] px-4 py-3 rounded-xl text-sm text-center">
             {message}
           </div>
         )}
@@ -114,7 +114,7 @@ export default function LoginPage() {
               使用邮箱登录
             </button>
           ) : (
-            <div className="bg-pitch-800 border border-pitch-600 rounded-xl p-4 space-y-3">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-300">邮箱登录</span>
                 <button
@@ -130,7 +130,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="邮箱地址"
-                className="w-full h-11 px-4 bg-pitch-700 border border-pitch-600 rounded-lg text-white text-sm placeholder-gray-500 focus:border-neon-pink focus:outline-none transition-colors"
+                className="w-full h-11 px-4 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#d92525] focus:outline-none transition-colors"
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
 
@@ -140,7 +140,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="密码（至少 6 位）"
-                  className="w-full h-11 px-4 pr-10 bg-pitch-700 border border-pitch-600 rounded-lg text-white text-sm placeholder-gray-500 focus:border-neon-pink focus:outline-none transition-colors"
+                  className="w-full h-11 px-4 pr-10 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#d92525] focus:outline-none transition-colors"
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 />
                 <button
@@ -155,14 +155,14 @@ export default function LoginPage() {
                 <button
                   onClick={handleLogin}
                   disabled={loading !== null || !email || password.length < 6}
-                  className="flex-1 h-10 bg-neon-pink text-black font-bold rounded-lg text-sm hover:bg-opacity-90 transition disabled:opacity-40"
+                  className="flex-1 h-10 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition disabled:opacity-40"
                 >
                   {loading === "login" ? "登录中..." : "登录"}
                 </button>
                 <button
                   onClick={handleRegister}
                   disabled={loading !== null || !email || password.length < 6}
-                  className="flex-1 h-10 bg-pitch-700 border border-pitch-600 text-gray-300 font-medium rounded-lg text-sm hover:bg-pitch-600 transition disabled:opacity-40"
+                  className="flex-1 h-10 bg-[#1e1e1e] border border-[#222] text-gray-300 font-medium rounded-lg text-sm hover:bg-[#222] transition disabled:opacity-40"
                 >
                   {loading === "register" ? "注册中..." : "注册"}
                 </button>
@@ -200,7 +200,7 @@ export default function LoginPage() {
           {/* Phone */}
           <button
             disabled={loading !== null}
-            className="w-full h-12 flex items-center justify-center gap-3 bg-pitch-700 border border-pitch-600 rounded-xl font-medium text-sm text-white hover:bg-pitch-600 transition disabled:opacity-50"
+            className="w-full h-12 flex items-center justify-center gap-3 bg-[#1e1e1e] border border-[#222] rounded-xl font-medium text-sm text-white hover:bg-[#222] transition disabled:opacity-50"
           >
             <Phone className="w-5 h-5" />
             使用手机号登录

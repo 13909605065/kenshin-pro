@@ -130,10 +130,10 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
   if (!open) return null;
 
   const inputClass =
-    "w-full bg-pitch-700 border border-pitch-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-neon-pink transition-colors";
+    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition-colors";
   const labelClass = "text-xs text-gray-400 font-medium mb-1 block";
   const selectClass =
-    "w-full bg-pitch-700 border border-pitch-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neon-pink transition-colors appearance-none cursor-pointer";
+    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#d92525] transition-colors appearance-none cursor-pointer";
 
   return (
     <>
@@ -144,15 +144,15 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
       />
 
       {/* Modal */}
-      <div className="fixed inset-4 sm:inset-x-auto sm:top-6 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-lg sm:w-full z-50 bg-pitch-800 border border-pitch-600 rounded-2xl flex flex-col overflow-hidden">
+      <div className="fixed inset-4 sm:inset-x-auto sm:top-6 sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-lg sm:w-full z-50 bg-[#1e1e1e] border border-[#222] rounded-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-pitch-600 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#222] flex-shrink-0">
           <h2 className="text-lg font-bold text-white">
             {isEditing ? "编辑自定义动作" : "添加自定义动作"}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-pitch-700"
+            className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -163,7 +163,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
           {/* 动作名称 */}
           <div>
             <label className={labelClass}>
-              动作名称 <span className="text-neon-pink">*</span>
+              动作名称 <span className="text-[#d92525]">*</span>
             </label>
             <input
               type="text"
@@ -370,16 +370,16 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-pitch-600 flex-shrink-0">
+        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-[#222] flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition rounded-lg hover:bg-pitch-700"
+            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]"
           >
             取消
           </button>
           <button
             onClick={handleSubmit}
-            className="px-5 py-2 bg-neon-pink text-black text-sm font-bold rounded-lg hover:opacity-90 transition flex items-center gap-1.5"
+            className="px-5 py-2 bg-[#d92525] text-white text-sm font-bold rounded-lg hover:opacity-90 transition flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             {isEditing ? "保存修改" : "保存"}

@@ -648,7 +648,7 @@ function ExerciseCard({
         <h3 className="text-[#d1d1d1] font-bold text-xs truncate">{exercise.name}</h3>
         <div className="flex items-center gap-1 mt-1 flex-wrap">
           <span className={`px-1 py-0 rounded text-[9px] font-medium ${
-            isStrength ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/20" : "bg-pitch-600 text-gray-400"
+            isStrength ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/20" : "bg-[#222] text-gray-400"
           }`}>
             {exercise.type}
           </span>
@@ -665,8 +665,8 @@ function ExerciseCard({
         )}
         {exercise.isCustom && (
           <div className="flex gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
-            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-pitch-700 text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
-            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-pitch-700 text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
+            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1e1e1e] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
+            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1e1e1e] text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
           </div>
         )}
       </div>

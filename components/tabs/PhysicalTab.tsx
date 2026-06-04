@@ -53,38 +53,38 @@ export function PhysicalTab({ modules, position }: Props) {
       </div>
 
       {isGoalkeeper && (
-        <p className="text-xs text-gray-500 bg-pitch-700/50 rounded-lg p-2">
+        <p className="text-xs text-gray-500 bg-[#1e1e1e]/50 rounded-lg p-2">
           守门员仅展示无球训练内容
         </p>
       )}
 
       {upper.length > 0 && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🦾 上肢训练</h4>
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🦾 上肢训练</h4>
           <ExerciseTable exercises={upper} />
         </div>
       )}
 
       {lower.length > 0 && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🦿 下肢训练</h4>
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🦿 下肢训练</h4>
           <ExerciseTable exercises={lower} />
         </div>
       )}
 
       {core.length > 0 && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
-          <h4 className="text-neon-pink text-sm font-bold mb-2">💪 核心训练</h4>
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">💪 核心训练</h4>
           <ExerciseTable exercises={core} />
         </div>
       )}
 
       {abilityExercises.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">⚡ 定向能力训练</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">⚡ 定向能力训练</h4>
           <div className="space-y-3">
             {abilityExercises.map((ex, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-4">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white">{ex.name}</span>
                   <span className="text-xs text-gray-400">

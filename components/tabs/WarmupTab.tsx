@@ -52,7 +52,7 @@ export function WarmupTab({ modules, position }: Props) {
     <div className="space-y-4">
       {/* Warmup mode selector (hidden for goalkeepers) */}
       {!isGoalkeeper && (
-        <div className="flex items-center gap-1 bg-pitch-800 rounded-lg p-0.5 w-fit">
+        <div className="flex items-center gap-1 bg-[#1e1e1e] rounded-lg p-0.5 w-fit">
           {([
             { value: "no_ball" as const, label: "无球热身" },
             { value: "with_ball" as const, label: "有球热身" },
@@ -63,7 +63,7 @@ export function WarmupTab({ modules, position }: Props) {
               onClick={() => setMode(opt.value)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
                 mode === opt.value
-                  ? "bg-neon-pink text-white"
+                  ? "bg-[#d92525] text-white"
                   : "text-gray-400 hover:text-white"
               }`}
             >
@@ -88,7 +88,7 @@ export function WarmupTab({ modules, position }: Props) {
             if (!isNoBall) {
               // Simple flat list for with_ball or combined mode
               return filtered.map((w, i) => (
-                <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+                <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                   <div className="flex justify-between">
                     <span className="font-medium text-white">{w.name}</span>
                     <span className="text-xs text-gray-400">{w.duration}秒</span>
@@ -108,14 +108,14 @@ export function WarmupTab({ modules, position }: Props) {
             return phases.map((phase) => (
               <div key={phase}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-neon-pink/80 bg-neon-pink/10 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-[#d92525]/80 bg-[#d92525]/10 px-2 py-0.5 rounded">
                     {PHASE_LABELS[phase]}
                   </span>
-                  <div className="flex-1 h-px bg-pitch-700/50" />
+                  <div className="flex-1 h-px bg-[#1e1e1e]/50" />
                 </div>
                 <div className="space-y-2">
                   {grouped[phase].map((w, i) => (
-                    <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+                    <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                       <div className="flex justify-between">
                         <span className="font-medium text-white">{w.name}</span>
                         <span className="text-xs text-gray-400">{w.duration}秒</span>

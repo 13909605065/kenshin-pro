@@ -34,9 +34,9 @@ export function HistoryDrawer({ open, onClose }: Props) {
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-pitch-800 border-l border-pitch-600 z-50 animate-slide-left overflow-y-auto">
+      <div className="fixed right-0 top-0 h-full w-full sm:w-96 bg-[#1e1e1e] border-l border-[#222] z-50 animate-slide-left overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-pitch-800 border-b border-pitch-600 p-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-[#1e1e1e] border-b border-[#222] p-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-white">历史记录</h2>
           <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -92,10 +92,10 @@ export function HistoryDrawer({ open, onClose }: Props) {
 
                   {/* Preview */}
                   {previewItem?.id === item.id && (
-                    <div className="mt-3 pt-3 border-t border-pitch-600 space-y-2">
+                    <div className="mt-3 pt-3 border-t border-[#222] space-y-2">
                       {item.plan_content?.map((mod: any, i: number) => (
                         <div key={i} className="text-xs">
-                          <span className="text-neon-pink font-bold">{mod.title}</span>
+                          <span className="text-[#d92525] font-bold">{mod.title}</span>
                           <span className="text-gray-500 ml-2">
                             {mod.status === "skipped" ? "已跳过" : `${mod.exercises?.length || mod.drills?.length || mod.phases?.length || 0} 项`}
                           </span>
@@ -109,7 +109,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                           );
                           onClose();
                         }}
-                        className="mt-2 text-xs text-neon-pink hover:underline"
+                        className="mt-2 text-xs text-[#d92525] hover:underline"
                       >
                         加载此方案
                       </button>

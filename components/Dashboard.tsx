@@ -68,6 +68,7 @@ const INJURY_GROUPS: Record<string, string[]> = {
 
 function ProfileSummary({ formData, t }: any) {
   const isCoach = formData.role === "coach";
+  const isFitness = formData.role === "fitness";
   if (isCoach) {
     const parts = [
       formData.coachCert && (formData.coachCert === "none" ? "NONE" : formData.coachCert.toUpperCase()),
@@ -80,6 +81,27 @@ function ProfileSummary({ formData, t }: any) {
           <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
         ))}
         {parts.length === 0 && <span className="text-[10px] text-gray-500">未设置</span>}
+      </div>
+    );
+  }
+  if (isFitness) {
+    const stats = [
+      formData.age && `${formData.age}岁`,
+      formData.height && `${formData.height}cm`,
+      formData.weight && `${formData.weight}kg`,
+    ].filter(Boolean);
+    return (
+      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#d92525] text-white">健身</span>
+        {formData.gender && (
+          <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
+        )}
+        {stats.length > 0 && (
+          <span className="text-[10px] text-gray-500">{stats.join(" · ")}</span>
+        )}
+        {stats.length === 0 && !formData.gender && (
+          <span className="text-[10px] text-gray-500">完善档案以获得个性化建议</span>
+        )}
       </div>
     );
   }
@@ -193,34 +215,36 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
             {/* Gender */}
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => updateField("gender", "male")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>♂ 男</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>♂ 男</button>
               <button onClick={() => updateField("gender", "female")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>♀ 女</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>♀ 女</button>
             </div>
 
-            {/* Position 3+2 */}
+            {/* Position 3+2 — athletes only, not fitness */}
+            {formData.role !== "fitness" && (
             <div>
               <p className="text-[10px] text-gray-500 mb-1.5">{t("player.position")}</p>
               <div className="space-y-1.5">
                 <div className="grid grid-cols-3 gap-1.5">
                   {["goalkeeper","defender","midfielder"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
                 <div className="flex justify-center gap-1.5">
                   {["forward","wingback"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Sub-position */}
-            {formData.position && SUB_POS[formData.position] && (
+            {/* Sub-position — athletes only, not fitness */}
+            {formData.role !== "fitness" && formData.position && SUB_POS[formData.position] && (
               <select value={subPos} onChange={(e: any) => setSubPos(e.target.value)}
-                className="w-full bg-pitch-700 border border-pitch-600 rounded px-3 py-2 text-sm text-gray-300">
+                className="w-full bg-[#1e1e1e] border border-[#222] rounded px-3 py-2 text-sm text-gray-300">
                 <option value="">{t("pos."+formData.position)} · 细分（可选）</option>
                 {(SUB_POS[formData.position]||[]).map((sp: string) => <option key={sp} value={sp}>{sp}</option>)}
               </select>
@@ -245,17 +269,17 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
           /* Coach fields */
           <div className="grid grid-cols-3 gap-2">
             <select value={formData.coachCert||""} onChange={(e: any) => { updateField("coachCert", e.target.value); updateField("coachRole", null); updateField("leagueTag", null); }}
-              className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1 text-xs text-gray-300">
+              className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1 text-xs text-gray-300">
               <option value="" disabled>证书等级</option>
               {["pro","a","b","c","d","none"].map((c: string) => <option key={c} value={c}>{c === "none" ? "NONE" : c.toUpperCase()}</option>)}
             </select>
             <select value={formData.coachRole||""} onChange={(e: any) => updateField("coachRole", e.target.value)}
-              className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1 text-xs text-gray-300" disabled={!formData.coachCert}>
+              className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1 text-xs text-gray-300" disabled={!formData.coachCert}>
               <option value="" disabled>执教身份</option>
               {["campus","youth","amateur","semi_pro","pro"].map((r: string) => <option key={r} value={r}>{(COACH_ROLE_LABELS as any)[r]}</option>)}
             </select>
             <select value={formData.leagueTag||""} onChange={(e: any) => updateField("leagueTag", e.target.value)}
-              className="bg-pitch-700 border border-pitch-600 rounded px-2 py-1 text-xs text-gray-300" disabled={!formData.coachCert}>
+              className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1 text-xs text-gray-300" disabled={!formData.coachCert}>
               <option value="" disabled>联赛/梯队</option>
               {["youth_u12","youth_u15","youth_u18","campus_u6_u12","amateur_team","china_league_two","china_league_one","chinese_super_league"].map((l: string) => <option key={l} value={l}>{(LEAGUE_TAG_LABELS as any)[l]}</option>)}
             </select>
@@ -341,7 +365,8 @@ export function Dashboard() {
   );
 
   const handleGenerate = useCallback(async () => {
-    if (!formData.position && !isCoach) { alert("请先编辑档案，填写场上位置"); return; }
+    if (!formData.position && !isCoach && !isFitness) { alert("请先编辑档案，填写场上位置"); return; }
+    if (isFitness && !formData.goal) { alert("请先选择健身目标"); return; }
     // Inject coachInput into formData as weakness/notes for AI context
     if (coachInput.trim()) {
       (formData as any).coachInput = coachInput.trim();
@@ -500,7 +525,7 @@ export function Dashboard() {
           {!isCoach && (
             <>
               {/* Selected Items Preview Bar */}
-              {(formData.goal || formData.phase || formData.injurySites.length > 0) && (
+              {(formData.goal || (!isFitness && formData.phase) || formData.injurySites.length > 0) && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3">
                   <div className="flex flex-wrap gap-1.5 items-center">
                     <span className="text-[10px] text-gray-500 mr-1">已选：</span>
@@ -510,7 +535,7 @@ export function Dashboard() {
                         <button onClick={() => updateField("goal", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     )}
-                    {formData.phase && (
+                    {!isFitness && formData.phase && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {PHASE_LABELS[formData.phase] || t(`phase.${formData.phase}`)}
                         <button onClick={() => updateField("phase", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
@@ -526,22 +551,19 @@ export function Dashboard() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className={isFitness ? "" : "grid grid-cols-2 gap-5"}>
                 {/* Left: Training Goals */}
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
                   <div className="space-y-2">
                     {isFitness ? FITNESS_GOALS.map((g) => {
                       const isSelected = formData.goal === g.id;
-                      const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g.id) : false;
                       return (
                         <button key={g.id} onClick={() => updateField("goal", g.id)}
                           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
                             isSelected
                               ? "bg-[#d92525] text-white border-[#d92525]"
-                              : isHighlighted
-                                ? "bg-[#1e1e1e] text-gray-300 border-[#d92525]/40"
-                                : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                              : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
                           }`}>
                           <span className="block">{g.label}</span>
                           <span className="block text-[10px] opacity-60">{g.desc}</span>
@@ -561,8 +583,8 @@ export function Dashboard() {
                             isSelected
                               ? "bg-[#d92525] text-white border-[#d92525]"
                               : isHighlighted
-                                ? "bg-[#1a1a1a] text-gray-300 border-[#d92525]/40"
-                                : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                                ? "bg-[#1e1e1e] text-gray-300 border-[#d92525]/40"
+                                : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
                           }`}>
                           {GOAL_LABELS[g] || t(`goal.${g}`)}
                         </button>
@@ -571,7 +593,8 @@ export function Dashboard() {
                   </div>
                 </div>
 
-                {/* Right: Season Phase */}
+                {/* Right: Season Phase — athletes only */}
+                {!isFitness && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
                   <div className="space-y-2">
@@ -582,7 +605,7 @@ export function Dashboard() {
                           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
                             isSelected
                               ? "bg-[#d92525] text-white border-[#d92525]"
-                              : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                              : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
                           }`}>
                           {PHASE_LABELS[p] || t(`phase.${p}`)}
                         </button>
@@ -594,6 +617,7 @@ export function Dashboard() {
                     <p className="text-[10px] text-gray-500 mt-3 leading-relaxed">{PHASE_HINT_TEXT[formData.phase]}</p>
                   )}
                 </div>
+                )}
               </div>
             </>
           )}
@@ -619,7 +643,7 @@ export function Dashboard() {
                           const active = formData.injurySites.includes(s as any);
                           return (
                             <button key={s} onClick={() => { const next = active ? formData.injurySites.filter((x: any) => x!==s) : [...formData.injurySites, s as any]; updateField("injurySites", next as any); }}
-                              className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1a1a1a] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
+                              className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
                           );
                         })}
                       </div>
@@ -643,7 +667,7 @@ export function Dashboard() {
                       className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
                         active
                           ? "bg-[#d92525] border-[#d92525] text-white"
-                          : "bg-[#1a1a1a] border-transparent text-gray-400 hover:border-[#d92525]/30 hover:text-gray-200"
+                          : "bg-[#1e1e1e] border-transparent text-gray-400 hover:border-[#d92525]/30 hover:text-gray-200"
                       }`}>{v}</button>
                   );
                 })}
@@ -660,22 +684,53 @@ export function Dashboard() {
                   <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
                 )}
               </p>
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 {[
-                  { n:"标志盘",e:"🔶"},{n:"标志桶",e:"🪣"},{n:"标志杆",e:"🥅"},{n:"号坎",e:"👕"},{n:"足球",e:"⚽"},
-                  {n:"小球门",e:"🥅"},{n:"标准门",e:"🏟️"},{n:"小栏架",e:"🚧"},{n:"高栏架",e:"📏"},{n:"绳梯",e:"🪜"},
-                  {n:"敏捷圈",e:"⭕"},{n:"弹力带",e:"🩹"},{n:"药球",e:"🏐"},{n:"瑜伽球",e:"🎈"},{n:"泡沫轴",e:"🫧"},
-                ].map(({n,e}) => {
+                  { n:"标志盘",  color:"#e8780a" },
+                  { n:"标志桶",  color:"#e8780a" },
+                  { n:"标志杆",  color:"#e8c800" },
+                  { n:"号坎",    color:"#4a90d9" },
+                  { n:"足球",    color:"#ffffff" },
+                  { n:"小球门",  color:"#ffffff" },
+                  { n:"标准门",  color:"#ffffff" },
+                  { n:"小栏架",  color:"#e8780a" },
+                  { n:"高栏架",  color:"#e8780a" },
+                  { n:"绳梯",    color:"#c8960c" },
+                  { n:"敏捷圈",  color:"#4a90d9" },
+                  { n:"弹力带",  color:"#e8780a" },
+                  { n:"药球",    color:"#d92525" },
+                  { n:"瑜伽球",  color:"#4a90d9" },
+                  { n:"泡沫轴",  color:"#888888" },
+                ].map(({ n, color }) => {
                   const act = formData.equipmentAvailable?.includes(n);
+                  const iconColor = act ? "#d92525" : color;
                   return (
                     <button key={n} onClick={() => {
                       const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
                       updateField("equipmentAvailable", next);
-                    }} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg text-[11px] transition-all duration-150 border ${
-                      act ? "bg-[#d92525]/15 border-[#d92525]/40 text-[#d92525]" : "bg-[#1a1a1a] border-[#222] text-gray-500 hover:border-[#d92525]/30 hover:text-gray-300"
+                    }} className={`flex flex-col items-center justify-center gap-1.5 aspect-square rounded-lg transition-all duration-150 border ${
+                      act
+                        ? "bg-[#2c1c1c] border-[#d92525]/40"
+                        : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
                     }`}>
-                      <span className="text-base">{e}</span>
-                      <span>{n}</span>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                        {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
+                        {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                        {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                        {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                        {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                        {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
+                        {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
+                        {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
+                        {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
+                        {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                      </svg>
+                      <span className={`text-[11px] font-medium ${act ? "text-[#d92525]" : "text-[#999]"}`}>{n}</span>
                     </button>
                   );
                 })}
@@ -698,7 +753,7 @@ export function Dashboard() {
               </div>
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {playerPlans.slice(0, 8).map((plan) => (
-                  <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-pitch-700/50 transition group">
+                  <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-[#1e1e1e]/50 transition group">
                     <button
                       onClick={() => {
                         training.loadModules(plan.modules, plan.formData);
@@ -737,14 +792,14 @@ export function Dashboard() {
               <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
               {PHASES.map(p => (
                 <button key={p} onClick={() => updateField("phase", p)}
-                  className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1a1a1a] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
+                  className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
               ))}
             </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
               placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
               rows={2}
-              className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-none"
+              className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-none"
             />
           </div>
           )}
@@ -752,7 +807,7 @@ export function Dashboard() {
           {/* Hint text when generate is disabled */}
           {!isStepValid && (
             <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
-              {isCoach ? "请先点击「编辑」完善教练档案" : "请先填写场上位置"}
+              {isCoach ? "请先点击「编辑」完善教练档案" : isFitness ? "请先点击「编辑」填写身体数据和健身目标" : "请先填写场上位置"}
             </p>
           )}
 
@@ -799,8 +854,8 @@ export function Dashboard() {
       {/* ====== Completion flash ====== */}
       {showDone && (
         <div className="glass-card p-12 flex flex-col items-center justify-center space-y-6 animate-in fade-in">
-          <div className="w-16 h-16 rounded-full bg-neon-pink/20 flex items-center justify-center">
-            <svg className="w-10 h-10 text-neon-pink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <div className="w-16 h-16 rounded-full bg-[#d92525]/20 flex items-center justify-center">
+            <svg className="w-10 h-10 text-[#d92525]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
@@ -815,8 +870,8 @@ export function Dashboard() {
       {/* ====== Empty Results Fallback ====== */}
       {(status === "complete" || status === "stream-interrupted") && training.modules.length === 0 && !showDone && (
         <div className="glass-card p-8 text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-full bg-neon-pink/10 flex items-center justify-center">
-            <Zap className="w-8 h-8 text-neon-pink" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#d92525]/10 flex items-center justify-center">
+            <Zap className="w-8 h-8 text-[#d92525]" />
           </div>
           <div>
             <p className="text-white font-bold text-lg mb-1">AI 返回内容为空</p>
@@ -825,11 +880,11 @@ export function Dashboard() {
             </p>
           </div>
           <div className="flex items-center justify-center gap-3">
-            <button onClick={handleRetry} className="px-6 py-2.5 bg-neon-pink text-black font-bold rounded-xl text-sm">
+            <button onClick={handleRetry} className="px-6 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm">
               重试生成
             </button>
             <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); }}
-              className="px-6 py-2.5 bg-pitch-700 text-gray-300 rounded-xl text-sm hover:bg-pitch-600 transition">
+              className="px-6 py-2.5 bg-[#1e1e1e] text-gray-300 rounded-xl text-sm hover:bg-[#222] transition">
               返回表单
             </button>
           </div>
@@ -843,7 +898,7 @@ export function Dashboard() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               {training.fromCache ? (
-                <span className="text-sm text-neon-pink font-bold">⚡ 已有方案 · 秒开</span>
+                <span className="text-sm text-[#d92525] font-bold">⚡ 已有方案 · 秒开</span>
               ) : (
                 <>
                   <p className="text-white font-bold text-lg">训练方案</p>
@@ -851,7 +906,7 @@ export function Dashboard() {
                     {status === "streaming" ? `AI 生成中 ${training.modules.length}/${isCoach ? 3 : 5}...` : "✓ 生成完成"}
                   </p>
                   {savedPlanId && status === "complete" && (
-                    <p className="text-[10px] text-neon-pink mt-0.5">✓ 已自动保存到方案历史</p>
+                    <p className="text-[10px] text-[#d92525] mt-0.5">✓ 已自动保存到方案历史</p>
                   )}
                 </>
               )}
@@ -861,7 +916,7 @@ export function Dashboard() {
               {status === "complete" && (
                 <button
                   onClick={() => { setManualSaveName(formData.name?.trim() || ""); setShowManualSave(true); }}
-                  className="flex items-center gap-1 px-3 py-2 bg-neon-pink/10 border border-neon-pink/30 text-neon-pink rounded-lg text-xs hover:bg-neon-pink/20 transition font-medium"
+                  className="flex items-center gap-1 px-3 py-2 bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525] rounded-lg text-xs hover:bg-[#d92525]/20 transition font-medium"
                 >
                   <Save className="w-3.5 h-3.5" />保存当前方案
                 </button>
@@ -871,7 +926,7 @@ export function Dashboard() {
                 <div className="relative">
                   <button
                     onClick={() => setPlanHistoryOpen(!planHistoryOpen)}
-                    className="flex items-center gap-1 px-3 py-2 bg-pitch-700 border border-pitch-600 text-gray-300 rounded-lg text-xs hover:border-pitch-500 transition"
+                    className="flex items-center gap-1 px-3 py-2 bg-[#1e1e1e] border border-[#222] text-gray-300 rounded-lg text-xs hover:border-[#d92525] transition"
                   >
                     <History className="w-3.5 h-3.5" />
                     方案历史 ({playerPlans.length})
@@ -880,7 +935,7 @@ export function Dashboard() {
                   {planHistoryOpen && (
                     <div className="absolute right-0 top-full mt-1 w-72 max-h-60 overflow-y-auto glass-card p-2 z-50 space-y-1">
                       {playerPlans.map((plan) => (
-                        <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-pitch-700/50 transition group">
+                        <div key={plan.id} className="flex items-center justify-between p-2 rounded hover:bg-[#1e1e1e]/50 transition group">
                           <button
                             onClick={() => {
                               training.loadModules(plan.modules, plan.formData);
@@ -914,7 +969,7 @@ export function Dashboard() {
                 </div>
               )}
               <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }}
-                className="px-4 py-2 bg-pitch-700 text-gray-300 rounded-lg text-sm hover:bg-pitch-600 transition font-medium">
+                className="px-4 py-2 bg-[#1e1e1e] text-gray-300 rounded-lg text-sm hover:bg-[#222] transition font-medium">
                 ← 新建方案
               </button>
             </div>
@@ -944,7 +999,7 @@ export function Dashboard() {
                     setShowManualSave(false);
                   }
                 }}
-                className="bg-neon-pink text-black text-xs font-bold px-4 py-2 rounded"
+                className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded"
               >
                 保存
               </button>
@@ -958,7 +1013,7 @@ export function Dashboard() {
           )}
 
           <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} launchTimer={launchTimer} onLaunchTimer={() => setLaunchTimer(false)} />
-          <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }} className="w-full py-2 bg-pitch-700 text-gray-400 rounded-lg text-sm hover:bg-pitch-600 transition">← {t("dashboard.newPlan")}</button>
+          <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }} className="w-full py-2 bg-[#1e1e1e] text-gray-400 rounded-lg text-sm hover:bg-[#222] transition">← {t("dashboard.newPlan")}</button>
           {!isCoach && <TrainingHistory />}
         </div>
       )}
@@ -969,7 +1024,7 @@ export function Dashboard() {
           <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder={t("dashboard.templateName")} className="input-field text-sm flex-1"
             onKeyDown={(e) => { if(e.key==="Enter"&&templateName){ templates.saveTemplate(templateName, wizard.formData, training.modules); setTemplateName(""); setShowTemplateSave(false); }}} />
           <button onClick={() => { if(templateName){ templates.saveTemplate(templateName, wizard.formData, training.modules); setTemplateName(""); setShowTemplateSave(false); }}}
-            className="bg-neon-pink text-black text-xs font-bold px-4 py-2 rounded">保存</button>
+            className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
         </div>
       )}
     </div>

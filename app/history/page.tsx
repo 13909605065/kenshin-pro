@@ -62,8 +62,8 @@ export default function HistoryPage() {
   const avgMin = totalSessions > 0 ? Math.round(totalMin / totalSessions) : 0;
 
   return (
-    <div className="min-h-screen bg-pitch-900 pb-20">
-      <header className="sticky top-0 z-40 bg-pitch-900/90 backdrop-blur border-b border-pitch-700 px-4 h-14 flex items-center">
+    <div className="min-h-screen bg-[#121212] pb-20">
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#1e1e1e] px-4 h-14 flex items-center">
         <h1 className="text-white font-bold text-lg">📜 训练历史</h1>
         <button onClick={() => router.push("/")} className="ml-auto text-sm text-gray-400 hover:text-white">← 返回</button>
       </header>
@@ -73,15 +73,15 @@ export default function HistoryPage() {
         {totalSessions > 0 && (
           <div className="grid grid-cols-3 gap-3 mb-4">
             <div className="glass-card p-4 text-center">
-              <div className="text-neon-pink font-bold text-2xl">{totalSessions}</div>
+              <div className="text-[#d92525] font-bold text-2xl">{totalSessions}</div>
               <div className="text-xs text-gray-500 mt-1">总训练次数</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-neon-pink font-bold text-2xl">{Math.round(totalMin)}</div>
+              <div className="text-[#d92525] font-bold text-2xl">{Math.round(totalMin)}</div>
               <div className="text-xs text-gray-500 mt-1">总分钟数</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-neon-pink font-bold text-2xl">{avgMin}</div>
+              <div className="text-[#d92525] font-bold text-2xl">{avgMin}</div>
               <div className="text-xs text-gray-500 mt-1">平均分钟/次</div>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function HistoryPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜索方案（球员名/位置/日期）..."
-              className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl pl-9 pr-8 py-2.5 text-sm text-white placeholder-gray-500 focus:border-neon-pink focus:outline-none"
+              className="w-full bg-[#1e1e1e] border border-[#333] rounded-xl pl-9 pr-8 py-2.5 text-sm text-white placeholder-gray-500 focus:border-[#d92525] focus:outline-none"
             />
             {search && (
               <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">

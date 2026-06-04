@@ -171,13 +171,13 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
   }, [rows]);
 
   if (total === 0) {
-    return <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练项目</div>;
+    return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练项目</div>;
   }
 
   return (
     <div className="space-y-4">
       {/* Segmented progress bar */}
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
+      <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold text-white">
             {doneCount === total ? "训练完成" : `训练进度 ${doneCount}/${total}`}
@@ -205,7 +205,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
       </div>
 
       {/* Single table */}
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden">
+      <div className="bg-[#1e1e1e] border border-[#333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px]">
             {/* Sticky header */}
@@ -337,7 +337,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
       {/* Image modal */}
       {imageModal && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setImageModal(null)}>
-          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[#1e1e1e] border border-[#333] rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#333]">
               <span className="text-sm font-bold text-white truncate">{imageModal.name}</span>
               <button onClick={() => setImageModal(null)} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>

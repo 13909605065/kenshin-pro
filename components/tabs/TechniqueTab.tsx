@@ -18,16 +18,16 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
   const hasDetails = !!(drill.purpose || (drill.key_points && drill.key_points.length > 0));
 
   return (
-    <div className="bg-pitch-700/40 rounded-xl border border-pitch-600/50 overflow-hidden group hover:border-pitch-500/80 transition-colors">
+    <div className="bg-[#1e1e1e]/40 rounded-xl border border-[#222]/50 overflow-hidden group hover:border-[#d92525]/80 transition-colors">
       {/* Card Header — always visible */}
       <div className="flex items-start gap-3 p-3">
         {/* Number badge */}
-        <div className="w-7 h-7 rounded-lg bg-neon-pink/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <span className="text-neon-pink text-xs font-bold">{index + 1}</span>
+        <div className="w-7 h-7 rounded-lg bg-[#d92525]/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span className="text-[#d92525] text-xs font-bold">{index + 1}</span>
         </div>
 
         {/* Thumbnail or placeholder */}
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-pitch-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-[#222] flex items-center justify-center flex-shrink-0 overflow-hidden">
           {hasImage ? (
             <img src={drill.image_url} alt={drill.name}
               className="w-full h-full object-cover cursor-pointer hover:scale-110 transition"
@@ -49,7 +49,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
             {hasImage && (
               <button
                 onClick={() => setImgPreview(drill.image_url!)}
-                className="flex items-center gap-1 text-[10px] text-neon-pink hover:text-white transition">
+                className="flex items-center gap-1 text-[10px] text-[#d92525] hover:text-white transition">
                 <Eye className="w-3 h-3" /> 查看动作图
               </button>
             )}
@@ -68,18 +68,18 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
 
       {/* Expandable details */}
       {expanded && hasDetails && (
-        <div className="px-3 pb-3 pt-0 border-t border-pitch-600/50 space-y-2.5">
+        <div className="px-3 pb-3 pt-0 border-t border-[#222]/50 space-y-2.5">
           {drill.purpose && (
-            <div className="flex items-start gap-2 bg-pitch-800/50 rounded-lg p-2.5">
-              <Target className="w-3.5 h-3.5 text-neon-pink flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 bg-[#1e1e1e]/50 rounded-lg p-2.5">
+              <Target className="w-3.5 h-3.5 text-[#d92525] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[10px] text-neon-pink font-bold mb-0.5">训练目的</p>
+                <p className="text-[10px] text-[#d92525] font-bold mb-0.5">训练目的</p>
                 <p className="text-xs text-gray-300">{drill.purpose}</p>
               </div>
             </div>
           )}
           {drill.key_points && drill.key_points.length > 0 && (
-            <div className="bg-pitch-800/50 rounded-lg p-2.5">
+            <div className="bg-[#1e1e1e]/50 rounded-lg p-2.5">
               <div className="flex items-center gap-2 mb-1.5">
                 <Zap className="w-3.5 h-3.5 text-neon-gold flex-shrink-0" />
                 <p className="text-[10px] text-neon-gold font-bold">技术要点</p>
@@ -101,7 +101,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
 
       {/* Field diagram preview */}
       {drill.diagram && (
-        <div className="border-t border-pitch-600/50">
+        <div className="border-t border-[#222]/50">
           <FieldDiagram diagram={drill.diagram} />
         </div>
       )}
@@ -123,7 +123,7 @@ export function TechniqueTab({ modules }: Props) {
   if (!techModule || !Array.isArray(techModule.drills) || techModule.drills.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-12 h-12 mx-auto rounded-full bg-pitch-700 flex items-center justify-center mb-3">
+        <div className="w-12 h-12 mx-auto rounded-full bg-[#1e1e1e] flex items-center justify-center mb-3">
           <Target className="w-6 h-6 text-gray-600" />
         </div>
         <p className="text-sm text-gray-500">暂无技术训练内容</p>
@@ -146,7 +146,7 @@ export function TechniqueTab({ modules }: Props) {
           </p>
         </div>
         {!hasAnyImage && (
-          <span className="text-[10px] text-gray-600 bg-pitch-700/50 px-2 py-0.5 rounded">
+          <span className="text-[10px] text-gray-600 bg-[#1e1e1e]/50 px-2 py-0.5 rounded">
             图片由 AI 自动匹配
           </span>
         )}
@@ -160,20 +160,20 @@ export function TechniqueTab({ modules }: Props) {
       </div>
 
       {/* Running Profile — compact card */}
-      <div className="bg-pitch-700/30 rounded-xl border border-pitch-600/50 p-4">
+      <div className="bg-[#1e1e1e]/30 rounded-xl border border-[#222]/50 p-4">
         <h4 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
           🏃 跑动负荷特征
         </h4>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-pitch-800/60 rounded-lg p-3">
+          <div className="bg-[#1e1e1e]/60 rounded-lg p-3">
             <p className="text-[10px] text-gray-500 mb-0.5">总跑动距离</p>
             <p className="text-lg font-bold text-white">{running.total_distance}</p>
           </div>
-          <div className="bg-pitch-800/60 rounded-lg p-3">
+          <div className="bg-[#1e1e1e]/60 rounded-lg p-3">
             <p className="text-[10px] text-gray-500 mb-0.5">强度区间分布</p>
             <div className="flex flex-wrap gap-1 mt-1">
               {(running.intensity_zones || []).map((zone: string, i: number) => (
-                <span key={i} className="px-2 py-0.5 rounded-full bg-pitch-600 text-[10px] text-gray-300">
+                <span key={i} className="px-2 py-0.5 rounded-full bg-[#222] text-[10px] text-gray-300">
                   {zone}
                 </span>
               ))}

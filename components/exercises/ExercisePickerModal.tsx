@@ -49,17 +49,17 @@ export function ExercisePickerModal({ open, onClose, onSelect }: Props) {
       <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-40" onClick={onClose} />
 
       {/* Modal */}
-      <div className="fixed inset-4 sm:inset-x-auto sm:top-8 sm:bottom-8 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-2xl sm:w-full z-50 bg-pitch-800 border border-pitch-600 rounded-2xl flex flex-col overflow-hidden">
+      <div className="fixed inset-4 sm:inset-x-auto sm:top-8 sm:bottom-8 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-2xl sm:w-full z-50 bg-[#1e1e1e] border border-[#222] rounded-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-pitch-600 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#222] flex-shrink-0">
           <h2 className="text-lg font-bold text-white">选择训练动作</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-pitch-700">
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Filter */}
-        <div className="px-5 py-3 border-b border-pitch-600 flex-shrink-0">
+        <div className="px-5 py-3 border-b border-[#222] flex-shrink-0">
           <FilterBar
             bodyPart={bodyPart}
             equipment={equipment}

@@ -24,8 +24,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
             onClick={() => onSetRole ? onSetRole("athlete") : onChange("role", "athlete")}
             className={`p-4 rounded-xl border transition-all text-center ${
               formData.role === "athlete"
-                ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                : "border-[#222] text-gray-400 hover:border-[#d92525]"
             }`}
           >
             <User className="w-6 h-6 mx-auto mb-1" />
@@ -35,8 +35,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
             onClick={() => onSetRole ? onSetRole("coach") : onChange("role", "coach")}
             className={`p-4 rounded-xl border transition-all text-center ${
               formData.role === "coach"
-                ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                : "border-[#222] text-gray-400 hover:border-[#d92525]"
             }`}
           >
             <Users className="w-6 h-6 mx-auto mb-1" />
@@ -47,7 +47,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
 
       {/* Coach-specific fields: 3-tier cascading selector */}
       {formData.role === "coach" && (
-        <div className="space-y-4 bg-neon-pink/5 border border-neon-pink/20 rounded-xl p-4">
+        <div className="space-y-4 bg-[#d92525]/5 border border-[#d92525]/20 rounded-xl p-4">
           {/* Tier 1: Certificate */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">教练证书等级 *</label>
@@ -62,8 +62,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   }}
                   className={`p-2 rounded-lg text-xs font-medium border transition-all ${
                     formData.coachCert === cert.value
-                      ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                      : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                      ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                      : "border-[#222] text-gray-400 hover:border-[#d92525]"
                   }`}
                 >
                   {cert.label}
@@ -91,10 +91,10 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                       }}
                       className={`p-2 rounded-lg text-xs font-medium border transition-all ${
                         disabled
-                          ? "opacity-30 cursor-not-allowed border-pitch-600 text-gray-600"
+                          ? "opacity-30 cursor-not-allowed border-[#222] text-gray-600"
                           : formData.coachRole === roleOpt.value
-                          ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                          : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                          ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                          : "border-[#222] text-gray-400 hover:border-[#d92525]"
                       }`}
                       title={disabled ? "当前证书不可选" : ""}
                     >
@@ -122,10 +122,10 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                       onClick={() => onChange("leagueTag", league.value)}
                       className={`p-2 rounded-lg text-xs font-medium border transition-all ${
                         disabled
-                          ? "opacity-30 cursor-not-allowed border-pitch-600 text-gray-600"
+                          ? "opacity-30 cursor-not-allowed border-[#222] text-gray-600"
                           : formData.leagueTag === league.value
-                          ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                          : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                          ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                          : "border-[#222] text-gray-400 hover:border-[#d92525]"
                       }`}
                       title={disabled ? "当前证书不可选" : ""}
                     >
@@ -166,8 +166,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   onClick={() => onChange("position", pos.value)}
                   className={`p-3 rounded-xl text-sm font-medium border transition-all ${
                     formData.position === pos.value
-                      ? "border-neon-pink bg-neon-pink/10 text-neon-pink"
-                      : "border-pitch-600 text-gray-400 hover:border-pitch-500"
+                      ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
+                      : "border-[#222] text-gray-400 hover:border-[#d92525]"
                   }`}
                 >
                   {pos.label}

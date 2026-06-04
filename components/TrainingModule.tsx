@@ -47,7 +47,7 @@ export function TrainingModule({ module, defaultExpanded = false }: Props) {
         <div className="flex items-center gap-3">
           <div
             className={`w-2 h-2 rounded-full ${
-              module.status === "skipped" ? "bg-gray-500" : "bg-neon-pink"
+              module.status === "skipped" ? "bg-gray-500" : "bg-[#d92525]"
             }`}
           />
           <h3 className="font-bold text-white">{module.title}</h3>
@@ -65,7 +65,7 @@ export function TrainingModule({ module, defaultExpanded = false }: Props) {
             title="复制此模块"
           >
             {copied ? (
-              <Check className="w-4 h-4 text-neon-pink" />
+              <Check className="w-4 h-4 text-[#d92525]" />
             ) : (
               <Copy className="w-4 h-4" />
             )}
@@ -117,7 +117,7 @@ function ExerciseIcon({ name, imageUrl }: { name: string; imageUrl?: string }) {
       <img
         src={imageUrl}
         alt={name}
-        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-pitch-600"
+        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-[#222]"
         loading="lazy"
         onError={() => setImgFailed(true)}
       />
@@ -136,7 +136,7 @@ function ExerciseIcon({ name, imageUrl }: { name: string; imageUrl?: string }) {
   else if (/balance|稳定|stability|single/.test(lower)) emoji = "🎯";
 
   return (
-    <div className="w-10 h-10 rounded-lg bg-pitch-600 flex items-center justify-center flex-shrink-0 text-lg">
+    <div className="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center flex-shrink-0 text-lg">
       {emoji}
     </div>
   );
@@ -151,7 +151,7 @@ function ExerciseTable({ exercises }: { exercises: any[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-pitch-600">
+            <tr className="border-b border-[#222]">
               <th className="text-left py-2 text-gray-400 font-medium">动作</th>
               <th className="text-center py-2 text-gray-400 font-medium">组数</th>
               <th className="text-center py-2 text-gray-400 font-medium">次数</th>
@@ -167,7 +167,7 @@ function ExerciseTable({ exercises }: { exercises: any[] }) {
               const hasImage = !!(ex.image_url || ex.side_view_url);
               const imgUrl = ex.image_url || ex.side_view_url;
               return (
-                <tr key={i} className="border-b border-pitch-700/50">
+                <tr key={i} className="border-b border-[#1e1e1e]/50">
                   <td className="py-2">
                     <div className="flex items-center gap-2">
                       <ExerciseIcon name={ex.name} imageUrl={ex.image_url} />
@@ -195,8 +195,8 @@ function ExerciseTable({ exercises }: { exercises: any[] }) {
                           setPreviewName(ex.name);
                         }}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium
-                                   bg-pitch-700 border border-pitch-600 text-gray-300
-                                   hover:border-neon-pink hover:text-neon-pink transition-all"
+                                   bg-[#1e1e1e] border border-[#222] text-gray-300
+                                   hover:border-[#d92525] hover:text-[#d92525] transition-all"
                       >
                         <Eye className="w-3 h-3" />
                         查看动作图
@@ -228,10 +228,10 @@ function PositionTrainingContent({ data }: { data: PositionTraining }) {
     <div className="space-y-4">
       {data.warmup && data.warmup.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🔥 热身激活</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🔥 热身激活</h4>
           <div className="space-y-2">
             {data.warmup.map((w, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                 <div className="flex justify-between">
                   <span className="font-medium text-white">{w.name}</span>
                   <span className="text-xs text-gray-400">{w.duration}秒</span>
@@ -244,28 +244,28 @@ function PositionTrainingContent({ data }: { data: PositionTraining }) {
       )}
       {data.upper_limb.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🦾 上肢训练</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🦾 上肢训练</h4>
           <ExerciseTable exercises={data.upper_limb} />
         </div>
       )}
       {data.lower_limb.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🦿 下肢训练</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🦿 下肢训练</h4>
           <ExerciseTable exercises={data.lower_limb} />
         </div>
       )}
       {data.core.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">💪 核心训练</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">💪 核心训练</h4>
           <ExerciseTable exercises={data.core} />
         </div>
       )}
       {data.cooldown && data.cooldown.length > 0 && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🧊 整理活动</h4>
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🧊 整理活动</h4>
           <div className="space-y-2">
             {data.cooldown.map((c, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                 <div className="flex justify-between">
                   <span className="font-medium text-white">{c.name}</span>
                   <span className="text-xs text-gray-400">{c.duration}秒</span>
@@ -278,26 +278,26 @@ function PositionTrainingContent({ data }: { data: PositionTraining }) {
       )}
       {data.nutrition && (
         <div>
-          <h4 className="text-neon-pink text-sm font-bold mb-2">🥗 饮食搭配</h4>
-          <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+          <h4 className="text-[#d92525] text-sm font-bold mb-2">🥗 饮食搭配</h4>
+          <div className="bg-[#1e1e1e]/50 rounded-lg p-4 space-y-3">
             <div>
-              <span className="text-neon-pink text-xs font-bold">训练前：</span>
+              <span className="text-[#d92525] text-xs font-bold">训练前：</span>
               <p className="text-sm text-gray-300 mt-1">{data.nutrition.pre_training}</p>
             </div>
             <div>
-              <span className="text-neon-pink text-xs font-bold">训练后：</span>
+              <span className="text-[#d92525] text-xs font-bold">训练后：</span>
               <p className="text-sm text-gray-300 mt-1">{data.nutrition.post_training}</p>
             </div>
             <div>
-              <span className="text-neon-pink text-xs font-bold">日常饮食：</span>
+              <span className="text-[#d92525] text-xs font-bold">日常饮食：</span>
               <p className="text-sm text-gray-300 mt-1">{data.nutrition.daily_plan}</p>
             </div>
             <div>
-              <span className="text-neon-pink text-xs font-bold">补水：</span>
+              <span className="text-[#d92525] text-xs font-bold">补水：</span>
               <p className="text-sm text-gray-300 mt-1">{data.nutrition.hydration}</p>
             </div>
             <div>
-              <span className="text-neon-pink text-xs font-bold">补剂建议：</span>
+              <span className="text-[#d92525] text-xs font-bold">补剂建议：</span>
               <p className="text-sm text-gray-300 mt-1">{data.nutrition.supplements}</p>
             </div>
           </div>
@@ -311,7 +311,7 @@ function AbilityTrainingContent({ data }: { data: AbilityTraining }) {
   return (
     <div className="space-y-3">
       {data.exercises.map((ex, i) => (
-        <div key={i} className="bg-pitch-700/50 rounded-lg p-4">
+        <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <span className="font-bold text-white">{ex.name}</span>
             <span className="text-xs text-gray-400">
@@ -331,11 +331,11 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="text-neon-pink text-sm font-bold mb-2">技术练习</h4>
+        <h4 className="text-[#d92525] text-sm font-bold mb-2">技术练习</h4>
         <div className="space-y-3">
           {data.drills.map((drill, i) => (
             <div key={i}>
-              <div className="bg-pitch-700/50 rounded-lg p-3">
+              <div className="bg-[#1e1e1e]/50 rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium text-white">{drill.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -343,8 +343,8 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
                       <button
                         onClick={() => setDrillPreview({ url: drill.image_url!, name: drill.name })}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium
-                                   bg-pitch-700 border border-pitch-600 text-gray-300
-                                   hover:border-neon-pink hover:text-neon-pink transition-all"
+                                   bg-[#1e1e1e] border border-[#222] text-gray-300
+                                   hover:border-[#d92525] hover:text-[#d92525] transition-all"
                       >
                         <Eye className="w-3 h-3" />
                         查看动作图
@@ -357,19 +357,19 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
 
                 {/* Purpose & Key Points */}
                 {(drill.purpose || (drill.key_points && drill.key_points.length > 0)) && (
-                  <div className="mt-3 pt-3 border-t border-pitch-600 space-y-2">
+                  <div className="mt-3 pt-3 border-t border-[#222] space-y-2">
                     {drill.purpose && (
                       <div className="flex items-start gap-2">
-                        <span className="text-[10px] text-neon-pink font-bold mt-0.5 whitespace-nowrap">🎯 目的</span>
+                        <span className="text-[10px] text-[#d92525] font-bold mt-0.5 whitespace-nowrap">🎯 目的</span>
                         <span className="text-xs text-gray-300">{drill.purpose}</span>
                       </div>
                     )}
                     {drill.key_points && drill.key_points.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-[10px] text-neon-pink font-bold">⚡ 要点</span>
+                        <span className="text-[10px] text-[#d92525] font-bold">⚡ 要点</span>
                         {drill.key_points.map((kp, j) => (
                           <div key={j} className="flex items-start gap-1.5">
-                            <span className="text-[10px] text-neon-pink font-bold mt-0.5">{j + 1}.</span>
+                            <span className="text-[10px] text-[#d92525] font-bold mt-0.5">{j + 1}.</span>
                             <span className="text-xs text-gray-300">{kp}</span>
                           </div>
                         ))}
@@ -386,14 +386,14 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
         </div>
       </div>
       <div>
-        <h4 className="text-neon-pink text-sm font-bold mb-2">跑动特征</h4>
-        <div className="bg-pitch-700/50 rounded-lg p-3">
+        <h4 className="text-[#d92525] text-sm font-bold mb-2">跑动特征</h4>
+        <div className="bg-[#1e1e1e]/50 rounded-lg p-3">
           <p className="text-sm text-gray-300">
             总跑动距离：<span className="text-white">{data.running_profile.total_distance}</span>
           </p>
           <div className="flex gap-2 mt-2">
             {data.running_profile.intensity_zones.map((zone, i) => (
-              <span key={i} className="px-2 py-1 bg-pitch-600 rounded text-xs text-gray-300">
+              <span key={i} className="px-2 py-1 bg-[#222] rounded text-xs text-gray-300">
                 {zone}
               </span>
             ))}
@@ -415,15 +415,15 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
 function PhasePlanContent({ data }: { data: PhasePlan }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div className="bg-pitch-700/50 rounded-lg p-3 text-center">
-        <div className="text-2xl font-bold text-neon-pink">{data.weekly_frequency}</div>
+      <div className="bg-[#1e1e1e]/50 rounded-lg p-3 text-center">
+        <div className="text-2xl font-bold text-[#d92525]">{data.weekly_frequency}</div>
         <div className="text-xs text-gray-400 mt-1">次/周</div>
       </div>
-      <div className="bg-pitch-700/50 rounded-lg p-3 text-center">
-        <div className="text-2xl font-bold text-neon-pink">{data.session_duration}</div>
+      <div className="bg-[#1e1e1e]/50 rounded-lg p-3 text-center">
+        <div className="text-2xl font-bold text-[#d92525]">{data.session_duration}</div>
         <div className="text-xs text-gray-400 mt-1">分钟/次</div>
       </div>
-      <div className="col-span-2 bg-pitch-700/50 rounded-lg p-3">
+      <div className="col-span-2 bg-[#1e1e1e]/50 rounded-lg p-3">
         <div className="text-xs text-gray-400 mb-2">强度分布</div>
         <div className="flex h-3 rounded-full overflow-hidden">
           <div
@@ -432,7 +432,7 @@ function PhasePlanContent({ data }: { data: PhasePlan }) {
             title={`低强度 ${data.intensity_distribution.low}%`}
           />
           <div
-            className="bg-neon-pink/60"
+            className="bg-[#d92525]/60"
             style={{ width: `${data.intensity_distribution.medium}%` }}
             title={`中强度 ${data.intensity_distribution.medium}%`}
           />
@@ -448,7 +448,7 @@ function PhasePlanContent({ data }: { data: PhasePlan }) {
           <span>高 {data.intensity_distribution.high}%</span>
         </div>
       </div>
-      <div className="col-span-2 sm:col-span-4 bg-pitch-700/50 rounded-lg p-3">
+      <div className="col-span-2 sm:col-span-4 bg-[#1e1e1e]/50 rounded-lg p-3">
         <div className="text-xs text-gray-400 mb-1">恢复策略</div>
         <p className="text-sm text-gray-300">{data.recovery_strategy}</p>
       </div>
@@ -460,9 +460,9 @@ function InjuryRecoveryContent({ data }: { data: InjuryRecovery }) {
   return (
     <div className="space-y-4">
       {data.phases.map((phase, i) => (
-        <div key={i} className="border border-pitch-600 rounded-lg p-4">
+        <div key={i} className="border border-[#222] rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-6 h-6 rounded-full bg-neon-pink/20 text-neon-pink flex items-center justify-center text-xs font-bold">
+            <div className="w-6 h-6 rounded-full bg-[#d92525]/20 text-[#d92525] flex items-center justify-center text-xs font-bold">
               {i + 1}
             </div>
             <h4 className="font-bold text-white">{phase.name}</h4>
@@ -470,8 +470,8 @@ function InjuryRecoveryContent({ data }: { data: InjuryRecovery }) {
           {phase.exercises.length > 0 && (
             <ExerciseTable exercises={phase.exercises} />
           )}
-          <div className="mt-3 p-3 bg-neon-pink/5 border border-neon-pink/20 rounded-lg">
-            <span className="text-xs text-neon-pink font-bold">📋 评估标准：</span>
+          <div className="mt-3 p-3 bg-[#d92525]/5 border border-[#d92525]/20 rounded-lg">
+            <span className="text-xs text-[#d92525] font-bold">📋 评估标准：</span>
             <span className="text-xs text-gray-300 ml-1">{phase.evaluation}</span>
           </div>
         </div>

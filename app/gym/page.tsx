@@ -50,6 +50,7 @@ export default function GymPage() {
   const isO35 = age > 35;
   const hasInjury = (formData.injurySites || []).length > 0;
 
+  // ---- Training direction (goal-specific, no nutrition mixed in) ----
   let trainRec = "";
   if (isFitness) {
     if (goal === "strength_fitness" || goal === "strength") trainRec = `${isU18 ? "中低" : "中高"}强度力量训练，3-4个复合动作，组间${isU18 ? "2-3min" : "2min"}，专注动作质量与渐进超负荷。`;
@@ -67,13 +68,40 @@ export default function GymPage() {
     if (hasInjury) trainRec += " 避开伤病部位，无痛范围训练。";
   }
 
+  // ---- Nutrition (goal-specific, practical food suggestions) ----
+  let nutritionRec = "";
+  if (isFitness) {
+    const proteinG = Math.round(weight * 2.0);
+    const proteinG18 = Math.round(weight * 1.8);
+    const proteinG16 = Math.round(weight * 1.6);
+    const proteinG15 = Math.round(weight * 1.5);
+    const carbG = Math.round(weight * 2.5);
+    if (goal === "hypertrophy") {
+      nutritionRec = `训练后30min: 乳清蛋白1勺(~25g蛋白)+香蕉1根+全麦面包2片。全天参考: 鸡胸肉200g+鸡蛋3个+米饭300g+西兰花。蛋白目标: ${proteinG}g/天(约2.0g/kg)，热量盈余300-500kcal。`;
+    } else if (goal === "fat_loss") {
+      nutritionRec = `训练后30min: 乳清蛋白1勺(~25g蛋白)+少量蓝莓。全天参考: 鸡胸肉150g+鸡蛋2个+红薯200g+大量蔬菜。蛋白目标: ${proteinG18}g/天(约1.8g/kg)，碳水控制在${carbG}g/天(约2.5g/kg)。`;
+    } else if (goal === "body_shaping" || goal === "general_fitness") {
+      nutritionRec = `训练后: 鸡蛋2个+全麦面包1片+水果。全天均衡饮食，蔬菜水果充足。蛋白目标: ${proteinG16}g/天(约1.6g/kg)。`;
+    } else if (goal === "strength_fitness") {
+      nutritionRec = `训练后30min: 乳清蛋白1勺(~25g蛋白)+香蕉1根+燕麦50g。全天参考: 牛肉/鸡胸200g+鸡蛋3个+米饭300g+蔬菜。蛋白目标: ${proteinG}g/天(约2.0g/kg)，碳水充足保证训练表现。`;
+    } else if (goal === "endurance_fitness") {
+      nutritionRec = `训练后30min: 香蕉1-2根+运动饮料或巧克力奶，补糖为主。全天参考: 米饭/面食/燕麦为主食。蛋白目标: ${proteinG15}g/天(约1.5g/kg)，训练前1h补充碳水零食。`;
+    } else if (goal === "power") {
+      nutritionRec = `训练后30min: 乳清蛋白1勺(~25g蛋白)+香蕉+全麦面包。全天参考: 鸡胸/牛肉200g+鸡蛋3个+米饭300g。蛋白目标: ${proteinG18}g/天(约1.8g/kg)，注重训练前加餐。`;
+    } else {
+      nutritionRec = `训练后30min内补充蛋白质+碳水。全天均衡饮食。蛋白目标: ${proteinG16}g/天(约1.6g/kg)。`;
+    }
+    if (hasInjury) nutritionRec += ` 伤病恢复期蛋白需求增加，建议${proteinG}g/天。`;
+  } else {
+    // Athlete nutrition: simple protein guidance
+    if (hasInjury) nutritionRec = `伤病恢复期，蛋白增至${Math.round(weight * 2.0)}g/天。`;
+  }
+
   let bodyNote = "";
-  if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌，蛋白2.0g/kg。`;
+  if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌。`;
   else if (bmi >= 25) bodyNote = `BMI ${bmi.toFixed(1)}偏高，如体脂高需增加有氧，关节保护优先闭链动作。`;
   if (isU18) bodyNote += " 未成年，禁止>85%1RM，专注动作技术。";
   if (isO35) bodyNote += " 热身10min以上，关注关节活动度。";
-
-  const dietNote = hasInjury ? `伤病恢复期，蛋白增至${Math.round(weight * 2.0)}g/天。` : "";
 
   // ---- Form completeness check ----
   const canGenerate = isCoach
@@ -142,17 +170,17 @@ export default function GymPage() {
   const showGenerateButtons = !generating && !showResults;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
-      <div className="bg-[#0a0a0a] border-b border-[#333] px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen bg-[#121212] text-white pb-24">
+      <div className="bg-[#121212] border-b border-[#333] px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-lg font-bold">健身房</h1>
-        <div className="ml-auto"><span className="px-3 py-1.5 rounded-md text-xs font-bold bg-neon-pink text-black">{isCoach ? "教练" : isFitness ? "健身" : "球员"}</span></div>
+        <div className="ml-auto"><span className="px-3 py-1.5 rounded-md text-xs font-bold bg-[#d92525] text-white">{isCoach ? "教练" : isFitness ? "健身" : "球员"}</span></div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* ---- Profile Card (always visible) ---- */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center text-lg font-bold text-neon-pink flex-shrink-0">{formData.name?.charAt(0) || "A"}</div>
+          <div className="w-10 h-10 rounded-full bg-[#d92525]/20 flex items-center justify-center text-lg font-bold text-[#d92525] flex-shrink-0">{formData.name?.charAt(0) || "A"}</div>
           <div>
             <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-500 ml-2 font-normal">{!isFitness && formData.position ? t("pos." + formData.position) : ""}</span></p>
             <p className="text-[11px] text-gray-500">{age}岁 · {height}cm · {weight}kg · {years}年</p>
@@ -160,22 +188,26 @@ export default function GymPage() {
         </div>
 
         {/* ---- Recommendation Card (always visible) ---- */}
-        <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5 space-y-4">
-          <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">今日训练建议</p>
+        <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-xl p-5 space-y-4">
+          <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">今日训练建议</p>
+          {/* Training Direction */}
           <div>
-            <p className="text-[10px] text-gray-500 mb-1">训练方向与营养</p>
-            <p className="text-sm text-gray-200 leading-relaxed">
-              {trainRec}
-              {dietNote ? <span className="text-neon-pink"> {dietNote}</span> : null}
-              <span> 训练后30min内补充蛋白{Math.round(weight * 0.4)}g+碳水{Math.round(weight * 0.8)}g，全天蛋白{Math.round(weight * 1.6)}g。</span>
-            </p>
+            <p className="text-[10px] text-gray-500 mb-1">训练方向</p>
+            <p className="text-sm text-gray-200 leading-relaxed">{trainRec}</p>
           </div>
-          {bodyNote ? <div><p className="text-[10px] text-gray-500 mb-1">身体状况</p><p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p></div> : null}
-          {hasInjury ? <div><p className="text-[10px] text-red-400 mb-1">伤病提醒</p><p className="text-sm text-red-300 leading-relaxed">检测到伤病部位，训练时避开直接负重，以康复性训练为主。如有不适立即停止。</p></div> : null}
+          {/* Nutrition — separate from training direction */}
+          {nutritionRec && (
+            <div className="border-t border-[#333] pt-3">
+              <p className="text-[10px] text-[#d92525] mb-1">营养建议</p>
+              <p className="text-sm text-gray-200 leading-relaxed">{nutritionRec}</p>
+            </div>
+          )}
+          {bodyNote ? <div className="border-t border-[#333] pt-3"><p className="text-[10px] text-gray-500 mb-1">身体状况</p><p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p></div> : null}
+          {hasInjury ? <div className="border-t border-[#333] pt-3"><p className="text-[10px] text-red-400 mb-1">伤病提醒</p><p className="text-sm text-red-300 leading-relaxed">检测到伤病部位，训练时避开直接负重，以康复性训练为主。如有不适立即停止。</p></div> : null}
           <div className="grid grid-cols-3 gap-2 pt-2">
-            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{age}</p><p className="text-[10px] text-gray-500">年龄</p></div>
-            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-500">BMI</p></div>
-            <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-500">训练年限</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-500">年龄</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-500">BMI</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-500">训练年限</p></div>
           </div>
         </div>
 
@@ -209,7 +241,7 @@ export default function GymPage() {
         {showResults && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">AI 生成训练方案</p>
+              <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">AI 生成训练方案</p>
               <button
                 onClick={handleResetGeneration}
                 className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 transition"
@@ -224,7 +256,7 @@ export default function GymPage() {
             />
             <button
               onClick={handleGenerate}
-              className="w-full bg-neon-pink text-black font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20 hover:bg-neon-pink/90 transition active:scale-[0.98]"
+              className="w-full bg-[#d92525] text-white font-bold py-4 rounded-xl text-base flex items-center justify-center gap-2 shadow-lg shadow-[#d92525]/20 hover:bg-[#d92525]/90 transition active:scale-[0.98]"
             >
               <RefreshCw className="w-5 h-5" /> 重新生成训练方案
             </button>
@@ -238,21 +270,21 @@ export default function GymPage() {
               <button
                 onClick={handleGenerate}
                 disabled={!canGenerate}
-                className="bg-neon-pink text-black font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 shadow-lg shadow-neon-pink/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neon-pink/90 transition"
+                className="bg-[#d92525] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 shadow-lg shadow-[#d92525]/20 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#d92525]/90 transition"
                 title={!canGenerate ? "请先在首页完善个人档案" : undefined}
               >
                 <Zap className="w-6 h-6" />智能推荐训练
               </button>
-              <button onClick={() => router.push("/strength")} className="bg-[#1a1a1a] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
+              <button onClick={() => router.push("/strength")} className="bg-[#1e1e1e] border border-[#444] text-white font-bold py-5 rounded-xl text-base flex flex-col items-center gap-2 hover:bg-[#222]"><Dumbbell className="w-6 h-6" />自由选择动作</button>
             </div>
 
-            <button onClick={() => router.push("/strength")} className="w-full bg-[#1a1a1a] border border-neon-pink/10 hover:border-neon-pink/30 rounded-xl px-4 py-3 text-left transition group">
+            <button onClick={() => router.push("/strength")} className="w-full bg-[#1e1e1e] border border-[#d92525]/10 hover:border-[#d92525]/30 rounded-xl px-4 py-3 text-left transition group">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Dumbbell className="w-4 h-4 text-neon-pink" />
+                  <Dumbbell className="w-4 h-4 text-[#d92525]" />
                   <span className="text-sm text-gray-300 group-hover:text-white">力量计划器</span>
                 </div>
-                <span className="text-[10px] text-gray-600 group-hover:text-neon-pink transition">自定义动作、组数与休息 →</span>
+                <span className="text-[10px] text-gray-600 group-hover:text-[#d92525] transition">自定义动作、组数与休息 →</span>
               </div>
             </button>
           </>
@@ -273,9 +305,9 @@ export default function GymPage() {
             <h2 className="text-sm font-bold text-gray-400 mb-3 flex items-center gap-2"><Clock className="w-4 h-4" />最近训练</h2>
             <div className="space-y-2">
               {workoutRecords.slice(0, 5).map((r: any, i: number) => (
-                <div key={i} className="bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 flex items-center justify-between">
+                <div key={i} className="bg-[#1e1e1e] border border-[#333] rounded-lg px-4 py-3 flex items-center justify-between">
                   <div><p className="text-xs text-gray-300">{r.stepsCompleted}项</p><p className="text-[10px] text-gray-600">{new Date(r.date).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div>
-                  <span className="text-xs text-neon-pink font-bold">{Math.floor(r.totalDuration / 60)}min</span>
+                  <span className="text-xs text-[#d92525] font-bold">{Math.floor(r.totalDuration / 60)}min</span>
                 </div>
               ))}
             </div>
@@ -287,7 +319,7 @@ export default function GymPage() {
             <h2 className="text-sm font-bold text-gray-400 mb-3 flex items-center gap-2"><History className="w-4 h-4" />最近方案</h2>
             <div className="space-y-2">
               {recentPlans.slice(0, 3).map((p: any) => (
-                <button key={p.id} onClick={() => router.push("/")} className="w-full bg-[#1a1a1a] border border-[#333] hover:border-neon-pink/30 rounded-lg px-4 py-3 text-left transition">
+                <button key={p.id} onClick={() => router.push("/")} className="w-full bg-[#1e1e1e] border border-[#333] hover:border-[#d92525]/30 rounded-lg px-4 py-3 text-left transition">
                   <p className="text-sm text-white font-medium">{p.playerName}</p>
                   <p className="text-[10px] text-gray-500 mt-0.5">{p.modules.length}模块 · {new Date(p.createdAt).toLocaleDateString("zh-CN")}</p>
                 </button>

@@ -47,18 +47,18 @@ export function ExerciseDetail({ exercise }: Props) {
   return (
     <>
       {/* Inline card */}
-      <div className="mt-3 border border-pitch-600 rounded-xl overflow-hidden bg-pitch-800/60">
+      <div className="mt-3 border border-[#222] rounded-xl overflow-hidden bg-[#1e1e1e]/60">
         {/* View toggle bar */}
-        <div className="flex items-center justify-between px-3 py-2 bg-pitch-700/80 border-b border-pitch-600">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#1e1e1e]/80 border-b border-[#222]">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-400 font-medium">动作示范</span>
             {hasSideView && (
-              <div className="flex bg-pitch-800 rounded-md p-0.5">
+              <div className="flex bg-[#1e1e1e] rounded-md p-0.5">
                 <button
                   onClick={() => { setView("front"); setSideImgFailed(false); }}
                   className={`px-2 py-1 rounded text-xs font-medium transition ${
                     view === "front"
-                      ? "bg-neon-pink text-black"
+                      ? "bg-[#d92525] text-white"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -68,7 +68,7 @@ export function ExerciseDetail({ exercise }: Props) {
                   onClick={() => { setView("side"); setImgFailed(false); }}
                   className={`px-2 py-1 rounded text-xs font-medium transition ${
                     view === "side"
-                      ? "bg-neon-pink text-black"
+                      ? "bg-[#d92525] text-white"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -80,7 +80,7 @@ export function ExerciseDetail({ exercise }: Props) {
           {hasImage && (
             <button
               onClick={() => setZoom(true)}
-              className="p-1.5 text-gray-400 hover:text-neon-pink transition rounded-lg hover:bg-pitch-600"
+              className="p-1.5 text-gray-400 hover:text-[#d92525] transition rounded-lg hover:bg-[#222]"
               title="放大查看"
             >
               <ZoomIn className="w-4 h-4" />
@@ -89,7 +89,7 @@ export function ExerciseDetail({ exercise }: Props) {
         </div>
 
         {/* Image area */}
-        <div className="relative bg-pitch-900 flex items-center justify-center min-h-[200px] p-4">
+        <div className="relative bg-[#121212] flex items-center justify-center min-h-[200px] p-4">
           {hasImage ? (
             <div className="relative inline-block">
               <img
@@ -110,10 +110,10 @@ export function ExerciseDetail({ exercise }: Props) {
                   className="absolute flex items-center gap-1 pointer-events-none"
                   style={{ top: "40%", left: `${30 + i * 25}%` }}
                 >
-                  <span className="w-6 h-6 rounded-full bg-neon-pink/20 border border-neon-pink flex items-center justify-center text-neon-pink text-xs font-bold backdrop-blur-sm">
+                  <span className="w-6 h-6 rounded-full bg-[#d92525]/20 border border-[#d92525] flex items-center justify-center text-[#d92525] text-xs font-bold backdrop-blur-sm">
                     {FORCE_ARROW[fp.direction]}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-pitch-900/90 border border-neon-pink/30 text-[10px] text-neon-pink whitespace-nowrap backdrop-blur-sm">
+                  <span className="px-1.5 py-0.5 rounded bg-[#121212]/90 border border-[#d92525]/30 text-[10px] text-[#d92525] whitespace-nowrap backdrop-blur-sm">
                     {fp.muscle_group}
                   </span>
                 </div>
@@ -126,10 +126,10 @@ export function ExerciseDetail({ exercise }: Props) {
                   className="absolute flex items-center gap-1 pointer-events-none"
                   style={{ top: `${55 + i * 20}%`, left: `${25 + i * 30}%` }}
                 >
-                  <span className="w-6 h-6 rounded-full border border-neon-pink flex items-center justify-center text-[10px] font-bold bg-pitch-900/90 text-neon-pink backdrop-blur-sm">
+                  <span className="w-6 h-6 rounded-full border border-[#d92525] flex items-center justify-center text-[10px] font-bold bg-[#121212]/90 text-[#d92525] backdrop-blur-sm">
                     {ja.angle}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded bg-pitch-900/90 border border-neon-pink/30 text-[10px] text-neon-pink whitespace-nowrap backdrop-blur-sm">
+                  <span className="px-1.5 py-0.5 rounded bg-[#121212]/90 border border-[#d92525]/30 text-[10px] text-[#d92525] whitespace-nowrap backdrop-blur-sm">
                     {ja.joint_name}
                   </span>
                 </div>
@@ -141,7 +141,7 @@ export function ExerciseDetail({ exercise }: Props) {
         </div>
 
         {/* Info footer */}
-        <div className="px-4 py-3 border-t border-pitch-600 space-y-2">
+        <div className="px-4 py-3 border-t border-[#222] space-y-2">
           {/* Prime movers */}
           {exercise.prime_movers && exercise.prime_movers.length > 0 && (
             <div className="flex items-start gap-2">
@@ -150,7 +150,7 @@ export function ExerciseDetail({ exercise }: Props) {
                 {exercise.prime_movers.map((m, i) => (
                   <span
                     key={i}
-                    className="px-1.5 py-0.5 rounded bg-neon-pink/10 border border-neon-pink/20 text-[10px] text-neon-pink font-medium"
+                    className="px-1.5 py-0.5 rounded bg-[#d92525]/10 border border-[#d92525]/20 text-[10px] text-[#d92525] font-medium"
                   >
                     {m}
                   </span>
@@ -165,7 +165,7 @@ export function ExerciseDetail({ exercise }: Props) {
               <span className="text-[10px] text-gray-500">动作要点</span>
               {exercise.cue_points.map((cue, i) => (
                 <div key={i} className="flex items-start gap-1.5">
-                  <span className="text-[10px] text-neon-pink font-bold mt-0.5">{i + 1}.</span>
+                  <span className="text-[10px] text-[#d92525] font-bold mt-0.5">{i + 1}.</span>
                   <span className="text-xs text-gray-300">{cue}</span>
                 </div>
               ))}
@@ -200,10 +200,10 @@ export function ExerciseDetail({ exercise }: Props) {
                 className="absolute flex items-center gap-2 pointer-events-none"
                 style={{ top: "40%", left: `${30 + i * 25}%` }}
               >
-                <span className="w-8 h-8 rounded-full bg-neon-pink/20 border-2 border-neon-pink flex items-center justify-center text-neon-pink text-sm font-bold backdrop-blur-sm">
+                <span className="w-8 h-8 rounded-full bg-[#d92525]/20 border-2 border-[#d92525] flex items-center justify-center text-[#d92525] text-sm font-bold backdrop-blur-sm">
                   {FORCE_ARROW[fp.direction]}
                 </span>
-                <span className="px-2 py-1 rounded bg-black/80 border border-neon-pink/40 text-xs text-neon-pink backdrop-blur-sm">
+                <span className="px-2 py-1 rounded bg-black/80 border border-[#d92525]/40 text-xs text-[#d92525] backdrop-blur-sm">
                   {fp.label}
                 </span>
               </div>
@@ -214,10 +214,10 @@ export function ExerciseDetail({ exercise }: Props) {
                 className="absolute flex items-center gap-2 pointer-events-none"
                 style={{ top: `${55 + i * 20}%`, left: `${25 + i * 30}%` }}
               >
-                <span className="w-8 h-8 rounded-full border-2 border-neon-pink flex items-center justify-center text-xs font-bold bg-black/80 text-neon-pink backdrop-blur-sm">
+                <span className="w-8 h-8 rounded-full border-2 border-[#d92525] flex items-center justify-center text-xs font-bold bg-black/80 text-[#d92525] backdrop-blur-sm">
                   {ja.angle}
                 </span>
-                <span className="px-2 py-1 rounded bg-black/80 border border-neon-pink/40 text-xs text-neon-pink backdrop-blur-sm">
+                <span className="px-2 py-1 rounded bg-black/80 border border-[#d92525]/40 text-xs text-[#d92525] backdrop-blur-sm">
                   {ja.note}
                 </span>
               </div>
@@ -238,7 +238,7 @@ export function ExerciseDetail({ exercise }: Props) {
 function ExercisePlaceholder({ name }: { name: string }) {
   return (
     <div className="flex flex-col items-center gap-3 py-8">
-      <div className="w-16 h-16 rounded-2xl bg-pitch-700 border border-pitch-600 flex items-center justify-center">
+      <div className="w-16 h-16 rounded-2xl bg-[#1e1e1e] border border-[#222] flex items-center justify-center">
         <span className="text-2xl">🏋️</span>
       </div>
       <p className="text-xs text-gray-500">{name}</p>

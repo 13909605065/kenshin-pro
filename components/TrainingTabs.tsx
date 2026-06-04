@@ -46,24 +46,24 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
   return (
     <div className="space-y-4">
       {/* Session header */}
-      <div className="bg-pitch-700/50 rounded-lg p-4">
+      <div className="bg-[#1e1e1e]/50 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-white font-bold text-lg">{m.title}</h3>
         </div>
         <div className="grid grid-cols-4 gap-3 text-center">
-          <div className="bg-pitch-800 rounded-lg p-2">
+          <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.duration}</div>
             <div className="text-[10px] text-gray-500">分钟</div>
           </div>
-          <div className="bg-pitch-800 rounded-lg p-2">
+          <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.player_count}</div>
             <div className="text-[10px] text-gray-500">球员</div>
           </div>
-          <div className="bg-pitch-800 rounded-lg p-2">
+          <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.warmup.length}</div>
             <div className="text-[10px] text-gray-500">热身项</div>
           </div>
-          <div className="bg-pitch-800 rounded-lg p-2">
+          <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.activities.length}</div>
             <div className="text-[10px] text-gray-500">练习项</div>
           </div>
@@ -71,7 +71,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
         {m.equipment.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1">
             {m.equipment.map((eq, i) => (
-              <span key={i} className="text-[10px] bg-pitch-600 px-2 py-0.5 rounded text-gray-300">{eq}</span>
+              <span key={i} className="text-[10px] bg-[#222] px-2 py-0.5 rounded text-gray-300">{eq}</span>
             ))}
           </div>
         )}
@@ -79,11 +79,11 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* Warmup */}
       {m.warmup.length > 0 && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🔥 引导热身 ({m.warmup.reduce((s,w) => s+w.duration, 0)}min)</h4>
           <div className="space-y-2">
             {m.warmup.map((w, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                 <div className="flex justify-between">
                   <span className="font-medium text-white text-sm">{w.name}</span>
                   <span className="text-xs text-gray-400">{w.duration}min</span>
@@ -97,11 +97,11 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* Activities */}
       {m.activities.length > 0 && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">⚽ 主体训练 ({m.activities.reduce((s,a) => s+a.duration, 0)}min)</h4>
           <div className="space-y-3">
             {m.activities.map((act, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-4 border-l-2 border-[#d92525]">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-4 border-l-2 border-[#d92525]">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-bold text-white">{i+1}. {act.name}</span>
                   <span className="text-xs text-[#d92525]">{act.duration}min</span>
@@ -128,7 +128,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span className="text-green-400">⬆ 进阶: {act.progression}</span>
                   <span className="text-yellow-400">⬇ 退阶: {act.regression}</span>
                 </div>
-                <div className="flex justify-end mt-2 pt-2 border-t border-pitch-600/50">
+                <div className="flex justify-end mt-2 pt-2 border-t border-[#222]/50">
                   <button
                     onClick={() => { writeDrillContext(act); router.push("/tactics"); }}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 hover:bg-[#d92525]/20 transition border border-[#d92525]/20 hover:border-[#d92525]/40"
@@ -145,9 +145,9 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
 
       {/* SSG */}
       {m.ssg && (
-        <div className="border-b border-pitch-700/30 pb-4 mb-4">
+        <div className="border-b border-[#1e1e1e]/30 pb-4 mb-4">
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🏟️ 分队比赛: {m.ssg.name}</h4>
-          <div className="bg-pitch-700/50 rounded-lg p-4">
+          <div className="bg-[#1e1e1e]/50 rounded-lg p-4">
             <div className="grid grid-cols-3 gap-3 mb-3 text-center">
               <div><div className="text-white font-bold">{m.ssg.duration}min</div><div className="text-[10px] text-gray-500">时长</div></div>
               <div><div className="text-white font-bold">{m.ssg.area}</div><div className="text-[10px] text-gray-500">场地</div></div>
@@ -169,7 +169,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🧊 冷身整理 ({m.cooldown.reduce((s,c) => s+c.duration, 0)}min)</h4>
           <div className="space-y-2">
             {m.cooldown.map((c, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-3">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3">
                 <div className="flex justify-between">
                   <span className="font-medium text-white text-sm">{c.name}</span>
                   <span className="text-xs text-gray-400">{c.duration}min</span>
@@ -188,7 +188,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
   const router = useRouter();
   return (
     <div className="space-y-4">
-      <div className="bg-pitch-700/50 rounded-lg p-4">
+      <div className="bg-[#1e1e1e]/50 rounded-lg p-4">
         <h3 className="text-white font-bold text-lg">{m.title}</h3>
         <span className="text-xs text-[#d92525] bg-[#d92525]/10 px-2 py-0.5 rounded">{m.tactical_theme}</span>
       </div>
@@ -198,7 +198,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
         <div className="space-y-2">
           <h4 className="text-[#d92525] text-xs font-bold uppercase tracking-wider">战术核心分析</h4>
           {m.tactical_analysis.map((point, i) => (
-            <div key={i} className="bg-pitch-700/50 rounded-lg p-3 flex gap-3">
+            <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3 flex gap-3">
               <span className="text-[#d92525] font-bold flex-shrink-0">{i + 1}.</span>
               <p className="text-sm text-gray-200 leading-relaxed">{point}</p>
             </div>
@@ -208,7 +208,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
 
       {/* Formation & Pressing/Defensive Shape */}
       {(m.formation_notes || m.pressing_triggers || m.defensive_shape) && (
-        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+        <div className="bg-[#1e1e1e]/50 rounded-lg p-4 space-y-3">
           {m.formation_notes && (
             <div>
               <span className="text-xs text-[#d92525] font-bold">阵型体系</span>
@@ -236,25 +236,25 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
           <h4 className="text-[#d92525] text-xs font-bold uppercase tracking-wider mb-2">比赛阶段</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {m.build_up_phase && (
-              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-blue-400">
+              <div className="bg-[#1e1e1e]/50 rounded-lg p-3 border-l-2 border-blue-400">
                 <span className="text-[10px] text-blue-400 font-bold">组织推进</span>
                 <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.build_up_phase}</p>
               </div>
             )}
             {m.midfield_transition && (
-              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-yellow-400">
+              <div className="bg-[#1e1e1e]/50 rounded-lg p-3 border-l-2 border-yellow-400">
                 <span className="text-[10px] text-yellow-400 font-bold">中场过渡</span>
                 <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.midfield_transition}</p>
               </div>
             )}
             {m.final_third && (
-              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-green-400">
+              <div className="bg-[#1e1e1e]/50 rounded-lg p-3 border-l-2 border-green-400">
                 <span className="text-[10px] text-green-400 font-bold">前场终结</span>
                 <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.final_third}</p>
               </div>
             )}
             {m.defensive_block && (
-              <div className="bg-pitch-700/50 rounded-lg p-3 border-l-2 border-red-400">
+              <div className="bg-[#1e1e1e]/50 rounded-lg p-3 border-l-2 border-red-400">
                 <span className="text-[10px] text-red-400 font-bold">防守阵块</span>
                 <p className="text-[11px] text-gray-300 mt-1 leading-relaxed">{m.defensive_block}</p>
               </div>
@@ -265,7 +265,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
 
       {/* Attacking & Counter */}
       {(m.attacking_patterns || m.counter_structure) && (
-        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+        <div className="bg-[#1e1e1e]/50 rounded-lg p-4 space-y-3">
           {m.attacking_patterns && (
             <div>
               <span className="text-xs text-[#d92525] font-bold">进攻模式</span>
@@ -283,7 +283,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
 
       {/* Transition & Set Pieces */}
       {(m.transition_moments || m.set_piece_offense || m.set_piece_defense) && (
-        <div className="bg-pitch-700/50 rounded-lg p-4 space-y-3">
+        <div className="bg-[#1e1e1e]/50 rounded-lg p-4 space-y-3">
           {m.transition_moments && (
             <div>
               <span className="text-xs text-[#d92525] font-bold">攻守转换</span>
@@ -293,13 +293,13 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
           {(m.set_piece_offense || m.set_piece_defense) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
               {m.set_piece_offense && (
-                <div className="bg-pitch-800/50 rounded p-2 border-l-2 border-green-500">
+                <div className="bg-[#1e1e1e]/50 rounded p-2 border-l-2 border-green-500">
                   <span className="text-[10px] text-green-400 font-bold">进攻定位球</span>
                   <p className="text-[11px] text-gray-300 mt-1">{m.set_piece_offense}</p>
                 </div>
               )}
               {m.set_piece_defense && (
-                <div className="bg-pitch-800/50 rounded p-2 border-l-2 border-red-500">
+                <div className="bg-[#1e1e1e]/50 rounded p-2 border-l-2 border-red-500">
                   <span className="text-[10px] text-red-400 font-bold">防守定位球</span>
                   <p className="text-[11px] text-gray-300 mt-1">{m.set_piece_defense}</p>
                 </div>
@@ -315,7 +315,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
           <h4 className="text-[#d92525] text-xs font-bold uppercase tracking-wider mb-2">球员战术角色</h4>
           <div className="space-y-1.5">
             {m.player_roles.map((role, i) => (
-              <div key={i} className="bg-pitch-700/50 rounded-lg p-2.5 flex items-start gap-2">
+              <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-2.5 flex items-start gap-2">
                 <span className="text-[#d92525] text-sm flex-shrink-0">&#9733;</span>
                 <p className="text-xs text-gray-200 leading-relaxed">{role}</p>
               </div>
@@ -326,7 +326,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
 
       {/* Divider before drills */}
       {(m.tactical_analysis || m.formation_notes || m.build_up_phase) && m.drills.length > 0 && (
-        <div className="border-t border-pitch-600 pt-2">
+        <div className="border-t border-[#222] pt-2">
           <h4 className="text-[#d92525] text-xs font-bold uppercase tracking-wider mb-3">训练练习</h4>
         </div>
       )}
@@ -334,7 +334,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
       {m.drills.length > 0 && (
         <div className="space-y-3">
           {m.drills.map((drill, i) => (
-            <div key={i} className="bg-pitch-700/50 rounded-lg p-4 border-l-2 border-[#d92525]">
+            <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-4 border-l-2 border-[#d92525]">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-white">{i+1}. {drill.name}</span>
                 <span className="text-xs text-[#d92525]">{drill.duration}min</span>
@@ -361,7 +361,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
                 <span className="text-green-400">⬆ 进阶: {drill.progression}</span>
                 <span className="text-yellow-400">⬇ 退阶: {drill.regression}</span>
               </div>
-              <div className="flex justify-end mt-2 pt-2 border-t border-pitch-600/50">
+              <div className="flex justify-end mt-2 pt-2 border-t border-[#222]/50">
                 <button
                   onClick={() => { writeDrillContext(drill); router.push("/tactics"); }}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 hover:bg-[#d92525]/20 transition border border-[#d92525]/20 hover:border-[#d92525]/40"
@@ -385,13 +385,13 @@ function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
   };
   return (
     <div className="space-y-4">
-      <div className="bg-pitch-700/50 rounded-lg p-4">
+      <div className="bg-[#1e1e1e]/50 rounded-lg p-4">
         <h3 className="text-white font-bold text-lg">{m.title}</h3>
         <p className="text-xs text-gray-400">比赛日: <span className="text-[#d92525]">{m.match_day}</span></p>
       </div>
       <div className="space-y-2">
         {m.days.map((d, i) => (
-          <div key={i} className="bg-pitch-700/50 rounded-lg p-3 flex items-center gap-3">
+          <div key={i} className="bg-[#1e1e1e]/50 rounded-lg p-3 flex items-center gap-3">
             <div className="flex-shrink-0 w-16">
               <span className="text-xs text-gray-400">{d.day}</span>
             </div>
@@ -547,7 +547,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
       {isCoach && (
       <>
       {/* Tab Bar */}
-      <div className="flex flex-wrap justify-center gap-x-1 border-b border-pitch-700 mb-4">
+      <div className="flex flex-wrap justify-center gap-x-1 border-b border-[#1e1e1e] mb-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -595,7 +595,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
                   { day: "比赛日", intensity: "比赛", color: "bg-[#d92525]", borderColor: "border-[#d92525]", focus: "比赛执行与临场调整" },
                   { day: "赛后1天", intensity: "恢复", color: "bg-gray-500", borderColor: "border-gray-500", focus: "主动恢复与伤病评估" },
                 ] as const).map((t, i) => (
-                  <div key={i} className={`bg-pitch-700/50 rounded-lg p-4 border-l-2 ${t.borderColor}`}>
+                  <div key={i} className={`bg-[#1e1e1e]/50 rounded-lg p-4 border-l-2 ${t.borderColor}`}>
                     <div className="flex items-center justify-between">
                       <span className="text-white font-bold text-sm">{t.day}</span>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full text-white ${t.color}`}>{t.intensity}</span>
@@ -630,7 +630,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
       )}
 
       {/* Bottom: Fixed Action Bar */}
-      <div className="sticky bottom-0 bg-pitch-900/95 backdrop-blur pt-4 border-t border-pitch-700 mt-4">
+      <div className="sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-4 border-t border-[#1e1e1e] mt-4">
         <ActionBar
           modules={modules}
           formData={formData}

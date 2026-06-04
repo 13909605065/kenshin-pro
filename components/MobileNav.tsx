@@ -40,7 +40,7 @@ export function MobileNav() {
       {/* More popup */}
       {moreOpen && (
         <div className="fixed inset-0 z-[55] lg:hidden" onClick={() => setMoreOpen(false)}>
-          <div className="absolute bottom-0 left-0 right-0 bg-pitch-900 border-t border-pitch-700 rounded-t-2xl shadow-2xl p-4 pb-8"
+          <div className="absolute bottom-0 left-0 right-0 bg-[#121212] border-t border-[#1e1e1e] rounded-t-2xl shadow-2xl p-4 pb-8"
             onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-bold text-white">更多</span>
@@ -53,8 +53,8 @@ export function MobileNav() {
                   onClick={() => { router.push(tab.path); setMoreOpen(false); }}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl transition ${
                     isActive(tab.path)
-                      ? "bg-neon-pink/10 text-neon-pink"
-                      : "bg-pitch-800 text-gray-400 hover:bg-pitch-700"
+                      ? "bg-[#d92525]/10 text-[#d92525]"
+                      : "bg-[#1e1e1e] text-gray-400 hover:bg-[#1e1e1e]"
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -69,7 +69,7 @@ export function MobileNav() {
                   key={l.value}
                   onClick={() => setLang(l.value)}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-                    lang === l.value ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"
+                    lang === l.value ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white"
                   }`}
                 >
                   {l.label}
@@ -81,14 +81,14 @@ export function MobileNav() {
       )}
 
       {/* Bottom bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-pitch-900/95 backdrop-blur border-t border-pitch-700 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur border-t border-[#1e1e1e] lg:hidden">
         <div className="flex items-center justify-around h-14 px-1 pb-safe">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => router.push(tab.path)}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-                isActive(tab.path) ? "text-neon-pink" : "text-gray-500"
+                isActive(tab.path) ? "text-[#d92525]" : "text-gray-500"
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -99,7 +99,7 @@ export function MobileNav() {
           <button
             onClick={() => setMoreOpen(true)}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-              MORE_TABS.some((t) => isActive(t.path)) ? "text-neon-pink" : "text-gray-500"
+              MORE_TABS.some((t) => isActive(t.path)) ? "text-[#d92525]" : "text-gray-500"
             }`}
           >
             <Ellipsis className="w-5 h-5" />

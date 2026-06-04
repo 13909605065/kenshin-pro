@@ -51,7 +51,7 @@ export function PlanBuilder({
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="输入计划名称..."
             maxLength={40}
-            className="w-full bg-transparent text-lg font-bold text-white placeholder-gray-600 focus:outline-none border-b border-transparent focus:border-neon-pink transition-colors"
+            className="w-full bg-transparent text-lg font-bold text-white placeholder-gray-600 focus:outline-none border-b border-transparent focus:border-[#d92525] transition-colors"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function PlanBuilder({
 
       {/* Exercise list */}
       {exercises.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-pitch-600 rounded-xl">
+        <div className="text-center py-12 border-2 border-dashed border-[#222] rounded-xl">
           <p className="text-gray-500 text-sm">还没有添加动作</p>
           <p className="text-gray-600 text-xs mt-1">点击「添加动作」开始构建计划</p>
         </div>

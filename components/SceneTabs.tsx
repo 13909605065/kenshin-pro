@@ -20,13 +20,13 @@ export function SceneTabs() {
         onClick={() => setScene("pitch")}
         className={`flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all ${
           scene === "pitch"
-            ? "bg-neon-pink/10 border-neon-pink/40 shadow-lg shadow-neon-pink/5"
-            : "bg-[#1a1a1a] border-[#333] hover:border-[#555]"
+            ? "bg-[#d92525]/10 border-[#d92525]/40 shadow-lg shadow-[#d92525]/5"
+            : "bg-[#1e1e1e] border-[#333] hover:border-[#555]"
         }`}
       >
         <div
           className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition ${
-            scene === "pitch" ? "bg-neon-pink text-black" : "bg-[#111] text-gray-400"
+            scene === "pitch" ? "bg-[#d92525] text-white" : "bg-[#111] text-gray-400"
           }`}
         >
           <MapPin className="w-4.5 h-4.5" />
@@ -34,7 +34,7 @@ export function SceneTabs() {
         <div className="text-left">
           <p
             className={`text-sm font-bold transition ${
-              scene === "pitch" ? "text-neon-pink" : "text-white"
+              scene === "pitch" ? "text-[#d92525]" : "text-white"
             }`}
           >
             球场训练
@@ -46,7 +46,7 @@ export function SceneTabs() {
       {/* 健身房 */}
       <button
         onClick={() => router.push("/gym")}
-        className="flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[#333] bg-[#1a1a1a] hover:border-[#555] transition-all"
+        className="flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[#333] bg-[#1e1e1e] hover:border-[#555] transition-all"
       >
         <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#111] text-gray-400">
           <Dumbbell className="w-4.5 h-4.5" />

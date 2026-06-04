@@ -47,14 +47,14 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-pitch-900">
-      <header className="sticky top-0 z-40 bg-pitch-900/90 backdrop-blur border-b border-pitch-700">
+    <div className="min-h-screen bg-[#121212]">
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#1e1e1e]">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
           <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-bold text-white">个人设置</h1>
-          {message && <span className="text-xs text-neon-pink">{message}</span>}
+          {message && <span className="text-xs text-[#d92525]">{message}</span>}
         </div>
       </header>
 
@@ -63,7 +63,7 @@ export default function SettingsPage() {
         <section className="glass-card p-6 space-y-4">
           <h2 className="text-white font-bold">头像</h2>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-pitch-700 border border-pitch-600 flex items-center justify-center overflow-hidden">
+            <div className="w-16 h-16 rounded-full bg-[#1e1e1e] border border-[#222] flex items-center justify-center overflow-hidden">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
               ) : (

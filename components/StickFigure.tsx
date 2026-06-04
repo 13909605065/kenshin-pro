@@ -302,7 +302,7 @@ function detectEquip(name: string, poseKey: string): Pose["equip"] {
    COLORS — project black-pink theme, bone=#eee
    ================================================================ */
 
-const AGONIST = "#FF2D55";      // 🔴 原动肌 — project neon-pink
+const AGONIST = "#d92525";      // 🔴 原动肌 — project red
 const SYNERGIST = "#ff9966";    // 🟠 协同肌 — orange
 const STABILIZER = "#8B7355";   // 🟤 稳定肌 — brown
 const BONE_MAIN = "#eeeeee";    // 主骨 — white

@@ -38,6 +38,18 @@ function validateStep1(data: PlayerFormData): Partial<Record<keyof PlayerFormDat
     if (!data.leagueTag) errors.leagueTag = "请选择执教联赛或梯队";
     return errors;
   }
+  if (data.role === "fitness") {
+    if (data.age === null || data.age === undefined) errors.age = "请输入年龄";
+    else if (data.age < 12 || data.age > 80) errors.age = "年龄范围 12-80 岁";
+    if (data.weight === null || data.weight === undefined) errors.weight = "请输入体重";
+    else if (data.weight < 30 || data.weight > 200) errors.weight = "体重范围 30-200kg";
+    if (data.height === null || data.height === undefined) errors.height = "请输入身高";
+    else if (data.height < 120 || data.height > 230) errors.height = "身高范围 120-230cm";
+    if (data.years === null || data.years === undefined) errors.years = "请输入训练年限";
+    else if (data.years < 0 || data.years > 50) errors.years = "训练年限范围 0-50 年";
+    if (!data.goal) errors.goal = "请选择健身目标";
+    return errors;
+  }
   if (!data.position) errors.position = "请选择场上位置";
   if (data.age === null || data.age === undefined) errors.age = "请输入年龄";
   else if (data.age < 12 || data.age > 60) errors.age = "年龄范围 12-60 岁";
@@ -55,12 +67,14 @@ function validateStep2(data: PlayerFormData): Partial<Record<keyof PlayerFormDat
     if (!data.tacticalThemes.length) return { tacticalThemes: "请选择至少一个战术主题" };
     return {};
   }
+  if (data.role === "fitness") return {};
   if (!data.goal) return { goal: "请选择训练目标" };
   return {};
 }
 
 function validateStep3(data: PlayerFormData): Partial<Record<keyof PlayerFormData, string>> {
   if (data.role === "coach") return {};
+  if (data.role === "fitness") return {};
   if (!data.phase) return { phase: "请选择赛季阶段" };
   return {};
 }

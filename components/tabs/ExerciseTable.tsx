@@ -24,7 +24,7 @@ export function ExerciseTable({ exercises }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-pitch-600">
+            <tr className="border-b border-[#222]">
               <th className="text-left py-2 text-gray-400 font-medium">动作</th>
               <th className="text-center py-2 text-gray-400 font-medium">组数</th>
               <th className="text-center py-2 text-gray-400 font-medium">次数</th>
@@ -40,7 +40,7 @@ export function ExerciseTable({ exercises }: Props) {
               const hasImage = !!(ex.image_url || ex.side_view_url);
               const imgUrl = ex.image_url || ex.side_view_url;
               return (
-                <tr key={i} className="border-b border-pitch-700/50">
+                <tr key={i} className="border-b border-[#1e1e1e]/50">
                   <td className="py-2">
                     <div className="flex items-center gap-2">
                       <ExerciseIcon name={ex.name} imageUrl={ex.image_url} />

@@ -14,9 +14,13 @@ interface FabricBoardProps {
   onObjectSelected?: (obj: any) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   boardRef: React.MutableRefObject<Canvas | null>;
+  onPlayerDoubleClick?: (playerObj: any, screenX: number, screenY: number) => void;
+  /** Layer lock states */
+  lockPlayers?: boolean;
+  lockRoutes?: boolean;
 }
 
-export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, boardRef }: FabricBoardProps) {
+export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, boardRef, onPlayerDoubleClick, lockPlayers, lockRoutes }: FabricBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -150,23 +154,19 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     canvas.on("selection:updated", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:cleared", () => onObjectSelected?.(null));
 
-    // Double-click player to edit number
+    // Double-click player to edit number — delegate to inline popup
     canvas.on("mouse:dblclick", (opt: any) => {
       const target = opt.target;
       if (!target || !(target as any)._isPlayer) return;
-      const currentNum = (target as any).number || "";
-      const newNum = prompt("输入球员号码:", currentNum);
-      if (newNum !== null && newNum.trim() !== "") {
-        (target as any).number = newNum.trim();
-        // Update the FabricText inside the group
+      if (onPlayerDoubleClick) {
+        const rect = el.getBoundingClientRect();
+        const zoom = canvas.getZoom();
         const group = target as Group;
-        const objs = (group as any)._objects || [];
-        const textObj = objs.find((o: any) => o instanceof FabricText);
-        if (textObj) {
-          textObj.set({ text: newNum.trim() });
-          canvas.requestRenderAll();
-          save();
-        }
+        const gLeft = group.left || 0;
+        const gTop = group.top || 0;
+        const screenX = rect.left + gLeft * zoom;
+        const screenY = rect.top + gTop * zoom;
+        onPlayerDoubleClick(target, screenX, screenY);
       }
     });
 
@@ -393,6 +393,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
       const g = new Group([cr, tx], {
         left: cx - R, top: cy - R,
+        selectable: true,
+        evented: true,
       });
       (g as any)._isPlayer = true;
       (g as any).number = String(nextNum);
@@ -428,6 +430,25 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     return () => c.off("mouse:down", h);
   }, [activeTool]);
 
+  // ─── Layer locking ───
+  useEffect(() => {
+    const c = boardRef.current; if (!c) return;
+    if (lockPlayers === undefined && lockRoutes === undefined) return;
+
+    const all = c.getObjects();
+    all.forEach((o: any) => {
+      if (o._isFieldBg) return; // field always unselectable
+      if (o._isPlayer && lockPlayers !== undefined) {
+        o.set({ selectable: !lockPlayers, evented: !lockPlayers });
+      }
+      if ((o._isRoute || o._isRouteArrow) && lockRoutes !== undefined) {
+        o.set({ selectable: !lockRoutes, evented: !lockRoutes });
+      }
+    });
+    c.discardActiveObject();
+    c.requestRenderAll();
+  }, [lockPlayers, lockRoutes]);
+
   // Handle field selection from EquipmentPalette
   useEffect(() => {
     const c = boardRef.current; if (!c) return;
@@ -461,9 +482,47 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     };
   }, []);
 
+  const zoomIn = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() * 1.15;
+    z = Math.min(z, 5);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const zoomOut = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() / 1.15;
+    z = Math.max(z, 0.3);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const zoomFit = () => {
+    const c = boardRef.current; if (!c) return;
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, 1);
+    c.requestRenderAll();
+  };
+
   return (
-    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
+    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
       <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
+      {/* Floating zoom controls */}
+      <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30">
+        <button onClick={zoomIn} className="w-7 h-7 flex items-center justify-center rounded text-xs font-bold transition-colors"
+          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
+          title="放大">+</button>
+        <button onClick={zoomFit} className="w-7 h-7 flex items-center justify-center rounded text-[10px] font-mono transition-colors"
+          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
+          title="重置缩放">1:1</button>
+        <button onClick={zoomOut} className="w-7 h-7 flex items-center justify-center rounded text-xs font-bold transition-colors"
+          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
+          title="缩小">-</button>
+      </div>
     </div>
   );
 }

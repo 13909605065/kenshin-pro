@@ -43,7 +43,7 @@ function flattenForAthlete(modules: TrainingModule[]): SeqCard[] {
 
 const TYPE_META: Record<string, {label:string;icon:string;color:string}> = {
   warmup: {label:"热身",icon:"🔥",color:"bg-green-500/10 border-green-500/30 text-green-400"},
-  strength: {label:"力量",icon:"💪",color:"bg-[#d92525]/10 border-[#d92525]/30 text-neon-pink"},
+  strength: {label:"力量",icon:"💪",color:"bg-[#d92525]/10 border-[#d92525]/30 text-[#d92525]"},
   tech: {label:"技术",icon:"⚽",color:"bg-blue-500/10 border-blue-500/30 text-blue-400"},
   cooldown: {label:"放松",icon:"🧊",color:"bg-yellow-500/10 border-yellow-500/30 text-yellow-400"},
 };
@@ -62,10 +62,10 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
     <div className="space-y-3">
       {/* Profile header */}
       {formData && (
-        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-3 flex items-center gap-2 text-[11px]">
+        <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3 flex items-center gap-2 text-[11px]">
           <span className="text-gray-400">{formData.name||"运动员"} · {formData.position||"?"} · {formData.age||"?"}岁</span>
           {(formData.injurySites||[]).length > 0 && <span className="text-red-400">⚠️伤病: 训练中注意保护</span>}
-          <span className="text-neon-pink ml-auto">{doneCount}/{total}</span>
+          <span className="text-[#d92525] ml-auto">{doneCount}/{total}</span>
         </div>
       )}
 
@@ -183,7 +183,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
       {tab === "tech" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {grouped.tech.map(c => (
-            <div key={c.id} className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
+            <div key={c.id} className="bg-[#1e1e1e] border border-[#333] rounded-xl p-4">
               <p className="text-sm font-bold text-white">{c.name}</p>
               <p className="text-[11px] text-gray-400 mt-1">{c.detail} · {c.notes}</p>
               {c.diagram && <div className="mt-2 text-[10px] text-blue-400 flex items-center gap-1"><Map className="w-3 h-3"/>场地示意图</div>}
@@ -196,7 +196,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
       {tab !== "strength" && tab !== "tech" && (
         <div className="space-y-2">
           {grouped[tab].map(c => (
-            <div key={c.id} className="bg-[#1a1a1a] border border-[#333] rounded-xl p-3 flex items-center justify-between">
+            <div key={c.id} className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3 flex items-center justify-between">
               <div><p className="text-sm text-white">{c.name}</p><p className="text-[11px] text-gray-500">{c.detail}</p></div>
               <span className="text-[10px] text-gray-600">{c.notes?.slice(0,20)}</span>
             </div>

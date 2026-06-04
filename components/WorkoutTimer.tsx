@@ -390,7 +390,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
       case "warmup":
         return <Flame className="w-5 h-5 text-orange-400" />;
       case "strength":
-        return <Dumbbell className="w-5 h-5 text-neon-pink" />;
+        return <Dumbbell className="w-5 h-5 text-[#d92525]" />;
       case "technique":
         return <Footprints className="w-5 h-5 text-blue-400" />;
       case "cooldown":
@@ -501,7 +501,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
     >
       {/* DRAG HEADER */}
       <div
-        className="flex items-center gap-2 px-3 py-2 border-b border-[#333] cursor-grab active:cursor-grabbing bg-[#1a1a1a]"
+        className="flex items-center gap-2 px-3 py-2 border-b border-[#333] cursor-grab active:cursor-grabbing bg-[#1e1e1e]"
         onMouseDown={handleMouseDown}
       >
         <GripHorizontal className="w-3.5 h-3.5 text-gray-600" />

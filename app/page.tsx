@@ -23,7 +23,7 @@ class ErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen bg-pitch-900 flex items-center justify-center p-8">
+        <div className="min-h-screen bg-[#121212] flex items-center justify-center p-8">
           <div className="glass-card p-6 max-w-lg w-full">
             <p className="text-neon-red font-bold text-lg mb-2">渲染错误</p>
             <p className="text-sm text-gray-300 mb-1">{this.state.error.message}</p>

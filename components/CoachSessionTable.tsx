@@ -228,18 +228,18 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
     return sp;
   }, [rows]);
 
-  if (!total) return <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练教案</div>;
+  if (!total) return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练教案</div>;
 
   return (
     <div className="space-y-3">
       {/* Segmented progress bar */}
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-3">
+      <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] text-gray-400">训练进度</span>
           <span className="text-[11px] text-[#d92525] font-bold">{pct}%</span>
         </div>
         <div className="h-1.5 bg-[#222] rounded-full overflow-hidden flex">
-          <div className="h-full bg-neon-pink rounded-full transition-all duration-300" style={{width:pct+"%"}} />
+          <div className="h-full bg-[#d92525] rounded-full transition-all duration-300" style={{width:pct+"%"}} />
         </div>
         <div className="flex items-center justify-between mt-2 gap-1">
           {segments.map((seg, i) => (
@@ -253,7 +253,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
       </div>
 
       {/* Table */}
-      <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden">
+      <div className="bg-[#1e1e1e] border border-[#333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             {/* Fixed header */}

@@ -90,6 +90,11 @@ export default function TacticsPage() {
   // Equipment palette collapse (controlled at page level for TopNav hamburger)
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   const [toastMsg, setToastMsg] = useState("");
+  // Layer lock states
+  const [lockPlayers, setLockPlayers] = useState(false);
+  const [lockRoutes, setLockRoutes] = useState(false);
+  // Inline player number edit popup
+  const [editPop, setEditPop] = useState<{ obj: any; x: number; y: number; num: string } | null>(null);
 
   // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
@@ -159,7 +164,7 @@ export default function TacticsPage() {
             const cx = p.x, cy = p.y;
             const cr = new Circle({ left: cx-R, top: cy-R, radius: R, fill: "transparent", stroke: p.c, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
             const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
-            const g = new Group([cr, tx], { left: cx-R, top: cy-R });
+            const g = new Group([cr, tx], { left: cx-R, top: cy-R, selectable: true, evented: true });
             (g as any)._isPlayer = true; (g as any).number = p.n;
             g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
             g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
@@ -234,6 +239,24 @@ export default function TacticsPage() {
     autoSave();
   };
 
+  const hZoomIn = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() * 1.15; z = Math.min(z, 5);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const hZoomOut = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() / 1.15; z = Math.max(z, 0.3);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const hZoomFit = () => {
+    const c = boardRef.current; if (!c) return;
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, 1);
+    c.requestRenderAll();
+  };
+
   // Zoom controls moved to BoardToolbar
   // ─── Safe navigation: disable gesture before leaving page ───
   const navigateAway = useCallback((url: string) => {
@@ -291,7 +314,7 @@ export default function TacticsPage() {
       const cx = p.x, cy = p.y;
       const cr = new Circle({left:cx-R, top:cy-R, radius:R, fill:"transparent", stroke:ringColor, strokeWidth:TAC_THEME.playerRingWidth, selectable:false, evented:false});
       const tx = new FabricText(p.n, {left:cx, top:cy, originX:"center", originY:"center", fontSize:R*0.8, fontFamily:"Arial", fontWeight:"bold", fill:"#FFF", selectable:false, evented:false});
-      const g = new Group([cr,tx], {left:cx-R, top:cy-R});
+      const g = new Group([cr,tx], {left:cx-R, top:cy-R, selectable:true, evented:true});
       (g as any)._isPlayer=true; (g as any).number=p.n;
       g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
       g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
@@ -319,7 +342,30 @@ export default function TacticsPage() {
     const textObj = objs.find((o: any) => o.type === "text" || o.type === "textbox");
     if (textObj) { textObj.set({ text: newNum }); boardRef.current?.requestRenderAll(); }
     setEditTick(t => t + 1);
+    setEditPop(null);
   };
+
+  // Inline popup: confirm number edit (uses popup's own ref to avoid selObj race)
+  const hConfirmPopNum = (newNum: string) => {
+    if (!editPop) return;
+    const obj = editPop.obj;
+    (obj as any).number = newNum;
+    const objs = (obj as any)._objects || [];
+    const textObj = objs.find((o: any) => o.type === "text" || o.type === "textbox");
+    if (textObj) { textObj.set({ text: newNum }); boardRef.current?.requestRenderAll(); }
+    setEditPop(null);
+  };
+
+  // Player double-click → show inline popup
+  const hPlayerDoubleClick = useCallback((playerObj: any, screenX: number, screenY: number) => {
+    setSelObj(playerObj);
+    setEditPop({
+      obj: playerObj,
+      x: screenX,
+      y: screenY,
+      num: (playerObj as any).number || "",
+    });
+  }, []);
 
   // ─── AI 自动生成战术板 ─────────────────────────────────
   const renderBoardGen = useCallback((result: BoardGenResult) => {
@@ -341,7 +387,7 @@ export default function TacticsPage() {
         const cx = p.x, cy = p.y;
         const cr = new Circle({ left: cx - R, top: cy - R, radius: R, fill: "transparent", stroke: p.color, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
         const tx = new FabricText(p.number, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R * 0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
-        const g = new Group([cr, tx], { left: cx - R, top: cy - R });
+        const g = new Group([cr, tx], { left: cx - R, top: cy - R, selectable: true, evented: true });
         (g as any)._isPlayer = true; (g as any)._isAIGenerated = true; (g as any).number = p.number;
         if (p.label) (g as any).label = p.label;
         g.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
@@ -591,8 +637,8 @@ export default function TacticsPage() {
         </div>
       )}
 
-      {/* ─── Player number editor bar ─── */}
-      {selObj && (selObj as any)._isPlayer && (
+      {/* ─── Player number editor bar (legacy fallback) ─── */}
+      {selObj && (selObj as any)._isPlayer && !editPop && (
         <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1" style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
           <span className="text-[10px]" style={{ color: TAC_THEME.textDim }}>球员号码:</span>
           <input
@@ -681,12 +727,38 @@ export default function TacticsPage() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         <EquipmentPalette activeTool={activeTool} onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment} collapsed={paletteCollapsed} onToggleCollapsed={() => setPaletteCollapsed(!paletteCollapsed)}/>
-        <FabricBoard activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} boardRef={boardRef}/>
+        <FabricBoard activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} boardRef={boardRef} onPlayerDoubleClick={hPlayerDoubleClick} lockPlayers={lockPlayers} lockRoutes={lockRoutes}/>
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear} onZoomIn={hZoomIn} onZoomOut={hZoomOut} onZoomFit={hZoomFit} lockPlayers={lockPlayers} onLockPlayersChange={setLockPlayers} lockRoutes={lockRoutes} onLockRoutesChange={setLockRoutes}/>
+        </div>
+        {/* Inline player number edit popup */}
+        {editPop && (
+          <div className="fixed z-50 flex items-center gap-1 px-2 py-1 rounded-md shadow-xl"
+            style={{
+              left: editPop.x - 30, top: editPop.y - 32,
+              backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.accent}`,
+            }}>
+            <input
+              autoFocus
+              defaultValue={editPop.num}
+              onBlur={(e) => { hConfirmPopNum(e.target.value); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") hConfirmPopNum((e.target as HTMLInputElement).value);
+                if (e.key === "Escape") setEditPop(null);
+              }}
+              className="w-8 h-6 text-center text-xs font-bold rounded outline-none"
+              style={{ backgroundColor: TAC_THEME.bgInput, color: "#fff", border: `1px solid ${TAC_THEME.border}` }}
+            />
+            <button onClick={() => setEditPop(null)} className="text-[10px] px-1 rounded"
+              style={{ color: TAC_THEME.textDim }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; }}
+            >x</button>
+          </div>
+        )}
       </div>
-
-      <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear}/>
       <GestureController fabricRef={boardRef} enabled={gestureOn} />
       {/* No MobileNav on tactics page — TopNav + Toolbar provide all navigation */}
     </div>

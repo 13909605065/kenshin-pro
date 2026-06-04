@@ -13,14 +13,14 @@ const TABS: { value: Tab; label: string }[] = [
 
 export function StrengthTabSwitcher({ active, onChange }: Props) {
   return (
-    <div className="flex bg-pitch-800 rounded-lg p-0.5">
+    <div className="flex bg-[#1e1e1e] rounded-lg p-0.5">
       {TABS.map((tab) => (
         <button
           key={tab.value}
           onClick={() => onChange(tab.value)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition ${
             active === tab.value
-              ? "bg-neon-pink text-black"
+              ? "bg-[#d92525] text-white"
               : "text-gray-400 hover:text-white"
           }`}
         >

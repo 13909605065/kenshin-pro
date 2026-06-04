@@ -71,9 +71,9 @@ export function FieldDiagram({ diagram }: Props) {
   const dashArray = route_style === "dashed" ? "6,4" : "none";
 
   return (
-    <div className="mt-3 border border-pitch-600 rounded-xl overflow-hidden bg-pitch-800/60">
+    <div className="mt-3 border border-[#222] rounded-xl overflow-hidden bg-[#1e1e1e]/60">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-pitch-700/80 border-b border-pitch-600">
+      <div className="flex items-center justify-between px-3 py-2 bg-[#1e1e1e]/80 border-b border-[#222]">
         <span className="text-xs text-gray-400 font-medium">
           场地示意图 · {layoutLabel(layout)}
         </span>
@@ -85,7 +85,7 @@ export function FieldDiagram({ diagram }: Props) {
       </div>
 
       {/* SVG diagram */}
-      <div className="relative bg-pitch-950 p-4">
+      <div className="relative bg-[#121212] p-4">
         <svg
           viewBox="0 0 100 100"
           className="w-full max-h-[280px]"
@@ -243,21 +243,21 @@ export function FieldDiagram({ diagram }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="px-4 py-3 border-t border-pitch-600 flex items-center gap-4 flex-wrap">
+      <div className="px-4 py-3 border-t border-[#222] flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-neon-pink border border-neon-pink" />
+          <span className="w-3 h-3 rounded-full bg-[#d92525] border border-[#d92525]" />
           <span className="text-[10px] text-gray-400">{start_label}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full border border-neon-pink" />
+          <span className="w-3 h-3 rounded-full border border-[#d92525]" />
           <span className="text-[10px] text-gray-400">{end_label}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-pitch-700 border border-neon-pink/40" />
+          <span className="w-3 h-3 rounded-full bg-[#1e1e1e] border border-[#d92525]/40" />
           <span className="text-[10px] text-gray-400">标志盘</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-4 h-0.5 bg-neon-pink rounded" />
+          <div className="w-4 h-0.5 bg-[#d92525] rounded" />
           <span className="text-[10px] text-gray-400">跑动路线</span>
         </div>
         {cone_count > 0 && (
