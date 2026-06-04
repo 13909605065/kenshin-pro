@@ -344,6 +344,37 @@ export function BoardToolbar(p: Props) {
         {/* Divider */}
         <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
 
+        {/* ── Layer Lock Toggles (before zoom, always visible) ── */}
+        {p.onLockPlayersChange && p.onLockRoutesChange && (
+          <div className="flex items-center gap-0.5 flex-shrink-0">
+            <button
+              onClick={() => p.onLockPlayersChange?.(!p.lockPlayers)}
+              title={p.lockPlayers ? "解锁球员" : "锁定球员"}
+              className="px-1 py-1 rounded text-[10px] font-medium transition-all flex items-center gap-0.5"
+              style={{
+                color: p.lockPlayers ? "#fff" : TEXT_DIM,
+                backgroundColor: p.lockPlayers ? ACTIVE_BG : "transparent",
+                border: p.lockPlayers ? `1px solid ${ACTIVE_BG}` : `1px solid ${BORDER}`,
+                borderRadius: "4px",
+              }}
+            >{p.lockPlayers ? "🔒" : "🔓"}</button>
+            <button
+              onClick={() => p.onLockRoutesChange?.(!p.lockRoutes)}
+              title={p.lockRoutes ? "解锁线路" : "锁定线路"}
+              className="px-1 py-1 rounded text-[10px] font-medium transition-all flex items-center gap-0.5"
+              style={{
+                color: p.lockRoutes ? "#fff" : TEXT_DIM,
+                backgroundColor: p.lockRoutes ? ACTIVE_BG : "transparent",
+                border: p.lockRoutes ? `1px solid ${ACTIVE_BG}` : `1px solid ${BORDER}`,
+                borderRadius: "4px",
+              }}
+            >{p.lockRoutes ? "🔒" : "🔓"}</button>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
         {/* ── Zoom controls ── */}
         {p.onZoomIn && p.onZoomOut && p.onZoomFit && (
           <div className="flex items-center gap-0.5 rounded-md p-0.5 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bgCard, borderRadius: TAC_THEME.radius }}>
@@ -363,37 +394,6 @@ export function BoardToolbar(p: Props) {
               title="放大">
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
-          </div>
-        )}
-
-        {/* Divider */}
-        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
-
-        {/* ── Layer Lock Toggles ── */}
-        {p.onLockPlayersChange && p.onLockRoutesChange && (
-          <div className="flex items-center gap-0.5 flex-shrink-0">
-            <button
-              onClick={() => p.onLockPlayersChange?.(!p.lockPlayers)}
-              title={p.lockPlayers ? "解锁球员" : "锁定球员"}
-              className="px-1.5 py-1 rounded text-[10px] font-medium transition-all"
-              style={{
-                color: p.lockPlayers ? "#fff" : TEXT_DIM,
-                backgroundColor: p.lockPlayers ? ACTIVE_BG : "transparent",
-                border: p.lockPlayers ? `1px solid ${ACTIVE_BG}` : `1px solid ${BORDER}`,
-                borderRadius: "4px",
-              }}
-            >{p.lockPlayers ? "🔒" : "🔓"} 球员</button>
-            <button
-              onClick={() => p.onLockRoutesChange?.(!p.lockRoutes)}
-              title={p.lockRoutes ? "解锁线路" : "锁定线路"}
-              className="px-1.5 py-1 rounded text-[10px] font-medium transition-all"
-              style={{
-                color: p.lockRoutes ? "#fff" : TEXT_DIM,
-                backgroundColor: p.lockRoutes ? ACTIVE_BG : "transparent",
-                border: p.lockRoutes ? `1px solid ${ACTIVE_BG}` : `1px solid ${BORDER}`,
-                borderRadius: "4px",
-              }}
-            >{p.lockRoutes ? "🔒" : "🔓"} 线路</button>
           </div>
         )}
 

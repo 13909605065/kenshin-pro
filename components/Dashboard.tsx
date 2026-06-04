@@ -507,33 +507,33 @@ export function Dashboard() {
                   className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                   健身
                 </button>
+                {/* 训练/营养 — locked for fitness workflow */}
+                {role === "fitness" && (
+                  <>
+                    <button
+                      onClick={() => fitnessTrainingUnlocked && setScene("workout")}
+                      className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (fitnessTrainingUnlocked ? "bg-[#1e1e1e] text-[#777] hover:bg-[#222]" : "bg-[#1e1e1e] text-[#555] opacity-50 cursor-not-allowed")}>
+                      训练
+                    </button>
+                    <button
+                      onClick={() => fitnessNutritionUnlocked && setScene("nutrition")}
+                      className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (fitnessNutritionUnlocked ? "bg-[#1e1e1e] text-[#777] hover:bg-[#222]" : "bg-[#1e1e1e] text-[#555] opacity-50 cursor-not-allowed")}>
+                      营养
+                    </button>
+                  </>
+                )}
               </div>
-              {/* Scene switch — athlete or fitness */}
-              {!isCoach && (
+              {/* Scene switch — athlete only (fitness uses role-group buttons) */}
+              {!isCoach && !isFitness && (
                 <div className="flex bg-[#111] rounded-lg p-0.5">
-                  {isFitness ? (
-                    <>
-                      <button onClick={() => setScene("workout")}
-                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="workout"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
-                        <Dumbbell className="w-3 h-3" />训练
-                      </button>
-                      <button onClick={() => setScene("nutrition")}
-                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="nutrition"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
-                        🥗 营养
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => setScene("pitch")}
-                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="pitch"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
-                        <MapPin className="w-3 h-3" />球场
-                      </button>
-                      <button onClick={() => router.push("/gym")}
-                        className="px-2 py-1 rounded-md text-xs font-bold bg-[#1e1e1e] text-[#777] transition flex items-center gap-1">
-                        <Dumbbell className="w-3 h-3" />健身
-                      </button>
-                    </>
-                  )}
+                  <button onClick={() => setScene("pitch")}
+                    className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="pitch"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
+                    <MapPin className="w-3 h-3" />球场
+                  </button>
+                  <button onClick={() => router.push("/gym")}
+                    className="px-2 py-1 rounded-md text-xs font-bold bg-[#1e1e1e] text-[#777] transition flex items-center gap-1">
+                    <Dumbbell className="w-3 h-3" />健身
+                  </button>
                 </div>
               )}
               <button onClick={() => setEditOpen(true)}
@@ -542,21 +542,6 @@ export function Dashboard() {
               </button>
             </div>
           </div>
-
-          {/* Fitness Step-Unlock Tab Bar */}
-          {isFitness && (
-            <div className="flex gap-1.5">
-              <div className="flex-1 bg-[#d92525] text-white text-center py-2 rounded-lg text-xs font-bold">
-                健身
-              </div>
-              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition ${fitnessTrainingUnlocked ? "bg-[#1e1e1e] text-[#777]" : "bg-[#1e1e1e] text-[#555] opacity-50"}`}>
-                训练
-              </div>
-              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition ${fitnessNutritionUnlocked ? "bg-[#1e1e1e] text-[#777]" : "bg-[#1e1e1e] text-[#555] opacity-50"}`}>
-                营养
-              </div>
-            </div>
-          )}
 
           {/* Goal — for athlete or fitness */}
           {!isCoach && (
@@ -871,7 +856,7 @@ export function Dashboard() {
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={isFitness ? fitnessGoals.length === 0 : !isStepValid}
             className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
-            <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个性化健身训练" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
+            <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
           </button>
 
           {/* Save Profile Dialog */}

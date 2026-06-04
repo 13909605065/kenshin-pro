@@ -423,8 +423,8 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
 
-        {/* Scrollable content — pb-12 keeps items above the bottom toolbar */}
-        <div className="flex-1 overflow-y-auto py-1.5 space-y-1 pb-12">
+        {/* Scrollable content — pb-24 keeps last items visible above floating toolbar */}
+        <div className="flex-1 overflow-y-auto py-1.5 space-y-1 pb-24">
           {/* ═══════════ 教具 Card ═══════════ */}
           <div
             className="mx-1"
