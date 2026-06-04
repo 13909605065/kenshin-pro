@@ -28,6 +28,7 @@ const DEFAULT_DATA: PlayerFormData = {
   leagueTag: null,
   tacticalThemes: [],
   equipmentAvailable: [],
+  trainingDuration: 60,
 };
 
 function validateStep1(data: PlayerFormData): Partial<Record<keyof PlayerFormData, string>> {

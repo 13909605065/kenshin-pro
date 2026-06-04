@@ -870,6 +870,24 @@ export function Dashboard() {
           </div>
           )}
 
+          {/* Training Duration Selector — all roles */}
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3"><Timer className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">训练时长</p></div>
+            <div className="flex gap-2">
+              {[30, 45, 60, 90].map((mins) => {
+                const isSelected = (formData.trainingDuration || 60) === mins;
+                return (
+                  <button key={mins} onClick={() => updateField("trainingDuration", mins)}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                      isSelected
+                        ? "bg-[#d92525] text-white border-[#d92525]"
+                        : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#d92525]/30"
+                    }`}>{mins}min</button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Hint text when generate is disabled */}
           {!isStepValid && !isFitness && (
             <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">

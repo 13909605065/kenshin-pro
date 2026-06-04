@@ -111,6 +111,7 @@ export function buildAthletePrompt(data: PlayerFormData, lang: string = "zh", we
 目标能力: ${GOAL_LABELS[data.goal!]}
 赛季阶段: ${PHASE_LABELS[data.phase!]}
 推荐套餐: ${comboHint}
+${data.trainingDuration ? `可用训练时间: ${data.trainingDuration}分钟，请按此时间调整训练量` : ""}
 
 ## 营养精确计算（必须输出到 module_5 nutrition 中）
 ${nutritionCalc}

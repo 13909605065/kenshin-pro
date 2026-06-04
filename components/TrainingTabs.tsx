@@ -455,7 +455,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
   const [showTimer, setShowTimer] = useState(false);
-  const [viewMode, setViewMode] = useState<"sequential" | "tabs">(isCoach ? "tabs" : "sequential");
+  const [viewMode, setViewMode] = useState<"sequential" | "tabs">("tabs");
   const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -552,33 +552,29 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
         </div>
       )}
 
-      {/* View toggle — athlete dual view */}
-      {!isCoach && (
-        <div className="flex justify-center mb-3">
-          <div className="flex bg-[#111] rounded-lg p-0.5">
-            <button onClick={() => setViewMode("sequential")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium ${viewMode==="sequential"?"bg-[#d92525] text-black":"text-gray-400 hover:text-white"}`}>
-              📋 顺序跟练
-            </button>
-            <button onClick={() => setViewMode("tabs")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium ${viewMode==="tabs"?"bg-[#d92525] text-black":"text-gray-400 hover:text-white"}`}>
-              📑 分类数据
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Athlete sequential — clean card view */}
+      {/* Athlete sequential — clean card view (secondary, accessed from bottom link) */}
       {!isCoach && viewMode === "sequential" && (
         <div className="flex-1">
+          <div className="flex justify-between items-center mb-2">
+            <button onClick={() => setViewMode("tabs")}
+              className="text-[10px] text-gray-500 hover:text-[#d92525] transition-colors">
+              ← 返回分类视图
+            </button>
+          </div>
           <AthleteSequentialView modules={modules} formData={formData}/>
         </div>
       )}
 
-      {/* Athlete category — table + export */}
+      {/* Athlete category — table + export (default view) */}
       {!isCoach && viewMode === "tabs" && (
         <div className="flex-1">
           <AthleteCategoryView modules={modules}/>
+          <div className="flex justify-end mt-3">
+            <button onClick={() => setViewMode("sequential")}
+              className="text-[10px] text-gray-500 hover:text-[#d92525] transition-colors">
+              📋 切换跟练模式 →
+            </button>
+          </div>
         </div>
       )}
 

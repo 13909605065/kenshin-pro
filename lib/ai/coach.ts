@@ -66,6 +66,11 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
     levelNote = "业余球员训练时间有限，战术设计要简洁高效、易于执行。重视基础阵型保持。训练效率优先。";
   }
 
+  // Override with user-specified training duration if set
+  if (data.trainingDuration) {
+    sessionDuration = `${data.trainingDuration}分钟`;
+  }
+
   // Certificate-specific coaching style
   const certNotes: Record<string, string> = {
     none: "无证教练：指导要点用通俗语言，避免过于复杂的战术术语。",

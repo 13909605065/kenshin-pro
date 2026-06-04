@@ -47,6 +47,7 @@ export interface PlayerFormData {
   leagueTag: LeagueTag | null;
   tacticalThemes: TacticalTheme[];
   equipmentAvailable: string[]; // 可用器材列表
+  trainingDuration?: number; // 30 | 45 | 60 | 90 (minutes)
 }
 
 // ---- Training Module Output ----
