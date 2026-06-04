@@ -10,6 +10,7 @@ import { TrainingTabs } from "./TrainingTabs";
 import { GeneratingOverlay } from "./GeneratingOverlay";
 import { ErrorAlert } from "./ErrorAlert";
 import { TrainingHistory } from "./TrainingHistory";
+import { TemplateLibrary } from "./TemplateLibrary";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 import { getPlayers } from "@/lib/roster-utils";
@@ -317,6 +318,7 @@ export function Dashboard() {
   const [editOpen, setEditOpen] = useState(false);
   const [coachInput, setCoachInput] = useState("");
   const [launchTimer, setLaunchTimer] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // Auto-detect tactical themes from coach input keywords
   useEffect(() => {
@@ -917,6 +919,12 @@ export function Dashboard() {
             <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
           </button>
 
+          {/* Template Library — quick access */}
+          <button onClick={() => setShowTemplates(true)}
+            className="w-full py-2.5 text-center text-xs text-gray-500 hover:text-[#d92525] transition-colors">
+            📁 从模板库套用方案
+          </button>
+
           {/* Save Profile Dialog */}
           {showProfileSave && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-3 flex items-center gap-2">
@@ -1126,6 +1134,27 @@ export function Dashboard() {
           <button onClick={() => { if(templateName){ templates.saveTemplate(templateName, wizard.formData, training.modules); setTemplateName(""); setShowTemplateSave(false); }}}
             className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
         </div>
+      )}
+
+      {/* Template Library Modal */}
+      {showTemplates && (
+        <TemplateLibrary
+          templates={templates.templates}
+          onApply={(tpl) => {
+            // Pre-fill form data
+            Object.entries(tpl.form_data).forEach(([key, value]) => {
+              if (value !== undefined && value !== null) {
+                updateField(key as any, value as any);
+              }
+            });
+            // Load modules directly
+            training.loadModules(tpl.plan_content, tpl.form_data);
+            setStatus("complete");
+            setShowTemplates(false);
+          }}
+          onDelete={(id) => templates.deleteTemplate(id)}
+          onClose={() => setShowTemplates(false)}
+        />
       )}
     </div>
   );
