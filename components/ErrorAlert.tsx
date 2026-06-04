@@ -51,11 +51,11 @@ export function ErrorAlert({ code, onRetry, hasPartialContent, onViewPartial }: 
   };
 
   return (
-    <div className="glass-card border-neon-red/30 bg-neon-red/5 p-6 space-y-4">
+    <div className="glass-card border-[#d92525]/30 bg-[#d92525]/5 p-6 space-y-4">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-6 h-6 text-neon-red flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-6 h-6 text-[#d92525] flex-shrink-0 mt-0.5" />
         <div>
-          <h3 className="text-neon-red font-bold text-lg">{config.title}</h3>
+          <h3 className="text-[#d92525] font-bold text-lg">{config.title}</h3>
           <p className="text-gray-400 text-sm mt-1">{config.message}</p>
         </div>
       </div>

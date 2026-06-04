@@ -209,7 +209,7 @@ export function TacticalTab({ modules }: Props) {
                   title={`中强度 ${phaseModule.intensity_distribution.medium}%`}
                 />
                 <div
-                  className="bg-neon-red/60"
+                  className="bg-[#d92525]/60"
                   style={{ width: `${phaseModule.intensity_distribution.high}%` }}
                   title={`高强度 ${phaseModule.intensity_distribution.high}%`}
                 />

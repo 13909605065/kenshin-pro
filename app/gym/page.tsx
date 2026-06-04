@@ -319,7 +319,7 @@ export default function GymPage() {
             <h2 className="text-sm font-bold text-gray-400 mb-3 flex items-center gap-2"><History className="w-4 h-4" />最近方案</h2>
             <div className="space-y-2">
               {recentPlans.slice(0, 3).map((p: any) => (
-                <button key={p.id} onClick={() => router.push("/")} className="w-full bg-[#1e1e1e] border border-[#333] hover:border-[#d92525]/30 rounded-lg px-4 py-3 text-left transition">
+                <button key={p.id} onClick={() => { setModules(p.modules); setPlanId(p.id); }} className="w-full bg-[#1e1e1e] border border-[#333] hover:border-[#d92525]/30 rounded-lg px-4 py-3 text-left transition">
                   <p className="text-sm text-white font-medium">{p.playerName}</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">{p.modules.length}模块 · {new Date(p.createdAt).toLocaleDateString("zh-CN")}</p>
                 </button>

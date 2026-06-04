@@ -117,7 +117,7 @@ export default function SettingsPage() {
         {/* Clear Cache */}
         <section className="glass-card p-4">
           <h2 className="text-white font-bold text-sm mb-2">💾 数据管理</h2>
-          <button onClick={()=>{localStorage.clear();alert('已清除所有本地缓存，请刷新页面');window.location.reload()}}
+          <button onClick={()=>{localStorage.clear();setMessage('已清除所有本地缓存，请刷新页面');setTimeout(()=>window.location.reload(),800)}}
             className="w-full py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-sm hover:bg-red-500/30 transition">
             🗑️ 清除本地缓存（解决数据显示异常）
           </button>

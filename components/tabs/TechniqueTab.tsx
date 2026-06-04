@@ -81,13 +81,13 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
           {drill.key_points && drill.key_points.length > 0 && (
             <div className="bg-[#1e1e1e]/50 rounded-lg p-2.5">
               <div className="flex items-center gap-2 mb-1.5">
-                <Zap className="w-3.5 h-3.5 text-neon-gold flex-shrink-0" />
-                <p className="text-[10px] text-neon-gold font-bold">技术要点</p>
+                <Zap className="w-3.5 h-3.5 text-[#d92525] flex-shrink-0" />
+                <p className="text-[10px] text-[#d92525] font-bold">技术要点</p>
               </div>
               <div className="space-y-1">
                 {drill.key_points.map((kp, j) => (
                   <div key={j} className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-neon-gold/15 text-neon-gold text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-px">
+                    <span className="w-4 h-4 rounded-full bg-[#d92525]/15 text-[#d92525] text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-px">
                       {j + 1}
                     </span>
                     <span className="text-xs text-gray-300">{kp}</span>

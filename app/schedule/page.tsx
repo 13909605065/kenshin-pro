@@ -20,6 +20,7 @@ export default function SchedulePage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [nextMatch, setNextMatch] = useState<MatchRecord | null>(null);
+  const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
   const days = daysUntilNextMatch(matches);
 
   useEffect(() => {
@@ -42,8 +43,9 @@ export default function SchedulePage() {
         const data = XLSX.utils.sheet_to_json(ws) as Record<string, string>[];
         const created = importMatches(data);
         setMatches(getMatches());
-        alert(`成功导入 ${created.length} 场比赛`);
-      } catch { alert("导入失败，请检查文件格式（需包含：日期、对手、主/客 列）"); }
+        setImportToast({type:'success',msg:`成功导入 ${created.length} 场比赛`});
+        setTimeout(()=>setImportToast(null),3000);
+      } catch { setImportToast({type:'error',msg:"导入失败，请检查文件格式（需包含：日期、对手、主/客 列）"}); setTimeout(()=>setImportToast(null),4000); }
     };
     reader.readAsArrayBuffer(file);
     e.target.value = "";
@@ -57,6 +59,12 @@ export default function SchedulePage() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-4 space-y-4">
+        {/* Import toast */}
+        {importToast && (
+          <div className={`px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525]'}`}>
+            {importToast.msg}
+          </div>
+        )}
         {/* Next match card */}
         {nextMatch && days !== null && (
           <div className="bg-[#d92525]/10 border border-[#d92525]/30 rounded-xl p-4">

@@ -50,7 +50,7 @@ export function SeasonPhaseStep({ selected, onChange, error }: Props) {
           ))}
         </div>
 
-      {error && <p className="text-neon-red text-sm">{error}</p>}
+      {error && <p className="text-[#d92525] text-sm">{error}</p>}
     </div>
   );
 }

@@ -105,7 +105,7 @@ export function PlanExerciseRow({
         {/* Remove */}
         <button
           onClick={onRemove}
-          className="p-1.5 text-gray-600 hover:text-neon-red transition rounded-lg hover:bg-[#1e1e1e] flex-shrink-0 mt-1"
+          className="p-1.5 text-gray-600 hover:text-[#d92525] transition rounded-lg hover:bg-[#1e1e1e] flex-shrink-0 mt-1"
           title="移除"
         >
           <Trash2 className="w-4 h-4" />

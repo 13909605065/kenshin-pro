@@ -70,7 +70,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 </button>
               ))}
             </div>
-            {errors.coachCert && <p className="mt-1 text-neon-red text-xs">{errors.coachCert}</p>}
+            {errors.coachCert && <p className="mt-1 text-[#d92525] text-xs">{errors.coachCert}</p>}
           </div>
 
           {/* Tier 2: Coach Role (grayed based on cert) */}
@@ -103,7 +103,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   );
                 })}
               </div>
-              {errors.coachRole && <p className="mt-1 text-neon-red text-xs">{errors.coachRole}</p>}
+              {errors.coachRole && <p className="mt-1 text-[#d92525] text-xs">{errors.coachRole}</p>}
             </div>
           )}
 
@@ -134,7 +134,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   );
                 })}
               </div>
-              {errors.leagueTag && <p className="mt-1 text-neon-red text-xs">{errors.leagueTag}</p>}
+              {errors.leagueTag && <p className="mt-1 text-[#d92525] text-xs">{errors.leagueTag}</p>}
             </div>
           )}
         </div>
@@ -175,7 +175,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
               ))}
             </div>
             {errors.position && (
-              <p className="mt-1 text-neon-red text-xs">{errors.position}</p>
+              <p className="mt-1 text-[#d92525] text-xs">{errors.position}</p>
             )}
           </div>
 
@@ -192,7 +192,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={60}
                 className={errors.age ? "input-error" : "input-field"}
               />
-              {errors.age && <p className="mt-1 text-neon-red text-xs">{errors.age}</p>}
+              {errors.age && <p className="mt-1 text-[#d92525] text-xs">{errors.age}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">身高 (cm) *</label>
@@ -205,7 +205,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={220}
                 className={errors.height ? "input-error" : "input-field"}
               />
-              {errors.height && <p className="mt-1 text-neon-red text-xs">{errors.height}</p>}
+              {errors.height && <p className="mt-1 text-[#d92525] text-xs">{errors.height}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">体重 (kg) *</label>
@@ -218,7 +218,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={150}
                 className={errors.weight ? "input-error" : "input-field"}
               />
-              {errors.weight && <p className="mt-1 text-neon-red text-xs">{errors.weight}</p>}
+              {errors.weight && <p className="mt-1 text-[#d92525] text-xs">{errors.weight}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">训练年限 (年) *</label>
@@ -231,7 +231,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={40}
                 className={errors.years ? "input-error" : "input-field"}
               />
-              {errors.years && <p className="mt-1 text-neon-red text-xs">{errors.years}</p>}
+              {errors.years && <p className="mt-1 text-[#d92525] text-xs">{errors.years}</p>}
             </div>
           </div>
 

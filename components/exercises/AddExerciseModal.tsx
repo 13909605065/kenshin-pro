@@ -61,6 +61,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
   const [progression, setProgression] = useState("");
   const [regression, setRegression] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Populate form when editing
   useEffect(() => {
@@ -80,6 +81,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
       setProgression(editingExercise.progression || "");
       setRegression(editingExercise.regression || "");
       setImageUrl(editingExercise.image_url || "");
+      setErrorMsg(null);
     } else {
       setName("");
       setBodyPart("全身");
@@ -101,7 +103,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
 
   const handleSubmit = () => {
     if (!name.trim()) {
-      alert("请输入动作名称");
+      setErrorMsg("请输入动作名称");
       return;
     }
 
@@ -385,6 +387,9 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
             {isEditing ? "保存修改" : "保存"}
           </button>
         </div>
+        {errorMsg && (
+          <p className="text-sm text-[#d92525] mt-2">{errorMsg}</p>
+        )}
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { TacticalDiagnosis } from "@/lib/ai/tactical-diagnosis";
 import { MobileNav } from "@/components/MobileNav";
@@ -58,6 +58,7 @@ export default function TacticalDiagnosisPage() {
   const [weather, setWeather] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
   const [clickedExample, setClickedExample] = useState<number | null>(null);
+  const [shareToast, setShareToast] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
   // ─── Voice input ───────────────────────────────────────
@@ -85,6 +86,11 @@ export default function TacticalDiagnosisPage() {
 
     recognitionRef.current = recognition;
     recognition.start();
+  }, []);
+
+  // Abort voice recognition on unmount
+  useEffect(() => {
+    return () => { recognitionRef.current?.abort(); };
   }, []);
 
   // ─── Build context for API ─────────────────────────────
@@ -737,6 +743,12 @@ export default function TacticalDiagnosisPage() {
               </div>
             )}
 
+            {/* Share toast */}
+            {shareToast && (
+              <div className="mt-3 px-4 py-2 bg-[#30D158]/10 border border-[#30D158]/30 rounded-lg text-sm text-[#30D158]">
+                {shareToast}
+              </div>
+            )}
             {/* Share + Reset buttons */}
             <div className="mt-6 flex gap-2">
               <button
@@ -746,10 +758,22 @@ export default function TacticalDiagnosisPage() {
                     navigator.share({
                       title: diagnosis.diagnosis.summary,
                       text: shareData,
-                    });
+                    }).catch(() => {});
                   } else {
-                    navigator.clipboard.writeText(shareData);
-                    alert("已复制到剪贴板");
+                    try {
+                      navigator.clipboard.writeText(shareData);
+                    } catch {
+                      const ta = document.createElement("textarea");
+                      ta.value = shareData;
+                      ta.style.position = "fixed";
+                      ta.style.left = "-9999px";
+                      document.body.appendChild(ta);
+                      ta.select();
+                      document.execCommand("copy");
+                      document.body.removeChild(ta);
+                    }
+                    setShareToast("已复制到剪贴板");
+                    setTimeout(() => setShareToast(null), 2000);
                   }
                 }}
                 className="flex-1 bg-[#1e1e1e] hover:bg-[#252525] border border-[#333] text-white font-medium py-3 rounded-xl transition-colors"

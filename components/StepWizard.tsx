@@ -313,7 +313,7 @@ export function StepWizard() {
                 ))}
               </div>
               {errors.tacticalThemes && (
-                <p className="text-neon-red text-sm">{errors.tacticalThemes}</p>
+                <p className="text-[#d92525] text-sm">{errors.tacticalThemes}</p>
               )}
             </div>
           )}

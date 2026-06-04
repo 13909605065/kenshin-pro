@@ -107,7 +107,7 @@ export default function SharePage() {
       try {
         const hash = window.location.hash.slice(1);
         if (!hash) { setError("无效的分享链接"); return; }
-        const decoded = JSON.parse(decodeURIComponent(atob(hash)));
+        const decoded = JSON.parse(atob(decodeURIComponent(hash)));
         if (!decoded.m || !decoded.f) { setError("分享数据不完整"); return; }
         setData({ modules: decoded.m, formData: decoded.f });
       } catch { setError("链接解析失败，请检查链接是否完整"); }

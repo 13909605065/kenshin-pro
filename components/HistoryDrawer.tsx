@@ -68,7 +68,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                     <div>
                       <div className="flex items-center gap-2">
                         {item.is_favorite && (
-                          <Heart className="w-3 h-3 fill-neon-gold text-neon-gold" />
+                          <Heart className="w-3 h-3 fill-[#d92525] text-[#d92525]" />
                         )}
                         <span className="text-white font-medium text-sm">
                           {GOAL_LABELS[item.form_data?.goal as keyof typeof GOAL_LABELS] || "未知目标"}
@@ -84,7 +84,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                     </div>
                     <button
                       onClick={(e) => deleteItem(item.id, e)}
-                      className="p-1 text-gray-600 hover:text-neon-red transition"
+                      className="p-1 text-gray-600 hover:text-[#d92525] transition"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

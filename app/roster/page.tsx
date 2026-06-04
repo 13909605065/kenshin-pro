@@ -37,6 +37,7 @@ export default function RosterPage() {
     fileName: string;
   } | null>(null);
 
+  const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
   const filtered = filter === "all" ? players : players.filter((p) => p.injuryStatus === filter);
 
   const handleExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,9 +50,9 @@ export default function RosterPage() {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as (string | number | null)[][];
       const parsed = parseExcelData(rows);
-      if (parsed.length === 0) { alert("未识别到球员数据，请检查 Excel 格式"); return; }
+      if (parsed.length === 0) { setImportToast({type:'error',msg:"未识别到球员数据，请检查 Excel 格式"}); setTimeout(()=>setImportToast(null),4000); return; }
       setPreview({ rawRows: rows, parsed, fileName: file.name });
-    } catch { alert("Excel 解析失败，请检查文件格式"); }
+    } catch { setImportToast({type:'error',msg:"Excel 解析失败，请检查文件格式"}); setTimeout(()=>setImportToast(null),4000); }
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -61,7 +62,7 @@ export default function RosterPage() {
     const merged = [...existing, ...preview.parsed.map((p) => ({ ...p, id: (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2)) }))];
     savePlayers(merged as PlayerRecord[]);
     setPlayers(merged as PlayerRecord[]);
-    alert(`成功导入 ${preview.parsed.length} 名球员`);
+    setImportToast({type:'success',msg:`成功导入 ${preview.parsed.length} 名球员`}); setTimeout(()=>setImportToast(null),3000);
     setPreview(null);
   };
 
@@ -91,6 +92,12 @@ export default function RosterPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
+      {/* Import toast */}
+      {importToast && (
+        <div className={`mb-3 px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525]'}`}>
+          {importToast.msg}
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>

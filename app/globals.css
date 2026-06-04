@@ -115,7 +115,7 @@
   }
 
   .input-error {
-    @apply input-field border-neon-red focus:border-neon-red;
+    @apply input-field border-[#d92525] focus:border-[#d92525];
   }
 
   .step-indicator {

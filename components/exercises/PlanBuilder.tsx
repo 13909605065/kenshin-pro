@@ -112,7 +112,7 @@ export function PlanBuilder({
             </button>
             <button
               onClick={onClearPlan}
-              className="text-xs text-gray-400 hover:text-neon-red transition flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-[#d92525] transition flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
               清空

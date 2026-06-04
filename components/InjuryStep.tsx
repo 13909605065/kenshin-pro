@@ -23,7 +23,7 @@ export function InjuryStep({ selected, onToggle, injuryHistory, onHistoryChange 
             onClick={() => onToggle(site.value)}
             className={`p-4 rounded-xl border transition-all text-center ${
               selected.includes(site.value)
-                ? "border-neon-red bg-neon-red/10 text-neon-red"
+                ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
                 : "border-[#222] text-gray-400 hover:border-[#d92525]"
             }`}
           >

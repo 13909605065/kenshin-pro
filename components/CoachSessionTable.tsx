@@ -194,7 +194,7 @@ function DiagramModal({ diagram, onClose }: { diagram?: any; onClose: () => void
    Component
    ============================================================ */
 
-export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOpenDiagram?: (d: any) => void }) {
+export function CoachSessionTable({ modules }: { modules: TrainingModule[] }) {
   const [done, setDone] = useState<Set<string>>(new Set());
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [diagramModal, setDiagramModal] = useState<any | null>(null);

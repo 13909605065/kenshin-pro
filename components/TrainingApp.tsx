@@ -22,10 +22,10 @@ function NetworkCheck() {
   if (online) return null;
 
   return (
-    <div className="glass-card border-neon-gold/30 bg-neon-gold/5 p-4 flex items-center gap-3 mb-6">
-      <WifiOff className="w-5 h-5 text-neon-gold flex-shrink-0" />
+    <div className="glass-card border-[#d92525]/30 bg-[#d92525]/5 p-4 flex items-center gap-3 mb-6">
+      <WifiOff className="w-5 h-5 text-[#d92525] flex-shrink-0" />
       <div>
-        <p className="text-neon-gold font-medium text-sm">网络不佳</p>
+        <p className="text-[#d92525] font-medium text-sm">网络不佳</p>
         <p className="text-gray-400 text-xs">生成功能暂不可用，请检查网络后重试。已保存的内容仍可查看。</p>
       </div>
     </div>

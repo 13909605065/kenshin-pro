@@ -286,6 +286,7 @@ export default function ExercisesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleteToast, setDeleteToast] = useState<string | null>(null);
 
   // Filter
   const filtered = useMemo(() => {
@@ -341,15 +342,15 @@ export default function ExercisesPage() {
   };
 
   const handleDeleteCustom = (id: string) => {
-    if (typeof window !== "undefined" && window.confirm("确定删除这个自定义动作吗？")) {
-      deleteExercise(id);
-      if (selectedId === id) setSelectedId(null);
-      setSelectedIds(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
+    deleteExercise(id);
+    if (selectedId === id) setSelectedId(null);
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setDeleteToast("已删除");
+    setTimeout(() => setDeleteToast(null), 2000);
   };
 
   const handleAddToPlan = () => {
@@ -383,9 +384,16 @@ export default function ExercisesPage() {
       <div className="max-w-7xl mx-auto px-4 py-4 pb-28">
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <a href="/" className="text-gray-400 hover:text-white text-sm transition-colors duration-150">←</a>
+          <a href="/" className="text-gray-400 hover:text-white text-sm transition-colors duration-150 touch-target min-w-[44px] min-h-[44px] flex items-center justify-center">←</a>
           <h1 className="text-lg font-bold text-[#d1d1d1]">动作库</h1>
         </div>
+
+        {/* Delete toast */}
+        {deleteToast && (
+          <div className="mb-3 px-4 py-2 bg-[#d92525]/10 border border-[#d92525]/30 rounded-lg text-sm text-[#d92525] animate-pulse">
+            {deleteToast}
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="mb-4">

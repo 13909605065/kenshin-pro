@@ -421,7 +421,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
 function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
   const intensityColors: Record<string, string> = {
     "极低": "bg-gray-500", "低": "bg-green-500", "中低": "bg-green-400",
-    "中": "bg-yellow-500", "中高": "bg-orange-500", "高": "bg-[#d92525]", "极高": "bg-neon-red",
+    "中": "bg-yellow-500", "中高": "bg-orange-500", "高": "bg-[#d92525]", "极高": "bg-[#d92525]",
   };
   return (
     <div className="space-y-4">
@@ -569,9 +569,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
         {isCoach ? (
           <>
             {activeTab === "session" && sessionPlan && (
-              <CoachSessionTable modules={[sessionPlan]} onOpenDiagram={(d) => {
-                if (d) { writeDrillContext(d as any); router.push("/tactics"); }
-              }} />
+              <CoachSessionTable modules={[sessionPlan]} />
             )}
             {activeTab === "session" && !sessionPlan && (
               <p className="text-sm text-gray-400 py-8 text-center">暂无训练教案内容</p>

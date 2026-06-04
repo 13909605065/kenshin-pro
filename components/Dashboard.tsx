@@ -356,6 +356,7 @@ export function Dashboard() {
   const [coachInput, setCoachInput] = useState("");
   const [launchTimer, setLaunchTimer] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Auto-detect tactical themes from coach input keywords
   useEffect(() => {
@@ -446,8 +447,8 @@ export function Dashboard() {
   );
 
   const handleGenerate = useCallback(async () => {
-    if (!formData.position && !isCoach && !isFitness) { alert("请先编辑档案，填写场上位置"); return; }
-    if (isFitness && fitnessGoals.length === 0) { alert("请先选择健身目标"); return; }
+    if (!formData.position && !isCoach && !isFitness) { setValidationError("请先编辑档案，填写场上位置"); setTimeout(()=>setValidationError(null),3000); return; }
+    if (isFitness && fitnessGoals.length === 0) { setValidationError("请先选择健身目标"); setTimeout(()=>setValidationError(null),3000); return; }
     // Inject fitnessGoals array into formData for AI context
     if (isFitness && fitnessGoals.length > 0) {
       (formData as any).fitnessGoals = fitnessGoals;
@@ -508,7 +509,7 @@ export function Dashboard() {
               {/* 训练场: timer + roster */}
               {scene === "pitch" && (
                 <>
-                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
+                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else { setValidationError("请先进「备课」生成训练方案"); setTimeout(()=>setValidationError(null),3000); } }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
                     <Timer className="w-5 h-5 text-[#d92525] mb-1" />
                     <p className="text-xs font-bold text-white">计时跟练</p>
                     <p className="text-[10px] text-gray-400">执行教案</p>
@@ -963,6 +964,13 @@ export function Dashboard() {
             <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
               请先选择健身目标
             </p>
+          )}
+
+          {/* Validation error */}
+          {validationError && (
+            <div className="px-4 py-2 bg-[#d92525]/10 border border-[#d92525]/30 rounded-lg text-sm text-[#d92525]">
+              {validationError}
+            </div>
           )}
 
           {/* Generate Button */}

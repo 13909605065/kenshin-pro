@@ -208,7 +208,9 @@ export default function LoginPage() {
 
           {/* WeChat — Primary CTA */}
           <button
+            onClick={() => setMessage("微信登录即将支持，请使用邮箱登录")}
             disabled={loading !== null}
+            title="微信登录即将支持"
             className="w-full h-12 flex items-center justify-center gap-3 bg-[#07C160] rounded-xl font-medium text-sm text-white hover:bg-[#06AD56] transition disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

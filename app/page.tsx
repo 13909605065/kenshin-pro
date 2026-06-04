@@ -25,7 +25,7 @@ class ErrorBoundary extends Component<
       return (
         <div className="min-h-screen bg-[#121212] flex items-center justify-center p-8">
           <div className="glass-card p-6 max-w-lg w-full">
-            <p className="text-neon-red font-bold text-lg mb-2">渲染错误</p>
+            <p className="text-[#d92525] font-bold text-lg mb-2">渲染错误</p>
             <p className="text-sm text-gray-300 mb-1">{this.state.error.message}</p>
             <pre className="text-xs text-gray-400 whitespace-pre-wrap overflow-auto max-h-64">
               {this.state.error.stack}
@@ -114,8 +114,8 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-6 pb-20 lg:pb-6">
         {clientError && (
-          <div className="mb-6 p-4 bg-neon-red/20 border border-neon-red rounded-xl">
-            <p className="text-neon-red font-bold text-sm mb-1">客户端错误:</p>
+          <div className="mb-6 p-4 bg-[#d92525]/20 border border-[#d92525] rounded-xl">
+            <p className="text-[#d92525] font-bold text-sm mb-1">客户端错误:</p>
             <pre className="text-xs text-gray-300 whitespace-pre-wrap">{clientError}</pre>
           </div>
         )}

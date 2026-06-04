@@ -437,7 +437,7 @@ function PhasePlanContent({ data }: { data: PhasePlan }) {
             title={`中强度 ${data.intensity_distribution.medium}%`}
           />
           <div
-            className="bg-neon-red/60"
+            className="bg-[#d92525]/60"
             style={{ width: `${data.intensity_distribution.high}%` }}
             title={`高强度 ${data.intensity_distribution.high}%`}
           />
@@ -482,8 +482,8 @@ function InjuryRecoveryContent({ data }: { data: InjuryRecovery }) {
 
 function ParseErrorContent({ data }: { data: ParseError }) {
   return (
-    <div className="p-3 bg-neon-red/5 border border-neon-red/20 rounded-lg">
-      <p className="text-neon-red text-sm mb-2">⚠️ 格式化失败，以下为原始内容：</p>
+    <div className="p-3 bg-[#d92525]/5 border border-[#d92525]/20 rounded-lg">
+      <p className="text-[#d92525] text-sm mb-2">⚠️ 格式化失败，以下为原始内容：</p>
       <pre className="text-xs text-gray-400 whitespace-pre-wrap">{data.raw}</pre>
     </div>
   );
