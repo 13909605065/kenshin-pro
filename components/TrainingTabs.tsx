@@ -15,6 +15,7 @@ import { WorkoutTimer } from "./WorkoutTimer";
 import { CoachSessionTable } from "./CoachSessionTable";
 import { AthleteCategoryView } from "./AthleteTrainingView";
 import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
+import AIAssistant from "./AIAssistant";
 
 interface Props {
   modules: TrainingModule[];
@@ -665,6 +666,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
           onClose={() => setShowTimer(false)}
         />
       )}
+      <AIAssistant />
     </div>
   );
 }
