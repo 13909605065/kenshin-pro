@@ -88,7 +88,6 @@ export default function Home() {
               </a>
               <a href="/tactical-diagnosis" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术诊断</a>
               <a href="/tactics" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术板</a>
-              <a href="/gym" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">健身房</a>
               <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
               <a href="/schedule" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">赛程</a>
               <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">花名册</a>

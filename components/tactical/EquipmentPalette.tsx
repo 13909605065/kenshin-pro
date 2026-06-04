@@ -324,7 +324,7 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
           handleDragStart(e, item);
           setActiveEquipment(item.filename);
         }}
-        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-all duration-150 group"
+        className="flex flex-col items-center gap-0.5 py-1 px-0.5 rounded-md cursor-grab transition-all duration-150 group"
         style={{
           borderRadius: "6px",
           backgroundColor: isActive ? `${ACCENT}1a` : "transparent",
@@ -368,7 +368,7 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
               setActiveEquipment(item.filename);
               onPlaceEquipment?.(item.filename, item.name);
             }}
-            className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none opacity-60 group-hover:opacity-100 transition-opacity"
+            className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] leading-none opacity-60 group-hover:opacity-100 transition-opacity"
             style={{ backgroundColor: ACCENT, color: "#fff" }}
             title="点击添加"
           >+</button>
@@ -377,7 +377,7 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
               style={{ backgroundColor: coneColor, borderColor: CARD_BG }} />
           )}
         </div>
-        <span className="text-[9px] leading-tight text-center w-full truncate px-0.5"
+        <span className="text-[10px] leading-tight text-center w-full truncate px-0.5"
           style={{ color: isActive ? ACCENT : TEXT_DIM }}>
           {item.name}
         </span>
@@ -423,30 +423,29 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto py-1.5 space-y-1">
+        {/* Scrollable content — pb-12 keeps items above the bottom toolbar */}
+        <div className="flex-1 overflow-y-auto py-1.5 space-y-1 pb-12">
           {/* ═══════════ 教具 Card ═══════════ */}
           <div
-            className="mx-1 rounded-md overflow-hidden"
+            className="mx-1"
             style={{
-              backgroundColor: CARD_BG,
               borderRadius: TAC_THEME.radius,
               border: `1px solid ${BORDER}`,
             }}
           >
             <button
               onClick={() => toggleSection("equipment")}
-              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
-              style={{ color: TEXT_MAIN }}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors sticky top-0 z-10"
+              style={{ color: TEXT_MAIN, backgroundColor: CARD_BG, borderRadius: TAC_THEME.radius }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = CARD_BG; }}
             >
               <span className="text-[10px] font-semibold tracking-wide">教具</span>
               <Chevron open={openSections.equipment} />
             </button>
             {openSections.equipment && (
-              <div className="px-1.5 pb-1.5">
-                <div className="grid grid-cols-2 gap-1">
+              <div className="px-1.5 pb-1.5" style={{ backgroundColor: CARD_BG, borderRadius: `0 0 ${TAC_THEME.radius} ${TAC_THEME.radius}` }}>
+                <div className="grid grid-cols-2 gap-0.5">
                   {EQUIPMENT.map(mkEquipItem)}
                 </div>
               </div>
@@ -455,25 +454,24 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
 
           {/* ═══════════ 球员 Card ═══════════ */}
           <div
-            className="mx-1 rounded-md overflow-hidden"
+            className="mx-1"
             style={{
-              backgroundColor: CARD_BG,
               borderRadius: TAC_THEME.radius,
               border: `1px solid ${BORDER}`,
             }}
           >
             <button
               onClick={() => toggleSection("players")}
-              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
-              style={{ color: TEXT_MAIN }}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors sticky top-0 z-10"
+              style={{ color: TEXT_MAIN, backgroundColor: CARD_BG, borderRadius: TAC_THEME.radius }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = CARD_BG; }}
             >
               <span className="text-[10px] font-semibold tracking-wide">球员</span>
               <Chevron open={openSections.players} />
             </button>
             {openSections.players && (
-              <div className="px-2 pb-2">
+              <div className="px-2 pb-2" style={{ backgroundColor: CARD_BG, borderRadius: `0 0 ${TAC_THEME.radius} ${TAC_THEME.radius}` }}>
                 <div className="flex gap-2">
                   {[
                     { color: TAC_THEME.playerOwn, label: "己方", hint: "己方球员" },
@@ -510,25 +508,24 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
 
           {/* ═══════════ 场地 Card ═══════════ */}
           <div
-            className="mx-1 rounded-md overflow-hidden"
+            className="mx-1"
             style={{
-              backgroundColor: CARD_BG,
               borderRadius: TAC_THEME.radius,
               border: `1px solid ${BORDER}`,
             }}
           >
             <button
               onClick={() => toggleSection("fields")}
-              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
-              style={{ color: TEXT_MAIN }}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors sticky top-0 z-10"
+              style={{ color: TEXT_MAIN, backgroundColor: CARD_BG, borderRadius: TAC_THEME.radius }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = CARD_BG; }}
             >
               <span className="text-[10px] font-semibold tracking-wide">场地</span>
               <Chevron open={openSections.fields} />
             </button>
             {openSections.fields && (
-              <div className="px-1.5 pb-1.5">
+              <div className="px-1.5 pb-1.5" style={{ backgroundColor: CARD_BG, borderRadius: `0 0 ${TAC_THEME.radius} ${TAC_THEME.radius}` }}>
                 <div className="grid grid-cols-2 gap-1.5">
                   {FIELD_LIST.map((field) => (
                     <button

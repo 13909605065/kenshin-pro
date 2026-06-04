@@ -17,7 +17,7 @@ import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
-import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
@@ -78,7 +78,7 @@ function ProfileSummary({ formData, t }: any) {
     return (
       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
         {parts.map((p, i) => (
-          <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
+          <span key={i} className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
         ))}
         {parts.length === 0 && <span className="text-[10px] text-gray-500">未设置</span>}
       </div>
@@ -92,7 +92,7 @@ function ProfileSummary({ formData, t }: any) {
     ].filter(Boolean);
     return (
       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#d92525] text-white">健身</span>
+        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">健身</span>
         {formData.gender && (
           <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
         )}
@@ -114,7 +114,7 @@ function ProfileSummary({ formData, t }: any) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
       {posLabel && (
-        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#d92525] text-white">{posLabel}</span>
+        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">{posLabel}</span>
       )}
       {formData.gender && (
         <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
@@ -354,9 +354,27 @@ export function Dashboard() {
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
   const [showManualSave, setShowManualSave] = useState(false);
   const [manualSaveName, setManualSaveName] = useState("");
+  const [fitnessGoals, setFitnessGoals] = useState<string[]>([]);
   const { t } = useLang();
   const router = useRouter();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
+
+  // Initialize fitnessGoals from saved formData.goal
+  useEffect(() => {
+    if (isFitness && formData.goal && fitnessGoals.length === 0) {
+      setFitnessGoals([formData.goal as string]);
+    }
+  }, [isFitness, formData.goal]);
+
+  // Sync fitnessGoals to formData.goal for validation
+  const updateFitnessGoals = useCallback((goals: string[]) => {
+    setFitnessGoals(goals);
+    updateField("goal", goals.length > 0 ? (goals[0] as any) : null);
+  }, [updateField]);
+
+  // Fitness tab unlock states
+  const fitnessTrainingUnlocked = fitnessGoals.length > 0 && (formData.injurySites.length > 0 || formData.injuryHistory.trim().length > 0);
+  const fitnessNutritionUnlocked = status === "complete" || status === "stream-interrupted";
 
   /** Plans saved for the current player name (case-insensitive) */
   const playerPlans = useMemo(
@@ -366,7 +384,11 @@ export function Dashboard() {
 
   const handleGenerate = useCallback(async () => {
     if (!formData.position && !isCoach && !isFitness) { alert("请先编辑档案，填写场上位置"); return; }
-    if (isFitness && !formData.goal) { alert("请先选择健身目标"); return; }
+    if (isFitness && fitnessGoals.length === 0) { alert("请先选择健身目标"); return; }
+    // Inject fitnessGoals array into formData for AI context
+    if (isFitness && fitnessGoals.length > 0) {
+      (formData as any).fitnessGoals = fitnessGoals;
+    }
     // Inject coachInput into formData as weakness/notes for AI context
     if (coachInput.trim()) {
       (formData as any).coachInput = coachInput.trim();
@@ -456,11 +478,11 @@ export function Dashboard() {
 
       {/* ====== Idle State ====== */}
       {status === "idle" && (
-        <div className="space-y-5">
+        <div className="space-y-3">
           {/* Profile Bar */}
-          <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-5 py-5 flex items-center justify-between">
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-[#d92525]/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-[#d92525] text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
               </div>
               <div className="min-w-0">
@@ -474,15 +496,15 @@ export function Dashboard() {
               {/* Identity switch */}
               <div className="flex bg-[#111] rounded-lg p-0.5">
                 <button onClick={() => setRole("coach")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                   教练
                 </button>
                 <button onClick={() => setRole("athlete")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                   球员
                 </button>
                 <button onClick={() => setRole("fitness")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                   健身
                 </button>
               </div>
@@ -492,22 +514,22 @@ export function Dashboard() {
                   {isFitness ? (
                     <>
                       <button onClick={() => setScene("workout")}
-                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="workout"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="workout"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                         <Dumbbell className="w-3 h-3" />训练
                       </button>
                       <button onClick={() => setScene("nutrition")}
-                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="nutrition"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="nutrition"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                         🥗 营养
                       </button>
                     </>
                   ) : (
                     <>
                       <button onClick={() => setScene("pitch")}
-                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="pitch"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-2 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="pitch"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                         <MapPin className="w-3 h-3" />球场
                       </button>
                       <button onClick={() => router.push("/gym")}
-                        className="px-3 py-1.5 rounded-md text-xs font-bold text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
+                        className="px-2 py-1 rounded-md text-xs font-bold bg-[#1e1e1e] text-[#777] transition flex items-center gap-1">
                         <Dumbbell className="w-3 h-3" />健身
                       </button>
                     </>
@@ -521,20 +543,43 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Fitness Step-Unlock Tab Bar */}
+          {isFitness && (
+            <div className="flex gap-1.5">
+              <div className="flex-1 bg-[#d92525] text-white text-center py-2 rounded-lg text-xs font-bold">
+                健身
+              </div>
+              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition ${fitnessTrainingUnlocked ? "bg-[#1e1e1e] text-[#777]" : "bg-[#1e1e1e] text-[#555] opacity-50"}`}>
+                训练
+              </div>
+              <div className={`flex-1 text-center py-2 rounded-lg text-xs font-bold transition ${fitnessNutritionUnlocked ? "bg-[#1e1e1e] text-[#777]" : "bg-[#1e1e1e] text-[#555] opacity-50"}`}>
+                营养
+              </div>
+            </div>
+          )}
+
           {/* Goal — for athlete or fitness */}
           {!isCoach && (
             <>
               {/* Selected Items Preview Bar */}
-              {(formData.goal || (!isFitness && formData.phase) || formData.injurySites.length > 0) && (
+              {((isFitness ? fitnessGoals.length > 0 : formData.goal) || (!isFitness && formData.phase) || formData.injurySites.length > 0) && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3">
                   <div className="flex flex-wrap gap-1.5 items-center">
                     <span className="text-[10px] text-gray-500 mr-1">已选：</span>
-                    {formData.goal && (
+                    {isFitness ? fitnessGoals.map((gid) => {
+                      const g = FITNESS_GOALS.find(fg => fg.id === gid);
+                      return (
+                        <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                          {g?.label || gid}
+                          <button onClick={() => updateFitnessGoals(fitnessGoals.filter(x => x !== gid))} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                        </span>
+                      );
+                    }) : (formData.goal && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {GOAL_LABELS[formData.goal] || t(`goal.${formData.goal}`)}
                         <button onClick={() => updateField("goal", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
-                    )}
+                    ))}
                     {!isFitness && formData.phase && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {PHASE_LABELS[formData.phase] || t(`phase.${formData.phase}`)}
@@ -551,25 +596,32 @@ export function Dashboard() {
                 </div>
               )}
 
-              <div className={isFitness ? "" : "grid grid-cols-2 gap-5"}>
+              <div className={isFitness ? "" : "grid grid-cols-2 gap-3"}>
                 {/* Left: Training Goals */}
-                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3"><Target className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
                   <div className="space-y-2">
-                    {isFitness ? FITNESS_GOALS.map((g) => {
-                      const isSelected = formData.goal === g.id;
-                      return (
-                        <button key={g.id} onClick={() => updateField("goal", g.id)}
-                          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
-                            isSelected
-                              ? "bg-[#d92525] text-white border-[#d92525]"
-                              : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
-                          }`}>
-                          <span className="block">{g.label}</span>
-                          <span className="block text-[10px] opacity-60">{g.desc}</span>
-                        </button>
-                      );
-                    }) : GOALS.map((g) => {
+                    {isFitness ? (
+                      <div className="grid grid-cols-3 gap-2">
+                        {FITNESS_GOALS.map((g) => {
+                          const isSelected = fitnessGoals.includes(g.id);
+                          return (
+                            <button key={g.id} onClick={() => {
+                              const next = isSelected ? fitnessGoals.filter(x => x !== g.id) : [...fitnessGoals, g.id];
+                              updateFitnessGoals(next);
+                            }}
+                              className={`text-left rounded-lg p-3 transition-all duration-150 border ${
+                                isSelected
+                                  ? "bg-[#281a1a] border-[#d92525]/40"
+                                  : "bg-[#1e1e1e] border-[#222] hover:border-[#d92525]/20"
+                              }`}>
+                              <span className={`block text-sm font-bold ${isSelected ? "text-[#d92525]" : "text-[#999]"}`}>{g.label}</span>
+                              <span className={`block text-[10px] mt-0.5 ${isSelected ? "text-[#d92525]/70" : "text-[#666]"}`}>{g.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : GOALS.map((g) => {
                       const isSelected = formData.goal === g;
                       const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g) : false;
                       return (
@@ -595,8 +647,8 @@ export function Dashboard() {
 
                 {/* Right: Season Phase — athletes only */}
                 {!isFitness && (
-                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
-                  <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3"><Clock className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
                   <div className="space-y-2">
                     {PHASES.map((p) => {
                       const isSelected = formData.phase === p;
@@ -622,16 +674,16 @@ export function Dashboard() {
             </>
           )}
 
-          {/* Injury — fold */}
+          {/* Injury — collapsible accordion */}
           {!isCoach && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleInjury("_main")}>
+              <div className="flex items-center justify-between cursor-pointer select-none" onClick={() => toggleInjury("_main")}>
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#d92525]" />
-                  <p className="text-xs font-bold text-white">{t("injury.title")}</p>
+                  <span className="text-sm">⚠️</span>
+                  <p className="text-xs font-bold text-white">伤病情况</p>
                   {formData.injurySites.length > 0 && <span className="text-[10px] text-[#d92525]">{formData.injurySites.length}处</span>}
                 </div>
-                <span className="text-[10px] text-gray-500">{injOpen["_main"] ? "▲" : "▼"}</span>
+                <span className="text-[10px] text-gray-500 transition-transform duration-200" style={{transform: injOpen["_main"] ? "rotate(180deg)" : "rotate(0deg)"}}>▼</span>
               </div>
               {injOpen["_main"] && (
                 <div className="mt-2 space-y-1.5">
@@ -657,17 +709,17 @@ export function Dashboard() {
 
           {/* Coach: Tactical Themes — tag pills */}
           {isCoach && (
-            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <p className="text-sm font-bold text-white mb-3">战术主题</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-3">
+              <p className="text-sm font-bold text-white mb-2">战术主题</p>
+              <div className="flex flex-wrap gap-1">
                 {Object.entries(TACTICAL_THEME_LABELS).map(([k, v]) => {
                   const active = formData.tacticalThemes.includes(k as any);
                   return (
                     <button key={k} onClick={() => { const next = active ? formData.tacticalThemes.filter((x) => x!==k) : [...formData.tacticalThemes, k]; updateField("tacticalThemes", next as any); }}
-                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                      className={`px-1.5 py-0.5 rounded text-sm font-medium transition-all duration-150 border ${
                         active
                           ? "bg-[#d92525] border-[#d92525] text-white"
-                          : "bg-[#1e1e1e] border-transparent text-gray-400 hover:border-[#d92525]/30 hover:text-gray-200"
+                          : "bg-[#1e1e1e] border-transparent text-[#777]"
                       }`}>{v}</button>
                   );
                 })}
@@ -684,7 +736,7 @@ export function Dashboard() {
                   <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
                 )}
               </p>
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
                 {[
                   { n:"标志盘",  color:"#e8780a" },
                   { n:"标志桶",  color:"#e8780a" },
@@ -708,12 +760,12 @@ export function Dashboard() {
                     <button key={n} onClick={() => {
                       const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
                       updateField("equipmentAvailable", next);
-                    }} className={`flex flex-col items-center justify-center gap-1 rounded-lg transition-all duration-150 border py-2 ${
+                    }} className={`flex flex-col items-center justify-center gap-1 rounded-lg transition-all duration-150 border py-1.5 ${
                       act
-                        ? "bg-[#2c1c1c] border-[#d92525]/40"
+                        ? "bg-[#261818] border-[#d92525]/30"
                         : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
                     }`}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
                         {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
                         {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
@@ -730,7 +782,7 @@ export function Dashboard() {
                         {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
                         {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
                       </svg>
-                      <span className={`text-[11px] font-medium ${act ? "text-[#d92525]" : "text-[#999]"}`}>{n}</span>
+                      <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
                     </button>
                   );
                 })}
@@ -805,16 +857,21 @@ export function Dashboard() {
           )}
 
           {/* Hint text when generate is disabled */}
-          {!isStepValid && (
+          {!isStepValid && !isFitness && (
             <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
-              {isCoach ? "请先点击「编辑」完善教练档案" : isFitness ? "请先点击「编辑」填写身体数据和健身目标" : "请先填写场上位置"}
+              {isCoach ? "请先点击「编辑」完善教练档案" : "请先填写场上位置"}
+            </p>
+          )}
+          {isFitness && fitnessGoals.length === 0 && (
+            <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
+              请先选择健身目标
             </p>
           )}
 
           {/* Generate Button */}
-          <button onClick={handleGenerate} disabled={!isStepValid}
-            className="w-full py-5 bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2">
-            <Zap className="w-5 h-5" /> {isStepValid ? "生成训练方案" : "请完善训练配置"}
+          <button onClick={handleGenerate} disabled={isFitness ? fitnessGoals.length === 0 : !isStepValid}
+            className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
+            <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个性化健身训练" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
           </button>
 
           {/* Save Profile Dialog */}
