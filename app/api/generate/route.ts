@@ -130,21 +130,31 @@ export async function POST(request: NextRequest) {
   const systemPrompt = buildSystemPrompt(formData, scene);
   const weather = await getWeather().catch(() => null);
 
-  // Scene hint: constrain AI output to gym-only or pitch-only
+  // Scene hint: constrain AI output based on 四大板块场景
   let sceneHint = "";
   if (scene === "gym") {
-    sceneHint = `## 场景限制：健身房训练日
-今天只在健身房。严格限制：
+    sceneHint = `## 场景限制：体能房训练（板块三·力量房）
+今天只在体能房。严格限制：
 ✅ 可输出：杠铃/哑铃/悬吊/药球/弹力带等器械力量训练、原地自重热身(9090髋激活/最伟大拉伸/开合跳/高抬腿/泡沫轴等)
 ❌ 禁止：任何有球热身(warm-ball-touch/warm-ball-dribble/warm-rondo)、足球技术训练(传球/射门/盘带)、场地跑动热身、SSG对抗赛
 ❌ 禁止使用以下热身ID: warm-ball-touch, warm-ball-dribble, warm-rondo, warm-agility-ladder, warm-skip-variations, warm-accel-drill
 器材：杠铃、哑铃、卧推凳、TRX悬吊带、弹力带、泡沫轴`;
   } else if (scene === "pitch") {
-    sceneHint = `## ⚠️ 场景限制：球场训练（最重要规则！）
+    sceneHint = `## ⚠️ 场景限制：场地训练（板块二·球场实战——最重要规则！）
 今天在球场训练，禁止输出任何健身房内容：
 ✅ 只能输出：有球技术训练(传球/射门/盘带/控球)、场地热身、战术跑位、SSG对抗赛
 ❌ 绝对禁止：杠铃、哑铃、TRX、卧推凳、器械、弹力带等任何健身房器材动作
-❌ 禁止输出力量训练模块(upper_limb/lower_limb/core)，改为自重训练或SSG`;
+❌ 禁止输出力量训练模块(upper_limb/lower_limb/core)，改为自重训练或SSG
+📊 如球员上场时间<45分钟，自动增加补负荷建议`;
+  } else if (scene === "rehab") {
+    sceneHint = `## ⚠️ 场景限制：伤病防控与康复（板块四·康复）
+球员处于伤病恢复期，严格限制：
+✅ 只能输出：自重康复训练、弹力带轻阻力、等长训练、本体感觉训练、ROM恢复
+❌ 禁止：任何大重量(>50%1RM)、爆发力动作、增强式/跳跃/冲刺
+❌ 禁止使用 combo_id（套餐是为健康运动员设计）
+❌ 热身仅允许低强度版本，心率不超过(220-年龄)×60%
+🟢 必须输出 module_5 康复方案 phases 数组（急性期→增殖期→重塑期→功能期）
+🟢 训练目标自动改为：弱侧强化+替代训练+渐进恢复`;
   }
 
   const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +

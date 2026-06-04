@@ -114,6 +114,7 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
 ${(data as any).equipmentInventorySummary ? `\n可用器材及数量: ${(data as any).equipmentInventorySummary}` : data.equipmentAvailable?.length ? `\n器材约束：你只有以下器材可用：${data.equipmentAvailable.join("、")}。必须只使用这些器材设计练习。` : ""}
 	${weatherHint ? `\n${weatherHint}\n根据天气调整训练内容：高温加强补水、低温延长热身、雨天考虑室内替代。` : ""}
 	${(data as any).coachInput?.trim() ? `\n## 教练自由输入（最高优先级）\n${(data as any).coachInput.trim()}\n\n以上是教练的具体要求。必须严格据此设计训练课，如果教练指定了内容，优先执行教练指令。` : ""}
+	${(data as any).batchPlayers?.length ? `\n## 批量球员模式（重要）\n教练已选择 ${(data as any).batchPlayers.length} 名球员，需要生成一份适合所有选中球员的训练方案。\n以下为球员名单及伤病情况：\n${(data as any).batchPlayers.map((p: any, i: number) => `${i + 1}. ${p.name}（${p.position}）${p.injuryStatus !== "healthy" ? ` - ${p.injuryStatus === "out" ? "重伤" : "轻伤"}${p.injuryNote ? `: ${p.injuryNote}` : ""}` : "健康"}${p.age ? ` ${p.age}岁` : ""}`).join("\n")}\n\n关键要求：\n- 所有练习必须避开这些球员的伤病禁忌动作（取所有伤病部位的交集限制）\n- 训练强度取所有球员都能承受的中间水平\n- 每个练习标注哪些球员需要降阶/进阶变式\n- 在session_plan中标注全局注意事项，列出每个伤病球员的具体调整` : ""}
 
 ${langInstruction}
 

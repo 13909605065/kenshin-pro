@@ -453,6 +453,12 @@ export interface ExerciseRef {
     competition?: string;  // e.g. "标准主项，75-85%1RM"
     offseason?: string;    // e.g. "极限负重，80-95%1RM"
   };
+  /** Where this exercise is performed */
+  scene?: "pitch" | "gym" | "both";
+  /** Injury types that contraindicate this exercise */
+  injury_contraindications?: string[];
+  /** Which of the 5 football fitness components this belongs to */
+  football_component?: "基础力量" | "爆发力" | "直线速度" | "协调灵敏" | "专项耐力";
 }
 
 export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
@@ -469,6 +475,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-bench-press-front.gif",
     cue_points: ["肩胛收紧下沉", "肘与身体呈45°", "触胸点乳头连线"],
     progression: "暂停卧推（底部停2s）",
+    scene: "gym",
+    injury_contraindications: ["shoulder", "elbow", "wrist"],
+    football_component: "基础力量",
     periodization: {
       preseason: "暂停卧推/窄距卧推变式，65-75%1RM，8-12次",
       competition: "标准卧推，75-85%1RM，5-8次，维持上肢推力",
@@ -487,6 +496,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-row-front.gif",
     cue_points: ["俯身45-60°", "背部平直", "肘沿身体后拉", "杠铃拉向下腹", "肩胛收缩"],
     progression: "正握→反握划船，潘德勒划船(触地每下)",
+    scene: "gym",
+    injury_contraindications: ["waist", "shoulder"],
+    football_component: "基础力量",
     periodization: {
       preseason: "技术优先(俯身角度稳定)，60-70%1RM，10-12次",
       competition: "标准杠铃划船，70-80%1RM，6-8次，维持上背力量",
@@ -505,6 +517,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-shoulder-press-front.gif",
     cue_points: ["核心绷紧", "杠铃前置三角肌", "直线上推", "头穿过手臂", "锁定时杠铃在耳后"],
     progression: "借力推举（膝驱动）→ 军式推举（严格）",
+    scene: "gym",
+    injury_contraindications: ["shoulder", "waist", "wrist"],
+    football_component: "基础力量",
     periodization: {
       preseason: "严格军式推举，55-65%1RM，8-12次，肩胛稳定优先",
       competition: "标准站姿推举，65-75%1RM，6-8次，维持肩带力量",
@@ -523,6 +538,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-male-chinup-0213.png",
     cue_points: ["肩胛启动", "下巴过杠", "离心控制2-3秒"],
     progression: "负重引体",
+    scene: "gym",
+    injury_contraindications: ["shoulder", "elbow"],
+    football_component: "基础力量",
   },
   "ex-dumbbell-shoulder-press": {
     id: "ex-dumbbell-shoulder-press",
@@ -536,6 +554,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/dumbbell-shoulder-press-male-0213.png",
     cue_points: ["核心收紧", "肘微向前", "全程控制"],
     progression: "单臂交替肩推",
+    scene: "gym",
+    injury_contraindications: ["shoulder"],
+    football_component: "基础力量",
   },
   "ex-cable-row": {
     id: "ex-cable-row",
@@ -549,6 +570,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-cable-seated-row-front.gif",
     cue_points: ["肩胛后缩", "肘贴近身体", "顶峰收缩1s"],
     progression: "单手绳索划船",
+    scene: "gym",
+    injury_contraindications: ["waist"],
+    football_component: "基础力量",
   },
   "ex-face-pull": {
     id: "ex-face-pull",
@@ -562,6 +586,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-cable-face-pull-front.gif",
     cue_points: ["绳索拉向面部", "肩外旋", "后肩收缩"],
     progression: "单臂面拉",
+    scene: "gym",
+    injury_contraindications: ["shoulder"],
+    football_component: "协调灵敏",
   },
   "ex-med-ball-slam": {
     id: "ex-med-ball-slam",
@@ -575,6 +602,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/medicine-ball-overhead-slam-male-0213.png",
     cue_points: ["全力过顶", "核心绷紧", "跟进砸地"],
     progression: "单臂药球砸击",
+    scene: "both",
+    injury_contraindications: ["shoulder", "waist"],
+    football_component: "爆发力",
   },
   // ---- Lower Limb ----
   "ex-back-squat": {
@@ -589,6 +619,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-back-squat-front.gif",
     cue_points: ["杠铃置斜方肌", "膝与脚尖同向", "底部大腿与地面平行", "重心在足中"],
     progression: "1.5倍深蹲（底部停顿后起至半程再下蹲）",
+    scene: "gym",
+    injury_contraindications: ["knee", "waist", "hip"],
+    football_component: "基础力量",
     periodization: {
       preseason: "暂停深蹲/宽窄距变式，65-75%1RM，8-12次",
       competition: "标准高杠深蹲，75-85%1RM，5-8次",
@@ -607,6 +640,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-deadlift-front.gif",
     cue_points: ["杠铃贴小腿", "脊柱中立", "臀部先行发力", "锁定位髋膝伸展"],
     progression: "赤字硬拉（站在杠铃片上）",
+    scene: "gym",
+    injury_contraindications: ["waist", "knee", "hip"],
+    football_component: "基础力量",
   },
   "ex-romanian-dl": {
     id: "ex-romanian-dl",
@@ -620,6 +656,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-deadlift-front.gif",
     cue_points: ["膝微屈保持", "髋后推主导", "杠铃贴腿下放", "下背平直", "腘绳肌拉伸感"],
     progression: "单腿罗马尼亚硬拉（壶铃/哑铃）",
+    scene: "gym",
+    injury_contraindications: ["waist", "hamstring"],
+    football_component: "基础力量",
     periodization: {
       preseason: "轻-中负重技术优先，65-70%1RM，10-12次，腘绳肌离心",
       competition: "标准RDL，70-80%1RM，6-8次，维持后链力量",
@@ -638,6 +677,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-front-squat-front.gif",
     cue_points: ["杠铃置前三角肌", "肘抬高", "躯干直立"],
     progression: "暂停前蹲",
+    scene: "gym",
+    injury_contraindications: ["knee", "wrist", "shoulder"],
+    football_component: "基础力量",
   },
   "ex-bulgarian-split-squat": {
     id: "ex-bulgarian-split-squat",
@@ -651,6 +693,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/dumbbell-bulgarian-split-squat-male-0213.png",
     cue_points: ["后脚抬高", "前膝不超过脚尖", "躯干直立"],
     progression: "负重保加利亚分腿蹲",
+    scene: "both",
+    injury_contraindications: ["knee", "ankle", "hip"],
+    football_component: "基础力量",
   },
   "ex-barbell-lunge": {
     id: "ex-barbell-lunge",
@@ -665,6 +710,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["躯干直立不前倾", "后膝接近地面但不触地", "前脚掌发力蹬回"],
     progression: "行走弓步",
     regression: "自重箭步蹲",
+    scene: "both",
+    injury_contraindications: ["knee", "ankle", "hip"],
+    football_component: "直线速度",
   },
   "ex-nordic-hamstring": {
     id: "ex-nordic-hamstring",
@@ -678,6 +726,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-nordic-hamstring-curl-male-0213.png",
     cue_points: ["脚踝固定", "身体缓慢前倾", "离心控制3-5秒"],
     progression: "负重北欧弯举",
+    scene: "both",
+    injury_contraindications: ["hamstring", "knee"],
+    football_component: "专项耐力",
     periodization: {
       preseason: "初级3-5次(手撑缓冲)+弹力带辅助，离心3-5s",
       competition: "标准7-10次，离心控制3-5s，维持腘绳肌力量",
@@ -696,6 +747,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-box-jump-male-0213.png",
     cue_points: ["预摆下蹲", "爆发伸髋伸膝", "软着陆"],
     progression: "连续跳箱（减少间歇）",
+    scene: "both",
+    injury_contraindications: ["knee", "ankle", "achilles"],
+    football_component: "爆发力",
   },
   "ex-box-depth-drop": {
     id: "ex-box-depth-drop",
@@ -828,6 +882,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/dumbbell-single-leg-deadlift-male-0213.png",
     cue_points: ["支撑腿微屈", "髋铰链动作", "背部平直"],
     progression: "负重单腿RDL",
+    scene: "both",
+    injury_contraindications: ["ankle", "knee", "hip"],
+    football_component: "协调灵敏",
     periodization: {
       preseason: "自重/轻哑铃技术优先，10-12次，髋铰链动作打磨",
       competition: "中等哑铃/壶铃，8-10次，稳定支撑腿",
@@ -860,6 +917,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-trapbar-deadlift-front.gif",
     cue_points: ["双手中立握", "脊柱中立", "臀腿发力", "锁定位髋膝伸展"],
     progression: "爆发式六角杠硬拉(向心快速)",
+    scene: "gym",
+    injury_contraindications: ["knee", "waist"],
+    football_component: "爆发力",
   },
   "ex-hip-thrust": {
     id: "ex-hip-thrust",
@@ -873,6 +933,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/barbell-hip-thrust-male-0213.png",
     cue_points: ["肩胛置凳缘", "杠铃置髋部", "顶峰收缩臀肌2s", "避免过度腰椎伸展"],
     progression: "单腿臀推",
+    scene: "gym",
+    injury_contraindications: ["waist", "hip"],
+    football_component: "爆发力",
   },
   "ex-plank": {
     id: "ex-plank",
@@ -887,6 +950,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-plank-male-0213.png",
     cue_points: ["核心收紧", "身体直线", "呼吸均匀"],
     progression: "负重平板（杠铃片置背部）",
+    scene: "both",
+    injury_contraindications: ["shoulder", "wrist"],
+    football_component: "专项耐力",
     periodization: {
       preseason: "基础平板+侧平板，30-45s×3组，核心稳定性建设",
       competition: "负重平板+动态平板(交替抬手/腿)，30-60s×3组",
@@ -905,6 +971,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-hanging-leg-raise-male-0213.png",
     cue_points: ["避免摆动", "控制离心", "腿举至水平"],
     progression: "直腿悬垂举腿",
+    scene: "gym",
+    injury_contraindications: ["shoulder", "hip"],
+    football_component: "协调灵敏",
   },
   "ex-pallof-press": {
     id: "ex-pallof-press",
@@ -918,6 +987,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-cable-pallof-press-front.gif",
     cue_points: ["核心抗旋转", "缓慢推出", "等长保持2s"],
     progression: "动态Pallof（推出+收回）",
+    scene: "gym",
+    injury_contraindications: ["waist", "shoulder"],
+    football_component: "协调灵敏",
   },
   "ex-cable-woodchop": {
     id: "ex-cable-woodchop",
@@ -931,6 +1003,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/cable-woodchop-male-0213.png",
     cue_points: ["旋转从髋开始", "手臂跟随", "控制回程"],
     progression: "半跪姿伐木式",
+    scene: "gym",
+    injury_contraindications: ["waist"],
+    football_component: "协调灵敏",
   },
   "ex-dead-bug": {
     id: "ex-dead-bug",
@@ -944,6 +1019,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-dead-bug-male-0213.png",
     cue_points: ["下背贴地", "对侧手脚", "慢速控制"],
     progression: "负重死虫式",
+    scene: "both",
+    injury_contraindications: ["waist"],
+    football_component: "协调灵敏",
     periodization: {
       preseason: "基础死虫式(对侧手脚)10-12次×3组，慢速控制，激活前深线",
       competition: "负重死虫式(哑铃手脚)10-12次×3组，维持核心抗伸展",
@@ -963,6 +1041,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["保持髋部稳定不动","交替触摸对侧肩膀","核心收紧防旋转"],
     progression: "药球平板摸肩",
     regression: "跪姿平板摸肩",
+    scene: "both",
+    injury_contraindications: ["shoulder", "wrist"],
+    football_component: "协调灵敏",
   },
   "ex-bird-dog": {
     id: "ex-bird-dog",
@@ -976,6 +1057,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["对侧手脚同时伸展","保持脊柱中立","骨盆不旋转","核心持续绷紧"],
     progression: "鸟狗式动态(交替连续)",
     regression: "单侧伸展(只伸手或只伸腿)",
+    scene: "both",
+    injury_contraindications: ["waist", "knee"],
+    football_component: "协调灵敏",
   },
   "ex-adductor-raise": {
     id: "ex-adductor-raise",
@@ -989,6 +1073,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["侧卧下腿伸直","上腿屈膝跨过","下腿内收肌发力抬起","慢速控制"],
     progression: "弹力带内收肌抬起",
     regression: "仰卧夹球内收",
+    scene: "both",
+    injury_contraindications: ["hip", "knee"],
+    football_component: "协调灵敏",
   },
   "ex-saw-plank": {
     id: "ex-saw-plank",
@@ -1002,6 +1089,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["保持平板姿势","脚趾发力前后滑动","核心抗屈伸","身体整体前后移动"],
     progression: "前臂拉锯平板(难度更大)",
     regression: "膝着地拉锯平板",
+    scene: "both",
+    injury_contraindications: ["shoulder"],
+    football_component: "专项耐力",
   },
   "ex-hollow-body-hold": {
     id: "ex-hollow-body-hold",
@@ -1015,6 +1105,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["下背完全贴地","肩胛和腿同时离地","手臂过顶伸展","身体呈香蕉形"],
     progression: "空体支撑+手臂交替下放",
     regression: "屈膝空体支撑(腿收回)",
+    scene: "both",
+    injury_contraindications: ["waist"],
+    football_component: "专项耐力",
   },
   "ex-hamstring-bridge": {
     id: "ex-hamstring-bridge",
@@ -1028,6 +1121,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["脚跟发力蹬地","臀肌+腘绳肌收缩","骨盆后倾","顶端停顿2s"],
     progression: "单腿臀桥",
     regression: "双腿静态臀桥保持",
+    scene: "both",
+    injury_contraindications: ["knee", "hip"],
+    football_component: "基础力量",
   },
   "ex-contralateral-raise": {
     id: "ex-contralateral-raise",
@@ -1041,6 +1137,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["俯卧姿势","对侧手臂和腿同时抬起","肩胛收缩+臀肌发力","控制慢速"],
     progression: "超人式保持(两端同时)",
     regression: "单侧交替抬起",
+    scene: "both",
+    injury_contraindications: ["waist"],
+    football_component: "协调灵敏",
   },
   "ex-side-plank-hold": {
     id: "ex-side-plank-hold",
@@ -1054,6 +1153,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["肘在肩正下方","身体成直线","髋不下塌","侧腹肌发力"],
     progression: "侧支撑+上腿抬起",
     regression: "膝着地侧支撑",
+    scene: "both",
+    injury_contraindications: ["shoulder"],
+    football_component: "专项耐力",
   },
   "ex-dead-bug-dynamic": {
     id: "ex-dead-bug-dynamic",
@@ -1067,6 +1169,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["对侧手脚交替伸展","下背全程贴地","慢速控制呼吸","核心持续绷紧"],
     progression: "弹力带死虫动态",
     regression: "单侧死虫(只动一侧)",
+    scene: "both",
+    injury_contraindications: ["waist"],
+    football_component: "协调灵敏",
   },
   "ex-v-up": {
     id: "ex-v-up",
@@ -1080,6 +1185,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["手臂和腿同时抬起","手指触脚尖","腹直肌顶峰收缩","控制下落不碰地"],
     progression: "负重两头起(手持哑铃)",
     regression: "卷腹(只抬上背)",
+    scene: "both",
+    injury_contraindications: ["waist"],
+    football_component: "协调灵敏",
   },
   "ex-mountain-climber": {
     id: "ex-mountain-climber",
@@ -1093,6 +1201,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["保持平板姿势","快速交替提膝","骨盆稳定不上下晃动","匀速呼吸"],
     progression: "交叉登山跑(膝向对侧肘)",
     regression: "慢速登山跑",
+    scene: "both",
+    injury_contraindications: ["knee", "hip", "wrist"],
+    football_component: "专项耐力",
   },
   // ---- Power/Speed Specific ----
   "ex-power-clean": {
@@ -1107,6 +1218,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/male-barbell-power-clean-front.gif",
     cue_points: ["爆发伸髋", "快速翻肘", "前架位接杠"],
     progression: "悬垂高翻",
+    scene: "gym",
+    injury_contraindications: ["wrist", "shoulder", "knee", "waist"],
+    football_component: "爆发力",
     periodization: {
       preseason: "悬垂高翻/膝上高翻变式，60-70%1RM，3-5次，技术打磨优先",
       competition: "标准高翻，70-80%1RM，3-4次，爆发速度优先",
@@ -1223,6 +1337,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/sled-push-male-0213.png",
     cue_points: ["低姿驱动", "全速推进", "步频优先"],
     progression: "阻力释放冲刺",
+    scene: "pitch",
+    injury_contraindications: ["hamstring", "knee", "ankle", "achilles"],
+    football_component: "直线速度",
   },
   "ex-pro-agility": {
     id: "ex-pro-agility",
@@ -1237,6 +1354,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-box-jump-male-0213.png",
     cue_points: ["三点启动姿态", "急停重心降低", "触线后立即变向", "侧向滑步过渡", "全速冲刺回终点"],
     progression: "缩短间歇(120s→90s→60s)，增加组数",
+    scene: "pitch",
+    injury_contraindications: ["knee", "ankle", "achilles", "hamstring"],
+    football_component: "协调灵敏",
     periodization: {
       preseason: "技术优先(变向力学)，3-4组，间歇120s充分恢复",
       competition: "标准5-10-5，3-4组×2-3次，维持多向敏捷",
@@ -1256,6 +1376,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/bodyweight-box-jump-male-0213.png",
     cue_points: ["三点支撑(手+双脚)", "前倾45°驱动", "前三步低姿推进", "渐进直立", "全速20m"],
     progression: "增加距离(10→20→30m)或阻力橇启跑",
+    scene: "pitch",
+    injury_contraindications: ["hamstring", "achilles", "knee"],
+    football_component: "直线速度",
     periodization: {
       preseason: "短距10-15m技术打磨，5-6组，启跑姿势+前三步",
       competition: "标准20m加速，4-5组×3-4次，维持加速能力",
@@ -1276,6 +1399,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["前跑→左右横向滑步→退回", "低重心快速变向", "不交叉脚步"],
     progression: "缩短间距T跑",
     regression: "侧向交叉步替代滑步",
+    scene: "pitch",
+    injury_contraindications: ["knee", "ankle"],
+    football_component: "协调灵敏",
   },
   "ex-z-slide": {
     id: "ex-z-slide",
@@ -1291,6 +1417,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["Z形排布标志桶", "全程低重心侧滑", "过桶不交叉脚步"],
     progression: "负重腰带Z滑",
     regression: "小碎步Z滑",
+    scene: "pitch",
+    injury_contraindications: ["knee", "ankle", "hip"],
+    football_component: "协调灵敏",
   },
   // ---- GK Specific ----
   "ex-mb-rotational-throw": {
@@ -1305,6 +1434,9 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     image_url: "https://musclewiki.com/media/uploads/medicine-ball-rotational-throw-male-0213.png",
     cue_points: ["后脚旋转", "髋主导发力", "全力抛掷", "旋转链传导"],
     progression: "单臂药球旋转抛掷",
+    scene: "both",
+    injury_contraindications: ["waist", "shoulder", "hip"],
+    football_component: "爆发力",
     periodization: {
       preseason: "轻药球(3-4kg)技术打磨，8-10次，强调旋转链传导",
       competition: "标准药球(4-6kg)，5-8次，全力爆发旋转",

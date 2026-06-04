@@ -91,17 +91,20 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222] hidden lg:block">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <a href="/" className="select-none" title="KenshinPro">
+            <a href="/" className="select-none" title="KenshinPro 体能教练工作台">
               <span className="text-[#d92525] font-black text-lg" style={{letterSpacing:"-0.5px"}}>KENSHIN</span>
-              <span className="text-[#d1d1d1] font-light text-lg ml-0.5">PRO</span>
+              <span className="text-[#d1d1d1] font-light text-lg ml-0.5">PRO S&C</span>
+              <span className="text-[#888] text-[10px] ml-2 font-medium">体能教练工作台</span>
             </a>
             <nav className="flex items-center gap-1">
               <a href="/" className="px-3 py-1.5 text-sm text-[#d92525] font-semibold relative transition">
-                体能训练
+                首页
                 <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#d92525] rounded-full" />
               </a>
               <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
-              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">历史方案</a>
+              <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">球员花名册</a>
+              <a href="/planning" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">训练周期</a>
+              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">历史记录</a>
               <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">设置</a>
             </nav>
           </div>

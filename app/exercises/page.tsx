@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X, CheckSquare, Square, Filter, ListChecks } from "lucide-react";
+import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X, CheckSquare, Square, Filter, ListChecks, AlertTriangle } from "lucide-react";
 import { STRENGTH_LIBRARY } from "@/lib/training-library";
 import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
 import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
@@ -13,11 +13,21 @@ import { StickFigure } from "@/components/StickFigure";
 type BodyPart = "all" | "上肢" | "下肢" | "核心" | "背部" | "全身";
 type Equipment = "all" | "杠铃" | "哑铃" | "悬吊" | "自重";
 type FootballCategory = "all" | "爆发力" | "灵敏" | "速度" | "力量" | "耐力";
+type FootballComponent = "all" | "基础力量" | "爆发力" | "直线速度" | "协调灵敏" | "专项耐力";
 type Difficulty = "基础" | "中级" | "进阶";
+type LibraryMode = "football" | "fitness";
+type SceneFilter = "all" | "pitch" | "gym" | "both";
 
 const BODY_PARTS: BodyPart[] = ["all", "上肢", "下肢", "核心", "背部", "全身"];
 const EQUIPMENTS: Equipment[] = ["all", "杠铃", "哑铃", "悬吊", "自重"];
 const FOOTBALL_CATEGORIES: FootballCategory[] = ["all", "爆发力", "灵敏", "速度", "力量", "耐力"];
+const FOOTBALL_COMPONENTS: FootballComponent[] = ["all", "基础力量", "爆发力", "直线速度", "协调灵敏", "专项耐力"];
+const SCENE_FILTERS: { id: SceneFilter; label: string; icon: string }[] = [
+  { id: "all", label: "全部", icon: "" },
+  { id: "pitch", label: "场地可用", icon: "⚽" },
+  { id: "gym", label: "健身房", icon: "🏋️" },
+  { id: "both", label: "均可", icon: "⚡" },
+];
 
 // ═══════════════════════════════════════════════
 // Unified Exercise Item
@@ -54,6 +64,10 @@ interface UnifiedExercise {
   difficulty?: Difficulty;
   footballCategory?: FootballCategory;
   isFootballRelevant?: boolean;
+  // New football-specific fields (from training-library.ts)
+  scene?: "pitch" | "gym" | "both";
+  injury_contraindications?: string[];
+  football_component?: "基础力量" | "爆发力" | "直线速度" | "协调灵敏" | "专项耐力";
 }
 
 // ═══════════════════════════════════════════════
@@ -177,14 +191,11 @@ function detectFootballCategory(id: string): FootballCategory {
 
 function detectDifficulty(id: string, name: string): Difficulty {
   const n = name.toLowerCase();
-  // Advanced: Olympic lifts, complex multi-joint with high skill
   if (/power.?clean|snatch|jerk|保加利亚|pistol|单腿/.test(n)) return "进阶";
   if (/olympic|高翻|抓举/.test(n)) return "进阶";
-  // Beginner: bodyweight basics
   if (/plank|平板|bridge|臀桥|dead.?bug|死虫|crunch|卷腹/.test(n)) return "基础";
   if (/curl|弯举|raise|平举|kickback|臂屈伸/.test(n)) return "基础";
   if (/stretch|拉伸|泡沫|呼吸/.test(n)) return "基础";
-  // Intermediate: everything else
   if (id.startsWith("ex-sus-")) return "中级";
   if (/dumbbell|哑铃|杠铃|barbell|squat|蹲|deadlift|硬拉|bench|卧推|press|推举|row|划船|pull.?up|引体/.test(n)) return "中级";
   return "中级";
@@ -207,7 +218,6 @@ function isFootballRelevant(id: string, name: string): boolean {
 function buildUnifiedExercises(): UnifiedExercise[] {
   const list: UnifiedExercise[] = [];
 
-  // Strength exercises
   for (const [id, ex] of Object.entries(STRENGTH_LIBRARY)) {
     const name = ex.name;
     list.push({
@@ -225,14 +235,29 @@ function buildUnifiedExercises(): UnifiedExercise[] {
       image_url: ex.image_url,
       cue_points: ex.cue_points,
       progression: ex.progression,
+      regression: ex.regression,
       difficulty: detectDifficulty(id, name),
       footballCategory: detectFootballCategory(id),
       isFootballRelevant: isFootballRelevant(id, name),
+      // New fields from training-library.ts
+      scene: ex.scene,
+      injury_contraindications: ex.injury_contraindications,
+      football_component: ex.football_component,
     });
   }
 
   return list;
 }
+
+// ═══════════════════════════════════════════════
+// Injury label mapping
+// ═══════════════════════════════════════════════
+
+const INJURY_LABELS: Record<string, string> = {
+  knee: "膝", ankle: "踝", hip: "髋", waist: "腰",
+  shoulder: "肩", elbow: "肘", wrist: "腕",
+  hamstring: "腘绳", achilles: "跟腱", foot: "足", calf: "小腿",
+};
 
 // ═══════════════════════════════════════════════
 // Page Component
@@ -272,35 +297,52 @@ export default function ExercisesPage() {
     });
   }, [customExercises]);
 
-  // Merge built-in + custom
   const allExercises = useMemo(
     () => [...builtInExercises, ...customUnified],
     [builtInExercises, customUnified]
   );
 
+  // ═══ Library Mode Toggle ═══
+  const [libraryMode, setLibraryMode] = useState<LibraryMode>("football");
+
+  // ═══ Filter State ═══
   const [bodyPart, setBodyPart] = useState<BodyPart>("all");
   const [equipment, setEquipment] = useState<Equipment>("all");
   const [footballCat, setFootballCat] = useState<FootballCategory>("all");
+  const [footballComponent, setFootballComponent] = useState<FootballComponent>("all");
   const [exerciseType, setExerciseType] = useState<string>("all");
+  const [sceneFilter, setSceneFilter] = useState<SceneFilter>("all");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteToast, setDeleteToast] = useState<string | null>(null);
 
-  // Filter
+  // ═══ Filter Logic ═══
   const filtered = useMemo(() => {
     return allExercises.filter((ex) => {
+      // Library mode separation
+      if (libraryMode === "football") {
+        // Football mode: only show exercises with football_component
+        if (!ex.football_component) return false;
+        // Filter by 5-component
+        if (footballComponent !== "all" && ex.football_component !== footballComponent) return false;
+        // Scene filter
+        if (sceneFilter !== "all" && ex.scene && ex.scene !== sceneFilter) return false;
+      } else {
+        // Fitness mode: show exercises without football_component (pure fitness)
+        // plus any exercise as general reference
+      }
+
+      // Shared filters
       if (bodyPart !== "all" && ex.bodyPart !== bodyPart) return false;
       if (equipment !== "all" && ex.equipment !== equipment) return false;
-      if (footballCat !== "all" && ex.footballCategory !== footballCat) return false;
       if (exerciseType !== "all" && ex.type !== exerciseType) return false;
       if (search && !ex.name.includes(search) && !ex.id.includes(search.toLowerCase())) return false;
+
       return true;
     });
-  }, [allExercises, bodyPart, equipment, footballCat, exerciseType, search]);
-
-  // Category counts pre-computed
+  }, [allExercises, libraryMode, bodyPart, equipment, footballComponent, exerciseType, sceneFilter, search]);
 
   // Batch select handlers
   const toggleSelect = useCallback((id: string) => {
@@ -388,6 +430,30 @@ export default function ExercisesPage() {
           <h1 className="text-lg font-bold text-[#d1d1d1]">动作库</h1>
         </div>
 
+        {/* ═══ Library Mode Toggle ═══ */}
+        <div className="mb-4 flex bg-[#1e1e1e] border border-[#222] rounded-xl p-0.5">
+          <button
+            onClick={() => setLibraryMode("football")}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-150 ${
+              libraryMode === "football"
+                ? "bg-[#d92525] text-white shadow-lg shadow-[#d92525]/20"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            ⚽ 足球体能
+          </button>
+          <button
+            onClick={() => setLibraryMode("fitness")}
+            className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-150 ${
+              libraryMode === "fitness"
+                ? "bg-[#d92525] text-white shadow-lg shadow-[#d92525]/20"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            🏋️ 大众健身
+          </button>
+        </div>
+
         {/* Delete toast */}
         {deleteToast && (
           <div className="mb-3 px-4 py-2 bg-[#d92525]/10 border border-[#d92525]/30 rounded-lg text-sm text-[#d92525] animate-pulse">
@@ -421,15 +487,9 @@ export default function ExercisesPage() {
           </p>
         </div>
 
-        {/* Recommendation hint */}
-        <div className="text-[11px] text-gray-400 mb-4 flex items-center gap-1.5 bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2">
-          <span className="text-[#d92525] text-lg leading-none">⚽</span>
-          <span>足球专项动作已标注，教练可根据训练目标筛选</span>
-        </div>
-
         {/* ═══ Filter Cards ═══ */}
         <div className="space-y-3 mb-5">
-          {/* Card 1: Body Part */}
+          {/* Card 1: Body Part — always visible */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
             <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">身体分区 Body Part</p>
             <div className="flex flex-wrap gap-1.5">
@@ -449,7 +509,7 @@ export default function ExercisesPage() {
             </div>
           </div>
 
-          {/* Card 2: Equipment */}
+          {/* Card 2: Equipment — always visible */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
             <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">器械 Equipment</p>
             <div className="flex flex-wrap gap-1.5">
@@ -469,29 +529,89 @@ export default function ExercisesPage() {
             </div>
           </div>
 
-          {/* Card 3: Football-Specific (NEW) */}
-          <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-            <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">
-              <span className="mr-1">⚽</span>足球专项 Football-Specific
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {FOOTBALL_CATEGORIES.map((fc) => (
-                <button
-                  key={fc}
-                  onClick={() => setFootballCat(fc)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
-                    footballCat === fc
-                      ? "bg-[#d92525] text-white"
-                      : "text-gray-400 hover:text-white hover:bg-[#222]"
-                  }`}
-                >
-                  {fc === "all" ? "全部" : fc}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* ═══ Football Mode Filters ═══ */}
+          {libraryMode === "football" && (
+            <>
+              {/* Card 3: 5 Components */}
+              <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-xl p-3">
+                <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">
+                  <span className="mr-1">⚽</span>五大体能组件
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {FOOTBALL_COMPONENTS.map((fc) => (
+                    <button
+                      key={fc}
+                      onClick={() => setFootballComponent(fc)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
+                        footballComponent === fc
+                          ? "bg-[#d92525] text-white"
+                          : "text-gray-400 hover:text-white hover:bg-[#222]"
+                      }`}
+                    >
+                      {fc === "all" ? "全部" : fc}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Card 4: Exercise Type */}
+              {/* Card 4: Scene Filter (pitch/gym/both) */}
+              <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
+                <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">训练场景 Scene</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SCENE_FILTERS.map((sf) => (
+                    <button
+                      key={sf.id}
+                      onClick={() => setSceneFilter(sf.id)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
+                        sceneFilter === sf.id
+                          ? "bg-[#d92525] text-white"
+                          : "text-gray-400 hover:text-white hover:bg-[#222]"
+                      }`}
+                    >
+                      {sf.icon && <span className="mr-1">{sf.icon}</span>}
+                      {sf.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-gray-500 mt-1.5">
+                  场地可用⚽ = 可在球场进行 · 健身房🏋️ = 需要器械
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* ═══ Fitness Mode Info ═══ */}
+          {libraryMode === "fitness" && (
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
+              <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">
+                🏋️ 健身目标 Fitness Goal
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(["all", "肌肥大", "减脂", "塑形", "增力", "耐力"] as const).map((fg) => (
+                  <button
+                    key={fg}
+                    onClick={() => {
+                      // Fitness goal filter works through body part + equipment combination
+                      if (fg === "all") { setBodyPart("all"); setEquipment("all"); }
+                      else if (fg === "肌肥大") { setBodyPart("all"); setEquipment("杠铃"); }
+                      else if (fg === "减脂") { setBodyPart("全身"); setEquipment("all"); }
+                      else if (fg === "塑形") { setBodyPart("all"); setEquipment("哑铃"); }
+                      else if (fg === "增力") { setBodyPart("all"); setEquipment("杠铃"); }
+                      else if (fg === "耐力") { setBodyPart("全身"); setEquipment("自重"); }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 text-gray-400 hover:text-white hover:bg-[#222]`}
+                  >
+                    {fg}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-gray-500 mt-1.5">
+                点击目标自动筛选对应器械和身体分区
+              </p>
+            </div>
+          )}
+
+          {/* Card: Exercise Type — always visible */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
             <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
             <div className="flex flex-wrap gap-1.5">
@@ -510,6 +630,21 @@ export default function ExercisesPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Library mode hint */}
+        <div className="text-[11px] text-gray-400 mb-4 flex items-center gap-1.5 bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2">
+          {libraryMode === "football" ? (
+            <>
+              <span className="text-[#d92525] text-lg leading-none">⚽</span>
+              <span>足球体能库 — 按五大体能组件分类，标注训练场景和伤病禁忌</span>
+            </>
+          ) : (
+            <>
+              <span className="text-[#d92525] text-lg leading-none">🏋️</span>
+              <span>大众健身库 — 按身体分区和器械筛选，适合增肌/减脂/塑形</span>
+            </>
+          )}
         </div>
 
         {/* Select All / Deselect All */}
@@ -542,6 +677,7 @@ export default function ExercisesPage() {
               <ExerciseCard
                 key={ex.id}
                 exercise={ex}
+                libraryMode={libraryMode}
                 selected={selectedIds.has(ex.id)}
                 onSelect={() => setSelectedId(ex.id)}
                 onToggleSelect={() => toggleSelect(ex.id)}
@@ -585,6 +721,7 @@ export default function ExercisesPage() {
           exercise={filtered.find(e => e.id === selectedId)!}
           onClose={() => setSelectedId(null)}
           onAddToPlan={handleAddSingleToPlan}
+          libraryMode={libraryMode}
         />
       )}
 
@@ -614,9 +751,10 @@ export default function ExercisesPage() {
 // ═══════════════════════════════════════════════
 
 function ExerciseCard({
-  exercise, selected, onSelect, onToggleSelect, onEdit, onDelete,
+  exercise, libraryMode, selected, onSelect, onToggleSelect, onEdit, onDelete,
 }: {
   exercise: UnifiedExercise;
+  libraryMode: LibraryMode;
   selected: boolean;
   onSelect: () => void;
   onToggleSelect: () => void;
@@ -634,7 +772,7 @@ function ExerciseCard({
       }`}
       onClick={onSelect}
     >
-      {/* Checkbox — always visible top-right */}
+      {/* Checkbox */}
       <button
         onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
         className={`absolute top-2 right-2 z-10 p-0.5 rounded transition-all duration-150 ${
@@ -650,10 +788,36 @@ function ExerciseCard({
       <div className="aspect-square bg-[#111] flex items-center justify-center p-2 relative">
         <StickFigure name={exercise.name} size={56} compact={true} bodyPart={exercise.bodyPart === "上肢" ? "upper" : exercise.bodyPart === "下肢" ? "lower" : exercise.bodyPart === "核心" ? "core" : exercise.bodyPart === "背部" ? "back" : undefined} />
 
-        {/* Football badge */}
-        {exercise.isFootballRelevant && (
-          <span className="absolute bottom-1.5 left-1.5 text-[14px] leading-none drop-shadow-lg" title="足球专项相关">
+        {/* Football component badge — football mode only */}
+        {libraryMode === "football" && exercise.football_component && (
+          <span className="absolute bottom-1.5 left-1.5 text-[14px] leading-none drop-shadow-lg" title={exercise.football_component}>
             ⚽
+          </span>
+        )}
+
+        {/* Scene badge */}
+        {exercise.scene && (
+          <span
+            className={`absolute bottom-1.5 right-1.5 px-1 py-0 rounded text-[8px] font-bold border ${
+              exercise.scene === "pitch"
+                ? "bg-[#22c55e]/20 text-[#22c55e] border-[#22c55e]/30"
+                : exercise.scene === "gym"
+                ? "bg-[#d92525]/20 text-[#d92525] border-[#d92525]/30"
+                : "bg-yellow-500/20 text-yellow-500 border-yellow-500/30"
+            }`}
+            title={exercise.scene === "pitch" ? "场地可用" : exercise.scene === "gym" ? "健身房" : "均可"}
+          >
+            {exercise.scene === "pitch" ? "⚽场" : exercise.scene === "gym" ? "🏋️" : "⚡双"}
+          </span>
+        )}
+
+        {/* Injury contraindications badge */}
+        {exercise.injury_contraindications && exercise.injury_contraindications.length > 0 && (
+          <span
+            className="absolute top-1.5 right-1.5 text-[10px] leading-none drop-shadow-lg"
+            title={`伤病禁忌: ${exercise.injury_contraindications.map(s => INJURY_LABELS[s] || s).join("、")}`}
+          >
+            <AlertTriangle className="w-3 h-3 text-[#f59e0b]" />
           </span>
         )}
 
@@ -682,16 +846,18 @@ function ExerciseCard({
           }`}>
             {exercise.type}
           </span>
-          {exercise.footballCategory && exercise.footballCategory !== "力量" && (
-            <span className="px-1 py-0 rounded text-[9px] text-gray-400 bg-[#222]">{exercise.footballCategory}</span>
+          {/* Football component display */}
+          {libraryMode === "football" && exercise.football_component && (
+            <span className="px-1 py-0 rounded text-[9px] text-[#d92525] bg-[#d92525]/10 border border-[#d92525]/20">
+              {exercise.football_component}
+            </span>
           )}
-          <span className="text-[9px] text-gray-400">{exercise.equipment}</span>
+          {exercise.equipment && (
+            <span className="text-[9px] text-gray-400">{exercise.equipment}</span>
+          )}
         </div>
         {isStrength && exercise.sets && exercise.reps && (
           <p className="text-[10px] text-gray-400 mt-0.5">{exercise.sets[0]}-{exercise.sets[1]}x{exercise.reps[0]}-{exercise.reps[1]}</p>
-        )}
-        {exercise.duration && (
-          <p className="text-[10px] text-gray-400 mt-0.5">{exercise.duration}分钟</p>
         )}
         {exercise.isCustom && (
           <div className="flex gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
@@ -709,11 +875,12 @@ function ExerciseCard({
 // ═══════════════════════════════════════════════
 
 function ExerciseDetailSheet({
-  exercise, onClose, onAddToPlan,
+  exercise, onClose, onAddToPlan, libraryMode,
 }: {
   exercise: UnifiedExercise;
   onClose: () => void;
   onAddToPlan: (ex: UnifiedExercise) => void;
+  libraryMode: LibraryMode;
 }) {
   return (
     <>
@@ -739,7 +906,7 @@ function ExerciseDetailSheet({
             <StickFigure name={exercise.name} size={160} showMuscles={true} />
           </div>
 
-          {/* External image (if loads) */}
+          {/* External image */}
           {exercise.image_url && (
             <div className="w-full aspect-video bg-[#111] rounded-xl overflow-hidden">
               <img
@@ -770,17 +937,41 @@ function ExerciseDetailSheet({
                 {exercise.difficulty}
               </span>
             )}
-            {exercise.isFootballRelevant && (
+            {exercise.football_component && (
               <span className="px-2 py-1 rounded bg-[#d92525]/10 border border-[#d92525]/20 text-xs text-[#d92525] font-medium">
-                ⚽ 足球专项
+                ⚽ {exercise.football_component}
               </span>
             )}
-            {exercise.footballCategory && (
-              <span className="px-2 py-1 rounded bg-[#222] text-xs text-gray-400">
-                {exercise.footballCategory}
+            {exercise.scene && (
+              <span className={`px-2 py-1 rounded text-xs font-medium border ${
+                exercise.scene === "pitch"
+                  ? "bg-[#22c55e]/10 border-[#22c55e]/20 text-[#22c55e]"
+                  : exercise.scene === "gym"
+                  ? "bg-[#d92525]/10 border-[#d92525]/20 text-[#d92525]"
+                  : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"
+              }`}>
+                {exercise.scene === "pitch" ? "⚽ 场地可用" : exercise.scene === "gym" ? "🏋️ 健身房" : "⚡ 双场景"}
               </span>
             )}
           </div>
+
+          {/* Injury contraindications */}
+          {exercise.injury_contraindications && exercise.injury_contraindications.length > 0 && (
+            <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-xl p-3">
+              <p className="text-[10px] text-[#f59e0b] font-bold mb-1.5 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                伤病禁忌
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {exercise.injury_contraindications.map((s) => (
+                  <span key={s} className="px-2 py-0.5 rounded text-[10px] bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20">
+                    {INJURY_LABELS[s] || s}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[10px] text-gray-500 mt-1.5">以上部位伤病时请避免此动作，或使用退阶版本</p>
+            </div>
+          )}
 
           {/* Sets/Reps info for strength */}
           {exercise.type === "力量" && exercise.sets && exercise.reps && (

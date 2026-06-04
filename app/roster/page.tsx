@@ -10,14 +10,76 @@ import {
   parseExcelData,
   type PlayerRecord,
 } from "@/lib/roster-utils";
-import { ArrowLeft, Upload, Plus, X, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
+import { calcSupplementLoad, type SupplementResult } from "@/lib/supplement-load";
 
 const POSITION_OPTIONS = [
   "门将", "中后卫", "左后卫", "右后卫", "后腰", "中前卫", "前腰",
   "左边翼卫", "右边翼卫", "中锋", "影锋", "边锋",
 ];
+
+/* ---- Fitness baselines (per-player, localStorage) ---- */
+interface FitnessBaseline {
+  sprint30m?: number;
+  squat1RM?: number;
+  verticalJump?: number;
+  date?: string;
+}
+
+const FITNESS_KEY = "roster_fitness_baselines";
+
+function getFitnessBaselines(): Record<string, FitnessBaseline> {
+  try {
+    return JSON.parse(localStorage.getItem(FITNESS_KEY) || "{}");
+  } catch { return {}; }
+}
+
+function saveFitnessBaselines(data: Record<string, FitnessBaseline>) {
+  localStorage.setItem(FITNESS_KEY, JSON.stringify(data));
+}
+
+function getFitnessForPlayer(playerId: string): FitnessBaseline {
+  return getFitnessBaselines()[playerId] || {};
+}
+
+function updateFitnessForPlayer(playerId: string, update: Partial<FitnessBaseline>) {
+  const all = getFitnessBaselines();
+  all[playerId] = { ...(all[playerId] || {}), ...update, date: new Date().toISOString().slice(0, 10) };
+  saveFitnessBaselines(all);
+}
+
+/* ---- Supplement load: per-player match minutes stored locally ---- */
+interface PlayerMatchEntry {
+  playerId: string;
+  minutes: number;
+  position: string;
+  date: string;
+}
+const SUPP_KEY = "roster_player_matches";
+
+function getPlayerMatches(): PlayerMatchEntry[] {
+  try { return JSON.parse(localStorage.getItem(SUPP_KEY) || "[]"); } catch { return []; }
+}
+
+function getLatestMatchForPlayer(playerId: string): PlayerMatchEntry | null {
+  const matches = getPlayerMatches().filter((m) => m.playerId === playerId);
+  if (matches.length === 0) return null;
+  matches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return matches[0];
+}
+
+/** Map Chinese position to English key for supplement-load */
+function posToEngKey(pos: string): string {
+  const m: Record<string, string> = {
+    "门将": "goalkeeper", "中后卫": "defender", "左后卫": "wingback",
+    "右后卫": "wingback", "后腰": "midfielder", "中前卫": "midfielder",
+    "前腰": "midfielder", "左边翼卫": "wingback", "右边翼卫": "wingback",
+    "中锋": "forward", "影锋": "forward", "边锋": "forward",
+  };
+  return m[pos] || "midfielder";
+}
 
 export default function RosterPage() {
   const router = useRouter();
@@ -39,6 +101,15 @@ export default function RosterPage() {
 
   const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
   const filtered = filter === "all" ? players : players.filter((p) => p.injuryStatus === filter);
+
+  // Fitness panel state — which player's fitness panel is open
+  const [fitnessPanelPlayerId, setFitnessPanelPlayerId] = useState<string | null>(null);
+  const [fitnessEdit, setFitnessEdit] = useState<FitnessBaseline>({});
+
+  // Supp load dialog
+  const [suppDialogPlayer, setSuppDialogPlayer] = useState<PlayerRecord | null>(null);
+  const [suppMinutes, setSuppMinutes] = useState<number>(0);
+  const [suppResult, setSuppResult] = useState<SupplementResult | null>(null);
 
   const handleExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,6 +161,63 @@ export default function RosterPage() {
   const statusEmoji = (s: string) => s === "healthy" ? "🟢" : s === "minor" ? "🟡" : "🔴";
   const statusLabel = (s: string) => s === "healthy" ? "健康" : s === "minor" ? "轻伤" : "重伤缺阵";
 
+  // Open fitness panel for a player
+  const openFitnessPanel = (playerId: string) => {
+    const current = getFitnessForPlayer(playerId);
+    setFitnessEdit(current);
+    setFitnessPanelPlayerId(playerId);
+  };
+
+  const saveFitness = () => {
+    if (!fitnessPanelPlayerId) return;
+    updateFitnessForPlayer(fitnessPanelPlayerId, fitnessEdit);
+    setFitnessPanelPlayerId(null);
+  };
+
+  // Open supp load dialog
+  const openSuppDialog = (player: PlayerRecord) => {
+    const latest = getLatestMatchForPlayer(player.id);
+    setSuppDialogPlayer(player);
+    setSuppMinutes(latest?.minutes ?? 0);
+    setSuppResult(null);
+  };
+
+  const calcSupp = () => {
+    if (!suppDialogPlayer) return;
+    const engPos = posToEngKey(suppDialogPlayer.position);
+    const res = calcSupplementLoad({
+      playerName: suppDialogPlayer.name,
+      minutes: suppMinutes,
+      position: engPos,
+      date: new Date().toISOString().slice(0, 10),
+    });
+    setSuppResult(res);
+    // Store the match entry
+    const entries = getPlayerMatches();
+    entries.push({
+      playerId: suppDialogPlayer.id,
+      minutes: suppMinutes,
+      position: engPos,
+      date: new Date().toISOString().slice(0, 10),
+    });
+    localStorage.setItem(SUPP_KEY, JSON.stringify(entries));
+  };
+
+  // Quick supplement indicator per player
+  const getSuppIndicator = (player: PlayerRecord): { show: boolean; need: boolean; label: string } => {
+    const latest = getLatestMatchForPlayer(player.id);
+    if (!latest) return { show: false, need: false, label: "" };
+    const engPos = posToEngKey(player.position);
+    const res = calcSupplementLoad({
+      playerName: player.name,
+      minutes: latest.minutes,
+      position: engPos,
+      date: latest.date,
+    });
+    if (!res.needSupplement) return { show: true, need: false, label: "充足" };
+    return { show: true, need: true, label: `补${res.runDistance}m` };
+  };
+
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
       {/* Import toast */}
@@ -127,32 +255,119 @@ export default function RosterPage() {
 
       {/* Player cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-        {filtered.map((p) => (
-          <div key={p.id} className="bg-[#1e1e1e] rounded-xl p-3 border border-[#222]/50 hover:border-[#d92525] transition group">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                <p className="text-[10px] text-gray-400">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
+        {filtered.map((p) => {
+          const supp = getSuppIndicator(p);
+          const fit = getFitnessForPlayer(p.id);
+          const hasFitData = fit.sprint30m != null || fit.squat1RM != null || fit.verticalJump != null;
+          return (
+            <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#d92525] transition group">
+              {/* Top section: name + position + number */}
+              <div className="p-3 pb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{p.name}</p>
+                    <p className="text-[10px] text-gray-400">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
+                  </div>
+                  <button onClick={() => { setEditing(p); setShowAdd(true); }} className="text-gray-600 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition"><Trash2 className="w-3 h-3" /></button>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-gray-400">
+                  <span>{p.age ? `${p.age}岁` : ""} {p.height ? `${p.height}cm` : ""} {p.weight ? `${p.weight}kg` : ""}</span>
+                  <select value={p.injuryStatus} onChange={(e) => handleUpdate(p.id, "injuryStatus", e.target.value)}
+                    className="bg-[#1e1e1e] rounded px-1 py-0.5 text-[10px] border-none outline-none">
+                    <option value="healthy">🟢 健康</option>
+                    <option value="minor">🟡 轻伤</option>
+                    <option value="out">🔴 缺阵</option>
+                  </select>
+                </div>
+                {p.injuryNote && <p className="text-[10px] text-yellow-500/70 mt-1 truncate">{p.injuryNote}</p>}
               </div>
-              <button onClick={() => { setEditing(p); setShowAdd(true); }} className="text-gray-600 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition"><Trash2 className="w-3 h-3" /></button>
+
+              {/* Action row: fitness profile + supplement load */}
+              <div className="border-t border-[#222]/50 px-3 py-2 flex items-center gap-2">
+                {/* 体能档案 quick-link */}
+                <button
+                  onClick={() => openFitnessPanel(p.id)}
+                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition ${
+                    hasFitData
+                      ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                      : "bg-[#121212] text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  <Activity className="w-3 h-3" />
+                  体能
+                  {hasFitData && <span className="text-green-400">✓</span>}
+                </button>
+
+                {/* 补负荷 indicator */}
+                <button
+                  onClick={() => openSuppDialog(p)}
+                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] transition ${
+                    supp.need
+                      ? "bg-orange-500/10 text-orange-400 hover:bg-orange-500/20"
+                      : supp.show
+                      ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                      : "bg-[#121212] text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  <Zap className="w-3 h-3" />
+                  {supp.show ? supp.label : "补负荷"}
+                </button>
+              </div>
+
+              {/* Fitness panel (inline expand) */}
+              {fitnessPanelPlayerId === p.id && (
+                <div className="border-t border-[#222]/50 px-3 py-3 bg-[#121212]/50 rounded-b-xl">
+                  <p className="text-xs text-white font-medium mb-2">体能档案</p>
+                  <div className="space-y-1.5">
+                    {[
+                      { key: "sprint30m" as const, label: "30m冲刺", unit: "秒" },
+                      { key: "squat1RM" as const, label: "深蹲1RM", unit: "kg" },
+                      { key: "verticalJump" as const, label: "垂直起跳", unit: "cm" },
+                    ].map((metric) => (
+                      <div key={metric.key} className="flex items-center gap-2">
+                        <span className="text-[10px] text-gray-500 w-14 shrink-0">{metric.label}</span>
+                        <input
+                          type="number"
+                          value={fitnessEdit[metric.key] ?? ""}
+                          onChange={(e) =>
+                            setFitnessEdit((prev) => ({
+                              ...prev,
+                              [metric.key]: e.target.value ? Number(e.target.value) : undefined,
+                            }))
+                          }
+                          placeholder="—"
+                          className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1 text-xs text-gray-300 w-16 text-center"
+                        />
+                        <span className="text-[10px] text-gray-500">{metric.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={saveFitness}
+                      className="flex-1 py-1.5 bg-[#d92525] text-white rounded text-[10px] font-bold"
+                    >
+                      保存
+                    </button>
+                    <button
+                      onClick={() => setFitnessPanelPlayerId(null)}
+                      className="flex-1 py-1.5 bg-[#1e1e1e] text-gray-400 rounded text-[10px]"
+                    >
+                      关闭
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete button */}
+              <button onClick={() => handleDelete(p.id)}
+                className="w-full py-1 text-[10px] text-red-500/50 hover:text-red-400 opacity-0 group-hover:opacity-100 transition rounded hover:bg-red-500/10">
+                删除
+              </button>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-gray-400">
-              <span>{p.age ? `${p.age}岁` : ""} {p.height ? `${p.height}cm` : ""} {p.weight ? `${p.weight}kg` : ""}</span>
-              <select value={p.injuryStatus} onChange={(e) => handleUpdate(p.id, "injuryStatus", e.target.value)}
-                className="bg-[#1e1e1e] rounded px-1 py-0.5 text-[10px] border-none outline-none">
-                <option value="healthy">🟢 健康</option>
-                <option value="minor">🟡 轻伤</option>
-                <option value="out">🔴 缺阵</option>
-              </select>
-            </div>
-            {p.injuryNote && <p className="text-[10px] text-yellow-500/70 mt-1 truncate">{p.injuryNote}</p>}
-            <button onClick={() => handleDelete(p.id)}
-              className="mt-2 w-full py-1 text-[10px] text-red-500/50 hover:text-red-400 opacity-0 group-hover:opacity-100 transition rounded hover:bg-red-500/10">
-              删除
-            </button>
-          </div>
-        ))}
+          );
+        })}
         {filtered.length === 0 && (
           <p className="text-gray-400 text-sm col-span-full text-center py-12">暂无球员，点击「导入Excel」或「添加球员」</p>
         )}
@@ -204,6 +419,44 @@ export default function RosterPage() {
           </div>
         </div>
       )}
+
+      {/* Supplement Load Dialog */}
+      {suppDialogPlayer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 w-full max-w-sm space-y-3 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-bold text-sm">补负荷计算 — {suppDialogPlayer.name}</h2>
+              <button onClick={() => { setSuppDialogPlayer(null); setSuppResult(null); }} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+            <p className="text-xs text-gray-400">输入该球员最近比赛的出场时间，系统自动计算需补充的跑动负荷。</p>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400">出场时间</span>
+              <input
+                type="number"
+                min={0}
+                max={90}
+                value={suppMinutes}
+                onChange={(e) => setSuppMinutes(Number(e.target.value))}
+                className="bg-[#121212] border border-[#222] rounded px-2 py-1.5 text-sm text-gray-300 w-20 text-center"
+              />
+              <span className="text-xs text-gray-400">分钟</span>
+            </div>
+            <button
+              onClick={calcSupp}
+              className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1"
+            >
+              <Zap className="w-3.5 h-3.5" />计算补负荷
+            </button>
+            {suppResult && (
+              <div className={`p-3 rounded-lg text-xs ${suppResult.needSupplement ? "bg-orange-500/10 border border-orange-500/20 text-orange-400" : "bg-green-500/10 border border-green-500/20 text-green-400"}`}>
+                <p className="font-bold mb-1">{suppResult.needSupplement ? `⚠️ 需要补充 ${suppResult.runDistance}m 跑量` : "✅ 负荷充足，正常训练"}</p>
+                <p className="text-gray-400">{suppResult.strategy}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Preview Import Dialog */}
       {preview && (() => {
         const headers = (preview.rawRows[0] || []).map((h) => String(h || "").trim());

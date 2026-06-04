@@ -49,6 +49,8 @@ export interface PlayerFormData {
   equipmentAvailable: string[]; // 可用器材列表
   trainingDuration?: number; // 30 | 45 | 60 | 90 (minutes)
   playerCount?: number; // coach: number of players in session
+  underloadCount?: number; // coach: number of players with <45min play time (补负荷)
+  minPlayMinutes?: number; // coach: minimum play minutes among underloaded players
 }
 
 // ---- Training Module Output ----

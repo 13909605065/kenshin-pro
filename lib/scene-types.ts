@@ -11,10 +11,11 @@ export const COACH_SCENES = [
   { id: "gym" as const, label: "健身房", icon: "🏋️" },
 ];
 
-// 运动员2场景
+// 运动员3场景 — 对应四大板块中的板块二/三/四
 export const ATHLETE_SCENES = [
-  { id: "pitch" as const, label: "球场", icon: "⚽" },
-  { id: "gym" as const, label: "健身房", icon: "🏋️" },
+  { id: "pitch" as const, label: "场地训练", icon: "⚽" },
+  { id: "gym" as const, label: "体能房", icon: "🏋️" },
+  { id: "rehab" as const, label: "伤病防控", icon: "🩺" },
 ];
 
 // 健身者2场景 — 纯健身/塑形，无关足球

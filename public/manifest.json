@@ -1,7 +1,7 @@
 {
-  "name": "KenshinPro - 足球训练助手",
+  "name": "KenshinPro S&C",
   "short_name": "KenshinPro",
-  "description": "职业级 AI 足球训练方案生成器 · 战术诊断 · 智能备课 · 战术板",
+  "description": "职业足球体能训练系统",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
