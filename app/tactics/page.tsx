@@ -110,9 +110,12 @@ export default function TacticsPage() {
         FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
           // Clear old field bg
           canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
-          const margin = 15;
-          const s = Math.max((canvas.width!-margin*2)/img.width!, (canvas.height!-margin*2)/img.height!);
-          img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
+          const margin = 30;
+          const sw = (canvas.width! - margin * 2) / img.width!;
+          const sh = (canvas.height! - margin * 2) / img.height!;
+          const s = Math.min(sw, sh); // fit field in center with equal margins
+          const imgW = img.width! * s, imgH = img.height! * s;
+          img.set({left: (canvas.width!-imgW)/2, top: (canvas.height!-imgH)/2, scaleX:s, scaleY:s, selectable:false, evented:false});
           (img as any)._isFieldBg = true;
           // Remove ALL non-field content before placing new
           canvas.getObjects().filter((o:any)=>!o._isFieldBg).forEach((o:any)=>canvas.remove(o));

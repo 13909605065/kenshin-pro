@@ -178,11 +178,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     });
 
     // Load field image — bright white line-drawing template
+    // Use Math.min to fit entire field within canvas without cropping
     FabricImage.fromURL("/equipment/场地14.png").then((img) => {
-      const margin = 15;
-      const scaleX = (FW - margin * 2) / (img.width || 1);
-      const scaleY = (FH - margin * 2) / (img.height || 1);
-      const scale = Math.max(scaleX, scaleY);
+      const margin = 30;
+      const scaleW = (FW - margin * 2) / (img.width || 1);
+      const scaleH = (FH - margin * 2) / (img.height || 1);
+      const scale = Math.min(scaleW, scaleH); // fit (not fill) — center with equal margins
       img.set({
         left: (FW - (img.width || 0) * scale) / 2,
         top: (FH - (img.height || 0) * scale) / 2,
@@ -469,8 +470,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       // Load field PNG — fill canvas with tight margins
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
         c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-        const margin = 15;
-        const s = Math.max((c.width!-margin*2)/img.width!, (c.height!-margin*2)/img.height!);
+        const margin = 30;
+        const sw = (c.width! - margin * 2) / img.width!;
+        const sh = (c.height! - margin * 2) / img.height!;
+        const s = Math.min(sw, sh); // fit — center with equal margins
         img.set({
           left: (c.width! - img.width! * s) / 2,
           top: (c.height! - img.height! * s) / 2,
@@ -487,8 +490,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-auto bg-pitch-900 p-1 sm:p-2" style={{ minHeight: 0, WebkitOverflowScrolling: "touch" }}>
-      <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 140px)", objectFit: "contain", touchAction: "none" }} />
+    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden bg-pitch-900" style={{ minHeight: 0 }}>
+      <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
     </div>
   );
 }
