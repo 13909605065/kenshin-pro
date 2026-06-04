@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle } from "@/lib/types";
+import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle, PositionTraining, NutritionInfo } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 import { writeDrillContext } from "@/lib/tactics-bridge";
 import { FieldDiagram } from "./FieldDiagram";
@@ -10,7 +10,6 @@ import { WarmupTab } from "./tabs/WarmupTab";
 import { TechniqueTab } from "./tabs/TechniqueTab";
 import { PhysicalTab } from "./tabs/PhysicalTab";
 import { TacticalTab } from "./tabs/TacticalTab";
-import { NutritionTab } from "./tabs/NutritionTab";
 import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
 import { SequentialTrainingList } from "./SequentialTrainingList";
@@ -39,7 +38,47 @@ const COACH_TABS = [
   { id: "session" as const, label: "训练教案", short: "教案" },
   { id: "tactical" as const, label: "战术专项", short: "战术" },
   { id: "microcycle" as const, label: "微周期", short: "周期" },
+  { id: "nutrition" as const, label: "🥗 营养", short: "营养" },
 ];
+
+function NutritionTabContent({ modules, role }: { modules: TrainingModule[]; role: string }) {
+  const posModule = modules.find((m) => m.module === "position_training") as PositionTraining | undefined;
+  const nutrition: NutritionInfo | undefined = posModule?.nutrition;
+
+  if (!nutrition) {
+    return (
+      <div className="py-8 text-center">
+        <span className="text-4xl block mb-3">🥗</span>
+        <p className="text-sm text-gray-400">该方案暂未包含营养数据，重新生成即可获取个性化营养建议。</p>
+      </div>
+    );
+  }
+
+  const sections: { key: keyof NutritionInfo; label: string; icon: string }[] = [
+    { key: "pre_training", label: "训练前", icon: "🌅" },
+    { key: "post_training", label: "训练后", icon: "🔋" },
+    { key: "daily_plan", label: "日常饮食", icon: "🍽️" },
+    { key: "hydration", label: "补水", icon: "💧" },
+    { key: "supplements", label: "补剂", icon: "💊" },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {sections.map(({ key, label, icon }) => {
+        const content = nutrition[key];
+        if (!content) return null;
+        return (
+          <div key={key} className="bg-[#1e1e1e]/50 rounded-lg p-4 border-l-2 border-[#d92525]">
+            <h4 className="text-[#d92525] text-xs font-bold mb-2 flex items-center gap-1.5">
+              <span>{icon}</span> {label}
+            </h4>
+            <p className="text-sm text-gray-300 leading-relaxed">{content}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function CoachSessionView({ module: m }: { module: SessionPlan }) {
   const router = useRouter();
@@ -605,6 +644,9 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
                 ))}
               </div>
             )}
+            {activeTab === "nutrition" && (
+              <NutritionTabContent modules={modules} role="coach" />
+            )}
           </>
         ) : (
           <>
@@ -621,7 +663,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
               <TacticalTab modules={modules} />
             )}
             {activeTab === "nutrition" && (
-              <NutritionTab modules={modules} />
+              <NutritionTabContent modules={modules} role="athlete" />
             )}
           </>
         )}

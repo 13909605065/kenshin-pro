@@ -690,16 +690,29 @@ export function Dashboard() {
                     const posModule = training.modules.find((m: any) => m.module === "position_training") as any;
                     if (posModule?.nutrition) {
                       const n = posModule.nutrition;
+                      const sections = [
+                        { key: "pre_training", label: "🌅 训练前" },
+                        { key: "post_training", label: "🔋 训练后" },
+                        { key: "daily_plan", label: "🍽️ 日常饮食" },
+                        { key: "hydration", label: "💧 补水" },
+                        { key: "supplements", label: "💊 补剂" },
+                      ] as const;
                       return (
                         <>
-                          {n.pre_workout && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">训练前</p><p className="text-[11px] text-[#d1d1d1]">{n.pre_workout}</p></div>}
-                          {n.post_workout && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">训练后</p><p className="text-[11px] text-[#d1d1d1]">{n.post_workout}</p></div>}
-                          {n.daily && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">日常饮食</p><p className="text-[11px] text-[#d1d1d1]">{n.daily}</p></div>}
-                          {n.hydration && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">补水</p><p className="text-[11px] text-[#d1d1d1]">{n.hydration}</p></div>}
+                          {sections.map(({ key, label }) => {
+                            const content = n[key];
+                            if (!content) return null;
+                            return (
+                              <div key={key} className="bg-[#121212] rounded-lg p-2.5 border-l-2 border-[#d92525]">
+                                <p className="text-[10px] text-[#d92525] font-bold mb-1">{label}</p>
+                                <p className="text-[11px] text-[#d1d1d1]">{content}</p>
+                              </div>
+                            );
+                          })}
                         </>
                       );
                     }
-                    return <p className="text-xs text-gray-500">营养数据加载中...</p>;
+                    return <p className="text-xs text-gray-500">该方案暂未包含营养数据，重新生成即可获取个性化营养建议。</p>;
                   })()}
                 </div>
               ) : (
