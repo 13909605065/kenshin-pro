@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import { TAC_THEME } from "@/lib/tactical-theme";
-import type { Canvas as FabricCanvas } from "fabric";
+import type { Canvas as FabricCanvas, Circle, FabricText } from "fabric";
+
+// ─── Config ──────────────────────────────────────────
+const PINCH_THRESHOLD = 0.04;   // tighter = more deliberate
+const HOLD_MS = 600;            // hold pinch for select
+const CURSOR_R = 14;
 
 interface Props {
   fabricRef: React.MutableRefObject<FabricCanvas | null>;
@@ -14,93 +19,126 @@ export function GestureController({ fabricRef, enabled }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const landmarkerRef = useRef<HandLandmarker | null>(null);
   const rafRef = useRef<number>(0);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"loading"|"ready"|"error">("loading");
   const [errMsg, setErrMsg] = useState("");
-  const prevPinchRef = useRef(false);
-  const twoBaseRef = useRef<number | null>(null);
-  const lastTimeRef = useRef(0);
 
+  // Gesture state
+  const pinchStartRef = useRef<number>(0);
+  const pinchActiveRef = useRef(false);
+  const cursorObjRef = useRef<Circle | null>(null);
+  const labelObjRef = useRef<FabricText | null>(null);
+  const lastPosRef = useRef({ x: 525, y: 340 });
+  const twoBaseRef = useRef<number | null>(null);
+  const disposedRef = useRef(false);
+
+  // ─── Cursor helpers ────────────────────────────────
+  const ensureCursor = useCallback((fc: FabricCanvas) => {
+    if (cursorObjRef.current) return;
+    const c = new (require("fabric").Circle)({
+      left: 525 - CURSOR_R, top: 340 - CURSOR_R, radius: CURSOR_R,
+      fill: "rgba(255,255,255,0.15)", stroke: TAC_THEME.accent,
+      strokeWidth: 2, strokeDashArray: [4, 4],
+      selectable: false, evented: false,
+    });
+    (c as any)._isGestureCursor = true;
+    fc.add(c);
+    cursorObjRef.current = c;
+  }, []);
+
+  const removeCursor = useCallback((fc: FabricCanvas) => {
+    if (cursorObjRef.current) {
+      fc.remove(cursorObjRef.current);
+      cursorObjRef.current = null;
+    }
+    if (labelObjRef.current) {
+      fc.remove(labelObjRef.current);
+      labelObjRef.current = null;
+    }
+    fc.requestRenderAll();
+  }, []);
+
+  // ─── Initialize ────────────────────────────────────
   useEffect(() => {
-    if (!enabled || landmarkerRef.current) return;
-    let disposed = false;
+    if (!enabled) {
+      // Clean up cursor when disabling
+      const fc = fabricRef.current;
+      if (fc) removeCursor(fc);
+      return;
+    }
+    if (landmarkerRef.current) return;
+    disposedRef.current = false;
 
     (async () => {
       try {
-        // 1. Camera
+        // Camera
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480, facingMode: "user" },
         });
-        if (disposed) { stream.getTracks().forEach(t => t.stop()); return; }
+        if (disposedRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
         const video = videoRef.current;
-        if (!video) return;
+        if (!video) { stream.getTracks().forEach(t => t.stop()); return; }
         video.srcObject = stream;
         await video.play();
 
-        // 2. MediaPipe WASM
+        // WASM
         const vision = await FilesetResolver.forVisionTasks("/mediapipe/");
-        if (disposed) return;
+        if (disposedRef.current) return;
 
-        // 3. Hand Landmarker — try GPU first, fallback to CPU
-        let landmarker: HandLandmarker | null = null;
-        for (const delegate of ["GPU", "CPU"] as const) {
-          try {
-            landmarker = await HandLandmarker.createFromOptions(vision, {
-              baseOptions: {
-                modelAssetPath: "/mediapipe/hand_landmarker.task",
-                delegate,
-              },
-              runningMode: "VIDEO",
-              numHands: 2,
-              minHandDetectionConfidence: 0.5,
-              minTrackingConfidence: 0.5,
-            });
-            break;
-          } catch (e) {
-            if (delegate === "CPU") throw e; // both failed
-          }
-        }
-        if (!landmarker) throw new Error("HandLandmarker init failed");
-        if (disposed) { landmarker.close(); return; }
+        // Landmarker — CPU first for compatibility
+        const landmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "/mediapipe/hand_landmarker.task",
+            delegate: "CPU",
+          },
+          runningMode: "VIDEO",
+          numHands: 2,
+          minHandDetectionConfidence: 0.6,
+          minTrackingConfidence: 0.5,
+        });
+        if (disposedRef.current) { landmarker.close(); return; }
         landmarkerRef.current = landmarker;
-
         setStatus("ready");
 
-        // 4. Frame loop
+        // Frame loop (~20fps)
+        let lastT = 0;
         const detect = () => {
-          if (disposed) return;
+          if (disposedRef.current) return;
           const now = performance.now();
-          // Throttle to ~15fps for performance
-          if (now - lastTimeRef.current < 66) {
-            rafRef.current = requestAnimationFrame(detect);
-            return;
-          }
-          lastTimeRef.current = now;
+          if (now - lastT < 50) { rafRef.current = requestAnimationFrame(detect); return; }
+          lastT = now;
 
           const fc = fabricRef.current;
+          if (!fc || !video) { rafRef.current = requestAnimationFrame(detect); return; }
+
           try {
             const results = landmarker.detectForVideo(video, now);
-            if (fc && results.landmarks?.length) {
-              handleLandmarks(fc, results.landmarks, twoBaseRef, prevPinchRef);
+            if (results.landmarks?.length) {
+              processLandmarks(fc, results.landmarks, now);
+            } else {
+              // No hand detected → hide cursor
+              removeCursor(fc);
+              pinchStartRef.current = 0;
+              pinchActiveRef.current = false;
             }
           } catch {}
           rafRef.current = requestAnimationFrame(detect);
         };
         detect();
       } catch (e: any) {
-        if (!disposed) {
-          setStatus("error");
-          setErrMsg(e.message || String(e));
-        }
+        if (!disposedRef.current) { setStatus("error"); setErrMsg(e.message || String(e)); }
       }
     })();
 
     return () => {
-      disposed = true;
+      disposedRef.current = true;
       cancelAnimationFrame(rafRef.current);
       landmarkerRef.current?.close();
+      landmarkerRef.current = null;
       if (videoRef.current?.srcObject) {
         (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
       }
+      pinchStartRef.current = 0;
+      pinchActiveRef.current = false;
     };
   }, [enabled]);
 
@@ -109,86 +147,98 @@ export function GestureController({ fabricRef, enabled }: Props) {
   return (
     <div className="absolute bottom-14 right-2 z-40">
       <div className="relative rounded-lg overflow-hidden shadow-2xl border-2"
-        style={{ width: 160, height: 120, borderColor: status === "ready" ? TAC_THEME.success : status === "error" ? TAC_THEME.error : TAC_THEME.border }}>
+        style={{ width: 120, height: 90, borderColor: status === "ready" ? TAC_THEME.success : status === "error" ? TAC_THEME.error : TAC_THEME.border }}>
         <video ref={videoRef} className="w-full h-full object-cover" playsInline muted
           style={{ transform: "scaleX(-1)" }} />
         {status === "loading" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 text-[10px] text-gray-400">
+            ⏳
           </div>
         )}
         {status === "error" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-[9px] text-red-400 p-1 text-center leading-tight">
-            {errMsg}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/90 text-[8px] text-red-400 p-1 text-center">
+            {errMsg.slice(0, 60)}
           </div>
         )}
       </div>
-      <div className="mt-1 text-[9px]" style={{ color: status === "ready" ? TAC_THEME.success : TAC_THEME.textDim }}>
-        {status === "loading" ? "加载中..." : status === "ready" ? "✋ 手势追踪中" : "❌ 错误"}
+      <div className="mt-1 text-[9px]" style={{ color: status === "ready" ? TAC_THEME.success : TAC_THEME.error }}>
+        {status === "loading" ? "..." : status === "ready" ? "✋ 就绪" : "失败"}
       </div>
     </div>
   );
-}
 
-// ─── Gesture detection logic ──────────────────────────────
+  // ─── Gesture processing ──────────────────────────────
+  function processLandmarks(fc: FabricCanvas, landmarks: any[][], now: number) {
+    const W = fc.width || 1050, H = fc.height || 680;
 
-function handleLandmarks(
-  fc: FabricCanvas, landmarks: any[][],
-  twoBaseRef: React.MutableRefObject<number | null>,
-  prevPinchRef: React.MutableRefObject<boolean>,
-) {
-  const W = fc.width || 1050, H = fc.height || 680;
-
-  if (landmarks.length >= 2) {
-    // Two hands → zoom
-    const i1 = landmarks[0][8], i2 = landmarks[1][8];
-    if (!i1 || !i2) return;
-    const dist = Math.hypot(i2.x - i1.x, i2.y - i1.y);
-    if (twoBaseRef.current === null) {
-      twoBaseRef.current = dist;
+    if (landmarks.length >= 2) {
+      // ─── Two hands → zoom ───
+      removeCursor(fc);
+      const i1 = landmarks[0][8], i2 = landmarks[1][8];
+      if (!i1 || !i2) return;
+      const dist = Math.hypot(i2.x - i1.x, i2.y - i1.y);
+      if (twoBaseRef.current === null) { twoBaseRef.current = dist; return; }
+      const ratio = dist / twoBaseRef.current;
+      let z = fc.getZoom() * Math.max(0.3, Math.min(3, ratio));
+      z = Math.min(Math.max(z, 0.3), 5);
+      fc.zoomToPoint({ x: (i1.x + i2.x) / 2 * W, y: (i1.y + i2.y) / 2 * H } as any, z);
+      fc.requestRenderAll();
       return;
     }
-    const ratio = dist / twoBaseRef.current;
-    let z = fc.getZoom() * (0.5 + 0.5 * ratio); // dampened
-    z = Math.min(Math.max(z, 0.3), 5);
-    const cx = ((i1.x + i2.x) / 2) * W;
-    const cy = ((i1.y + i2.y) / 2) * H;
-    fc.zoomToPoint({ x: cx, y: cy } as any, z);
+    twoBaseRef.current = null;
+
+    const lm = landmarks[0];
+    if (!lm?.length || !lm[4] || !lm[8]) return;
+
+    const thumb = lm[4], index = lm[8];
+    const cx = index.x * W, cy = index.y * H;
+    const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+    const isPinching = pinchDist < PINCH_THRESHOLD;
+
+    // ─── Always show cursor following index finger ───
+    ensureCursor(fc);
+    if (cursorObjRef.current) {
+      cursorObjRef.current.set({
+        left: cx - CURSOR_R, top: cy - CURSOR_R,
+        stroke: isPinching ? TAC_THEME.success : TAC_THEME.accent,
+      } as any);
+      cursorObjRef.current.setCoords();
+    }
+    lastPosRef.current = { x: cx, y: cy };
     fc.requestRenderAll();
-    return;
-  }
 
-  twoBaseRef.current = null;
-  const lm = landmarks[0];
-  if (!lm?.length) return;
+    // ─── Pinch gesture ──────────────────────────
+    if (isPinching && !pinchActiveRef.current) {
+      // Pinch just started
+      pinchStartRef.current = now;
+      pinchActiveRef.current = true;
 
-  const thumb = lm[4], index = lm[8];
-  if (!thumb || !index) return;
-
-  const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-  const pinching = pinchDist < 0.05;
-  const cx = index.x * W, cy = index.y * H;
-
-  if (pinching && !prevPinchRef.current) {
-    // Start pinch → select object under cursor
-    const target = fc.getObjects().reverse().find(o => {
-      const b = o.getBoundingRect();
-      return cx >= b.left && cx <= b.left + b.width &&
-             cy >= b.top && cy <= b.top + b.height;
-    });
-    if (target) {
-      fc.setActiveObject(target);
-      fc.requestRenderAll();
+      // Immediate: try to grab object under cursor
+      const target = fc.getObjects().reverse().find(o => {
+        if ((o as any)._isGestureCursor || (o as any)._isFieldBg) return false;
+        const b = o.getBoundingRect();
+        return cx >= b.left && cx <= b.left + b.width &&
+               cy >= b.top && cy <= b.top + b.height;
+      });
+      if (target) {
+        fc.setActiveObject(target);
+        fc.requestRenderAll();
+      }
+    } else if (isPinching && pinchActiveRef.current) {
+      // Pinch held → drag
+      const holdDuration = now - pinchStartRef.current;
+      if (holdDuration > HOLD_MS) {
+        const obj = fc.getActiveObject();
+        if (obj) {
+          obj.set({ left: cx, top: cy } as any);
+          obj.setCoords();
+          fc.requestRenderAll();
+        }
+      }
+    } else if (!isPinching && pinchActiveRef.current) {
+      // Pinch released
+      pinchActiveRef.current = false;
+      pinchStartRef.current = 0;
     }
-  } else if (pinching && prevPinchRef.current) {
-    // Hold pinch → drag
-    const obj = fc.getActiveObject();
-    if (obj) {
-      obj.set({ left: cx - (obj.width || 0) / 2, top: cy - (obj.height || 0) / 2 } as any);
-      obj.setCoords();
-      fc.requestRenderAll();
-    }
   }
-
-  prevPinchRef.current = pinching;
 }
