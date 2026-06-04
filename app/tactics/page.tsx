@@ -63,6 +63,8 @@ const THEMES = ["控球","射门","传中","防守","压迫","反击","定位球
 
 interface SavedScene { id: string; name: string; theme: string; json: string; createdAt: string; }
 
+const AUTOSAVE_KEY = "tac_autosave";
+
 export default function TacticsPage() {
   const router = useRouter();
   const boardRef = useRef<Canvas | null>(null);
@@ -70,12 +72,16 @@ export default function TacticsPage() {
   const [activeColor, setActiveColor] = useState<string>(TAC_THEME.accent);
   const [canUndo, setCanUndo] = useState(false); const [canRedo, setCanRedo] = useState(false);
   const [selObj, setSelObj] = useState<any>(null);
-  const [, setEditTick] = useState(0); // force re-render on number edit
+  const [, setEditTick] = useState(0);
   const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState(""); const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
+  // Auto-save restore
+  const [autoSaveTs, setAutoSaveTs] = useState<string | null>(() => {
+    try { const d = localStorage.getItem(AUTOSAVE_KEY); return d ? JSON.parse(d).ts : null; } catch { return null; }
+  });
 
   // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
@@ -176,12 +182,49 @@ export default function TacticsPage() {
     tryRender();
   }, []);
 
-  const uh = useCallback((u:boolean,r:boolean)=>{setCanUndo(u);setCanRedo(r);},[]);
+  // ─── Auto-save canvas to localStorage ───
+  const autoSave = useCallback(() => {
+    const c = boardRef.current; if (!c) return;
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        json: JSON.stringify(c.toJSON()),
+        ts: new Date().toISOString(),
+      }));
+    } catch {}
+  }, []);
+
+  const restoreAutoSave = () => {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const c = boardRef.current; if (!c) return;
+      c.loadFromJSON(JSON.parse(data.json)).then(() => {
+        c.requestRenderAll();
+        setAutoSaveTs(null);
+      });
+    } catch {}
+  };
+
+  const dismissAutoSave = () => {
+    localStorage.removeItem(AUTOSAVE_KEY);
+    setAutoSaveTs(null);
+  };
+
+  const uh = useCallback((u:boolean,r:boolean)=>{
+    setCanUndo(u); setCanRedo(r);
+    if (r || u) autoSave(); // save on any canvas change
+  },[autoSave]);
   const hUndo = () => (boardRef.current as any)?._undo?.();
   const hRedo = () => (boardRef.current as any)?._redo?.();
   const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
 
-  const hClear = () => { const c=boardRef.current; if(!c)return; c.clear(); c.backgroundColor="#000"; c.renderAll(); };
+  const hClear = () => {
+    const c=boardRef.current; if(!c)return;
+    c.getObjects().filter((o:any)=>!o._isFieldBg).forEach((o:any)=>c.remove(o));
+    c.requestRenderAll();
+    autoSave();
+  };
 
   const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.renderAll(); }};
   const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
@@ -220,6 +263,7 @@ export default function TacticsPage() {
     // Place formation players (ring style via placePlayers)
     placePlayers(FORMATION_DATA[f] || FORMATION_DATA["4-3-3"]);
     c.requestRenderAll();
+    autoSave();
   };
 
   const hUpdatePlayerNum = (newNum: string) => {
@@ -342,7 +386,8 @@ export default function TacticsPage() {
     }
 
     c.requestRenderAll();
-  }, []);
+    autoSave();
+  }, [autoSave]);
 
   const hAIGenerate = useCallback(async () => {
     if (!aiPrompt.trim() || aiLoading) return;
@@ -400,6 +445,16 @@ export default function TacticsPage() {
 
   return (
     <div className="h-screen flex flex-col" style={{ backgroundColor: TAC_THEME.bg }}>
+      {/* ─── Auto-save restore prompt ─── */}
+      {autoSaveTs && (
+        <div className="flex-shrink-0 px-3 py-2 flex items-center gap-3 text-xs"
+          style={{ backgroundColor: TAC_THEME.accent, color: "#fff" }}>
+          <span className="flex-1">检测到上次未保存的战术（{new Date(autoSaveTs).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})}），是否继续？</span>
+          <button onClick={restoreAutoSave} className="px-3 py-1 rounded font-bold text-xs" style={{backgroundColor:"rgba(255,255,255,0.2)"}}>继续</button>
+          <button onClick={dismissAutoSave} className="px-3 py-1 rounded text-xs" style={{backgroundColor:"rgba(0,0,0,0.2)"}}>忽略</button>
+        </div>
+      )}
+
       <header className="px-2 sm:px-3 h-11 flex items-center gap-1 sm:gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
         <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1 touch-target" title="返回首页">
           <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5}/>
