@@ -708,12 +708,12 @@ export function Dashboard() {
                     <button key={n} onClick={() => {
                       const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
                       updateField("equipmentAvailable", next);
-                    }} className={`flex flex-col items-center justify-center gap-1.5 aspect-square rounded-lg transition-all duration-150 border ${
+                    }} className={`flex flex-col items-center justify-center gap-1 rounded-lg transition-all duration-150 border py-2 ${
                       act
                         ? "bg-[#2c1c1c] border-[#d92525]/40"
                         : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
                     }`}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
                         {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
                         {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
