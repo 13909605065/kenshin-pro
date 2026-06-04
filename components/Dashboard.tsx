@@ -372,8 +372,6 @@ export function Dashboard() {
     updateField("goal", goals.length > 0 ? (goals[0] as any) : null);
   }, [updateField]);
 
-  // Fitness tab unlock states
-  const fitnessTrainingUnlocked = fitnessGoals.length > 0;
   const fitnessNutritionUnlocked = status === "complete" || status === "stream-interrupted";
 
   /** Plans saved for the current player name (case-insensitive) */
