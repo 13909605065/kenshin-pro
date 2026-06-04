@@ -43,7 +43,7 @@ function flattenForAthlete(modules: TrainingModule[]): SeqCard[] {
 
 const TYPE_META: Record<string, {label:string;icon:string;color:string}> = {
   warmup: {label:"热身",icon:"🔥",color:"bg-green-500/10 border-green-500/30 text-green-400"},
-  strength: {label:"力量",icon:"💪",color:"bg-neon-pink/10 border-neon-pink/30 text-neon-pink"},
+  strength: {label:"力量",icon:"💪",color:"bg-[#d92525]/10 border-[#d92525]/30 text-neon-pink"},
   tech: {label:"技术",icon:"⚽",color:"bg-blue-500/10 border-blue-500/30 text-blue-400"},
   cooldown: {label:"放松",icon:"🧊",color:"bg-yellow-500/10 border-yellow-500/30 text-yellow-400"},
 };
@@ -71,7 +71,7 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
 
       {/* Progress bar */}
       <div className="h-1 bg-[#222] rounded-full overflow-hidden">
-        <div className="h-full bg-neon-pink transition-all duration-300" style={{width:(total>0?Math.round(doneCount/total*100):0)+"%"}}/>
+        <div className="h-full bg-[#d92525] transition-all duration-300" style={{width:(total>0?Math.round(doneCount/total*100):0)+"%"}}/>
       </div>
 
       {/* Cards */}
@@ -91,7 +91,7 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
                   <p className={`text-sm font-bold truncate ${isDone?"line-through":""}`}>{card.name}</p>
                   <p className="text-[11px] opacity-70">{card.detail}</p>
                 </div>
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${isDone?"bg-neon-pink border-neon-pink":"border-gray-600"}`}>
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${isDone?"bg-[#d92525] border-[#d92525]":"border-gray-600"}`}>
                   {isDone && <Check className="w-3 h-3 text-black"/>}
                 </div>
                 {isExp ? <ChevronUp className="w-4 h-4 opacity-50"/> : <ChevronDown className="w-4 h-4 opacity-50"/>}
@@ -147,7 +147,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
       <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
         {tabs.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id)}
-            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-neon-pink text-black":"text-gray-500")}>
+            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-[#d92525] text-black":"text-gray-500")}>
             {t.icon} {t.label}
           </button>
         ))}

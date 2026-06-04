@@ -14,21 +14,21 @@ export const TAC_THEME = {
   bg: "#0d0d0d",
   bgHeader: "#0d0d0d",
   bgToolbar: "rgba(13,13,13,0.96)",
-  bgCard: "#151515",
+  bgCard: "#242424",
   bgInput: "#0a0a0a",
-  bgHover: "#1c1c1c",
+  bgHover: "#2a2a2a",
 
   // 边框
-  border: "#292A30",
+  border: "#2a2a2a",
   borderLight: "#333",
 
   // 文字
-  textMain: "#c8ccd4",
+  textMain: "#d1d1d1",
   textDim: "#777777",
   textWhite: "#fff",
 
   // 主强调色
-  accent: "#C4242E",
+  accent: "#d92525",
 
   // 辅助色
   blue: "#203E96",

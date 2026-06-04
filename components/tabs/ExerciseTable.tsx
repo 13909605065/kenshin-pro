@@ -68,8 +68,8 @@ export function ExerciseTable({ exercises }: Props) {
                           setPreviewName(ex.name);
                         }}
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium
-                                   bg-pitch-700 border border-pitch-600 text-gray-300
-                                   hover:border-neon-pink hover:text-neon-pink transition-all"
+                                   bg-[#1e1e1e] border border-[#333] text-[#d1d1d1]
+                                   hover:border-[#d92525] hover:text-[#d92525] transition-all"
                       >
                         <Eye className="w-3 h-3" />
                         查看动作图

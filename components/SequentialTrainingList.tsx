@@ -176,16 +176,31 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
 
   return (
     <div className="space-y-4">
-      {/* Progress */}
+      {/* Segmented progress bar */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold text-white">
-            {doneCount === total ? "🎉 训练完成" : `训练进度 ${doneCount}/${total}`}
+            {doneCount === total ? "训练完成" : `训练进度 ${doneCount}/${total}`}
           </span>
-          <span className="text-xs text-neon-pink font-bold tabular-nums">{pct}%</span>
+          <span className="text-xs text-[#d92525] font-bold tabular-nums">{pct}%</span>
         </div>
         <div className="h-2 bg-[#222] rounded-full overflow-hidden">
-          <div className="h-full bg-neon-pink rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+          <div className="h-full bg-[#d92525] rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+        </div>
+        {/* Phase segments */}
+        <div className="flex items-center justify-between mt-2 gap-1">
+          {(() => {
+            const phaseColors: Record<string, string> = { "Warm-up": "#22c55e", "主训": "#3B82F6", "放松": "#eab308" };
+            const counts: Record<string, number> = {};
+            items.forEach(i => { counts[i.phase] = (counts[i.phase] || 0) + 1; });
+            return Object.entries(counts).map(([phase, count]) => (
+              <div key={phase} className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: phaseColors[phase] || "#666" }} />
+                <span className="text-[9px] text-gray-500">{phase} {count}项</span>
+              </div>
+            ));
+          })()}
+          <span className="text-[9px] text-gray-600">{total}项</span>
         </div>
       </div>
 
@@ -234,7 +249,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
                 return (
                   <tr
                     key={item.id}
-                    className={`cursor-pointer transition border-b border-[#1a1a1a] ${isDone ? "bg-neon-pink/5" : "hover:bg-[#222]"}`}
+                    className={`cursor-pointer transition border-b border-[#1a1a1a] ${isDone ? "bg-[#2a1515]" : "hover:bg-[#271919]"}`}
                     onClick={() => toggle(item.id)}
                   >
                     {/* 阶段 — vertical merge, color block */}
@@ -291,7 +306,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
                     {/* ✓ */}
                     <td className="py-2.5 pr-2 text-center">
                       <div className={`w-5 h-5 rounded flex items-center justify-center border-2 mx-auto transition ${
-                        isDone ? "bg-neon-pink border-neon-pink" : "border-[#444]"
+                        isDone ? "bg-[#d92525] border-[#d92525]" : "border-[#444]"
                       }`}>
                         {isDone && <Check className="w-3 h-3 text-black" />}
                       </div>

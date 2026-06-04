@@ -23,7 +23,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const tempLineRef = useRef<Path | null>(null);
   // Touch gesture state
   const pinchStartRef = useRef<{ dist: number; zoom: number; cx: number; cy: number } | null>(null);
-  const panStartRef = useRef<{ x: number; y: number; vptX: number; vptY: number } | null>(null);
   const touchCountRef = useRef<number>(0);
   const lastTouchRef = useRef<number>(0);
 
@@ -32,7 +31,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: "#0d0d0d",
+      backgroundColor: TAC_THEME.bg,
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
@@ -75,13 +74,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       lastTouchRef.current = Date.now();
 
       if (e.touches.length === 2) {
-        // Two fingers — start pinch/pan
+        // Two fingers — start pinch zoom
         const t1 = e.touches[0], t2 = e.touches[1];
         const dist = getTouchDist(t1, t2);
-        const center = getTouchCenter(t1, t2);
-        const vpt = canvas.viewportTransform!;
-        pinchStartRef.current = { dist, zoom: canvas.getZoom(), cx: center.x, cy: center.y };
-        panStartRef.current = { x: center.x, y: center.y, vptX: vpt[4], vptY: vpt[5] };
+        pinchStartRef.current = { dist, zoom: canvas.getZoom(), cx: 0, cy: 0 };
         // Prevent Fabric from handling 1-finger events while pinching
         canvas.selection = false;
         e.preventDefault();
@@ -93,7 +89,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && pinchStartRef.current) {
-        // Pinch zoom + pan
+        // Pinch zoom — use zoomToPoint to properly center on pinch midpoint
         const t1 = e.touches[0], t2 = e.touches[1];
         const dist = getTouchDist(t1, t2);
         const center = getTouchCenter(t1, t2);
@@ -101,15 +97,13 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         let newZoom = pinchStartRef.current.zoom * scale;
         newZoom = Math.min(Math.max(newZoom, 0.3), 5);
 
-        // Pan based on center movement
-        const panDx = center.x - panStartRef.current!.x;
-        const panDy = center.y - panStartRef.current!.y;
-
-        const vpt = canvas.viewportTransform!;
-        vpt[0] = newZoom;
-        vpt[3] = newZoom;
-        vpt[4] = panStartRef.current!.vptX + panDx;
-        vpt[5] = panStartRef.current!.vptY + panDy;
+        // Convert client coordinates to canvas element CSS coordinates
+        const rect = el.getBoundingClientRect();
+        const point = {
+          x: center.x - rect.left,
+          y: center.y - rect.top,
+        };
+        canvas.zoomToPoint(point as any, newZoom);
         canvas.requestRenderAll();
         e.preventDefault();
       }
@@ -118,7 +112,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const onTouchEnd = (e: TouchEvent) => {
       if (e.touches.length < 2) {
         pinchStartRef.current = null;
-        panStartRef.current = null;
         // Restore selection mode
         if (!isRouteTool) {
           canvas.selection = true;
@@ -469,7 +462,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 0, backgroundColor: "#0d0d0d" }}>
+    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
       <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
     </div>
   );

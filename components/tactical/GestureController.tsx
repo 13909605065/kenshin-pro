@@ -7,7 +7,7 @@ import type { Canvas as FabricCanvas, Circle, FabricText } from "fabric";
 
 // ─── Config ──────────────────────────────────────────
 const PINCH_THRESHOLD = 0.04;   // tighter = more deliberate
-const HOLD_MS = 600;            // hold pinch for select
+const HOLD_MS = 200;            // hold pinch for select (instant feel)
 const CURSOR_R = 14;
 
 interface Props {
@@ -29,6 +29,7 @@ export function GestureController({ fabricRef, enabled }: Props) {
   const labelObjRef = useRef<FabricText | null>(null);
   const lastPosRef = useRef({ x: 525, y: 340 });
   const twoBaseRef = useRef<number | null>(null);
+  const grabOffsetRef = useRef<{ x: number; y: number } | null>(null);
   const disposedRef = useRef(false);
 
   // ─── Cursor helpers ────────────────────────────────
@@ -139,6 +140,7 @@ export function GestureController({ fabricRef, enabled }: Props) {
       }
       pinchStartRef.current = 0;
       pinchActiveRef.current = false;
+      grabOffsetRef.current = null;
     };
   }, [enabled]);
 
@@ -215,7 +217,7 @@ export function GestureController({ fabricRef, enabled }: Props) {
       pinchStartRef.current = now;
       pinchActiveRef.current = true;
 
-      // Immediate: try to grab object under cursor
+      // Pinch started — try to grab object under cursor
       const target = fc.getObjects().reverse().find(o => {
         if ((o as any)._isGestureCursor || (o as any)._isFieldBg) return false;
         const b = o.getBoundingRect();
@@ -224,23 +226,40 @@ export function GestureController({ fabricRef, enabled }: Props) {
       });
       if (target) {
         fc.setActiveObject(target);
+        // Store offset from cursor to object position (center-based)
+        grabOffsetRef.current = {
+          x: cx - (target.left || 0),
+          y: cy - (target.top || 0),
+        };
         fc.requestRenderAll();
+      } else {
+        grabOffsetRef.current = null;
       }
     } else if (isPinching && pinchActiveRef.current) {
-      // Pinch held → drag
+      // Pinch held → drag with offset
       const holdDuration = now - pinchStartRef.current;
       if (holdDuration > HOLD_MS) {
         const obj = fc.getActiveObject();
-        if (obj) {
+        if (obj && grabOffsetRef.current) {
+          obj.set({
+            left: cx - grabOffsetRef.current.x,
+            top: cy - grabOffsetRef.current.y,
+          } as any);
+          obj.setCoords();
+          fc.requestRenderAll();
+        } else if (obj) {
+          // Fallback: center at cursor
           obj.set({ left: cx, top: cy } as any);
           obj.setCoords();
           fc.requestRenderAll();
         }
       }
     } else if (!isPinching && pinchActiveRef.current) {
-      // Pinch released
+      // Pinch released — keep object selected for normal Fabric.js controls
       pinchActiveRef.current = false;
       pinchStartRef.current = 0;
+      grabOffsetRef.current = null;
+      // Do NOT discard active object — user can now use normal controls
     }
   }
 }

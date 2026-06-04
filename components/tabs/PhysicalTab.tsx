@@ -32,7 +32,7 @@ export function PhysicalTab({ modules, position }: Props) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
+            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-[#d1d1d1] bg-[#1e1e1e] border border-[#222] hover:brightness-125 rounded-lg transition"
           >
             <Printer className="w-3.5 h-3.5" /> 导出PDF
           </button>
@@ -45,7 +45,7 @@ export function PhysicalTab({ modules, position }: Props) {
               }
               window.print();
             }}
-            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
+            className="flex items-center gap-1 px-3 py-1.5 text-[11px] text-[#d1d1d1] bg-[#1e1e1e] border border-[#222] hover:brightness-125 rounded-lg transition"
           >
             <Table2 className="w-3.5 h-3.5" /> 打印表格
           </button>

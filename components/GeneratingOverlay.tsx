@@ -43,7 +43,8 @@ function tickIncrement(currentPct: number, tickIntervalMs: number): number {
 
 export function GeneratingOverlay({ currentModule, isCoach, moduleCount = 0, onCancel }: Props) {
   const labels = isCoach ? COACH_EVENT_LABELS : EVENT_LABELS;
-  const label = labels[currentModule] || "正在分析球员数据...";
+  const fallback = isCoach ? "正在分析战术需求..." : "正在分析球员数据...";
+  const label = labels[currentModule] || fallback;
 
   const totalModules = isCoach ? 3 : 5;
 

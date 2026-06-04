@@ -15,7 +15,7 @@ interface CRow {
 }
 
 const COLORS: Record<string, string> = {
-  "技术训练": "#16a34a",
+  "技术训练": "#22c55e",
   "分队对抗": "#3B82F6",
   "冷身放松": "#eab308",
 };
@@ -204,6 +204,19 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
   const doneCount = rows.filter(r => done.has(r.id)).length;
   const pct = total > 0 ? Math.round((doneCount/total)*100) : 0;
 
+  // Compute segmented progress: warmup / main / cooldown
+  const segments = useMemo(() => {
+    const warmupRows = rows.filter(r => r.section === "技术训练" && r.name.includes("热身"));
+    const cooldownRows = rows.filter(r => r.section === "冷身放松");
+    const mainRows = rows.filter(r => !warmupRows.includes(r) && !cooldownRows.includes(r));
+    const totalRows = rows.length || 1;
+    return [
+      { label: "热身", count: warmupRows.length, pct: Math.round((warmupRows.length / totalRows) * 100), color: "#22c55e" },
+      { label: "主训", count: mainRows.length, pct: Math.round((mainRows.length / totalRows) * 100), color: "#3B82F6" },
+      { label: "冷身", count: cooldownRows.length, pct: Math.round((cooldownRows.length / totalRows) * 100), color: "#eab308" },
+    ];
+  }, [rows]);
+
   const spans = useMemo(() => {
     const sp: number[] = new Array(rows.length).fill(1);
     let i = 0;
@@ -219,14 +232,23 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
 
   return (
     <div className="space-y-3">
-      {/* Progress bar */}
+      {/* Segmented progress bar */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] text-gray-400">训练进度</span>
-          <span className="text-[11px] text-neon-pink font-bold">{pct}%</span>
+          <span className="text-[11px] text-[#d92525] font-bold">{pct}%</span>
         </div>
-        <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
+        <div className="h-1.5 bg-[#222] rounded-full overflow-hidden flex">
           <div className="h-full bg-neon-pink rounded-full transition-all duration-300" style={{width:pct+"%"}} />
+        </div>
+        <div className="flex items-center justify-between mt-2 gap-1">
+          {segments.map((seg, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{backgroundColor: seg.color}} />
+              <span className="text-[9px] text-gray-500">{seg.label} {seg.count}项</span>
+            </div>
+          ))}
+          <span className="text-[9px] text-gray-600">{total}项</span>
         </div>
       </div>
 
@@ -253,26 +275,27 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
                 return (
                   <tr key={row.id}
                     onClick={() => { setExpandedRow(isExpanded ? null : row.id); }}
-                    className={"cursor-pointer border-b border-[#1a1a1a] transition " + (isDone ? "bg-neon-pink/5" : "hover:bg-[#222]")}>
+                    className={"cursor-pointer border-b border-[#1a1a1a] transition " + (isDone ? "bg-[#2a1515]" : "hover:bg-[#271919]")}>
                     {/* 序号 + checkbox */}
                     <td className="py-2 pl-3 text-center">
                       <div onClick={(e) => { e.stopPropagation(); setDone(p => { const n = new Set(p); n.has(row.id)?n.delete(row.id):n.add(row.id); return n; }); }}
-                        className={"w-5 h-5 rounded border-2 mx-auto flex items-center justify-center cursor-pointer " + (isDone ? "bg-neon-pink border-neon-pink" : "border-[#444] hover:border-neon-pink/50")}>
+                        className={"w-5 h-5 rounded border-2 mx-auto flex items-center justify-center cursor-pointer transition " + (isDone ? "bg-[#d92525] border-[#d92525]" : "border-[#444] hover:border-[#d92525]/50")}>
                         {isDone && <Check className="w-3 h-3 text-black" />}
                       </div>
                     </td>
 
                     {/* 训练项目 — with section color on first row */}
                     <td className={"py-2 pr-2 " + (isFirstInSection ? "border-l-2" : "")}
-                      style={isFirstInSection ? { borderLeftColor: row.color, borderLeftWidth: "2px" } : undefined}>
+                      style={isFirstInSection ? { borderLeftColor: row.color, borderLeftWidth: "3px" } : undefined}>
                       <div className="flex items-center gap-1.5">
                         {isFirstInSection && (
-                          <span className="text-[10px] font-bold px-1 py-0.5 rounded whitespace-nowrap"
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap"
                             style={{backgroundColor: row.color+"20", color: row.color}}>
                             {row.section}
                           </span>
                         )}
-                        <p className={"text-sm " + (isDone ? "text-gray-500 line-through" : "text-white")}>{row.name}</p>
+                        <p className={"text-sm " + (isDone ? "text-gray-500 line-through" : "text-white")}
+                          title={row.name.length > 20 ? row.name : undefined}>{row.name}</p>
                       </div>
                     </td>
 
@@ -288,7 +311,8 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
 
                     {/* 内容简述 */}
                     <td className="py-2 pr-2 text-center">
-                      <span className={"text-[11px] truncate max-w-[120px] inline-block " + (isDone ? "text-gray-600" : "text-gray-400")}>
+                      <span className={"text-[11px] truncate max-w-[120px] inline-block " + (isDone ? "text-gray-600" : "text-gray-400")}
+                        title={row.brief || undefined}>
                         {row.brief?.slice(0, 20) || "-"}
                       </span>
                     </td>
@@ -297,7 +321,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
                     <td className="py-2 pr-2 text-center">
                       {row.hasDia ? (
                         <button onClick={(e) => { e.stopPropagation(); setDiagramModal(row.dia); }}
-                          className="text-[10px] px-2 py-1 rounded bg-[#222] hover:bg-[#333] text-neon-pink border border-[#444] transition">
+                          className="text-[10px] px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#271919] text-[#d1d1d1] border border-[#333] hover:border-[#d92525] transition">
                           查看
                         </button>
                       ) : <span className="text-[10px] text-gray-600">-</span>}
@@ -305,14 +329,16 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
 
                     {/* 执教要点 */}
                     <td className="py-2 pr-2 text-center">
-                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}>
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}
+                        title={row.cp || undefined}>
                         {row.cp?.slice(0, 18) || "-"}
                       </span>
                     </td>
 
                     {/* 进阶/退阶 */}
                     <td className="py-2 pr-2 text-center">
-                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}>
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}
+                        title={row.prog || undefined}>
                         {row.prog?.slice(0, 15) || "-"}
                       </span>
                     </td>

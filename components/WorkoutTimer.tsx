@@ -13,6 +13,8 @@ import {
   Footprints,
   Zap,
   CheckCircle2,
+  Minimize2,
+  GripHorizontal,
 } from "lucide-react";
 
 // ═══════════════════════════════════
@@ -221,8 +223,15 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   const [timer, setTimer] = useState(0); // seconds remaining
   const [elapsed, setElapsed] = useState(0); // total seconds
   const [completed, setCompleted] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wakeLockRef = useRef<any>(null);
+
+  // Drag state
+  const [dragging, setDragging] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
+  const popupRef = useRef<HTMLDivElement>(null);
 
   const step = steps[currentStep];
   const totalSteps = steps.length;
@@ -406,199 +415,213 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
     }
   };
 
-  // ═══ COMPLETED SCREEN ═══
+  // Next exercise preview
+  const nextStep = currentStep + 1 < steps.length ? steps[currentStep + 1] : null;
+
+  // ═══ COMPLETED SCREEN (floating popup) ═══
   if (completed) {
     return (
-      <div className="fixed inset-0 z-50 bg-pitch-900 flex flex-col items-center justify-center p-6">
-        <CheckCircle2 className="w-16 h-16 text-green-400 mb-4" />
-        <h1 className="text-2xl font-bold text-white mb-2">训练完成！</h1>
-        <p className="text-gray-400 mb-1">总时长 {fmt(elapsed)}</p>
-        <p className="text-gray-400 mb-6">
-          完成 {steps.length} 项练习
-        </p>
-        <button
-          onClick={onClose}
-          className="px-8 py-3 bg-neon-pink text-black font-bold rounded-xl hover:bg-neon-pink/90 transition"
-        >
-          返回方案
-        </button>
-        <p className="text-[10px] text-gray-600 mt-4">
-          训练记录已保存
-        </p>
+      <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="text-center">
+            <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-3" />
+            <h1 className="text-xl font-bold text-white mb-2">训练完成！</h1>
+            <p className="text-gray-400 text-sm mb-1">总时长 {fmt(elapsed)}</p>
+            <p className="text-gray-400 text-sm mb-4">完成 {steps.length} 项练习</p>
+            <button
+              onClick={onClose}
+              className="px-8 py-2.5 bg-[#d92525] text-white font-bold rounded-xl hover:bg-[#b91d1d] transition text-sm"
+            >
+              返回方案
+            </button>
+            <p className="text-[10px] text-gray-600 mt-3">训练记录已保存</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!step) {
     return (
-      <div className="fixed inset-0 z-50 bg-pitch-900 flex items-center justify-center">
-        <p className="text-gray-500">该方案暂无跟练内容</p>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        >
-          <X className="w-6 h-6" />
+      <div className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl p-4 shadow-xl max-w-xs">
+        <p className="text-gray-500 text-sm">该方案暂无跟练内容</p>
+        <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-white">
+          <X className="w-4 h-4" />
         </button>
       </div>
     );
   }
 
-  // ═══ ACTIVE WORKOUT SCREEN ═══
-  return (
-    <div className="fixed inset-0 z-50 bg-pitch-900 flex flex-col select-none">
-      {/* HEADER */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-pitch-700 flex-shrink-0">
-        <button onClick={onClose} className="text-gray-400 hover:text-white">
-          <X className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            {catIcon(step.category)}
-            <span className="text-xs text-gray-400 font-medium">
-              {catLabel(step.category)}
-            </span>
-          </div>
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragging(true);
+    dragStart.current = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    setPos({ x: dragStart.current.px + dx, y: dragStart.current.py + dy });
+  };
+
+  const handleMouseUp = () => setDragging(false);
+
+  // ═══ ACTIVE WORKOUT — FLOATING POPUP ═══
+  if (minimized) {
+    return (
+      <div
+        className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl px-4 py-2.5 shadow-xl flex items-center gap-3 cursor-pointer select-none hover:border-[#d92525]/50 transition"
+        onClick={() => setMinimized(false)}
+      >
+        <div className={phase === "rest" ? "text-yellow-400" : phase === "paused" ? "text-gray-500" : "text-[#d92525]"}>
+          <Timer className="w-4 h-4" />
         </div>
-        <span className="text-xs text-gray-500 font-mono">
-          {currentStep + 1}/{totalSteps}
-        </span>
-        <span className="text-xs text-gray-600 font-mono ml-1">
-          总 {fmt(elapsed)}
-        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-white font-medium truncate max-w-[120px]">{step.name}</p>
+          <p className="text-[10px] text-gray-500">
+            {step.mode === "countdown" ? fmt(timer) : `${currentSet}/${step.sets}组`} · {currentStep + 1}/{totalSteps}
+          </p>
+        </div>
+        <span className="text-[10px] text-gray-600">{fmt(elapsed)}</span>
+        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="text-gray-600 hover:text-white">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={popupRef}
+      className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-2xl shadow-2xl max-w-sm w-full select-none overflow-hidden"
+      style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* DRAG HEADER */}
+      <div
+        className="flex items-center gap-2 px-3 py-2 border-b border-[#333] cursor-grab active:cursor-grabbing bg-[#1a1a1a]"
+        onMouseDown={handleMouseDown}
+      >
+        <GripHorizontal className="w-3.5 h-3.5 text-gray-600" />
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          {catIcon(step.category)}
+          <span className="text-[10px] text-gray-400 font-medium">{catLabel(step.category)}</span>
+        </div>
+        <span className="text-[10px] text-gray-500 font-mono">{currentStep + 1}/{totalSteps}</span>
+        <span className="text-[10px] text-gray-600 font-mono">总 {fmt(elapsed)}</span>
+        <button onClick={() => setMinimized(true)} className="text-gray-600 hover:text-gray-400 ml-1">
+          <Minimize2 className="w-3.5 h-3.5" />
+        </button>
+        <button onClick={onClose} className="text-gray-600 hover:text-white">
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* PROGRESS BAR */}
-      <div className="h-1 bg-pitch-800 flex-shrink-0">
-        <div
-          className="h-full bg-neon-pink transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
+      <div className="h-0.5 bg-[#222]">
+        <div className="h-full bg-[#d92525] transition-all duration-500" style={{ width: `${progress}%` }} />
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
+      <div className="px-4 py-4 flex flex-col items-center">
         {/* Exercise name */}
-        <h2 className="text-white text-xl font-bold text-center mb-1">
-          {step.name}
-        </h2>
+        <h2 className="text-white text-base font-bold text-center mb-1">{step.name}</h2>
 
-        {/* Set counter for strength */}
+        {/* Set counter */}
         {step.mode === "sets" && (
-          <p className="text-neon-pink text-sm font-medium mb-1">
+          <p className="text-[#d92525] text-xs font-medium mb-1">
             第 {currentSet} 组 / 共 {step.sets} 组
           </p>
         )}
 
         {/* Reps / details */}
         {step.mode === "sets" && step.reps && (
-          <p className="text-gray-400 text-sm mb-4">
-            {step.reps}次 · {step.intensity || ""}
-          </p>
+          <p className="text-gray-400 text-xs mb-2">{step.reps}次 · {step.intensity || ""}</p>
         )}
         {step.description && (
-          <p className="text-gray-500 text-xs text-center mb-6 max-w-xs">
+          <p className="text-gray-500 text-[10px] text-center mb-3 max-w-[200px] leading-relaxed line-clamp-2">
             {step.description}
           </p>
         )}
 
-        {/* TIMER DISPLAY */}
+        {/* TIMER RING */}
         <div
-          className={`w-44 h-44 rounded-full flex items-center justify-center border-4 mb-6 ${
+          className={`w-28 h-28 rounded-full flex items-center justify-center border-3 mb-3 ${
             phase === "rest"
-              ? "border-yellow-500/50 bg-yellow-500/10"
+              ? "border-yellow-500/40 bg-yellow-500/10"
               : phase === "paused"
-              ? "border-gray-500/50 bg-gray-500/10"
-              : "border-neon-pink/50 bg-neon-pink/10"
+              ? "border-gray-500/40 bg-gray-500/10"
+              : "border-[#d92525]/40 bg-[#d92525]/10"
           }`}
         >
           <div className="text-center">
             {step.mode === "countdown" && phase === "active" && (
               <>
-                <div className="text-4xl font-bold text-white font-mono tracking-tight">
-                  {fmt(timer)}
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">剩余时间</div>
+                <div className="text-3xl font-bold text-white font-mono tracking-tight">{fmt(timer)}</div>
+                <div className="text-[9px] text-gray-500 mt-0.5">剩余</div>
               </>
             )}
             {step.mode === "sets" && phase === "rest" && (
               <>
-                <div className="text-4xl font-bold text-yellow-400 font-mono tracking-tight">
-                  {fmt(timer)}
-                </div>
-                <div className="text-[10px] text-yellow-500/70 mt-1">
-                  组间休息
-                </div>
+                <div className="text-3xl font-bold text-yellow-400 font-mono tracking-tight">{fmt(timer)}</div>
+                <div className="text-[9px] text-yellow-500/70 mt-0.5">组间休息</div>
               </>
             )}
             {step.mode === "sets" && phase === "active" && (
               <>
-                <div className="text-3xl font-bold text-white font-mono">
-                  {step.reps}次
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">
-                  第{currentSet}组 · {step.sets}组共计
-                </div>
+                <div className="text-2xl font-bold text-white font-mono">{step.reps}次</div>
+                <div className="text-[9px] text-gray-500 mt-0.5">第{currentSet}组/共{step.sets}组</div>
               </>
             )}
             {step.mode === "free" && (
               <>
-                <div className="text-4xl font-bold text-white font-mono tracking-tight">
-                  {fmt(elapsed)}
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">已用时间</div>
+                <div className="text-3xl font-bold text-white font-mono tracking-tight">{fmt(elapsed)}</div>
+                <div className="text-[9px] text-gray-500 mt-0.5">已用</div>
               </>
             )}
             {phase === "paused" && (
-              <div className="text-sm text-gray-500 mt-1">已暂停</div>
+              <div className="text-xs text-gray-500">已暂停</div>
             )}
           </div>
         </div>
+
+        {/* Next exercise preview */}
+        {nextStep && (
+          <div className="w-full bg-[#111] rounded-lg px-3 py-2 mb-3">
+            <span className="text-[9px] text-gray-600">下一项</span>
+            <p className="text-[11px] text-gray-400 truncate">{nextStep.name}</p>
+          </div>
+        )}
       </div>
 
       {/* BOTTOM CONTROLS */}
-      <div className="px-4 py-4 border-t border-pitch-700 flex-shrink-0 space-y-3">
-        {/* Primary action */}
-        <div className="flex gap-3">
+      <div className="px-4 pb-4 space-y-2">
+        <div className="flex gap-2">
           {step.mode === "sets" && phase === "active" && (
-            <button
-              onClick={handleCompleteSet}
-              className="flex-1 py-3 bg-neon-pink text-black font-bold rounded-xl text-sm hover:bg-neon-pink/90 transition active:scale-95"
-            >
+            <button onClick={handleCompleteSet}
+              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
               ✓ 完成本组
             </button>
           )}
           {(step.mode === "countdown" || step.mode === "free") && (
-            <button
-              onClick={handleSkip}
-              className="flex-1 py-3 bg-neon-pink text-black font-bold rounded-xl text-sm hover:bg-neon-pink/90 transition active:scale-95"
-            >
-              <span className="flex items-center justify-center gap-2">
-                <SkipForward className="w-4 h-4" />
-                跳过此项
-              </span>
+            <button onClick={handleSkip}
+              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95 flex items-center justify-center gap-1">
+              <SkipForward className="w-3.5 h-3.5" /> 跳过
             </button>
           )}
           {phase === "rest" && (
-            <button
-              onClick={handleSkipRest}
-              className="flex-1 py-3 bg-neon-pink text-black font-bold rounded-xl text-sm hover:bg-neon-pink/90 transition active:scale-95"
-            >
+            <button onClick={handleSkipRest}
+              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
               跳过休息
             </button>
           )}
-          <button
-            onClick={handlePause}
-            className={`px-4 py-3 rounded-xl text-sm font-medium border transition active:scale-95 ${
-              phase === "paused"
-                ? "border-neon-pink text-neon-pink bg-neon-pink/10"
-                : "border-pitch-600 text-gray-400 hover:text-white"
-            }`}
-          >
-            {phase === "paused" ? (
-              <Play className="w-5 h-5" />
-            ) : (
-              <Pause className="w-5 h-5" />
-            )}
+          <button onClick={handlePause}
+            className={`px-3 py-2.5 rounded-xl text-xs font-medium border transition active:scale-95 ${
+              phase === "paused" ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : "border-[#333] text-gray-400 hover:text-white"
+            }`}>
+            {phase === "paused" ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>
         </div>
       </div>

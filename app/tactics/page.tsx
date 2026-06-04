@@ -5,9 +5,9 @@ import { Canvas, Circle, FabricText, Group, FabricImage, Path, Polygon } from "f
 import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
-import { MobileNav } from "@/components/MobileNav";
+
 import { GestureController } from "@/components/tactical/GestureController";
-import { ArrowLeft, Save, FolderOpen, X, Bookmark, ZoomIn, ZoomOut, Hand } from "lucide-react";
+import { ArrowLeft, Save, FolderOpen, X, Bookmark, Hand, Menu, Upload, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
 import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
@@ -85,6 +85,11 @@ export default function TacticsPage() {
   });
   // Gesture control
   const [gestureOn, setGestureOn] = useState(false);
+  // AI panel collapsed by default
+  const [aiOpen, setAiOpen] = useState(false);
+  // Equipment palette collapse (controlled at page level for TopNav hamburger)
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
 
   // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
@@ -229,9 +234,12 @@ export default function TacticsPage() {
     autoSave();
   };
 
-  const hZoomIn = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.min(z*1.3,5)); c.renderAll(); }};
-  const hZoomOut = () => { const c=boardRef.current; if(c){ const z=c.getZoom(); c.setZoom(Math.max(z/1.3,0.2)); c.renderAll(); }};
-  const hZoomFit = () => { const c=boardRef.current; if(c){ c.setZoom(1); c.renderAll(); }};
+  // Zoom controls moved to BoardToolbar
+  // ─── Safe navigation: disable gesture before leaving page ───
+  const navigateAway = useCallback((url: string) => {
+    if (gestureOn) setGestureOn(false);
+    setTimeout(() => router.push(url), 80);
+  }, [gestureOn, router]);
   // ─── Click-to-place equipment (no drag needed) ───
   const eqCountRef = useRef<Record<string, number>>({});
   const hPlaceEquipment = useCallback((filename: string, name: string) => {
@@ -482,7 +490,7 @@ export default function TacticsPage() {
   const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: TAC_THEME.bg }}>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: TAC_THEME.bg }}>
       {/* ─── Auto-save restore prompt ─── */}
       {autoSaveTs && (
         <div className="flex-shrink-0 px-3 py-2 flex items-center gap-3 text-xs"
@@ -493,53 +501,120 @@ export default function TacticsPage() {
         </div>
       )}
 
-      <header className="px-2 sm:px-3 h-11 flex items-center gap-1 sm:gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
-        <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1 touch-target" title="返回首页">
-          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5}/>
+      {/* ─── Top Navigation Bar ─── */}
+      <nav className="flex-shrink-0 flex items-center h-12 px-2 sm:px-3 gap-1 sm:gap-2"
+        style={{ backgroundColor: "#171717", borderBottom: `1px solid ${TAC_THEME.border}` }}>
+        {/* Left: hamburger toggle for EquipmentPalette */}
+        <button onClick={() => setPaletteCollapsed(!paletteCollapsed)}
+          className="flex items-center justify-center w-8 h-8 rounded transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title={paletteCollapsed ? "展开器材面板" : "收起器材面板"}>
+          <Menu className="w-4 h-4" />
         </button>
-        <h1 className="text-white font-semibold text-sm tracking-wide hidden sm:block">战术板</h1>
-        <div className="flex-1"/>
+        {/* Back button */}
+        <button onClick={() => navigateAway("/")}
+          className="flex items-center justify-center w-8 h-8 rounded transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="返回首页">
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
+        </button>
+        {/* Title */}
+        <h1 className="font-semibold text-sm tracking-wide hidden sm:block" style={{ color: TAC_THEME.textMain }}>KenshinPro 战术板</h1>
+
+        <div className="flex-1" />
+
+        {/* Right section buttons */}
         {/* Gesture toggle */}
         <button onClick={() => setGestureOn(!gestureOn)}
-          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition touch-target ${gestureOn ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
-          style={{ backgroundColor: gestureOn ? TAC_THEME.accent : "transparent", borderRadius: TAC_THEME.radius }}
+          className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: gestureOn ? "#fff" : TAC_THEME.textDim, backgroundColor: gestureOn ? TAC_THEME.accent : "transparent" }}
           title="手势控制">
-          <Hand className="w-3.5 h-3.5" />{gestureOn ? "ON" : "手势"}
+          <Hand className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{gestureOn ? "ON" : "手势"}</span>
         </button>
-        <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{backgroundColor:TAC_THEME.bgCard, borderRadius: TAC_THEME.radius}}>
-          <button onClick={hZoomOut} className="p-1.5 text-gray-400 hover:text-white rounded touch-target flex items-center justify-center" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
-          <button onClick={hZoomFit} className="p-1.5 text-gray-400 hover:text-white rounded text-[10px] font-mono touch-target flex items-center justify-center" title="重置">1:1</button>
-          <button onClick={hZoomIn} className="p-1.5 text-gray-400 hover:text-white rounded touch-target flex items-center justify-center" title="放大"><ZoomIn className="w-3.5 h-3.5"/></button>
+
+        {/* 战术库 */}
+        <button onClick={() => { setScenes(JSON.parse(localStorage.getItem("tac_scenes") || "[]")); setLoadOpen(true); }}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textMain }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="战术库">
+          <FolderOpen className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">战术库</span>
+          {scenes.length > 0 && <span className="ml-0.5 text-[10px]" style={{ color: TAC_THEME.accent }}>{scenes.length}</span>}
+        </button>
+
+        {/* AI 自动生成 */}
+        <button onClick={() => setAiOpen(!aiOpen)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: aiOpen ? "#fff" : TAC_THEME.textMain, backgroundColor: aiOpen ? TAC_THEME.accent : "transparent" }}
+          onMouseEnter={(e) => { if (!aiOpen) e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { if (!aiOpen) e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="AI 自动生成">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">AI自动生成</span>
+        </button>
+
+        {/* 导入战术 (placeholder) */}
+        <button onClick={() => { setToastMsg("导入战术功能即将支持"); setTimeout(() => setToastMsg(""), 2000); }}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="导入战术">
+          <Upload className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">导入战术</span>
+        </button>
+
+        {/* 保存 */}
+        <button onClick={() => setSaveOpen(true)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textMain }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="保存战术">
+          <Save className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">保存</span>
+        </button>
+      </nav>
+
+      {/* ─── Toast notification ─── */}
+      {toastMsg && (
+        <div className="flex-shrink-0 px-3 py-1.5 text-center text-xs font-medium"
+          style={{ backgroundColor: TAC_THEME.accent, color: "#fff" }}>
+          {toastMsg}
         </div>
-        <button onClick={()=>setSaveOpen(true)}
-          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs rounded-md transition touch-target"
-          style={{color: TAC_THEME.textMain, backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.borderLight}`, borderRadius: TAC_THEME.radius}}
-          title="保存当前战术">
-          <Save className="w-3.5 h-3.5"/><span className="hidden sm:inline">保存战术</span>
-        </button>
-        <button onClick={()=>{setScenes(JSON.parse(localStorage.getItem("tac_scenes")||"[]"));setLoadOpen(true);}}
-          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs rounded-md transition touch-target"
-          style={{color: TAC_THEME.textMain, backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.borderLight}`, borderRadius: TAC_THEME.radius}}
-          title="打开已保存的战术">
-          <FolderOpen className="w-3.5 h-3.5"/>{scenes.length>0&&<span style={{color: TAC_THEME.accent}} className="ml-0.5 text-[10px]">{scenes.length}</span>}
-        </button>
-        {selObj && (selObj as any)._isPlayer && (
-          <div className="flex items-center gap-1 ml-1">
-            <span className="text-[10px] text-gray-500 hidden sm:inline">号码:</span>
-            <input
-              defaultValue={(selObj as any).number || ""}
-              onBlur={(e) => hUpdatePlayerNum(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
-              className="w-8 sm:w-10 h-6 border rounded text-white text-[10px] text-center" style={{backgroundColor:"#1e2128",borderColor:"#2a2d35"}}
-              title="编辑球员号码"
-            />
-          </div>
-        )}
-        {selName && !(selObj as any)?._isPlayer && <span className="text-[10px] text-gray-500 hidden sm:inline ml-1">已选：{selName}</span>}
-      </header>
+      )}
+
+      {/* ─── Player number editor bar ─── */}
+      {selObj && (selObj as any)._isPlayer && (
+        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1" style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+          <span className="text-[10px]" style={{ color: TAC_THEME.textDim }}>球员号码:</span>
+          <input
+            defaultValue={(selObj as any).number || ""}
+            onBlur={(e) => hUpdatePlayerNum(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
+            className="w-10 h-6 border rounded text-white text-[11px] text-center"
+            style={{ backgroundColor: TAC_THEME.bgInput, borderColor: TAC_THEME.border }}
+            title="编辑球员号码"
+          />
+        </div>
+      )}
+
+      {/* ─── Selection indicator bar ─── */}
+      {selName && !(selObj as any)?._isPlayer && (
+        <div className="flex-shrink-0 flex items-center px-3 py-1" style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+          <span className="text-[10px]" style={{ color: TAC_THEME.textDim }}>已选：{selName}</span>
+        </div>
+      )}
 
       {saveOpen && (
-        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-72 space-y-2 shadow-2xl">
+        <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-72 space-y-2 shadow-2xl">
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           <input value={sName} onChange={(e)=>setSName(e.target.value)} placeholder="战术名称" className="input-field text-xs h-9" onKeyDown={(e)=>e.key==="Enter"&&hSave()}/>
           <div className="flex flex-wrap gap-1">{THEMES.map((t)=><button key={t} onClick={()=>setSTheme(t)} className={`px-2 py-0.5 rounded text-[10px] transition`} style={{backgroundColor: sTheme===t ? TAC_THEME.accent : "#22252d", color: sTheme===t ? "#fff" : "#888"}}>{t}</button>)}</div>
@@ -548,7 +623,7 @@ export default function TacticsPage() {
       )}
 
       {loadOpen && (
-        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
+        <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           {scenes.length===0?<p className="text-gray-500 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
             <div key={s.id} className="flex items-center gap-2 p-2 rounded group" style={{backgroundColor:"#1a1d24"}}>
@@ -561,35 +636,59 @@ export default function TacticsPage() {
         </div>
       )}
 
-      {/* ─── AI 自动生成 ─── */}
-      <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
-        <span className="text-sm flex-shrink-0 hidden sm:inline">🦋</span>
-        <input
-          value={aiPrompt}
-          onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
-          onKeyDown={(e) => { if (e.key === "Enter") hAIGenerate(); }}
-          placeholder="描述战术场景..."
-          disabled={aiLoading}
-          className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-white text-xs sm:text-sm placeholder-gray-500 focus:outline-none disabled:opacity-40 rounded-md"
-          style={{ backgroundColor: TAC_THEME.bgInput, border: `1px solid ${aiError ? TAC_THEME.error : TAC_THEME.border}`, borderRadius: TAC_THEME.radius }}
-        />
-        <button onClick={hAIGenerate}
-          disabled={aiLoading || !aiPrompt.trim()}
-          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-md transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 touch-target"
-          style={{ backgroundColor: TAC_THEME.accent, color: "#fff", borderRadius: TAC_THEME.radius }}>
-          {aiLoading ? "..." : "生成"}
-        </button>
-        {aiError && <span className="text-[10px] sm:text-[11px] flex-shrink-0 hidden sm:inline" style={{ color: TAC_THEME.error }}>{aiError}</span>}
-      </div>
+      {/* ─── AI 自动生成 弹窗 ─── */}
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20" onClick={() => setAiOpen(false)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 w-full max-w-lg mx-4 rounded-xl shadow-2xl overflow-hidden"
+            style={{ backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.border}` }}
+            onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${TAC_THEME.border}` }}>
+              <h3 className="text-sm font-bold" style={{ color: TAC_THEME.textMain }}>🦋 AI 自动生成战术</h3>
+              <button onClick={() => setAiOpen(false)} className="p-1 rounded hover:bg-[#333] transition-colors" style={{ color: TAC_THEME.textDim }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Body */}
+            <div className="p-4 space-y-3">
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); hAIGenerate(); } }}
+                placeholder="描述战术场景，例如：对方防线收紧中路密集防守，双边7/11号拉开，倒三角传中，9号禁区包抄..."
+                disabled={aiLoading}
+                rows={4}
+                className="w-full px-3 py-2 text-sm text-white placeholder-gray-500 rounded-md resize-none focus:outline-none"
+                style={{ backgroundColor: TAC_THEME.bgInput, border: `1px solid ${aiError ? TAC_THEME.error : TAC_THEME.border}`, borderRadius: TAC_THEME.radius }}
+              />
+              {aiError && <p className="text-xs" style={{ color: TAC_THEME.error }}>{aiError}</p>}
+              <div className="flex gap-2">
+                <button onClick={hAIGenerate}
+                  disabled={aiLoading || !aiPrompt.trim()}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-md transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: TAC_THEME.accent, color: "#fff", borderRadius: TAC_THEME.radius }}>
+                  {aiLoading ? "生成中..." : "生成战术"}
+                </button>
+                <button onClick={() => setAiOpen(false)}
+                  className="px-4 py-2.5 text-sm rounded-md transition-colors"
+                  style={{ color: TAC_THEME.textDim, backgroundColor: TAC_THEME.bgInput, borderRadius: TAC_THEME.radius }}>
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden">
-        <EquipmentPalette onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment}/>
+        <EquipmentPalette activeTool={activeTool} onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment} collapsed={paletteCollapsed} onToggleCollapsed={() => setPaletteCollapsed(!paletteCollapsed)}/>
         <FabricBoard activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} boardRef={boardRef}/>
       </div>
 
       <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear}/>
       <GestureController fabricRef={boardRef} enabled={gestureOn} />
-      <MobileNav />
+      {/* No MobileNav on tactics page — TopNav + Toolbar provide all navigation */}
     </div>
   );
 }

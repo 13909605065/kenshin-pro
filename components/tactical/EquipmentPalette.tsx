@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, X, Check, Package, Users, Map } from "lucide-react";
 import { TAC_THEME } from "@/lib/tactical-theme";
 
 // ─── Design tokens ───────────────────────────────────────
@@ -10,6 +10,7 @@ const BLUE = TAC_THEME.blue;
 const GREEN = TAC_THEME.success;
 const BG = TAC_THEME.bg;
 const CARD_BG = TAC_THEME.bgCard;
+const BG_HOVER = TAC_THEME.bgHover;
 const BORDER = TAC_THEME.border;
 const TEXT_DIM = TAC_THEME.textDim;
 const TEXT_MAIN = TAC_THEME.textMain;
@@ -132,6 +133,15 @@ function IconWall() {
     </svg>
   );
 }
+function IconMedBall() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="11" stroke={TEXT_DIM} strokeWidth="2" />
+      <text x="14" y="18" textAnchor="middle" fontSize="10" fill={TEXT_DIM} fontWeight="600">kg</text>
+      <line x1="8" y1="10" x2="20" y2="10" stroke={TEXT_DIM} strokeWidth="0.8" strokeDasharray="2 2" />
+    </svg>
+  );
+}
 
 // ─── Icon mapping ────────────────────────────────────────
 
@@ -149,6 +159,7 @@ function getEquipmentIcon(name: string) {
     case "长绳梯": return <IconLongLadder />;
     case "敏捷环": return <IconRing />;
     case "人墙": return <IconWall />;
+    case "药球": return <IconMedBall />;
     default: return <IconBall />;
   }
 }
@@ -167,12 +178,6 @@ function getConeColor(name: string) {
 
 interface Item { name: string; filename: string; }
 
-const TABS = [
-  { id: "equipment", label: "器材" },
-  { id: "players", label: "球员" },
-  { id: "fields", label: "场地" },
-] as const;
-
 const EQUIPMENT: Item[] = [
   { name: "足球", filename: "足球" },
   { name: "橙色标志盘", filename: "橙色标志盘" },
@@ -190,20 +195,55 @@ const EQUIPMENT: Item[] = [
   { name: "长绳梯", filename: "长绳梯" },
   { name: "敏捷环", filename: "圆形环" },
   { name: "人墙", filename: "人墙" },
+  { name: "药球", filename: "药球" },
 ];
 
 const FIELD_LIST = ["default", "场地", "场地2", "场地3", "场地4", "场地5", "场地6", "场地7", "场地8", "场地9", "场地10", "场地11", "场地12", "场地13", "场地14"];
 
+// ─── Accordion helpers ───────────────────────────────────
+
+type AccordionSection = "equipment" | "players" | "fields";
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <ChevronDown
+      className="w-3.5 h-3.5 transition-transform duration-200"
+      style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)", color: TEXT_DIM }}
+    />
+  );
+}
+
 // ─── Component ───────────────────────────────────────────
 
-interface Props { onFieldSelect?: (filename: string) => void; onPlaceEquipment?: (filename: string, name: string) => void; }
+interface Props {
+  activeTool?: string;
+  onFieldSelect?: (filename: string) => void;
+  onPlaceEquipment?: (filename: string, name: string) => void;
+  /** External control: when provided, internal collapsed state is ignored */
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
+}
 
-export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [tab, setTab] = useState<string>("equipment");
+export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: externalCollapsed, onToggleCollapsed: externalToggle }: Props) {
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+
+  // Use external state if provided, otherwise use internal
+  const collapsed = externalCollapsed !== undefined ? externalCollapsed : internalCollapsed;
+  const setCollapsed = (v: boolean) => {
+    if (externalToggle) { if (v !== collapsed) externalToggle(); }
+    else { setInternalCollapsed(v); }
+  };
+  const [openSections, setOpenSections] = useState<Record<AccordionSection, boolean>>({
+    equipment: true,
+    players: false,
+    fields: false,
+  });
+  const [activeEquipment, setActiveEquipment] = useState<string | null>(null);
   const [previewField, setPreviewField] = useState<string | null>(null);
 
-  const w = collapsed ? "w-0 overflow-hidden border-r-0" : "w-[120px]";
+  const toggleSection = (section: AccordionSection) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const handleFieldClick = (field: string) => setPreviewField(field);
 
@@ -215,33 +255,99 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
     e.dataTransfer.effectAllowed = "copy";
   };
 
-  // ─── Render helpers ──────────────────────────────────
+  // ─── Collapsed floating bar ──────────────────────────
 
-  const mkTabBtn = (t: typeof TABS[number]) => (
-    <button
-      key={t.id}
-      onClick={() => setTab(t.id)}
-      className="flex-1 py-2 text-[10px] font-medium tracking-wide transition-colors"
-      style={{
-        color: tab === t.id ? ACCENT : TEXT_DIM,
-        borderBottom: tab === t.id ? `1px solid ${ACCENT}` : "1px solid transparent",
-      }}
-    >
-      {t.label}
-    </button>
-  );
+  if (collapsed) {
+    return (
+      <div className="relative flex flex-shrink-0">
+        {/* Thin floating bar */}
+        <div
+          className="flex flex-col items-center gap-3 py-3 px-1.5 rounded-r-lg shadow-lg z-20"
+          style={{
+            backgroundColor: CARD_BG,
+            border: `1px solid ${BORDER}`,
+            borderLeft: "none",
+            borderTopLeftRadius: 0,
+            borderBottomLeftRadius: 0,
+          }}
+        >
+          {/* Expand button */}
+          <button
+            onClick={() => setCollapsed(false)}
+            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors hover:bg-opacity-80"
+            style={{ backgroundColor: BG_HOVER, color: TEXT_DIM }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; }}
+            title="展开器材面板"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Section toggles as icon buttons */}
+          <button
+            onClick={() => { setCollapsed(false); setOpenSections({ equipment: true, players: false, fields: false }); }}
+            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors"
+            style={{ color: TEXT_DIM }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; e.currentTarget.style.color = ACCENT; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = TEXT_DIM; }}
+            title="教具"
+          >
+            <Package className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => { setCollapsed(false); setOpenSections({ equipment: false, players: true, fields: false }); }}
+            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors"
+            style={{ color: TEXT_DIM }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; e.currentTarget.style.color = ACCENT; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = TEXT_DIM; }}
+            title="球员"
+          >
+            <Users className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => { setCollapsed(false); setOpenSections({ equipment: false, players: false, fields: true }); }}
+            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors"
+            style={{ color: TEXT_DIM }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; e.currentTarget.style.color = ACCENT; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = TEXT_DIM; }}
+            title="场地"
+          >
+            <Map className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Expanded sidebar ────────────────────────────────
+
+  const isEquipmentActive = (filename: string) => {
+    return activeEquipment === filename;
+  };
 
   const mkEquipItem = (item: Item) => {
     const coneColor = getConeColor(item.name);
+    const isActive = isEquipmentActive(item.filename);
     return (
       <div
         key={item.filename}
         draggable
-        onDragStart={(e) => handleDragStart(e, item)}
-        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-colors group"
-        style={{ borderRadius: "6px" }}
+        onDragStart={(e) => {
+          handleDragStart(e, item);
+          setActiveEquipment(item.filename);
+        }}
+        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-all duration-150 group"
+        style={{
+          borderRadius: "6px",
+          backgroundColor: isActive ? `${ACCENT}1a` : "transparent",
+          border: isActive ? `1px solid ${ACCENT}66` : "1px solid transparent",
+          transform: isActive ? "scale(1.02)" : "scale(1)",
+        }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#22252d";
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = BG_HOVER;
+          }
+          e.currentTarget.style.transform = "scale(1.05)";
           const svg = e.currentTarget.querySelector("svg");
           if (svg) {
             svg.querySelectorAll("[stroke]").forEach(el => {
@@ -251,7 +357,10 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
           }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }
+          e.currentTarget.style.transform = isActive ? "scale(1.02)" : "scale(1)";
           const svg = e.currentTarget.querySelector("svg");
           if (svg) {
             svg.querySelectorAll("[stroke]").forEach(el => {
@@ -260,28 +369,30 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
             });
           }
         }}
-        title={collapsed ? item.name : "拖拽放置 · 点击 ⊕ 快捷添加"}
+        title={"拖拽放置 · 点击 ⊕ 快捷添加"}
       >
         <div className="relative">
           {getEquipmentIcon(item.name)}
           {/* Quick-add button */}
           <button
-            onClick={(e) => { e.stopPropagation(); onPlaceEquipment?.(item.filename, item.name); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveEquipment(item.filename);
+              onPlaceEquipment?.(item.filename, item.name);
+            }}
             className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none opacity-60 group-hover:opacity-100 transition-opacity"
             style={{ backgroundColor: ACCENT, color: "#fff" }}
             title="点击添加"
           >+</button>
           {coneColor && (
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#1a1d24]"
-              style={{ backgroundColor: coneColor }} />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border"
+              style={{ backgroundColor: coneColor, borderColor: CARD_BG }} />
           )}
         </div>
-        {!collapsed && (
-          <span className="text-[9px] leading-tight text-center w-full truncate px-0.5"
-            style={{ color: TEXT_DIM }}>
-            {item.name}
-          </span>
-        )}
+        <span className="text-[9px] leading-tight text-center w-full truncate px-0.5"
+          style={{ color: isActive ? ACCENT : TEXT_DIM }}>
+          {item.name}
+        </span>
       </div>
     );
   };
@@ -295,118 +406,181 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
         onClick={() => setCollapsed(!collapsed)}
         className="absolute top-3 z-20 flex items-center justify-center w-5 h-8 rounded-r-md transition-colors shadow-md"
         style={{
-          left: collapsed ? 4 : 116,
+          left: 116,
           backgroundColor: CARD_BG,
           border: `1px solid ${BORDER}`,
           color: TEXT_DIM,
         }}
         onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; }}
         onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; }}
-        title={collapsed ? "展开器材面板" : "折叠器材面板"}
+        title="折叠器材面板"
       >
-        {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+        <ChevronLeft className="w-3 h-3" />
       </button>
 
+      {/* Sidebar */}
       <div
-        className={`${w} flex flex-col flex-shrink-0 transition-all duration-200`}
+        className="w-[120px] flex flex-col flex-shrink-0 transition-all duration-200"
         style={{ backgroundColor: BG, borderRight: `1px solid ${BORDER}` }}
       >
-        {/* Tabs */}
-        <div className="flex px-1 pt-1" style={{ borderBottom: `1px solid ${BORDER}` }}>
-          {TABS.map(mkTabBtn)}
-        </div>
+        {/* ── Top collapse toggle ── */}
+        <button
+          onClick={() => setCollapsed(true)}
+          className="flex items-center justify-center w-full py-1.5 transition-colors"
+          style={{ color: TEXT_DIM, borderBottom: `1px solid ${BORDER}` }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = ACCENT; e.currentTarget.style.backgroundColor = BG_HOVER; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="完全折叠面板"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-1.5 py-1.5">
-          {/* ── Tab: Equipment ── */}
-          {tab === "equipment" && (
-            <div>
-              <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
-                教具
-              </p>
-              <div className="grid grid-cols-2 gap-1">
-                {EQUIPMENT.map(mkEquipItem)}
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto py-1.5 space-y-1">
+          {/* ═══════════ 教具 Card ═══════════ */}
+          <div
+            className="mx-1 rounded-md overflow-hidden"
+            style={{
+              backgroundColor: CARD_BG,
+              borderRadius: TAC_THEME.radius,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <button
+              onClick={() => toggleSection("equipment")}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
+              style={{ color: TEXT_MAIN }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            >
+              <span className="text-[10px] font-semibold tracking-wide">教具</span>
+              <Chevron open={openSections.equipment} />
+            </button>
+            {openSections.equipment && (
+              <div className="px-1.5 pb-1.5">
+                <div className="grid grid-cols-2 gap-1">
+                  {EQUIPMENT.map(mkEquipItem)}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* ── Tab: Players ── */}
-          {tab === "players" && (
-            <div className="space-y-3">
-              <div>
-                <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
-                  球员
-                </p>
-                <div className="flex gap-3 px-1">
+          {/* ═══════════ 球员 Card ═══════════ */}
+          <div
+            className="mx-1 rounded-md overflow-hidden"
+            style={{
+              backgroundColor: CARD_BG,
+              borderRadius: TAC_THEME.radius,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <button
+              onClick={() => toggleSection("players")}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
+              style={{ color: TEXT_MAIN }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            >
+              <span className="text-[10px] font-semibold tracking-wide">球员</span>
+              <Chevron open={openSections.players} />
+            </button>
+            {openSections.players && (
+              <div className="px-2 pb-2">
+                <div className="flex gap-2">
                   {[
-                    { color: ACCENT, label: "主", hint: "主队" },
-                    { color: BLUE, label: "客", hint: "客队" },
+                    { color: TAC_THEME.playerOwn, label: "己方", hint: "己方球员" },
+                    { color: TAC_THEME.playerOpponent, label: "对方", hint: "对方球员" },
+                    { color: TAC_THEME.playerGK, label: "门将", hint: "守门员" },
                   ].map((p) => (
                     <button
                       key={p.hint}
-                      className="flex items-center justify-center w-10 h-10 rounded-full cursor-grab transition-colors hover:opacity-80"
+                      className="flex-1 flex items-center justify-center py-1.5 rounded-md cursor-pointer transition-all duration-150 hover:scale-105"
                       style={{
                         border: `2px solid ${p.color}`,
                         backgroundColor: "transparent",
+                        borderRadius: TAC_THEME.radius,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = `${p.color}1a`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
                       }}
                       title={p.hint}
                       onClick={() => {
-                        // Switch active color for player placement
                         const toolbarColorBtn = document.querySelector(`[title="${p.color}"]`) as HTMLButtonElement;
                         if (toolbarColorBtn) toolbarColorBtn.click();
                       }}
                     >
-                      <span className="text-sm font-bold" style={{ color: p.color }}>{p.label}</span>
+                      <span className="text-[10px] font-bold" style={{ color: p.color }}>{p.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* ── Tab: Fields ── */}
-          {tab === "fields" && (
-            <div>
-              <p className="text-[9px] font-medium mb-2 pl-1 tracking-wide" style={{ color: TEXT_DIM }}>
-                场地底图
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {FIELD_LIST.map((field) => (
-                  <button
-                    key={field}
-                    onClick={() => handleFieldClick(field)}
-                    className="relative w-full aspect-[4/3] rounded-md overflow-hidden transition-colors group"
-                    style={{
-                      border: `1px solid ${previewField === field ? ACCENT : "#333"}`,
-                      borderRadius: "6px",
-                    }}
-                    title={field === "default" ? "标准全场" : field}
-                  >
-                    {field === "default" ? (
-                      <div className="w-full h-full flex items-center justify-center"
-                        style={{ backgroundColor: TAC_THEME.grass }}>
-                        <svg width="32" height="24" viewBox="0 0 32 24" fill="none" opacity="0.3">
-                          <rect x="1" y="1" width="30" height="22" stroke="#fff" strokeWidth="1" fill="none" />
-                          <line x1="16" y1="1" x2="16" y2="23" stroke="#fff" strokeWidth="0.5" />
-                          <circle cx="16" cy="12" r="3" stroke="#fff" strokeWidth="0.5" fill="none" />
-                        </svg>
-                      </div>
-                    ) : (
-                      <img
-                        src={`/equipment/${field}.png`}
-                        alt={field}
-                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
-                      />
-                    )}
-                    <span className="absolute bottom-0.5 right-1.5 text-[8px] font-medium"
-                      style={{ color: previewField === field ? ACCENT : "#555" }}>
-                      {field === "default" ? "标准" : field.replace("场地", "")}
-                    </span>
-                  </button>
-                ))}
+          {/* ═══════════ 场地 Card ═══════════ */}
+          <div
+            className="mx-1 rounded-md overflow-hidden"
+            style={{
+              backgroundColor: CARD_BG,
+              borderRadius: TAC_THEME.radius,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <button
+              onClick={() => toggleSection("fields")}
+              className="flex items-center justify-between w-full px-2 py-2 transition-colors"
+              style={{ color: TEXT_MAIN }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            >
+              <span className="text-[10px] font-semibold tracking-wide">场地</span>
+              <Chevron open={openSections.fields} />
+            </button>
+            {openSections.fields && (
+              <div className="px-1.5 pb-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {FIELD_LIST.map((field) => (
+                    <button
+                      key={field}
+                      onClick={() => handleFieldClick(field)}
+                      className="relative w-full aspect-[4/3] rounded-md overflow-hidden transition-all duration-150 hover:scale-105"
+                      style={{
+                        border: `1px solid ${previewField === field ? ACCENT : BORDER}`,
+                        borderRadius: "4px",
+                      }}
+                      title={field === "default" ? "标准全场" : field}
+                    >
+                      {field === "default" ? (
+                        <div className="w-full h-full flex items-center justify-center"
+                          style={{ backgroundColor: TAC_THEME.grass }}>
+                          <svg width="32" height="24" viewBox="0 0 32 24" fill="none" opacity="0.3">
+                            <rect x="1" y="1" width="30" height="22" stroke="#fff" strokeWidth="1" fill="none" />
+                            <line x1="16" y1="1" x2="16" y2="23" stroke="#fff" strokeWidth="0.5" />
+                            <circle cx="16" cy="12" r="3" stroke="#fff" strokeWidth="0.5" fill="none" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <img
+                          src={`/equipment/${field}.png`}
+                          alt={field}
+                          className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
+                        />
+                      )}
+                      <span
+                        className="absolute bottom-0.5 right-1.5 text-[8px] font-medium"
+                        style={{ color: previewField === field ? ACCENT : TEXT_DIM }}
+                      >
+                        {field === "default" ? "标准" : field.replace("场地", "")}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -428,7 +602,7 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
             </div>
             {previewField === "default" ? (
               <div className="w-full aspect-[1050/680] flex items-center justify-center"
-                style={{ backgroundColor: "#1e4028", maxHeight: "60vh" }}>
+                style={{ backgroundColor: TAC_THEME.grass, maxHeight: "60vh" }}>
                 <span className="text-sm" style={{ color: TEXT_DIM }}>标准 11 人制足球场</span>
               </div>
             ) : (
@@ -449,9 +623,9 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
               <button
                 onClick={() => setPreviewField(null)}
                 className="px-4 py-2 rounded-md text-xs transition-colors"
-                style={{ backgroundColor: "#22252d", color: TEXT_DIM, borderRadius: "6px" }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#2a2d35"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#22252d"; }}
+                style={{ backgroundColor: CARD_BG, color: TEXT_DIM, borderRadius: "6px" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = BG_HOVER; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = CARD_BG; }}
               >
                 取消
               </button>

@@ -7,7 +7,7 @@ import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+
 
 class ErrorBoundary extends Component<
   { children: React.ReactNode },
@@ -39,12 +39,11 @@ class ErrorBoundary extends Component<
 }
 
 export default function Home() {
-  const router = useRouter();
   const [historyOpen, setHistoryOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
   const supabase = createClient();
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang } = useLang();
 
   useEffect(() => {
     const handler = (e: ErrorEvent) => {
@@ -76,33 +75,36 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-pitch-900">
+    <div className="min-h-screen bg-[#121212]">
       {/* Header — desktop only, mobile uses MobileNav */}
-      <header className="sticky top-0 z-40 bg-pitch-900/90 backdrop-blur border-b border-pitch-700 hidden lg:block">
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222] hidden lg:block">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <h1 className="text-lg font-bold text-white">Kenshinpro</h1>
             <nav className="flex items-center gap-1">
-              <a href="/" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">首页</a>
-              <a href="/tactical-diagnosis" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">战术诊断</a>
-              <a href="/tactics" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">战术板</a>
-              <a href="/gym" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">健身房</a>
-              <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">动作库</a>
-              <a href="/schedule" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">赛程</a>
-              <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">花名册</a>
-              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">历史</a>
-              <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-pitch-700 transition">设置</a>
+              <a href="/" className="px-3 py-1.5 text-sm text-[#d92525] font-semibold relative transition">
+                首页
+                <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#d92525] rounded-full" />
+              </a>
+              <a href="/tactical-diagnosis" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术诊断</a>
+              <a href="/tactics" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术板</a>
+              <a href="/gym" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">健身房</a>
+              <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
+              <a href="/schedule" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">赛程</a>
+              <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">花名册</a>
+              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">历史</a>
+              <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">设置</a>
             </nav>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex bg-pitch-800 rounded-lg p-0.5">
+            <div className="flex bg-[#1e1e1e] rounded-lg p-0.5">
               {LANGS.map((l) => (
                 <button key={l.value} onClick={() => setLang(l.value)}
-                  className={`px-2 py-1 rounded-md text-xs font-medium transition ${lang === l.value ? "bg-neon-pink text-black" : "text-gray-400 hover:text-white"}`}>{l.label}</button>
+                  className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition ${lang === l.value ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white"}`}>{l.label}</button>
               ))}
             </div>
-            <span className="text-xs text-gray-500">{userEmail}</span>
-            <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-neon-red transition" title="退出"><LogOut className="w-4 h-4" /></button>
+            <span className="text-xs text-gray-500 px-1.5 py-1.5">{userEmail}</span>
+            <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-[#d92525] transition rounded-md" title="退出"><LogOut className="w-4 h-4" /></button>
           </div>
         </div>
       </header>

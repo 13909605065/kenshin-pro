@@ -1,7 +1,7 @@
 "use client";
 
 import { TrainingModule, PlayerFormData } from "@/lib/types";
-import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus } from "lucide-react";
+import { Copy, Heart, Plus, Check, ThumbsUp, ThumbsDown, Printer, BookmarkPlus, Share2 } from "lucide-react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { ExportTable } from "./ExportTable";
@@ -26,7 +26,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         modules,
         formData: {
           role: formData.role,
-          name: formData.name?.charAt(0) + "**", // 隐私保护: 只显示姓
+          name: formData.name?.charAt(0) + "**",
           gender: formData.gender,
           position: formData.position,
           goal: formData.goal,
@@ -45,7 +45,6 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         setShareDone(true);
         setTimeout(() => setShareDone(false), 2000);
       } else {
-        // Fallback to old base64 method
         const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: payload.formData })));
         const url = `${window.location.origin}/share/#${hash}`;
         await navigator.clipboard.writeText(url);
@@ -53,7 +52,6 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         setTimeout(() => setShareDone(false), 2000);
       }
     } catch {
-      // Last resort fallback
       try {
         const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: { role: formData.role } })));
         const url = `${window.location.origin}/share/#${hash}`;
@@ -112,85 +110,93 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
     });
   };
 
+  const btnBase = "flex items-center gap-1.5 text-[11px] py-1.5 px-3 rounded-lg border transition-all duration-150 bg-[#1e1e1e] border-[#222] text-[#d1d1d1] hover:border-[#555] hover:bg-[#222]";
+
   return (
-    <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <button onClick={copyAll} className="btn-secondary flex items-center gap-2 text-sm py-2 px-4">
-          {copyAllDone ? <Check className="w-4 h-4 text-neon-pink" /> : <Copy className="w-4 h-4" />}
-          {copyAllDone ? "已复制" : "复制全部"}
-        </button>
-
-        <button
-          onClick={toggleFavorite}
-          className={`flex items-center gap-2 text-sm py-2 px-4 rounded-xl border transition-all ${
-            favorited
-              ? "border-neon-gold text-neon-gold bg-neon-gold/10"
-              : "border-pitch-600 text-gray-400 hover:border-pitch-500"
-          }`}
-        >
-          <Heart className={`w-4 h-4 ${favorited ? "fill-neon-gold" : ""}`} />
-          {favorited ? "已收藏" : "收藏"}
-        </button>
-
-        <button onClick={handleShare}
-          className={`btn-secondary flex items-center gap-2 text-sm py-2 px-4 ${shareDone ? "border-neon-pink text-neon-pink" : ""}`}>
-          {shareDone ? "链接已复制" : "📤 分享"}
-        </button>
-
-        <button
-          onClick={() => window.print()}
-          className="btn-secondary flex items-center gap-2 text-sm py-2 px-4"
-        >
-          <Printer className="w-4 h-4" />
-          导出 PDF
-        </button>
-
-        {onSaveTemplate && (
-          <button
-            onClick={onSaveTemplate}
-            className="btn-secondary flex items-center gap-2 text-sm py-2 px-4"
-          >
-            <BookmarkPlus className="w-4 h-4" />
-            保存模板
+    <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* ── Group 1: 复制 | 收藏 | 分享 ── */}
+        <div className="flex items-center gap-1">
+          <button onClick={copyAll} className={btnBase}>
+            {copyAllDone ? <Check className="w-3.5 h-3.5 text-[#d92525]" /> : <Copy className="w-3.5 h-3.5" />}
+            {copyAllDone ? "已复制" : "复制"}
           </button>
-        )}
 
+          <button
+            onClick={toggleFavorite}
+            className={`${btnBase} ${favorited ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : ""}`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${favorited ? "fill-[#d92525] text-[#d92525]" : ""}`} />
+            {favorited ? "已收藏" : "收藏"}
+          </button>
+
+          <button
+            onClick={handleShare}
+            className={`${btnBase} ${shareDone ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : ""}`}
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            {shareDone ? "已复制" : "分享"}
+          </button>
+        </div>
+
+        {/* ── Divider ── */}
+        <div className="w-px h-5 bg-[#333] mx-0.5" />
+
+        {/* ── Group 2: 导出PDF | 保存模板 | 导出表格 ── */}
+        <div className="flex items-center gap-1">
+          <button onClick={() => window.print()} className={btnBase}>
+            <Printer className="w-3.5 h-3.5" />
+            导出PDF
+          </button>
+
+          {onSaveTemplate && (
+            <button onClick={onSaveTemplate} className={btnBase}>
+              <BookmarkPlus className="w-3.5 h-3.5" />
+              保存模板
+            </button>
+          )}
+
+          {/* ExportTable inline button — includes print-only content */}
+          <ExportTable modules={modules} formData={formData} />
+        </div>
+
+        {/* ── Divider ── */}
+        <div className="w-px h-5 bg-[#333] mx-0.5" />
+
+        {/* ── Standalone: 新方案 ── */}
         <button
           onClick={() => window.location.reload()}
-          className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+          className="flex items-center gap-1.5 text-[11px] py-1.5 px-4 rounded-lg border transition-all duration-150 bg-[#d92525] border-[#d92525] text-white hover:bg-[#b71d1d] hover:border-[#b71d1d] active:scale-[0.98] font-medium"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           新方案
         </button>
       </div>
 
-      {/* Feedback */}
+      {/* ── Feedback ── */}
       <div className="flex items-center gap-1">
-        <span className="text-xs text-gray-500 mr-2">有帮助吗？</span>
+        <span className="text-[10px] text-gray-600 mr-2">有帮助吗？</span>
         <button
           onClick={() => sendFeedback("up")}
-          className={`p-2 rounded-lg transition ${
+          className={`p-1.5 rounded-lg transition ${
             feedback === "up"
-              ? "bg-neon-pink/20 text-neon-pink"
-              : "text-gray-500 hover:text-gray-300"
+              ? "bg-[#d92525]/20 text-[#d92525]"
+              : "text-gray-500 hover:text-gray-300 hover:bg-[#222]"
           }`}
         >
-          <ThumbsUp className="w-4 h-4" />
+          <ThumbsUp className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => sendFeedback("down")}
-          className={`p-2 rounded-lg transition ${
+          className={`p-1.5 rounded-lg transition ${
             feedback === "down"
-              ? "bg-neon-red/20 text-neon-red"
-              : "text-gray-500 hover:text-gray-300"
+              ? "bg-red-500/20 text-red-400"
+              : "text-gray-500 hover:text-gray-300 hover:bg-[#222]"
           }`}
         >
-          <ThumbsDown className="w-4 h-4" />
+          <ThumbsDown className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Hidden export table content for print */}
-      <ExportTable modules={modules} formData={formData} />
     </div>
   );
 }

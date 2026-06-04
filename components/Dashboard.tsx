@@ -11,7 +11,7 @@ import { GeneratingOverlay } from "./GeneratingOverlay";
 import { ErrorAlert } from "./ErrorAlert";
 import { TrainingHistory } from "./TrainingHistory";
 import { GenerationStatus } from "@/lib/types";
-import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "@/lib/constants";
+import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 import { getPlayers } from "@/lib/roster-utils";
 import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
@@ -30,6 +30,28 @@ const FITNESS_GOALS = [
   { id: "endurance_fitness", label: "耐力", desc: "提升心肺耐力" },
 ] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
+
+// Smart filter linkage: goal ↔ phase
+const GOAL_TO_PHASE_SUGGEST: Record<string, string> = {
+  strength: "preseason",
+  power: "competition",
+  speed: "preseason",
+  agility: "preseason",
+  mas_endurance: "offseason",
+  combat: "competition",
+};
+const PHASE_TO_GOAL_HIGHLIGHT: Record<string, string[]> = {
+  preseason: ["strength","speed","agility"],
+  competition: ["power","combat"],
+  recovery: [],
+  offseason: ["strength","mas_endurance"],
+};
+const PHASE_HINT_TEXT: Record<string, string> = {
+  preseason: "💡 准备期建议侧重力量、速度和灵敏训练",
+  competition: "💡 赛季期建议侧重爆发力和对抗能力",
+  recovery: "💡 恢复期以轻量活动和再生为主",
+  offseason: "💡 休赛期建议侧重力量和耐力训练",
+};
 
 const SUB_POS: Record<string, string[]> = {
   defender: ["中后卫","左后卫","右后卫"],
@@ -52,16 +74,37 @@ function ProfileSummary({ formData, t }: any) {
       formData.coachRole && (COACH_ROLE_LABELS as any)[formData.coachRole],
       formData.leagueTag && (LEAGUE_TAG_LABELS as any)[formData.leagueTag],
     ].filter(Boolean);
-    return <span className="text-xs text-gray-400">教练 · {parts.join(" / ") || "未设置"}</span>;
+    return (
+      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+        {parts.map((p, i) => (
+          <span key={i} className="px-2 py-0.5 rounded text-[10px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
+        ))}
+        {parts.length === 0 && <span className="text-[10px] text-gray-500">未设置</span>}
+      </div>
+    );
   }
-  const parts = [
-    formData.gender === "female" ? "♀" : "♂",
-    formData.position && t(`pos.${formData.position}`),
+  const posLabel = formData.position ? t(`pos.${formData.position}`) : null;
+  const stats = [
     formData.age && `${formData.age}岁`,
     formData.height && `${formData.height}cm`,
     formData.weight && `${formData.weight}kg`,
   ].filter(Boolean);
-  return <span className="text-xs text-gray-400">{parts.join(" · ")}</span>;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+      {posLabel && (
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#d92525] text-white">{posLabel}</span>
+      )}
+      {formData.gender && (
+        <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
+      )}
+      {stats.length > 0 && (
+        <span className="text-[10px] text-gray-500">{stats.join(" · ")}</span>
+      )}
+      {!posLabel && stats.length === 0 && !formData.gender && (
+        <span className="text-[10px] text-gray-500">完善档案以获得个性化建议</span>
+      )}
+    </div>
+  );
 }
 
 function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles }: any) {
@@ -143,16 +186,16 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                 }}
                 placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
               {profiles.hasProfile(formData.name) && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neon-pink">📋 已有档案</span>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[#d92525]">📋 已有档案</span>
               )}
             </div>
 
             {/* Gender */}
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => updateField("gender", "male")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>♂ 男</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>♂ 男</button>
               <button onClick={() => updateField("gender", "female")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>♀ 女</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>♀ 女</button>
             </div>
 
             {/* Position 3+2 */}
@@ -162,13 +205,13 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                 <div className="grid grid-cols-3 gap-1.5">
                   {["goalkeeper","defender","midfielder"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
                 <div className="flex justify-center gap-1.5">
                   {["forward","wingback"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-neon-pink bg-neon-pink/10 text-neon-pink":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-pitch-600 text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
               </div>
@@ -220,7 +263,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
         )}
 
         <button onClick={onClose}
-          className="w-full py-2 bg-neon-pink text-black font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
+          className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
           完成
         </button>
       </div>
@@ -355,13 +398,13 @@ export function Dashboard() {
               {/* 训练场: timer + roster */}
               {scene === "pitch" && (
                 <>
-                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                    <Timer className="w-5 h-5 text-neon-pink mb-1" />
+                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
+                    <Timer className="w-5 h-5 text-[#d92525] mb-1" />
                     <p className="text-xs font-bold text-white">计时跟练</p>
                     <p className="text-[10px] text-gray-500">执行教案</p>
                   </button>
-                  <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                    <ClipboardList className="w-5 h-5 text-neon-pink mb-1" />
+                  <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
+                    <ClipboardList className="w-5 h-5 text-[#d92525] mb-1" />
                     <p className="text-xs font-bold text-white">花名册</p>
                     <p className="text-[10px] text-gray-500">人数+伤病</p>
                   </button>
@@ -374,8 +417,8 @@ export function Dashboard() {
           {!isCoach && (
             <>
               {scene === "pitch" && (
-                <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <Timer className="w-5 h-5 text-neon-pink mb-1" />
+                <button onClick={() => { if (training.modules.length > 0) setStatus("complete"); else alert("请先生成训练方案"); }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
+                  <Timer className="w-5 h-5 text-[#d92525] mb-1" />
                   <p className="text-xs font-bold text-white">开始训练</p>
                   <p className="text-[10px] text-gray-500">按顺序跟练</p>
                 </button>
@@ -390,20 +433,14 @@ export function Dashboard() {
       {status === "idle" && (
         <div className="space-y-5">
           {/* Profile Bar */}
-          <div className="glass-card px-5 py-5 flex items-center justify-between">
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-5 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-neon-pink text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
+              <div className="w-9 h-9 rounded-full bg-[#d92525]/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#d92525] text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
               </div>
               <div className="min-w-0">
-                <p className="text-white text-sm font-bold truncate">
+                <p className="text-white text-base font-bold truncate">
                   {formData.name || (isCoach ? "教练" : isFitness ? "健身者" : t("dashboard.notSet"))}
-                </p>
-                <p className="text-[10px] text-gray-500 truncate">
-                  {isCoach ? "准备今天的训练" :
-                   isFitness ? (formData.goal ? t(`goal.${formData.goal}`) : "设定健身目标") :
-                   formData.position ? `${t("pos."+formData.position)}` :
-                   "完善档案以获得个性化建议"}
                 </p>
                 <ProfileSummary formData={formData} t={t} />
               </div>
@@ -412,15 +449,15 @@ export function Dashboard() {
               {/* Identity switch */}
               <div className="flex bg-[#111] rounded-lg p-0.5">
                 <button onClick={() => setRole("coach")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="coach"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                   教练
                 </button>
                 <button onClick={() => setRole("athlete")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="athlete"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                   球员
                 </button>
                 <button onClick={() => setRole("fitness")}
-                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                  className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                   健身
                 </button>
               </div>
@@ -430,22 +467,22 @@ export function Dashboard() {
                   {isFitness ? (
                     <>
                       <button onClick={() => setScene("workout")}
-                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="workout"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="workout"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                         <Dumbbell className="w-3 h-3" />训练
                       </button>
                       <button onClick={() => setScene("nutrition")}
-                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="nutrition"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="nutrition"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                         🥗 营养
                       </button>
                     </>
                   ) : (
                     <>
                       <button onClick={() => setScene("pitch")}
-                        className={"px-2.5 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1 " + (scene==="pitch"?"bg-neon-pink text-black":"text-gray-500 hover:text-gray-300")}>
+                        className={"px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1 " + (scene==="pitch"?"bg-[#d92525] text-white":"text-gray-500 hover:text-gray-300")}>
                         <MapPin className="w-3 h-3" />球场
                       </button>
                       <button onClick={() => router.push("/gym")}
-                        className="px-2.5 py-1.5 rounded-md text-xs font-medium text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
+                        className="px-3 py-1.5 rounded-md text-xs font-bold text-gray-500 hover:text-gray-300 transition flex items-center gap-1">
                         <Dumbbell className="w-3 h-3" />健身
                       </button>
                     </>
@@ -453,7 +490,7 @@ export function Dashboard() {
                 </div>
               )}
               <button onClick={() => setEditOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-pitch-500 text-gray-400 hover:text-white hover:border-pitch-400 transition text-xs">
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#333] text-gray-400 hover:text-white hover:border-[#555] transition text-xs font-medium">
                 <Edit3 className="w-3.5 h-3.5" />编辑
               </button>
             </div>
@@ -461,39 +498,114 @@ export function Dashboard() {
 
           {/* Goal — for athlete or fitness */}
           {!isCoach && (
-            <div className="grid grid-cols-2 gap-5">
-              <div className="glass-card p-5">
-                <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
-                <div className="space-y-2">
-                  {isFitness ? FITNESS_GOALS.map((g) => (
-                    <button key={g.id} onClick={() => updateField("goal", g.id)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.goal===g.id?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>
-                      <span className="block">{g.label}</span>
-                      <span className="block text-[10px] opacity-60">{g.desc}</span>
-                    </button>
-                  )) : GOALS.map((g) => (
-                    <button key={g} onClick={() => updateField("goal", g)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`goal.${g}`)}</button>
-                  ))}
+            <>
+              {/* Selected Items Preview Bar */}
+              {(formData.goal || formData.phase || formData.injurySites.length > 0) && (
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3">
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    <span className="text-[10px] text-gray-500 mr-1">已选：</span>
+                    {formData.goal && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                        {GOAL_LABELS[formData.goal] || t(`goal.${formData.goal}`)}
+                        <button onClick={() => updateField("goal", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {formData.phase && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                        {PHASE_LABELS[formData.phase] || t(`phase.${formData.phase}`)}
+                        <button onClick={() => updateField("phase", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                      </span>
+                    )}
+                    {formData.injurySites.map((s: string) => (
+                      <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                        {t(`injury.${s}`)}
+                        <button onClick={() => updateField("injurySites", formData.injurySites.filter(x => x !== s) as any)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-5">
+                {/* Left: Training Goals */}
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4"><Target className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
+                  <div className="space-y-2">
+                    {isFitness ? FITNESS_GOALS.map((g) => {
+                      const isSelected = formData.goal === g.id;
+                      const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g.id) : false;
+                      return (
+                        <button key={g.id} onClick={() => updateField("goal", g.id)}
+                          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                            isSelected
+                              ? "bg-[#d92525] text-white border-[#d92525]"
+                              : isHighlighted
+                                ? "bg-[#1e1e1e] text-gray-300 border-[#d92525]/40"
+                                : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                          }`}>
+                          <span className="block">{g.label}</span>
+                          <span className="block text-[10px] opacity-60">{g.desc}</span>
+                        </button>
+                      );
+                    }) : GOALS.map((g) => {
+                      const isSelected = formData.goal === g;
+                      const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g) : false;
+                      return (
+                        <button key={g} onClick={() => {
+                          updateField("goal", g);
+                          if (!formData.phase && GOAL_TO_PHASE_SUGGEST[g]) {
+                            updateField("phase", GOAL_TO_PHASE_SUGGEST[g] as any);
+                          }
+                        }}
+                          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                            isSelected
+                              ? "bg-[#d92525] text-white border-[#d92525]"
+                              : isHighlighted
+                                ? "bg-[#1a1a1a] text-gray-300 border-[#d92525]/40"
+                                : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                          }`}>
+                          {GOAL_LABELS[g] || t(`goal.${g}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right: Season Phase */}
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
+                  <div className="space-y-2">
+                    {PHASES.map((p) => {
+                      const isSelected = formData.phase === p;
+                      return (
+                        <button key={p} onClick={() => updateField("phase", p)}
+                          className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
+                            isSelected
+                              ? "bg-[#d92525] text-white border-[#d92525]"
+                              : "bg-[#1a1a1a] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                          }`}>
+                          {PHASE_LABELS[p] || t(`phase.${p}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Smart filter hint */}
+                  {formData.phase && PHASE_HINT_TEXT[formData.phase] && (
+                    <p className="text-[10px] text-gray-500 mt-3 leading-relaxed">{PHASE_HINT_TEXT[formData.phase]}</p>
+                  )}
                 </div>
               </div>
-              <div className="glass-card p-5">
-                <div className="flex items-center gap-2 mb-4"><Clock className="w-5 h-5 text-neon-pink" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
-                <div className="space-y-2">
-                  {PHASES.map((p) => (
-                    <button key={p} onClick={() => updateField("phase", p)} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:bg-pitch-600"}`}>{t(`phase.${p}`)}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            </>
           )}
 
           {/* Injury — fold */}
           {!isCoach && (
-            <div className="glass-card p-4">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleInjury("_main")}>
                 <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-neon-pink" />
+                  <Activity className="w-4 h-4 text-[#d92525]" />
                   <p className="text-xs font-bold text-white">{t("injury.title")}</p>
-                  {formData.injurySites.length > 0 && <span className="text-[10px] text-neon-red">{formData.injurySites.length}处</span>}
+                  {formData.injurySites.length > 0 && <span className="text-[10px] text-[#d92525]">{formData.injurySites.length}处</span>}
                 </div>
                 <span className="text-[10px] text-gray-500">{injOpen["_main"] ? "▲" : "▼"}</span>
               </div>
@@ -507,7 +619,7 @@ export function Dashboard() {
                           const active = formData.injurySites.includes(s as any);
                           return (
                             <button key={s} onClick={() => { const next = active ? formData.injurySites.filter((x: any) => x!==s) : [...formData.injurySites, s as any]; updateField("injurySites", next as any); }}
-                              className={`px-2 py-0.5 rounded text-[10px] transition ${active?"bg-neon-red/20 text-neon-red border border-neon-red/30":"bg-pitch-700 text-gray-500 hover:bg-pitch-600"}`}>{t(`injury.${s}`)}</button>
+                              className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1a1a1a] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
                           );
                         })}
                       </div>
@@ -521,17 +633,17 @@ export function Dashboard() {
 
           {/* Coach: Tactical Themes — tag pills */}
           {isCoach && (
-            <div className="glass-card p-4">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <p className="text-sm font-bold text-white mb-3">战术主题</p>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(TACTICAL_THEME_LABELS).map(([k, v]) => {
                   const active = formData.tacticalThemes.includes(k as any);
                   return (
                     <button key={k} onClick={() => { const next = active ? formData.tacticalThemes.filter((x) => x!==k) : [...formData.tacticalThemes, k]; updateField("tacticalThemes", next as any); }}
-                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition border ${
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 border ${
                         active
-                          ? "bg-neon-pink border-neon-pink text-black"
-                          : "bg-pitch-700 border-pitch-600 text-gray-300 hover:border-pitch-500"
+                          ? "bg-[#d92525] border-[#d92525] text-white"
+                          : "bg-[#1a1a1a] border-transparent text-gray-400 hover:border-[#d92525]/30 hover:text-gray-200"
                       }`}>{v}</button>
                   );
                 })}
@@ -541,11 +653,11 @@ export function Dashboard() {
 
           {/* Equipment selector — coach only */}
           {isCoach && (
-            <div className="glass-card p-4">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <p className="text-xs text-gray-500 mb-3">
                 {"可选器材（不选则AI自动推荐）"}
                 {formData.equipmentAvailable?.length > 0 && (
-                  <span className="text-neon-pink ml-2">{formData.equipmentAvailable.length} 项已选</span>
+                  <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
                 )}
               </p>
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
@@ -559,8 +671,8 @@ export function Dashboard() {
                     <button key={n} onClick={() => {
                       const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
                       updateField("equipmentAvailable", next);
-                    }} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg text-[11px] transition border ${
-                      act ? "bg-neon-pink/15 border-neon-pink/40 text-neon-pink" : "bg-pitch-800 border-pitch-700 text-gray-500 hover:border-pitch-500 hover:text-gray-300"
+                    }} className={`flex flex-col items-center gap-0.5 py-2 rounded-lg text-[11px] transition-all duration-150 border ${
+                      act ? "bg-[#d92525]/15 border-[#d92525]/40 text-[#d92525]" : "bg-[#1a1a1a] border-[#222] text-gray-500 hover:border-[#d92525]/30 hover:text-gray-300"
                     }`}>
                       <span className="text-base">{e}</span>
                       <span>{n}</span>
@@ -573,10 +685,10 @@ export function Dashboard() {
 
           {/* Plan History — idle state */}
           {playerPlans.length > 0 && (
-            <div className="glass-card p-4">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-bold text-white flex items-center gap-2">
-                  <History className="w-4 h-4 text-neon-pink" />
+                  <History className="w-4 h-4 text-[#d92525]" />
                   方案历史
                   {formData.name && (
                     <span className="text-xs text-gray-500 font-normal">· {formData.name}</span>
@@ -619,20 +731,20 @@ export function Dashboard() {
 
           {/* Coach Input — coach only */}
           {isCoach && (
-          <div className="glass-card p-4 space-y-3">
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4 space-y-3">
             {/* Phase quick-select */}
             <div className="flex gap-1 flex-wrap items-center">
               <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
               {PHASES.map(p => (
                 <button key={p} onClick={() => updateField("phase", p)}
-                  className={`px-2 py-0.5 rounded text-[10px] ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("phase."+p)}</button>
+                  className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1a1a1a] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
               ))}
             </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
               placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
               rows={2}
-              className="w-full bg-pitch-800 border border-pitch-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
+              className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-none"
             />
           </div>
           )}
@@ -646,17 +758,17 @@ export function Dashboard() {
 
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={!isStepValid}
-            className="w-full py-5 bg-neon-pink text-black font-bold rounded-xl text-lg hover:bg-opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-neon-pink/20">
-            <Zap className="w-5 h-5" /> {t("dashboard.generate")}
+            className="w-full py-5 bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2">
+            <Zap className="w-5 h-5" /> {isStepValid ? "生成训练方案" : "请完善训练配置"}
           </button>
 
           {/* Save Profile Dialog */}
           {showProfileSave && (
-            <div className="glass-card p-3 flex items-center gap-2">
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-3 flex items-center gap-2">
               <input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="档案名称" className="input-field text-sm flex-1"
                 onKeyDown={(e) => { if(e.key==="Enter"&&profileName){ profiles.saveProfile(profileName, wizard.formData); setProfileName(""); setShowProfileSave(false); }}} />
               <button onClick={() => { if(profileName){ profiles.saveProfile(profileName, wizard.formData); setProfileName(""); setShowProfileSave(false); }}}
-                className="bg-neon-pink text-black text-xs font-bold px-4 py-2 rounded">保存</button>
+                className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
             </div>
           )}
         </div>

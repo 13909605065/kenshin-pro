@@ -1,6 +1,6 @@
 "use client";
 
-import { MousePointer2, Circle, Type, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { MousePointer2, Circle, Type, Trash2, ChevronUp, ChevronDown, ZoomIn, ZoomOut } from "lucide-react";
 import { useState } from "react";
 import { TAC_THEME } from "@/lib/tactical-theme";
 
@@ -9,6 +9,9 @@ const BAR_BG = TAC_THEME.bgToolbar;
 const BORDER = TAC_THEME.border;
 const TEXT_DIM = TAC_THEME.textDim;
 const TEXT_MAIN = TAC_THEME.textMain;
+const BG_HOVER = TAC_THEME.bgHover;
+const ERROR = TAC_THEME.error;
+const ACTIVE_BG = "#d92525";
 
 // ─── Inline line-style icons ─────────────────────────────
 
@@ -66,7 +69,7 @@ const TOOLS: ToolDef[] = [
 ];
 
 const COLORS = [TAC_THEME.accent, TAC_THEME.blue, "#121419", "#ffffff", "#eab308", TAC_THEME.success, "#f97316", TAC_THEME.error, "#a855f7"];
-const FORMATIONS = ["4-3-3","4-4-2","3-5-2","4-2-3-1","3-4-3"];
+const QUICK_FORMATIONS = ["4-2-3-1","5-4-1","4-3-3","4-4-2","3-5-2"];
 
 export const ROUTE_STYLES: Record<string, { strokeDash: number[] | null; width: number; label: string }> = {
   draw_run:     { strokeDash: null,    width: 4,   label: "实线跑动" },
@@ -81,6 +84,7 @@ interface Props {
   canUndo: boolean; canRedo: boolean;
   onUndo: () => void; onRedo: () => void;
   onExport: () => void; onFormation: (f: string) => void; onClear: () => void;
+  onZoomIn?: () => void; onZoomOut?: () => void; onZoomFit?: () => void;
 }
 
 export function BoardToolbar(p: Props) {
@@ -136,7 +140,8 @@ export function BoardToolbar(p: Props) {
 
       {/* Tool row */}
       <div className="flex items-center gap-0.5 px-2 py-1.5 overflow-x-auto">
-        {TOOLS.map((t) => {
+        {/* ── Group 1: [选择 | 球员] ── */}
+        {TOOLS.slice(0, 2).map((t) => {
           const isActive = p.activeTool === t.id;
           const icon = t.iconFn ? t.iconFn() : t.icon;
           return (
@@ -144,17 +149,18 @@ export function BoardToolbar(p: Props) {
               key={t.id}
               onClick={() => p.onToolChange(t.id)}
               title={t.label}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors flex-shrink-0"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium flex-shrink-0"
               style={{
                 borderRadius: "6px",
-                color: isActive ? ACCENT : TEXT_DIM,
-                backgroundColor: "transparent",
-                border: isActive ? `1px solid ${ACCENT}` : "1px solid transparent",
+                color: isActive ? "#fff" : TEXT_DIM,
+                backgroundColor: isActive ? ACTIVE_BG : "transparent",
+                border: isActive ? `1px solid ${ACTIVE_BG}` : "1px solid transparent",
+                transition: "all 150ms",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
                   e.currentTarget.style.color = TEXT_MAIN;
-                  e.currentTarget.style.backgroundColor = "#1e2128";
+                  e.currentTarget.style.backgroundColor = BG_HOVER;
                 }
               }}
               onMouseLeave={(e) => {
@@ -164,60 +170,156 @@ export function BoardToolbar(p: Props) {
                 }
               }}
             >
-              <span style={{ color: isActive ? ACCENT : "currentColor" }}>{icon}</span>
+              <span style={{ color: isActive ? "#fff" : "currentColor" }}>{icon}</span>
               <span className="hidden sm:inline">{t.label}</span>
             </button>
           );
         })}
 
-        {/* Separator */}
+        {/* Divider */}
+        <div className="w-px h-6 mx-0.5 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Group 2: [跑动 | 传球 | 直线 | 带球] ── */}
+        {TOOLS.slice(2, 6).map((t) => {
+          const isActive = p.activeTool === t.id;
+          const icon = t.iconFn ? t.iconFn() : t.icon;
+          return (
+            <button
+              key={t.id}
+              onClick={() => p.onToolChange(t.id)}
+              title={t.label}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium flex-shrink-0"
+              style={{
+                borderRadius: "6px",
+                color: isActive ? "#fff" : TEXT_DIM,
+                backgroundColor: isActive ? ACTIVE_BG : "transparent",
+                border: isActive ? `1px solid ${ACTIVE_BG}` : "1px solid transparent",
+                transition: "all 150ms",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = TEXT_MAIN;
+                  e.currentTarget.style.backgroundColor = BG_HOVER;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = TEXT_DIM;
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }
+              }}
+            >
+              <span style={{ color: isActive ? "#fff" : "currentColor" }}>{icon}</span>
+              <span className="hidden sm:inline">{t.label}</span>
+            </button>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-0.5 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Group 3: [文字 | 删除] ── */}
+        {TOOLS.slice(6, 8).map((t) => {
+          const isActive = p.activeTool === t.id;
+          const icon = t.iconFn ? t.iconFn() : t.icon;
+          return (
+            <button
+              key={t.id}
+              onClick={() => p.onToolChange(t.id)}
+              title={t.label}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium flex-shrink-0"
+              style={{
+                borderRadius: "6px",
+                color: isActive ? "#fff" : TEXT_DIM,
+                backgroundColor: isActive ? ACTIVE_BG : "transparent",
+                border: isActive ? `1px solid ${ACTIVE_BG}` : "1px solid transparent",
+                transition: "all 150ms",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = TEXT_MAIN;
+                  e.currentTarget.style.backgroundColor = BG_HOVER;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.color = TEXT_DIM;
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }
+              }}
+            >
+              <span style={{ color: isActive ? "#fff" : "currentColor" }}>{icon}</span>
+              <span className="hidden sm:inline">{t.label}</span>
+            </button>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Formation pills ── */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {QUICK_FORMATIONS.map((f) => (
+            <button
+              key={f}
+              onClick={() => p.onFormation(f)}
+              title={`阵型 ${f}`}
+              className="px-2 py-1.5 rounded-full text-[11px] font-bold tracking-wide flex-shrink-0"
+              style={{
+                backgroundColor: "#1a1d24",
+                color: TEXT_MAIN,
+                border: `1px solid ${BORDER}`,
+                transition: "all 150ms",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#22252d";
+                e.currentTarget.style.borderColor = ACCENT;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#1a1d24";
+                e.currentTarget.style.borderColor = BORDER;
+              }}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
         <div className="w-px h-5 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
 
-        {/* Colors */}
+        {/* ── Colors ── */}
         <div className="flex items-center gap-1 flex-shrink-0">
           {COLORS.map((c) => (
             <button
               key={c}
               onClick={() => p.onColorChange(c)}
               title={c}
-              className="w-4 h-4 rounded-full transition-transform hover:scale-110 flex-shrink-0"
+              className="w-4 h-4 rounded-full flex-shrink-0"
               style={{
                 backgroundColor: c,
                 border: p.activeColor === c ? `1.5px solid ${TEXT_MAIN}` : `1px solid ${BORDER}`,
                 boxShadow: c === "#ffffff" ? `inset 0 0 0 1px ${BORDER}` : "none",
+                transition: "transform 150ms",
               }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
             />
           ))}
         </div>
 
-        {/* Separator */}
-        <div className="w-px h-5 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
-
-        {/* Formation */}
-        <select
-          onChange={(e) => { if (e.target.value) { p.onFormation(e.target.value); e.target.value = ""; } }}
-          className="text-[10px] font-medium rounded-md px-2 py-1.5 flex-shrink-0 cursor-pointer transition-colors"
-          style={{
-            borderRadius: TAC_THEME.radius,
-            backgroundColor: TAC_THEME.bgCard,
-            border: `1px solid ${BORDER}`,
-            color: TEXT_MAIN,
-          }}
-          defaultValue=""
-        >
-          <option value="" disabled>阵型</option>
-          {FORMATIONS.map((f) => <option key={f} value={f}>{f}</option>)}
-        </select>
-
         <div className="flex-1 min-w-[4px]" />
 
-        {/* Actions */}
+        {/* Divider */}
+        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Undo / Redo ── */}
         <button
           onClick={p.onUndo} disabled={!p.canUndo}
-          className="p-1.5 flex-shrink-0 transition-colors disabled:opacity-25 rounded-md"
-          style={{ color: TEXT_DIM, borderRadius: "6px" }}
-          onMouseEnter={(e) => { if (p.canUndo) e.currentTarget.style.color = TEXT_MAIN; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; }}
+          className="p-1.5 flex-shrink-0 disabled:opacity-25 rounded-md"
+          style={{ color: TEXT_DIM, borderRadius: "6px", transition: "all 150ms" }}
+          onMouseEnter={(e) => { if (p.canUndo) { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; } }}
+          onMouseLeave={(e) => { if (p.canUndo) { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; } }}
           title="撤销"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -226,29 +328,61 @@ export function BoardToolbar(p: Props) {
         </button>
         <button
           onClick={p.onRedo} disabled={!p.canRedo}
-          className="p-1.5 flex-shrink-0 transition-colors disabled:opacity-25 rounded-md"
-          style={{ color: TEXT_DIM, borderRadius: "6px" }}
-          onMouseEnter={(e) => { if (p.canRedo) e.currentTarget.style.color = TEXT_MAIN; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; }}
+          className="p-1.5 flex-shrink-0 disabled:opacity-25 rounded-md"
+          style={{ color: TEXT_DIM, borderRadius: "6px", transition: "all 150ms" }}
+          onMouseEnter={(e) => { if (p.canRedo) { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; } }}
+          onMouseLeave={(e) => { if (p.canRedo) { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; } }}
           title="重做"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 7v6h-6" /><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13" />
           </svg>
         </button>
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Zoom controls ── */}
+        {p.onZoomIn && p.onZoomOut && p.onZoomFit && (
+          <div className="flex items-center gap-0.5 rounded-md p-0.5 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bgCard, borderRadius: TAC_THEME.radius }}>
+            <button onClick={p.onZoomOut} className="p-1 rounded flex items-center justify-center" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
+              title="缩小">
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={p.onZoomFit} className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
+              title="重置缩放">1:1</button>
+            <button onClick={p.onZoomIn} className="p-1 rounded flex items-center justify-center" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
+              title="放大">
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+
+        {/* ── Clear / Export ── */}
         <button
           onClick={p.onClear}
-          className="px-2 py-1.5 text-[10px] font-medium flex-shrink-0 rounded-md transition-colors"
-          style={{ color: TEXT_DIM, borderRadius: "6px" }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.backgroundColor = "#1e2128"; }}
+          className="px-2 py-1.5 text-[10px] font-medium flex-shrink-0 rounded-md"
+          style={{ color: TEXT_DIM, borderRadius: "6px", transition: "all 150ms" }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = ERROR; e.currentTarget.style.backgroundColor = BG_HOVER; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           清空
         </button>
         <button
           onClick={p.onExport}
-          className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold rounded-md transition-opacity hover:opacity-90 flex-shrink-0"
-          style={{ backgroundColor: "transparent", color: ACCENT, border: `1px solid ${ACCENT}`, borderRadius: TAC_THEME.radius }}
+          className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold rounded-md flex-shrink-0"
+          style={{ backgroundColor: "transparent", color: ACCENT, border: `1px solid ${ACCENT}`, borderRadius: TAC_THEME.radius, transition: "opacity 150ms" }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
         >
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />

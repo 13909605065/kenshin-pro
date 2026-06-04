@@ -355,8 +355,8 @@ export function ExportTable({ modules, formData }: ExportTableProps) {
     <>
       <button
         onClick={handlePrint}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-pitch-700 hover:bg-pitch-600 rounded-lg transition"
-        title="导出为PDF/打印"
+        className="flex items-center gap-1.5 text-[11px] py-1.5 px-3 rounded-lg border transition-all duration-150 bg-[#1e1e1e] border-[#222] text-[#d1d1d1] hover:border-[#555] hover:bg-[#222]"
+        title="导出为表格/打印"
       >
         📄 导出表格
       </button>

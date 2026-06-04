@@ -9,6 +9,32 @@ import { createClient } from "@/lib/supabase/supabase-client";
 
 type Status = "idle" | "loading" | "done" | "error";
 
+const FORMATION_PRESETS = [
+  "4-3-3",
+  "4-4-2",
+  "4-2-3-1",
+  "3-5-2",
+  "3-4-3",
+  "5-4-1",
+  "5-3-2",
+  "4-1-4-1",
+  "4-3-2-1",
+  "3-4-2-1",
+];
+
+const MATCH_TYPES = ["联赛", "杯赛", "友谊赛"];
+const VENUES = ["主场", "客场", "中立"];
+const WEATHERS = ["晴", "阴", "小雨", "大雨", "高温", "寒冷", "大风"];
+
+const EXAMPLES = [
+  "对方10号球员频繁回撤到中场接球，我方中卫不敢跟出去，导致中场失控",
+  "边路被对方边锋完全压制，我方边后卫一对一防不住",
+  "定位球防守漏人严重，对方角球经常抢到第一点",
+  "高位压迫被破解，对方一脚长传就打穿防线",
+  "对方打4-4-2菱形中场，我们4-3-3中路被压制，怎么破？",
+  "我们进攻时边后卫压上太深，被对方打身后反击总是回不来",
+];
+
 export default function TacticalDiagnosisPage() {
   const router = useRouter();
   const [problem, setProblem] = useState("");
@@ -20,6 +46,13 @@ export default function TacticalDiagnosisPage() {
   const [activeTab, setActiveTab] = useState<"analysis" | "solution" | "training" | "board">("analysis");
   const [isListening, setIsListening] = useState(false);
   const [supabaseSaved, setSupabaseSaved] = useState(false);
+  const [extraOpen, setExtraOpen] = useState(false);
+  const [matchType, setMatchType] = useState("");
+  const [venue, setVenue] = useState("");
+  const [injuries, setInjuries] = useState("");
+  const [weather, setWeather] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [clickedExample, setClickedExample] = useState<number | null>(null);
   const recognitionRef = useRef<any>(null);
 
   // ─── Voice input ───────────────────────────────────────
@@ -48,6 +81,16 @@ export default function TacticalDiagnosisPage() {
     recognition.start();
   }, []);
 
+  // ─── Build context for API ─────────────────────────────
+  const buildContext = () => {
+    const parts: string[] = [];
+    if (matchType) parts.push(`赛事类型: ${matchType}`);
+    if (venue) parts.push(`场地: ${venue}`);
+    if (injuries) parts.push(`伤病球员: ${injuries}`);
+    if (weather) parts.push(`天气: ${weather}`);
+    return parts.length > 0 ? parts.join("；") : undefined;
+  };
+
   // ─── Submit ────────────────────────────────────────────
   const handleDiagnose = async () => {
     if (problem.trim().length < 5) {
@@ -65,8 +108,9 @@ export default function TacticalDiagnosisPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           problem: problem.trim(),
-          formation: formation.trim() || undefined,
-          opponentFormation: opponentFormation.trim() || undefined,
+          formation: formation || undefined,
+          opponentFormation: opponentFormation || undefined,
+          context: buildContext(),
         }),
       });
 
@@ -80,14 +124,22 @@ export default function TacticalDiagnosisPage() {
         try {
           const key = "kenshin_diagnosis_history";
           const history = JSON.parse(localStorage.getItem(key) || "[]");
-          history.unshift({ problem: problem.trim(), diagnosis: json.data, date: new Date().toISOString() });
+          history.unshift({
+            problem: problem.trim(),
+            diagnosis: json.data,
+            date: new Date().toISOString(),
+          });
           localStorage.setItem(key, JSON.stringify(history.slice(0, 10)));
         } catch {}
+        // Refresh history state
+        loadHistory();
 
         // Sync to Supabase
         try {
           const supabase = createClient();
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (user) {
             await supabase.from("diagnosis_history").insert({
               user_id: user.id,
@@ -107,97 +159,355 @@ export default function TacticalDiagnosisPage() {
     }
   };
 
-  // ─── Example prompts ───────────────────────────────────
-  const examples = [
-    "对方10号总是回撤到中场接球转身，我们的双中卫没人敢顶出去，后腰也补不回来",
-    "我们进攻时边后卫压上太深，被对方打身后反击总是回不来",
-    "对方打4-4-2菱形中场，我们4-3-3中路被压制，怎么破？",
-  ];
+  // ─── Example click handler ────────────────────────────
+  const handleExampleClick = (text: string, index: number) => {
+    setProblem(text);
+    setClickedExample(index);
+    setTimeout(() => setClickedExample(null), 800);
+  };
 
   // ─── Diagnosis history ────────────────────────────────
   const [history, setHistory] = useState<any[]>(() => {
-    try { return JSON.parse(localStorage.getItem("kenshin_diagnosis_history") || "[]").slice(0, 5); } catch { return []; }
+    try {
+      return JSON.parse(
+        localStorage.getItem("kenshin_diagnosis_history") || "[]"
+      ).slice(0, 10);
+    } catch {
+      return [];
+    }
   });
+
+  const loadHistory = () => {
+    try {
+      const h = JSON.parse(
+        localStorage.getItem("kenshin_diagnosis_history") || "[]"
+      );
+      setHistory(h.slice(0, 10));
+    } catch {}
+  };
+
+  const restoreFromHistory = (item: any) => {
+    setProblem(item.problem || "");
+    setDiagnosis(item.diagnosis || null);
+    if (item.diagnosis) {
+      setStatus("done");
+      setActiveTab("analysis");
+    }
+    setHistoryOpen(false);
+  };
 
   // ─── Render ────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <div className="max-w-3xl mx-auto px-4 py-6 pb-24">
-        {/* Header */}
-        <div className="mb-6">
-          <a href="/" className="text-xs text-gray-500 hover:text-gray-300 mb-1 inline-block">← 返回</a>
-          <h1 className="text-2xl font-bold text-neon-pink">⚽ 战术诊断</h1>
-          <p className="text-gray-400 text-sm mt-1">描述你遇到的进攻或防守问题，AI 基于运动科学知识库给出方案并自动画图</p>
+    <div className="min-h-screen bg-[#121212] text-[#d1d1d1]">
+      <div className="max-w-3xl mx-auto px-4 py-6 pb-24 relative">
+
+        {/* ================================================================ */}
+        {/* Card 1: Title Area                                               */}
+        {/* ================================================================ */}
+        <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 mb-4">
+          <a
+            href="/"
+            className="text-xs text-gray-500 hover:text-gray-300 mb-2 inline-block transition-colors"
+          >
+            ← 返回
+          </a>
+          <h1 className="text-2xl font-bold text-[#d92525]">战术诊断</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            描述战术问题，AI 智能分析并生成解决方案
+          </p>
         </div>
 
-        {/* Input area */}
-        <div className="space-y-4 mb-6">
-          {/* Main problem input */}
+        {/* ================================================================ */}
+        {/* Card 2: Input Area                                               */}
+        {/* ================================================================ */}
+        <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 mb-4 space-y-4">
+          {/* Main textarea with mic */}
           <div className="relative">
             <textarea
               value={problem}
               onChange={(e) => setProblem(e.target.value)}
-              placeholder="在这里描述战术问题...&#10;&#10;例如：对方10号总是回撤接球转身，双中卫没人顶出去，后腰也补不回来"
-              rows={4}
-              className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-neon-pink focus:outline-none resize-none text-base"
+              placeholder="描述战术问题...&#10;&#10;例如：对方10号总是回撤接球转身，双中卫没人顶出去，后腰也补不回来"
+              rows={5}
+              className="w-full min-h-[120px] bg-[#121212] border border-[#333] rounded-xl px-4 py-3 text-[#d1d1d1] placeholder-gray-500 focus:border-[#d92525]/50 focus:outline-none focus:ring-1 focus:ring-[#d92525]/30 resize-none text-base"
             />
-            {/* Voice button */}
-            <button
-              onClick={startVoice}
-              disabled={isListening}
-              className={`absolute right-3 bottom-3 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                isListening
-                  ? "bg-red-500 animate-pulse shadow-lg shadow-red-500/50"
-                  : "bg-[#2a2a2a] hover:bg-[#333]"
-              }`}
-              title="语音输入"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" y1="19" x2="12" y2="23" />
-                <line x1="8" y1="23" x2="16" y2="23" />
-              </svg>
-            </button>
+            {/* Voice button inside textarea */}
+            <div className="absolute right-3 bottom-3 flex items-center gap-2">
+              {isListening && (
+                <span className="text-xs text-[#d92525] animate-pulse font-medium">
+                  正在聆听...
+                </span>
+              )}
+              <button
+                onClick={startVoice}
+                disabled={isListening}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  isListening
+                    ? "bg-[#d92525] animate-pulse shadow-lg shadow-[#d92525]/50 ring-2 ring-[#d92525]/40"
+                    : "bg-[#2a2a2a] hover:bg-[#333]"
+                }`}
+                title="语音输入"
+              >
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          {/* Optional fields */}
+          {/* Formation dropdowns */}
           <div className="grid grid-cols-2 gap-3">
-            <input
-              value={formation}
-              onChange={(e) => setFormation(e.target.value)}
-              placeholder="我方阵型（如 4-3-3）"
-              className="bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-neon-pink focus:outline-none text-sm"
-            />
-            <input
-              value={opponentFormation}
-              onChange={(e) => setOpponentFormation(e.target.value)}
-              placeholder="对方阵型（如 4-4-2）"
-              className="bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-neon-pink focus:outline-none text-sm"
-            />
+            <div>
+              <label className="block text-xs text-gray-500 mb-1.5">我方阵型</label>
+              <select
+                value={formation}
+                onChange={(e) => setFormation(e.target.value)}
+                className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2.5 text-[#d1d1d1] text-sm focus:border-[#d92525]/50 focus:outline-none focus:ring-1 focus:ring-[#d92525]/30 appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5em 1.5em",
+                  paddingRight: "2.5rem",
+                }}
+              >
+                <option value="" className="bg-[#1e1e1e] text-gray-500">
+                  选择阵型...
+                </option>
+                {FORMATION_PRESETS.map((f) => (
+                  <option key={f} value={f} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1.5">对方阵型</label>
+              <select
+                value={opponentFormation}
+                onChange={(e) => setOpponentFormation(e.target.value)}
+                className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2.5 text-[#d1d1d1] text-sm focus:border-[#d92525]/50 focus:outline-none focus:ring-1 focus:ring-[#d92525]/30 appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                  backgroundPosition: "right 0.5rem center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundSize: "1.5em 1.5em",
+                  paddingRight: "2.5rem",
+                }}
+              >
+                <option value="" className="bg-[#1e1e1e] text-gray-500">
+                  选择阵型...
+                </option>
+                {FORMATION_PRESETS.map((f) => (
+                  <option key={f} value={f} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
+          {/* Additional filters — collapsible */}
+          <div>
+            <button
+              onClick={() => setExtraOpen(!extraOpen)}
+              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              <svg
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  extraOpen ? "rotate-90" : ""
+                }`}
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              附加条件
+              {(matchType || venue || injuries || weather) && (
+                <span className="inline-flex items-center justify-center w-1.5 h-1.5 rounded-full bg-[#d92525]" />
+              )}
+            </button>
+            <div
+              className={`mt-3 space-y-3 transition-all duration-200 overflow-hidden ${
+                extraOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Match type */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">赛事类型</label>
+                    <select
+                      value={matchType}
+                      onChange={(e) => setMatchType(e.target.value)}
+                      className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-[#d1d1d1] text-sm focus:border-[#d92525]/50 focus:outline-none appearance-none cursor-pointer"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: "right 0.5rem center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "1.5em 1.5em",
+                        paddingRight: "2.5rem",
+                      }}
+                    >
+                      <option value="" className="bg-[#1e1e1e] text-gray-500">
+                        不限
+                      </option>
+                      {MATCH_TYPES.map((t) => (
+                        <option key={t} value={t} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Venue */}
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">场地</label>
+                    <select
+                      value={venue}
+                      onChange={(e) => setVenue(e.target.value)}
+                      className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-[#d1d1d1] text-sm focus:border-[#d92525]/50 focus:outline-none appearance-none cursor-pointer"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: "right 0.5rem center",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "1.5em 1.5em",
+                        paddingRight: "2.5rem",
+                      }}
+                    >
+                      <option value="" className="bg-[#1e1e1e] text-gray-500">
+                        不限
+                      </option>
+                      {VENUES.map((v) => (
+                        <option key={v} value={v} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {/* Injuries */}
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">伤病球员</label>
+                  <input
+                    value={injuries}
+                    onChange={(e) => setInjuries(e.target.value)}
+                    placeholder="球员名或号码，逗号分隔"
+                    className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-[#d1d1d1] placeholder-gray-500 text-sm focus:border-[#d92525]/50 focus:outline-none"
+                  />
+                </div>
+                {/* Weather */}
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">天气</label>
+                  <select
+                    value={weather}
+                    onChange={(e) => setWeather(e.target.value)}
+                    className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-[#d1d1d1] text-sm focus:border-[#d92525]/50 focus:outline-none appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: "right 0.5rem center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "1.5em 1.5em",
+                      paddingRight: "2.5rem",
+                    }}
+                  >
+                    <option value="" className="bg-[#1e1e1e] text-gray-500">
+                      不限
+                    </option>
+                    {WEATHERS.map((w) => (
+                      <option key={w} value={w} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                        {w}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+          </div>
+
+          {/* Diagnose button */}
           <button
             onClick={handleDiagnose}
             disabled={status === "loading"}
-            className="w-full bg-neon-pink text-black font-bold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 text-lg"
+            className="w-full bg-[#d92525] text-white font-bold py-3 rounded-xl hover:bg-[#c41e1e] transition-all disabled:opacity-60 disabled:cursor-not-allowed text-base flex items-center justify-center gap-2 h-[48px]"
           >
-            {status === "loading" ? "🤔 AI 正在分析中..." : "🔍 开始诊断"}
+            {status === "loading" ? (
+              <>
+                <svg
+                  className="animate-spin w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeDasharray="32"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                正在分析战术...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                  <path d="M11 8v6M8 11h6" strokeWidth="1.5" />
+                </svg>
+                开始诊断
+              </>
+            )}
           </button>
         </div>
 
-        {/* Examples */}
+        {/* ================================================================ */}
+        {/* Card 3: Example Recommendations                                  */}
+        {/* ================================================================ */}
         {status === "idle" && !diagnosis && (
-          <div className="mb-6">
-            <p className="text-sm text-gray-500 mb-2">💡 试试这些例子：</p>
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 mb-4">
+            <p className="text-sm text-gray-500 mb-3">试试这些例子：</p>
             <div className="space-y-2">
-              {examples.map((ex, i) => (
+              {EXAMPLES.map((ex, i) => (
                 <button
                   key={i}
-                  onClick={() => setProblem(ex)}
-                  className="block w-full text-left text-sm bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-lg px-3 py-2 text-gray-300 transition-colors"
+                  onClick={() => handleExampleClick(ex, i)}
+                  className={`block w-full text-left text-sm bg-[#121212] border rounded-lg px-3 py-2.5 transition-all duration-150 ${
+                    clickedExample === i
+                      ? "border-[#d92525] ring-1 ring-[#d92525]/30"
+                      : "border-[#222] hover:border-[#d92525]/30 text-gray-400 hover:text-[#d1d1d1]"
+                  }`}
                 >
-                  {ex}
+                  <span className="flex items-start gap-2">
+                    <span className="text-gray-600 shrink-0 mt-0.5">
+                      {clickedExample === i ? (
+                        <svg className="w-4 h-4 text-[#d92525]" viewBox="0 0 20 20" fill="currentColor">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                      )}
+                    </span>
+                    {ex}
+                  </span>
                 </button>
               ))}
             </div>
@@ -206,19 +516,19 @@ export default function TacticalDiagnosisPage() {
 
         {/* Error */}
         {errorMessage && (
-          <div className="bg-red-900/30 border border-red-700/50 rounded-xl px-4 py-3 text-red-300 text-sm mb-6">
-            ❌ {errorMessage}
+          <div className="bg-red-900/20 border border-red-800/40 rounded-xl px-4 py-3 text-red-400 text-sm mb-4">
+            {errorMessage}
           </div>
         )}
 
         {/* Loading skeleton */}
         {status === "loading" && (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-6 bg-[#222] rounded w-1/3" />
-            <div className="h-4 bg-[#222] rounded w-full" />
-            <div className="h-4 bg-[#222] rounded w-5/6" />
-            <div className="h-4 bg-[#222] rounded w-3/4" />
-            <div className="h-48 bg-[#222] rounded-xl" />
+          <div className="space-y-4 animate-pulse mb-4">
+            <div className="h-6 bg-[#1e1e1e] rounded w-1/3" />
+            <div className="h-4 bg-[#1e1e1e] rounded w-full" />
+            <div className="h-4 bg-[#1e1e1e] rounded w-5/6" />
+            <div className="h-4 bg-[#1e1e1e] rounded w-3/4" />
+            <div className="h-48 bg-[#1e1e1e] rounded-xl" />
           </div>
         )}
 
@@ -226,19 +536,19 @@ export default function TacticalDiagnosisPage() {
         {status === "done" && diagnosis && (
           <div>
             {/* Tab bar */}
-            <div className="flex gap-1 bg-[#1a1a1a] rounded-xl p-1 mb-4">
+            <div className="flex gap-1 bg-[#1e1e1e] rounded-xl p-1 mb-4 border border-[#222]">
               {[
-                { key: "analysis", label: "📊 分析" },
-                { key: "solution", label: "💡 对策" },
-                { key: "training", label: "🏋️ 训练" },
-                { key: "board", label: "🎯 战术图" },
+                { key: "analysis", label: "分析" },
+                { key: "solution", label: "对策" },
+                { key: "training", label: "训练" },
+                { key: "board", label: "战术图" },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                     activeTab === tab.key
-                      ? "bg-neon-pink text-black"
+                      ? "bg-[#d92525] text-white"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -250,20 +560,36 @@ export default function TacticalDiagnosisPage() {
             {/* Tab: Analysis */}
             {activeTab === "analysis" && (
               <div className="space-y-4">
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-5">
-                  <span className="inline-block px-2 py-0.5 rounded text-[10px] bg-neon-pink/20 text-neon-pink mb-2">
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5">
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] bg-[#d92525]/20 text-[#d92525] mb-2 font-medium">
                     {diagnosis.diagnosis.problem_type}
                   </span>
-                  <h2 className="text-lg font-bold mb-1">{diagnosis.diagnosis.summary}</h2>
+                  <h2 className="text-lg font-bold text-[#d1d1d1] mb-1">
+                    {diagnosis.diagnosis.summary}
+                  </h2>
                   <div className="text-gray-300 text-sm leading-relaxed mt-3 whitespace-pre-line">
                     {diagnosis.diagnosis.analysis.split("\n").map((line, i) => {
                       if (/^[一二三四五六七八九十]、/.test(line.trim())) {
-                        return <p key={i} className="text-neon-pink font-bold text-sm mt-3 mb-1">{line.trim()}</p>;
+                        return (
+                          <p key={i} className="text-[#d92525] font-bold text-sm mt-3 mb-1">
+                            {line.trim()}
+                          </p>
+                        );
                       }
                       if (/^\d+[、.]/.test(line.trim())) {
-                        return <p key={i} className="text-gray-300 ml-2 my-0.5">{line.trim()}</p>;
+                        return (
+                          <p key={i} className="text-gray-300 ml-2 my-0.5">
+                            {line.trim()}
+                          </p>
+                        );
                       }
-                      return line.trim() ? <p key={i} className="text-gray-400 my-0.5">{line.trim()}</p> : <br key={i}/>;
+                      return line.trim() ? (
+                        <p key={i} className="text-gray-400 my-0.5">
+                          {line.trim()}
+                        </p>
+                      ) : (
+                        <br key={i} />
+                      );
                     })}
                   </div>
                 </div>
@@ -273,40 +599,59 @@ export default function TacticalDiagnosisPage() {
             {/* Tab: Solution */}
             {activeTab === "solution" && (
               <div className="space-y-4">
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-5">
-                  <h2 className="text-lg font-bold text-neon-pink mb-1">{diagnosis.solution.title}</h2>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5">
+                  <h2 className="text-lg font-bold text-[#d92525] mb-1">
+                    {diagnosis.solution.title}
+                  </h2>
                   <div className="text-gray-300 text-sm leading-relaxed mt-3 whitespace-pre-line">
                     {diagnosis.solution.strategy.split("\n").map((line, i) => {
                       if (/^[一二三四五六七八九十]、/.test(line.trim())) {
-                        return <p key={i} className="text-neon-pink font-bold text-sm mt-3 mb-1">{line.trim()}</p>;
+                        return (
+                          <p key={i} className="text-[#d92525] font-bold text-sm mt-3 mb-1">
+                            {line.trim()}
+                          </p>
+                        );
                       }
                       if (/^\d+[、.]/.test(line.trim())) {
-                        return <p key={i} className="text-gray-300 ml-2 my-0.5">{line.trim()}</p>;
+                        return (
+                          <p key={i} className="text-gray-300 ml-2 my-0.5">
+                            {line.trim()}
+                          </p>
+                        );
                       }
-                      return line.trim() ? <p key={i} className="text-gray-400 my-0.5">{line.trim()}</p> : <br key={i}/>;
+                      return line.trim() ? (
+                        <p key={i} className="text-gray-400 my-0.5">
+                          {line.trim()}
+                        </p>
+                      ) : (
+                        <br key={i} />
+                      );
                     })}
                   </div>
                 </div>
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
                   <h3 className="text-sm font-bold text-gray-400 mb-2">调整要点</h3>
                   <ul className="space-y-1.5">
                     {diagnosis.solution.adjustments.map((adj, i) => (
-                      <li key={i} className="text-gray-300 text-sm flex items-start gap-2">
-                        <span className="text-neon-pink mt-1">•</span>
+                      <li
+                        key={i}
+                        className="text-gray-300 text-sm flex items-start gap-2"
+                      >
+                        <span className="text-[#d92525] mt-1 shrink-0">•</span>
                         {adj}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-400 mb-2">👤 球员任务卡</h3>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
+                  <h3 className="text-sm font-bold text-gray-400 mb-2">球员任务卡</h3>
                   <div className="space-y-2">
                     {diagnosis.solution.player_instructions.map((pi, i) => (
                       <div
                         key={i}
-                        className="flex items-center gap-3 bg-[#111] rounded-lg px-3 py-2"
+                        className="flex items-center gap-3 bg-[#121212] rounded-lg px-3 py-2"
                       >
-                        <span className="text-neon-pink font-bold text-sm min-w-[3rem]">
+                        <span className="text-[#d92525] font-bold text-sm min-w-[3rem]">
                           {pi.position}
                         </span>
                         <span className="text-gray-300 text-sm">{pi.instruction}</span>
@@ -320,20 +665,25 @@ export default function TacticalDiagnosisPage() {
             {/* Tab: Training */}
             {activeTab === "training" && (
               <div className="space-y-4">
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <h2 className="text-lg font-bold text-neon-pink mb-2">🎯 {diagnosis.training.focus}</h2>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
+                  <h2 className="text-lg font-bold text-[#d92525] mb-2">
+                    {diagnosis.training.focus}
+                  </h2>
                   <h3 className="text-sm font-bold text-gray-400 mb-2">训练项目</h3>
                   <ul className="space-y-2">
                     {diagnosis.training.drills.map((drill, i) => (
-                      <li key={i} className="flex items-start gap-2 text-gray-300 text-sm bg-[#111] rounded-lg px-3 py-2">
-                        <span className="text-neon-pink font-bold">{i + 1}.</span>
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-gray-300 text-sm bg-[#121212] rounded-lg px-3 py-2"
+                      >
+                        <span className="text-[#d92525] font-bold">{i + 1}.</span>
                         {drill}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-gray-400 mb-2">⚽ 对抗赛建议</h3>
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
+                  <h3 className="text-sm font-bold text-gray-400 mb-2">对抗赛建议</h3>
                   <p className="text-gray-300 text-sm">{diagnosis.training.ssg_suggestion}</p>
                 </div>
               </div>
@@ -348,9 +698,9 @@ export default function TacticalDiagnosisPage() {
                     writeDiagnosisContext(diagnosis.render as any);
                     router.push("/tactics");
                   }}
-                  className="mt-3 w-full py-2.5 bg-[#222] hover:bg-[#333] border border-[#444] text-white font-medium rounded-xl text-sm transition"
+                  className="mt-3 w-full py-2.5 bg-[#1e1e1e] hover:bg-[#252525] border border-[#333] text-white font-medium rounded-xl text-sm transition"
                 >
-                  🎯 在战术板中打开编辑
+                  在战术板中打开编辑
                 </button>
               </div>
             )}
@@ -358,7 +708,13 @@ export default function TacticalDiagnosisPage() {
             {/* Cloud save indicator */}
             {supabaseSaved && (
               <div className="flex items-center justify-end gap-1.5 mt-3 text-xs text-green-400/80">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9" />
                   <polyline points="16 12 12 16 8 12" />
                   <line x1="12" y1="16" x2="12" y2="9" />
@@ -367,46 +723,151 @@ export default function TacticalDiagnosisPage() {
               </div>
             )}
 
-            {/* Share button */}
+            {/* Share + Reset buttons */}
             <div className="mt-6 flex gap-2">
               <button
                 onClick={() => {
                   const shareData = `${diagnosis.diagnosis.summary}\n\n对策: ${diagnosis.solution.title}\n${diagnosis.solution.strategy}\n\n训练: ${diagnosis.training.focus}`;
                   if (navigator.share) {
-                    navigator.share({ title: diagnosis.diagnosis.summary, text: shareData });
+                    navigator.share({
+                      title: diagnosis.diagnosis.summary,
+                      text: shareData,
+                    });
                   } else {
                     navigator.clipboard.writeText(shareData);
                     alert("已复制到剪贴板");
                   }
                 }}
-                className="flex-1 bg-[#222] hover:bg-[#333] text-white font-medium py-3 rounded-xl transition-colors"
+                className="flex-1 bg-[#1e1e1e] hover:bg-[#252525] border border-[#333] text-white font-medium py-3 rounded-xl transition-colors"
               >
-                📤 分享给球员
+                分享给球员
               </button>
               <button
                 onClick={() => {
                   setProblem("");
+                  setFormation("");
+                  setOpponentFormation("");
+                  setMatchType("");
+                  setVenue("");
+                  setInjuries("");
+                  setWeather("");
                   setDiagnosis(null);
                   setStatus("idle");
                   setErrorMessage("");
                   setSupabaseSaved(false);
                 }}
-                className="flex-1 bg-[#222] hover:bg-[#333] text-white font-medium py-3 rounded-xl transition-colors"
+                className="flex-1 bg-[#1e1e1e] hover:bg-[#252525] border border-[#333] text-white font-medium py-3 rounded-xl transition-colors"
               >
-                🔄 重新诊断
+                重新诊断
               </button>
             </div>
           </div>
         )}
       </div>
+
       <MobileNav />
+
+      {/* ================================================================ */}
+      {/* History Panel — floating sidebar toggle                           */}
+      {/* ================================================================ */}
+      {/* Toggle button */}
+      <button
+        onClick={() => setHistoryOpen(!historyOpen)}
+        className="fixed right-0 top-1/3 z-50 bg-[#1e1e1e] border border-[#222] border-r-0 rounded-l-lg px-2 py-3 text-gray-400 hover:text-[#d1d1d1] transition-colors shadow-lg"
+        title="历史记录"
+      >
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </button>
+
+      {/* History slide-in panel */}
+      {historyOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-50 bg-black/50"
+            onClick={() => setHistoryOpen(false)}
+          />
+          {/* Panel */}
+          <div className="fixed right-0 top-0 bottom-0 z-50 w-80 max-w-[85vw] bg-[#1e1e1e] border-l border-[#222] shadow-2xl overflow-y-auto animate-slide-left">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-[#d1d1d1] flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  历史记录
+                </h2>
+                <button
+                  onClick={() => setHistoryOpen(false)}
+                  className="text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {history.length === 0 ? (
+                <p className="text-gray-500 text-sm text-center py-8">暂无历史记录</p>
+              ) : (
+                <div className="space-y-2">
+                  {history.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => restoreFromHistory(item)}
+                      className="block w-full text-left bg-[#121212] border border-[#222] hover:border-[#d92525]/30 rounded-lg px-3 py-2.5 transition-all duration-150 group"
+                    >
+                      <p className="text-sm text-gray-300 line-clamp-2 group-hover:text-[#d1d1d1]">
+                        {item.problem}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {item.date
+                          ? new Date(item.date).toLocaleString("zh-CN", {
+                              month: "numeric",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </p>
+                    </button>
+                  ))}
+                  {history.length > 0 && (
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("kenshin_diagnosis_history");
+                        setHistory([]);
+                      }}
+                      className="w-full text-center text-xs text-gray-600 hover:text-red-400 py-2 transition-colors"
+                    >
+                      清除全部记录
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 // ─── Tactical Board (inline SVG, no Fabric.js dependency for lightweight mobile) ──
 
-function TacticalBoardRender({ render }: { render: TacticalDiagnosis["render"] }) {
+function TacticalBoardRender({
+  render,
+}: {
+  render: TacticalDiagnosis["render"];
+}) {
   const FIELD_W = 800;
   const FIELD_H = 520;
   const MARGIN = 40;
@@ -415,9 +876,9 @@ function TacticalBoardRender({ render }: { render: TacticalDiagnosis["render"] }
   const toY = (y: number) => MARGIN + y * (FIELD_H - 2 * MARGIN);
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden">
-      <div className="px-4 py-2 bg-[#111] border-b border-[#333] text-sm font-medium text-gray-300">
-        🎯 {render.title}
+    <div className="bg-[#1e1e1e] border border-[#222] rounded-xl overflow-hidden">
+      <div className="px-4 py-2 bg-[#121212] border-b border-[#222] text-sm font-medium text-[#d1d1d1]">
+        {render.title}
       </div>
       <div className="p-2">
         <svg
@@ -510,7 +971,6 @@ function TacticalBoardRender({ render }: { render: TacticalDiagnosis["render"] }
 
             return (
               <g key={`arrow-${i}`}>
-                {/* Shadow for visibility */}
                 <line
                   x1={x1}
                   y1={y1}
@@ -529,7 +989,9 @@ function TacticalBoardRender({ render }: { render: TacticalDiagnosis["render"] }
                   strokeWidth="2.5"
                   strokeDasharray={arrow.dashed ? "8,4" : "none"}
                   strokeLinecap="round"
-                  markerEnd={arrow.dashed ? undefined : `url(#arrowhead-${i})`}
+                  markerEnd={
+                    arrow.dashed ? undefined : `url(#arrowhead-${i})`
+                  }
                 />
                 {!arrow.dashed && (
                   <defs>
@@ -584,48 +1046,46 @@ function TacticalBoardRender({ render }: { render: TacticalDiagnosis["render"] }
           )}
 
           {/* Players */}
-          {[...(render.players || []), ...(render.opponents || [])].map((p, i) => (
-            <g key={`player-${i}`}>
-              {/* Shadow */}
-              <circle
-                cx={toX(p.x)}
-                cy={toY(p.y) + 1}
-                r="14"
-                fill="rgba(0,0,0,0.25)"
-              />
-              {/* Body */}
-              <circle
-                cx={toX(p.x)}
-                cy={toY(p.y)}
-                r="13"
-                fill={p.color}
-                stroke={p.team === "opponent" ? "#1e40af" : "#9b1d3a"}
-                strokeWidth="2"
-              />
-              {/* Number */}
-              <text
-                x={toX(p.x)}
-                y={toY(p.y) + 4}
-                textAnchor="middle"
-                fill="white"
-                fontSize="11"
-                fontWeight="bold"
-              >
-                {p.number}
-              </text>
-              {/* Label below */}
-              <text
-                x={toX(p.x)}
-                y={toY(p.y) + 25}
-                textAnchor="middle"
-                fill="#222"
-                fontSize="10"
-                fontWeight="500"
-              >
-                {p.label}
-              </text>
-            </g>
-          ))}
+          {[...(render.players || []), ...(render.opponents || [])].map(
+            (p, i) => (
+              <g key={`player-${i}`}>
+                <circle
+                  cx={toX(p.x)}
+                  cy={toY(p.y) + 1}
+                  r="14"
+                  fill="rgba(0,0,0,0.25)"
+                />
+                <circle
+                  cx={toX(p.x)}
+                  cy={toY(p.y)}
+                  r="13"
+                  fill={p.color}
+                  stroke={p.team === "opponent" ? "#1e40af" : "#9b1d3a"}
+                  strokeWidth="2"
+                />
+                <text
+                  x={toX(p.x)}
+                  y={toY(p.y) + 4}
+                  textAnchor="middle"
+                  fill="white"
+                  fontSize="11"
+                  fontWeight="bold"
+                >
+                  {p.number}
+                </text>
+                <text
+                  x={toX(p.x)}
+                  y={toY(p.y) + 25}
+                  textAnchor="middle"
+                  fill="#222"
+                  fontSize="10"
+                  fontWeight="500"
+                >
+                  {p.label}
+                </text>
+              </g>
+            )
+          )}
         </svg>
       </div>
     </div>

@@ -21,6 +21,7 @@ export default function GymPage() {
   const planHistory = usePlanHistory();
   const { formData } = wizard;
   const isCoach = role === "coach";
+  const isFitness = role === "fitness";
 
   const [recentPlans, setRecentPlans] = useState<any[]>([]);
   const [workoutRecords, setWorkoutRecords] = useState<any[]>([]);
@@ -50,10 +51,21 @@ export default function GymPage() {
   const hasInjury = (formData.injurySites || []).length > 0;
 
   let trainRec = "";
-  if (goal === "strength") trainRec = `${isU18 ? "中低" : "中高"}强度力量训练，${phase === "preseason" ? "基础力量打底" : "维持已有水平"}。3-4个复合动作，组间${isU18 ? "2-3min" : "2min"}。`;
-  else if (goal === "power") trainRec = `爆发力训练日。奥举衍生+跳跃类，${isU18 ? "中等重量控速" : "低次数高速度"}，充分动态热身。`;
-  else trainRec = `全身力量维持。${isU18 ? "动作质量优先" : "根据感觉调整强度"}。`;
-  if (hasInjury) trainRec += " 避开伤病部位，无痛范围训练。";
+  if (isFitness) {
+    if (goal === "strength_fitness" || goal === "strength") trainRec = `${isU18 ? "中低" : "中高"}强度力量训练，3-4个复合动作，组间${isU18 ? "2-3min" : "2min"}，专注动作质量与渐进超负荷。`;
+    else if (goal === "hypertrophy") trainRec = `增肌训练日，8-12次中高容量，渐进超负荷。${isU18 ? "未成年以动作质量优先，避免极限重量。" : ""}`;
+    else if (goal === "fat_loss") trainRec = `减脂训练日，复合动作循环为主，间歇30-60s，训练后加20-30min有氧。`;
+    else if (goal === "body_shaping" || goal === "general_fitness") trainRec = `全身塑形训练，中等重量多次数(12-15次)，上下肢均衡发展，每部位2-3个动作。`;
+    else if (goal === "endurance_fitness") trainRec = `肌耐力训练，低重量高次数(15-20次)，循环训练模式，间歇≤60s。`;
+    else if (goal === "power") trainRec = `爆发力训练日。奥举衍生+跳跃类，${isU18 ? "中等重量控速" : "低次数高速度"}，充分动态热身。`;
+    else trainRec = `全身综合训练。${isU18 ? "动作质量优先" : "根据感觉调整强度"}，保持每周2-4次训练频率。`;
+    if (hasInjury) trainRec += " 避开伤病部位，无痛范围训练。";
+  } else {
+    if (goal === "strength") trainRec = `${isU18 ? "中低" : "中高"}强度力量训练，${phase === "preseason" ? "基础力量打底" : "维持已有水平"}。3-4个复合动作，组间${isU18 ? "2-3min" : "2min"}。`;
+    else if (goal === "power") trainRec = `爆发力训练日。奥举衍生+跳跃类，${isU18 ? "中等重量控速" : "低次数高速度"}，充分动态热身。`;
+    else trainRec = `全身力量维持。${isU18 ? "动作质量优先" : "根据感觉调整强度"}。`;
+    if (hasInjury) trainRec += " 避开伤病部位，无痛范围训练。";
+  }
 
   let bodyNote = "";
   if (bmi < 18.5) bodyNote = `BMI ${bmi.toFixed(1)}偏瘦，建议增肌，蛋白2.0g/kg。`;
@@ -61,16 +73,22 @@ export default function GymPage() {
   if (isU18) bodyNote += " 未成年，禁止>85%1RM，专注动作技术。";
   if (isO35) bodyNote += " 热身10min以上，关注关节活动度。";
 
-  const dietRec = `训练后30min内: 蛋白${Math.round(weight * 0.4)}g + 碳水${Math.round(weight * 0.8)}g。全天蛋白${Math.round(weight * 1.6)}g。${hasInjury ? "伤病恢复期，蛋白增至" + Math.round(weight * 2.0) + "g/天。" : ""}`;
+  const dietNote = hasInjury ? `伤病恢复期，蛋白增至${Math.round(weight * 2.0)}g/天。` : "";
 
   // ---- Form completeness check ----
   const canGenerate = isCoach
     ? !!(formData.coachCert && formData.coachRole && formData.leagueTag)
-    : !!(formData.position && formData.goal && formData.phase);
+    : isFitness
+      ? !!(formData.goal && formData.age != null && formData.weight != null && formData.height != null)
+      : !!(formData.position && formData.goal && formData.phase);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate) {
-      setGenError("请先在首页完善个人档案信息（位置、目标、阶段等必填项）");
+      setGenError(isCoach
+        ? "请先在首页完善教练档案信息（证书、执教身份、联赛等必填项）"
+        : isFitness
+          ? "请先在首页完善身体数据（年龄/身高/体重）和训练目标"
+          : "请先在首页完善个人档案信息（位置、目标、阶段等必填项）");
       return;
     }
 
@@ -128,7 +146,7 @@ export default function GymPage() {
       <div className="bg-[#0a0a0a] border-b border-[#333] px-4 py-3 flex items-center gap-3">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-lg font-bold">健身房</h1>
-        <div className="ml-auto"><span className="px-3 py-1.5 rounded-md text-xs font-bold bg-neon-pink text-black">{isCoach ? "教练" : "球员"}</span></div>
+        <div className="ml-auto"><span className="px-3 py-1.5 rounded-md text-xs font-bold bg-neon-pink text-black">{isCoach ? "教练" : isFitness ? "健身" : "球员"}</span></div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
@@ -136,7 +154,7 @@ export default function GymPage() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center text-lg font-bold text-neon-pink flex-shrink-0">{formData.name?.charAt(0) || "A"}</div>
           <div>
-            <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-500 ml-2 font-normal">{formData.position ? t("pos." + formData.position) : ""}</span></p>
+            <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-500 ml-2 font-normal">{!isFitness && formData.position ? t("pos." + formData.position) : ""}</span></p>
             <p className="text-[11px] text-gray-500">{age}岁 · {height}cm · {weight}kg · {years}年</p>
           </div>
         </div>
@@ -144,10 +162,16 @@ export default function GymPage() {
         {/* ---- Recommendation Card (always visible) ---- */}
         <div className="bg-[#1a1a1a] border border-neon-pink/20 rounded-xl p-5 space-y-4">
           <p className="text-xs text-neon-pink font-bold uppercase tracking-wide">今日训练建议</p>
-          <div><p className="text-[10px] text-gray-500 mb-1">训练方向</p><p className="text-sm text-gray-200 leading-relaxed">{trainRec}</p></div>
+          <div>
+            <p className="text-[10px] text-gray-500 mb-1">训练方向与营养</p>
+            <p className="text-sm text-gray-200 leading-relaxed">
+              {trainRec}
+              {dietNote ? <span className="text-neon-pink"> {dietNote}</span> : null}
+              <span> 训练后30min内补充蛋白{Math.round(weight * 0.4)}g+碳水{Math.round(weight * 0.8)}g，全天蛋白{Math.round(weight * 1.6)}g。</span>
+            </p>
+          </div>
           {bodyNote ? <div><p className="text-[10px] text-gray-500 mb-1">身体状况</p><p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p></div> : null}
           {hasInjury ? <div><p className="text-[10px] text-red-400 mb-1">伤病提醒</p><p className="text-sm text-red-300 leading-relaxed">检测到伤病部位，训练时避开直接负重，以康复性训练为主。如有不适立即停止。</p></div> : null}
-          <div><p className="text-[10px] text-gray-500 mb-1">营养建议</p><p className="text-sm text-gray-200 leading-relaxed">{dietRec}</p></div>
           <div className="grid grid-cols-3 gap-2 pt-2">
             <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{age}</p><p className="text-[10px] text-gray-500">年龄</p></div>
             <div className="text-center bg-[#111] rounded-lg p-2"><p className="text-neon-pink font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-500">BMI</p></div>
@@ -239,7 +263,7 @@ export default function GymPage() {
           <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-yellow-300 leading-relaxed">
-              智能推荐需要完整的个人档案。请先在首页填写{isCoach ? "教练证书、执教身份、联赛、战术主题" : "场上位置、训练目标、赛季阶段"}等必填信息。
+              智能推荐需要完整的个人档案。请先在首页填写{isCoach ? "教练证书、执教身份、联赛、战术主题" : isFitness ? "训练目标和身体数据（年龄/身高/体重）" : "场上位置、训练目标、赛季阶段"}等必填信息。
             </p>
           </div>
         )}

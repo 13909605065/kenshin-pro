@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
   }
 
   const isCoach = formData.role === "coach";
-  const systemPrompt = buildSystemPrompt(formData);
+  const systemPrompt = buildSystemPrompt(formData, scene);
   const weather = await getWeather().catch(() => null);
 
   // Scene hint: constrain AI output to gym-only or pitch-only
