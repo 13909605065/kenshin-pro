@@ -373,7 +373,7 @@ export function Dashboard() {
   }, [updateField]);
 
   // Fitness tab unlock states
-  const fitnessTrainingUnlocked = fitnessGoals.length > 0 && (formData.injurySites.length > 0 || formData.injuryHistory.trim().length > 0);
+  const fitnessTrainingUnlocked = fitnessGoals.length > 0;
   const fitnessNutritionUnlocked = status === "complete" || status === "stream-interrupted";
 
   /** Plans saved for the current player name (case-insensitive) */
@@ -507,21 +507,6 @@ export function Dashboard() {
                   className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
                   健身
                 </button>
-                {/* 训练/营养 — locked for fitness workflow */}
-                {role === "fitness" && (
-                  <>
-                    <button
-                      onClick={() => fitnessTrainingUnlocked && setScene("workout")}
-                      className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (fitnessTrainingUnlocked ? "bg-[#1e1e1e] text-[#777] hover:bg-[#222]" : "bg-[#1e1e1e] text-[#555] opacity-50 cursor-not-allowed")}>
-                      训练
-                    </button>
-                    <button
-                      onClick={() => fitnessNutritionUnlocked && setScene("nutrition")}
-                      className={"px-3 py-1.5 rounded-md text-xs font-bold transition " + (fitnessNutritionUnlocked ? "bg-[#1e1e1e] text-[#777] hover:bg-[#222]" : "bg-[#1e1e1e] text-[#555] opacity-50 cursor-not-allowed")}>
-                      营养
-                    </button>
-                  </>
-                )}
               </div>
               {/* Scene switch — athlete only (fitness uses role-group buttons) */}
               {!isCoach && !isFitness && (
@@ -688,6 +673,37 @@ export function Dashboard() {
                   ))}
                   <textarea value={formData.injuryHistory} onChange={(e) => updateField("injuryHistory", e.target.value)} placeholder={t("player.injuryPlaceholder")} className="input-field text-[10px] mt-1 h-10 resize-none w-full" maxLength={200} />
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Fitness: Nutrition Card */}
+          {isFitness && (
+            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
+              <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
+                🥗 营养方案
+                {!fitnessNutritionUnlocked && <span className="text-[10px] text-gray-500 font-normal">— 生成训练后解锁</span>}
+              </h3>
+              {fitnessNutritionUnlocked && training.modules.length > 0 ? (
+                <div className="space-y-2">
+                  {(() => {
+                    const posModule = training.modules.find((m: any) => m.module === "position_training") as any;
+                    if (posModule?.nutrition) {
+                      const n = posModule.nutrition;
+                      return (
+                        <>
+                          {n.pre_workout && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">训练前</p><p className="text-[11px] text-[#d1d1d1]">{n.pre_workout}</p></div>}
+                          {n.post_workout && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">训练后</p><p className="text-[11px] text-[#d1d1d1]">{n.post_workout}</p></div>}
+                          {n.daily && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">日常饮食</p><p className="text-[11px] text-[#d1d1d1]">{n.daily}</p></div>}
+                          {n.hydration && <div className="bg-[#121212] rounded-lg p-2.5"><p className="text-[10px] text-[#d92525] font-bold mb-1">补水</p><p className="text-[11px] text-[#d1d1d1]">{n.hydration}</p></div>}
+                        </>
+                      );
+                    }
+                    return <p className="text-xs text-gray-500">营养数据加载中...</p>;
+                  })()}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">完成训练方案生成后，AI 将根据你的健身目标自动生成个性化营养建议。</p>
               )}
             </div>
           )}
