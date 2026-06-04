@@ -40,17 +40,26 @@ export function GestureController({ fabricRef, enabled }: Props) {
         const vision = await FilesetResolver.forVisionTasks("/mediapipe/");
         if (disposed) return;
 
-        // 3. Hand Landmarker
-        const landmarker = await HandLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: "/mediapipe/hand_landmarker.task",
-            delegate: "GPU",
-          },
-          runningMode: "VIDEO",
-          numHands: 2,
-          minHandDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
-        });
+        // 3. Hand Landmarker — try GPU first, fallback to CPU
+        let landmarker: HandLandmarker | null = null;
+        for (const delegate of ["GPU", "CPU"] as const) {
+          try {
+            landmarker = await HandLandmarker.createFromOptions(vision, {
+              baseOptions: {
+                modelAssetPath: "/mediapipe/hand_landmarker.task",
+                delegate,
+              },
+              runningMode: "VIDEO",
+              numHands: 2,
+              minHandDetectionConfidence: 0.5,
+              minTrackingConfidence: 0.5,
+            });
+            break;
+          } catch (e) {
+            if (delegate === "CPU") throw e; // both failed
+          }
+        }
+        if (!landmarker) throw new Error("HandLandmarker init failed");
         if (disposed) { landmarker.close(); return; }
         landmarkerRef.current = landmarker;
 
