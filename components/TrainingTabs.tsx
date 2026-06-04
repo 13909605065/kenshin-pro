@@ -16,6 +16,7 @@ import { CoachSessionTable } from "./CoachSessionTable";
 import { AthleteCategoryView } from "./AthleteTrainingView";
 import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
 import AIAssistant from "./AIAssistant";
+import MobileTrainingMode from "./MobileTrainingMode";
 
 interface Props {
   modules: TrainingModule[];
@@ -455,6 +456,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
   const [showTimer, setShowTimer] = useState(false);
+  const [showMobileMode, setShowMobileMode] = useState(false);
 
   const touchStartX = useRef(0);
 
@@ -518,23 +520,20 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
               </p>
             )}
           </div>
-          {/* Athlete start training button */}
-          {!isCoach && (
-            <button
-              onClick={() => setShowTimer(true)}
-              className="mt-3 w-full py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]"
-            >
-              <span className="text-base">▶</span> 开始训练
-            </button>
-          )}
-          {/* Coach timer button */}
-          {isCoach && (
-            <button
-              onClick={() => setShowTimer(true)}
-              className="mt-3 w-full py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]"
-            >
-              <span className="text-base">▶</span> 计时跟练
-            </button>
+          {/* Mobile Training Mode button — all roles */}
+          <button
+            onClick={() => setShowMobileMode(true)}
+            className="mt-3 w-full py-3 bg-[#d92525] text-white font-bold rounded-xl text-base flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98] lg:hidden"
+          >
+            📱 开始跟练
+          </button>
+          {/* Desktop timer button */}
+          <button
+            onClick={() => setShowTimer(true)}
+            className="mt-2 w-full py-2 bg-[#1e1e1e] border border-[#333] text-gray-400 font-medium rounded-xl text-xs flex items-center justify-center gap-1 hover:bg-[#222] transition"
+          >
+            <span className="text-sm">▶</span> 计时模式
+          </button>
           )}
         </div>
       </div>
@@ -664,6 +663,13 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
           modules={modules}
           planId={planId || undefined}
           onClose={() => setShowTimer(false)}
+        />
+      )}
+      {showMobileMode && (
+        <MobileTrainingMode
+          modules={modules}
+          planId={planId}
+          onClose={() => setShowMobileMode(false)}
         />
       )}
       <AIAssistant />
