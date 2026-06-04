@@ -343,14 +343,6 @@ export function Dashboard() {
           {/* === COACH === */}
           {isCoach && (
             <>
-              {/* 备课: only generate */}
-              {scene === "planning" && (
-                <button onClick={() => document.getElementById("generate-section")?.scrollIntoView({ behavior: "smooth" })} className="flex-1 min-w-[100px] bg-neon-pink/10 border border-neon-pink/30 rounded-lg p-2.5 text-left hover:bg-neon-pink/20 transition">
-                  <Zap className="w-5 h-5 text-neon-pink mb-1" />
-                  <p className="text-xs font-bold text-white">生成训练方案</p>
-                  <p className="text-[10px] text-gray-500">智能备课</p>
-                </button>
-              )}
               {/* 训练场: timer + roster */}
               {scene === "pitch" && (
                 <>
@@ -384,39 +376,6 @@ export function Dashboard() {
         </div>
       )}
 
-
-{/* ====== Athlete: My Training ====== */}
-      {status === "idle" && !isCoach && playerPlans.length > 0 && (
-        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4 space-y-3">
-          <h3 className="text-sm font-bold text-white">📋 我的训练</h3>
-          {playerPlans.slice(0, 3).map((plan) => (
-            <button
-              key={plan.id}
-              onClick={() => {
-                training.loadModules(plan.modules, plan.formData);
-                setStatus("complete");
-              }}
-              className="w-full bg-[#111] hover:bg-[#222] border border-[#333] rounded-lg p-3 text-left transition"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white font-medium truncate">{plan.playerName}</span>
-                <span className="text-[10px] text-gray-500">
-                  {new Date(plan.createdAt).toLocaleDateString("zh-CN")}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-500">
-                <span>{plan.modules.length}个模块</span>
-                <span className="text-neon-pink">▶ 开始训练</span>
-              </div>
-            </button>
-          ))}
-          {playerPlans.length > 3 && (
-            <p className="text-[10px] text-gray-600 text-center">
-              还有 {playerPlans.length - 3} 个历史方案，去「历史」页面查看
-            </p>
-          )}
-        </div>
-      )}
 
       {/* ====== Idle State ====== */}
       {status === "idle" && (
@@ -624,33 +583,25 @@ export function Dashboard() {
             </div>
           )}
 
-          {/* Coach Input */}
+          {/* Coach Input — coach only */}
+          {isCoach && (
           <div className="glass-card p-4 space-y-3">
-            {/* Phase quick-select — coach only (theme is already in Tactical Themes above) */}
-            {isCoach && (
-              <div className="flex gap-1 flex-wrap items-center">
-                <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
-                {PHASES.map(p => (
-                  <button key={p} onClick={() => updateField("phase", p)}
-                    className={`px-2 py-0.5 rounded text-[10px] ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("phase."+p)}</button>
-                ))}
-              </div>
-            )}
+            {/* Phase quick-select */}
+            <div className="flex gap-1 flex-wrap items-center">
+              <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
+              {PHASES.map(p => (
+                <button key={p} onClick={() => updateField("phase", p)}
+                  className={`px-2 py-0.5 rounded text-[10px] ${formData.phase===p?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("phase."+p)}</button>
+              ))}
+            </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
-              placeholder={isCoach ? "今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…" : "你想提升什么？"}
+              placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
               rows={2}
               className="w-full bg-pitch-800 border border-pitch-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-neon-pink focus:outline-none resize-none"
             />
-            {!isCoach && (
-              <div className="flex gap-1.5 flex-wrap">
-                {GOALS.map(g => (
-                  <button key={g} onClick={() => updateField("goal", g)}
-                    className={`px-2 py-0.5 rounded text-[10px] ${formData.goal===g?"bg-neon-pink text-black":"bg-pitch-700 text-gray-400 hover:text-white"}`}>{t("goal."+g)}</button>
-                ))}
-              </div>
-            )}
           </div>
+          )}
 
           {/* Hint text when generate is disabled */}
           {!isStepValid && (
