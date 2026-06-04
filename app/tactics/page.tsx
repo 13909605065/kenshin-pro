@@ -221,8 +221,8 @@ export default function TacticsPage() {
   const renderBoardGen = useCallback((result: BoardGenResult) => {
     const c = boardRef.current; if (!c) return;
 
-    // Clear existing AI-generated objects (tagged with _isAIGenerated)
-    c.getObjects().filter((o: any) => (o as any)._isAIGenerated)
+    // Clear all old content (keep field background)
+    c.getObjects().filter((o: any) => !o._isFieldBg)
       .forEach((o: any) => c.remove(o));
 
     // Always use standard 11-a-side field for auto-generated content
