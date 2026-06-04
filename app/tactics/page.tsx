@@ -85,15 +85,6 @@ export default function TacticsPage() {
   });
   // Gesture control
   const [gestureOn, setGestureOn] = useState(false);
-  const canvasElRef = useRef<HTMLCanvasElement | null>(null);
-  // sync canvasElRef from FabricBoard
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const el = document.querySelector("canvas") as HTMLCanvasElement;
-      if (el && !canvasElRef.current) canvasElRef.current = el;
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
 
   // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
@@ -597,7 +588,7 @@ export default function TacticsPage() {
       </div>
 
       <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear}/>
-      <GestureController canvasRef={canvasElRef} enabled={gestureOn} />
+      <GestureController fabricRef={boardRef} enabled={gestureOn} />
       <MobileNav />
     </div>
   );
