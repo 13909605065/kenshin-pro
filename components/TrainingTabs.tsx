@@ -534,7 +534,6 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
           >
             <span className="text-sm">▶</span> 计时模式
           </button>
-          )}
         </div>
       </div>
 
