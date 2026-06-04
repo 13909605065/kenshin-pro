@@ -135,8 +135,9 @@ export async function POST(request: NextRequest) {
   if (scene === "gym") {
     sceneHint = `## 场景限制：健身房训练日
 今天只在健身房。严格限制：
-✅ 可输出：杠铃/哑铃/悬吊/药球/弹力带等器械力量训练、原地自重热身(9090髋激活/最伟大拉伸/开合跳/高抬腿等)、泡沫轴整理放松
-❌ 禁止：足球技术训练(传球/射门/盘带/1v1)、需要标志盘/敏捷梯/大片跑动空间的场地热身、SSG对抗赛、跑动训练
+✅ 可输出：杠铃/哑铃/悬吊/药球/弹力带等器械力量训练、原地自重热身(9090髋激活/最伟大拉伸/开合跳/高抬腿/泡沫轴等)
+❌ 禁止：任何有球热身(warm-ball-touch/warm-ball-dribble/warm-rondo)、足球技术训练(传球/射门/盘带)、场地跑动热身、SSG对抗赛
+❌ 禁止使用以下热身ID: warm-ball-touch, warm-ball-dribble, warm-rondo, warm-agility-ladder, warm-skip-variations, warm-accel-drill
 器材：杠铃、哑铃、卧推凳、TRX悬吊带、弹力带、泡沫轴`;
   } else if (scene === "pitch") {
     sceneHint = `## ⚠️ 场景限制：球场训练（最重要规则！）

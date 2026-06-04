@@ -30,7 +30,7 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
   }
 
   if (scene === "gym") {
-    return base + "\n## 场景：健身房训练。专注器械力量。禁止有球训练和SSG。优先combo_id。";
+    return base + "\n## 场景：健身房训练。禁止所有有球热身(warm-ball-touch/dribble/rondo)、足球技术、SSG对抗、跑动训练。热身仅限健身房自重动作(9090/伟大拉伸/开合跳/泡沫轴)。专注器械力量。优先combo_id。";
   }
 
   return base;
