@@ -71,7 +71,7 @@ export function ExercisePickerModal({ open, onClose, onSelect }: Props) {
         {/* Grid */}
         <div className="flex-1 overflow-y-auto p-5">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 text-sm">
+            <div className="text-center py-12 text-gray-400 text-sm">
               没有匹配的动作
             </div>
           ) : (

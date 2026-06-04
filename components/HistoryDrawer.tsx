@@ -46,9 +46,9 @@ export function HistoryDrawer({ open, onClose }: Props) {
         {/* List */}
         <div className="p-4">
           {loading ? (
-            <div className="text-center text-gray-500 py-12">加载中...</div>
+            <div className="text-center text-gray-400 py-12">加载中...</div>
           ) : items.length === 0 ? (
-            <div className="text-center text-gray-500 py-12">
+            <div className="text-center text-gray-400 py-12">
               <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>暂无历史记录</p>
             </div>
@@ -74,7 +74,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                           {GOAL_LABELS[item.form_data?.goal as keyof typeof GOAL_LABELS] || "未知目标"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {new Date(item.created_at).toLocaleDateString("zh-CN")}
@@ -96,7 +96,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                       {item.plan_content?.map((mod: any, i: number) => (
                         <div key={i} className="text-xs">
                           <span className="text-[#d92525] font-bold">{mod.title}</span>
-                          <span className="text-gray-500 ml-2">
+                          <span className="text-gray-400 ml-2">
                             {mod.status === "skipped" ? "已跳过" : `${mod.exercises?.length || mod.drills?.length || mod.phases?.length || 0} 项`}
                           </span>
                         </div>

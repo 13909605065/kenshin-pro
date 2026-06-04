@@ -87,7 +87,7 @@ export function MobileNav() {
               key={tab.id}
               onClick={() => router.push(tab.path)}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-                isActive(tab.path) ? "text-[#d92525]" : "text-gray-500"
+                isActive(tab.path) ? "text-[#d92525]" : "text-gray-400"
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -98,7 +98,7 @@ export function MobileNav() {
           <button
             onClick={() => setMoreOpen(true)}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-              MORE_TABS.some((t) => isActive(t.path)) ? "text-[#d92525]" : "text-gray-500"
+              MORE_TABS.some((t) => isActive(t.path)) ? "text-[#d92525]" : "text-gray-400"
             }`}
           >
             <Ellipsis className="w-5 h-5" />

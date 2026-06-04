@@ -85,7 +85,7 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
               onClick={() => { setDone(p=>{const n=new Set(p);n.has(card.id)?n.delete(card.id):n.add(card.id);return n;}); setExpanded(isExp?null:card.id); }}
               className={`border rounded-xl p-3 cursor-pointer transition ${meta.color} ${isDone?"opacity-50":""}`}>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-gray-500 w-5">{card.step}</span>
+                <span className="text-xs font-bold text-gray-400 w-5">{card.step}</span>
                 <span className="text-sm">{meta.icon}</span>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-bold truncate ${isDone?"line-through":""}`}>{card.name}</p>
@@ -147,7 +147,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
       <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
         {tabs.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id)}
-            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-[#d92525] text-black":"text-gray-500")}>
+            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-[#d92525] text-black":"text-gray-400")}>
             {t.icon} {t.label}
           </button>
         ))}
@@ -165,7 +165,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead><tr className="text-gray-500 border-b border-[#333]">
+              <thead><tr className="text-gray-400 border-b border-[#333]">
                 {["动作","组数","负荷","间歇","RPE","心率"].map(h=><th key={h} className="py-2 text-left font-medium">{h}</th>)}
               </tr></thead>
               <tbody>
@@ -197,7 +197,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
         <div className="space-y-2">
           {grouped[tab].map(c => (
             <div key={c.id} className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3 flex items-center justify-between">
-              <div><p className="text-sm text-white">{c.name}</p><p className="text-[11px] text-gray-500">{c.detail}</p></div>
+              <div><p className="text-sm text-white">{c.name}</p><p className="text-[11px] text-gray-400">{c.detail}</p></div>
               <span className="text-[10px] text-gray-600">{c.notes?.slice(0,20)}</span>
             </div>
           ))}

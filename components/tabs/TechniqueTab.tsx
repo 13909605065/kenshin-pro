@@ -43,7 +43,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
           <h4 className="text-white font-bold text-sm leading-tight">{drill.name}</h4>
           <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{drill.description}</p>
           <div className="flex items-center gap-3 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-gray-500">
+            <span className="flex items-center gap-1 text-[10px] text-gray-400">
               <Clock className="w-3 h-3" /> {drill.duration}分钟
             </span>
             {hasImage && (
@@ -60,7 +60,7 @@ function DrillCard({ drill, index }: { drill: Drill; index: number }) {
         {hasDetails && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-1 text-gray-500 hover:text-white transition flex-shrink-0">
+            className="p-1 text-gray-400 hover:text-white transition flex-shrink-0">
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
         )}
@@ -126,7 +126,7 @@ export function TechniqueTab({ modules }: Props) {
         <div className="w-12 h-12 mx-auto rounded-full bg-[#1e1e1e] flex items-center justify-center mb-3">
           <Target className="w-6 h-6 text-gray-600" />
         </div>
-        <p className="text-sm text-gray-500">暂无技术训练内容</p>
+        <p className="text-sm text-gray-400">暂无技术训练内容</p>
       </div>
     );
   }
@@ -141,7 +141,7 @@ export function TechniqueTab({ modules }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-white font-bold">⚽ 技术练习</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-400 mt-0.5">
             {safeDrills.length} 项练习 · 点击展开查看要点
           </p>
         </div>
@@ -166,11 +166,11 @@ export function TechniqueTab({ modules }: Props) {
         </h4>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[#1e1e1e]/60 rounded-lg p-3">
-            <p className="text-[10px] text-gray-500 mb-0.5">总跑动距离</p>
+            <p className="text-[10px] text-gray-400 mb-0.5">总跑动距离</p>
             <p className="text-lg font-bold text-white">{running.total_distance}</p>
           </div>
           <div className="bg-[#1e1e1e]/60 rounded-lg p-3">
-            <p className="text-[10px] text-gray-500 mb-0.5">强度区间分布</p>
+            <p className="text-[10px] text-gray-400 mb-0.5">强度区间分布</p>
             <div className="flex flex-wrap gap-1 mt-1">
               {(running.intensity_zones || []).map((zone: string, i: number) => (
                 <span key={i} className="px-2 py-0.5 rounded-full bg-[#222] text-[10px] text-gray-300">

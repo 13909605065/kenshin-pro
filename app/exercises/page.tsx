@@ -383,14 +383,14 @@ export default function ExercisesPage() {
       <div className="max-w-7xl mx-auto px-4 py-4 pb-28">
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <a href="/" className="text-gray-500 hover:text-white text-sm transition-colors duration-150">←</a>
+          <a href="/" className="text-gray-400 hover:text-white text-sm transition-colors duration-150">←</a>
           <h1 className="text-lg font-bold text-[#d1d1d1]">动作库</h1>
         </div>
 
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative max-w-md">
-            <Search className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
@@ -401,7 +401,7 @@ export default function ExercisesPage() {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -414,7 +414,7 @@ export default function ExercisesPage() {
         </div>
 
         {/* Recommendation hint */}
-        <div className="text-[11px] text-gray-500 mb-4 flex items-center gap-1.5 bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2">
+        <div className="text-[11px] text-gray-400 mb-4 flex items-center gap-1.5 bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2">
           <span className="text-[#d92525] text-lg leading-none">⚽</span>
           <span>足球专项动作已标注，教练可根据训练目标筛选</span>
         </div>
@@ -423,7 +423,7 @@ export default function ExercisesPage() {
         <div className="space-y-3 mb-5">
           {/* Card 1: Body Part */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-            <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">身体分区 Body Part</p>
+            <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">身体分区 Body Part</p>
             <div className="flex flex-wrap gap-1.5">
               {BODY_PARTS.map((bp) => (
                 <button
@@ -443,7 +443,7 @@ export default function ExercisesPage() {
 
           {/* Card 2: Equipment */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-            <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">器械 Equipment</p>
+            <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">器械 Equipment</p>
             <div className="flex flex-wrap gap-1.5">
               {EQUIPMENTS.map((eq) => (
                 <button
@@ -463,7 +463,7 @@ export default function ExercisesPage() {
 
           {/* Card 3: Football-Specific (NEW) */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-            <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">
+            <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">
               <span className="mr-1">⚽</span>足球专项 Football-Specific
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -485,7 +485,7 @@ export default function ExercisesPage() {
 
           {/* Card 4: Exercise Type */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-            <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
+            <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
             <div className="flex flex-wrap gap-1.5">
               {(["all", "力量", "热身", "冷身", "技术"] as const).map((t) => (
                 <button
@@ -523,7 +523,7 @@ export default function ExercisesPage() {
 
         {/* Exercise Grid */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-gray-400">
             <Dumbbell className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">没有匹配的动作</p>
             <p className="text-xs mt-1 text-gray-600">试试调整筛选条件</p>
@@ -675,15 +675,15 @@ function ExerciseCard({
             {exercise.type}
           </span>
           {exercise.footballCategory && exercise.footballCategory !== "力量" && (
-            <span className="px-1 py-0 rounded text-[9px] text-gray-500 bg-[#222]">{exercise.footballCategory}</span>
+            <span className="px-1 py-0 rounded text-[9px] text-gray-400 bg-[#222]">{exercise.footballCategory}</span>
           )}
-          <span className="text-[9px] text-gray-500">{exercise.equipment}</span>
+          <span className="text-[9px] text-gray-400">{exercise.equipment}</span>
         </div>
         {isStrength && exercise.sets && exercise.reps && (
-          <p className="text-[10px] text-gray-500 mt-0.5">{exercise.sets[0]}-{exercise.sets[1]}x{exercise.reps[0]}-{exercise.reps[1]}</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">{exercise.sets[0]}-{exercise.sets[1]}x{exercise.reps[0]}-{exercise.reps[1]}</p>
         )}
         {exercise.duration && (
-          <p className="text-[10px] text-gray-500 mt-0.5">{exercise.duration}分钟</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">{exercise.duration}分钟</p>
         )}
         {exercise.isCustom && (
           <div className="flex gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
@@ -778,16 +778,16 @@ function ExerciseDetailSheet({
           {exercise.type === "力量" && exercise.sets && exercise.reps && (
             <div className="flex items-center gap-3 text-sm">
               <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-[10px] text-gray-500 mb-0.5">组数</p>
+                <p className="text-[10px] text-gray-400 mb-0.5">组数</p>
                 <p className="text-[#d1d1d1] font-bold">{exercise.sets[0]}-{exercise.sets[1]} 组</p>
               </div>
               <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-[10px] text-gray-500 mb-0.5">次数</p>
+                <p className="text-[10px] text-gray-400 mb-0.5">次数</p>
                 <p className="text-[#d1d1d1] font-bold">{exercise.reps[0]}-{exercise.reps[1]} 次</p>
               </div>
               {exercise.rest && (
                 <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                  <p className="text-[10px] text-gray-500 mb-0.5">组间歇</p>
+                  <p className="text-[10px] text-gray-400 mb-0.5">组间歇</p>
                   <p className="text-[#d1d1d1] font-bold">{exercise.rest}s</p>
                 </div>
               )}

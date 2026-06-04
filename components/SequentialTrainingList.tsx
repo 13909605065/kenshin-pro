@@ -171,7 +171,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
   }, [rows]);
 
   if (total === 0) {
-    return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练项目</div>;
+    return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-400 text-sm">暂无训练项目</div>;
   }
 
   return (
@@ -196,7 +196,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
             return Object.entries(counts).map(([phase, count]) => (
               <div key={phase} className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: phaseColors[phase] || "#666" }} />
-                <span className="text-[9px] text-gray-500">{phase} {count}项</span>
+                <span className="text-[9px] text-gray-400">{phase} {count}项</span>
               </div>
             ));
           })()}
@@ -268,7 +268,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
 
                     {/* 练习内容 */}
                     <td className="py-2.5 pr-2">
-                      <p className={`text-sm ${isDone ? "text-gray-500 line-through" : "text-white"}`}>
+                      <p className={`text-sm ${isDone ? "text-gray-400 line-through" : "text-white"}`}>
                         {item.step}. {item.name}
                       </p>
                     </td>
@@ -298,7 +298,7 @@ export function SequentialTrainingList({ modules }: { modules: TrainingModule[] 
 
                     {/* 备注 */}
                     <td className="py-2.5 pr-2">
-                      <span className={`text-[10px] ${isDone ? "text-gray-600" : "text-gray-500"}`}>
+                      <span className={`text-[10px] ${isDone ? "text-gray-600" : "text-gray-400"}`}>
                         {item.notes.length > 15 ? item.notes.slice(0, 15) + "…" : item.notes || "—"}
                       </span>
                     </td>

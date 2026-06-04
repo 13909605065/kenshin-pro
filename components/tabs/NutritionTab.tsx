@@ -10,7 +10,7 @@ export function NutritionTab({ modules }: Props) {
   const posModule = modules.find((m) => m.module === "position_training");
 
   if (!posModule || posModule.module !== "position_training") {
-    return <p className="text-sm text-gray-500 py-8 text-center">暂无饮食与恢复内容</p>;
+    return <p className="text-sm text-gray-400 py-8 text-center">暂无饮食与恢复内容</p>;
   }
 
   const nutrition = posModule.nutrition;
@@ -58,7 +58,7 @@ export function NutritionTab({ modules }: Props) {
                   <span className="font-medium text-white">{c.name}</span>
                   <span className="text-xs text-gray-400">{c.duration}秒</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{c.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{c.description}</p>
               </div>
             ))}
           </div>
@@ -66,7 +66,7 @@ export function NutritionTab({ modules }: Props) {
       )}
 
       {!nutrition && cooldown.length === 0 && (
-        <p className="text-sm text-gray-500 py-8 text-center">暂无饮食与恢复内容</p>
+        <p className="text-sm text-gray-400 py-8 text-center">暂无饮食与恢复内容</p>
       )}
     </div>
   );

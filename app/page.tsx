@@ -27,7 +27,7 @@ class ErrorBoundary extends Component<
           <div className="glass-card p-6 max-w-lg w-full">
             <p className="text-neon-red font-bold text-lg mb-2">渲染错误</p>
             <p className="text-sm text-gray-300 mb-1">{this.state.error.message}</p>
-            <pre className="text-xs text-gray-500 whitespace-pre-wrap overflow-auto max-h-64">
+            <pre className="text-xs text-gray-400 whitespace-pre-wrap overflow-auto max-h-64">
               {this.state.error.stack}
             </pre>
           </div>
@@ -102,7 +102,7 @@ export default function Home() {
                   className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition ${lang === l.value ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white"}`}>{l.label}</button>
               ))}
             </div>
-            <span className="text-xs text-gray-500 px-1.5 py-1.5">{userEmail}</span>
+            <span className="text-xs text-gray-400 px-1.5 py-1.5">{userEmail}</span>
             <button onClick={handleLogout} className="p-1.5 text-gray-400 hover:text-[#d92525] transition rounded-md" title="退出"><LogOut className="w-4 h-4" /></button>
           </div>
         </div>

@@ -57,7 +57,7 @@ export function PlanBuilder({
         <div className="flex items-center gap-2">
           {exercises.length > 0 && (
             <>
-              <span className="text-xs text-gray-500 flex items-center gap-1">
+              <span className="text-xs text-gray-400 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 ~{estimatedMin}分钟
               </span>
@@ -70,7 +70,7 @@ export function PlanBuilder({
       {/* Exercise list */}
       {exercises.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-[#222] rounded-xl">
-          <p className="text-gray-500 text-sm">还没有添加动作</p>
+          <p className="text-gray-400 text-sm">还没有添加动作</p>
           <p className="text-gray-600 text-xs mt-1">点击「添加动作」开始构建计划</p>
         </div>
       ) : (
@@ -112,7 +112,7 @@ export function PlanBuilder({
             </button>
             <button
               onClick={onClearPlan}
-              className="text-xs text-gray-500 hover:text-neon-red transition flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-neon-red transition flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
               清空

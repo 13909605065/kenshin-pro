@@ -16,7 +16,7 @@ export function ExerciseTable({ exercises }: Props) {
   const [previewName, setPreviewName] = useState("");
 
   if (!exercises || exercises.length === 0) {
-    return <p className="text-sm text-gray-500 py-4 text-center">暂无训练动作</p>;
+    return <p className="text-sm text-gray-400 py-4 text-center">暂无训练动作</p>;
   }
 
   return (

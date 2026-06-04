@@ -86,14 +86,14 @@ export function GeneratingOverlay({ currentModule, isCoach, moduleCount = 0, onC
       {/* Cancel */}
       {onCancel && (
         <button onClick={onCancel}
-          className="absolute top-3 right-3 text-gray-500 hover:text-white transition text-xs flex items-center gap-1">
+          className="absolute top-3 right-3 text-gray-400 hover:text-white transition text-xs flex items-center gap-1">
           <X className="w-4 h-4" /> 取消
         </button>
       )}
 
       {/* Progress */}
       <div className="w-full max-w-[240px] space-y-2">
-        <div className="flex justify-between text-[10px] text-gray-500">
+        <div className="flex justify-between text-[10px] text-gray-400">
           <span>{label}</span>
           <span className="tabular-nums">{pct}%</span>
         </div>

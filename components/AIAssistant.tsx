@@ -148,7 +148,7 @@ export default function AIAssistant() {
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {showPresets && (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-500 mb-2">常见问题，点击快速提问：</p>
+                  <p className="text-xs text-gray-400 mb-2">常见问题，点击快速提问：</p>
                   {QA_PRESETS.slice(0, 5).map((item, i) => (
                     <button
                       key={i}

@@ -81,7 +81,7 @@ function ProfileSummary({ formData, t }: any) {
         {parts.map((p, i) => (
           <span key={i} className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
         ))}
-        {parts.length === 0 && <span className="text-[10px] text-gray-500">未设置</span>}
+        {parts.length === 0 && <span className="text-[10px] text-gray-400">未设置</span>}
       </div>
     );
   }
@@ -95,13 +95,13 @@ function ProfileSummary({ formData, t }: any) {
       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
         <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">健身</span>
         {formData.gender && (
-          <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
+          <span className="text-[10px] text-gray-400">{formData.gender === "female" ? "♀" : "♂"}</span>
         )}
         {stats.length > 0 && (
-          <span className="text-[10px] text-gray-500">{stats.join(" · ")}</span>
+          <span className="text-[10px] text-gray-400">{stats.join(" · ")}</span>
         )}
         {stats.length === 0 && !formData.gender && (
-          <span className="text-[10px] text-gray-500">完善档案以获得个性化建议</span>
+          <span className="text-[10px] text-gray-400">完善档案以获得个性化建议</span>
         )}
       </div>
     );
@@ -118,13 +118,13 @@ function ProfileSummary({ formData, t }: any) {
         <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">{posLabel}</span>
       )}
       {formData.gender && (
-        <span className="text-[10px] text-gray-500">{formData.gender === "female" ? "♀" : "♂"}</span>
+        <span className="text-[10px] text-gray-400">{formData.gender === "female" ? "♀" : "♂"}</span>
       )}
       {stats.length > 0 && (
-        <span className="text-[10px] text-gray-500">{stats.join(" · ")}</span>
+        <span className="text-[10px] text-gray-400">{stats.join(" · ")}</span>
       )}
       {!posLabel && stats.length === 0 && !formData.gender && (
-        <span className="text-[10px] text-gray-500">完善档案以获得个性化建议</span>
+        <span className="text-[10px] text-gray-400">完善档案以获得个性化建议</span>
       )}
     </div>
   );
@@ -229,7 +229,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
             {/* Position 3+2 — athletes only, not fitness */}
             {formData.role !== "fitness" && (
             <div>
-              <p className="text-[10px] text-gray-500 mb-1.5">{t("player.position")}</p>
+              <p className="text-[10px] text-gray-400 mb-1.5">{t("player.position")}</p>
               <div className="space-y-1.5">
                 <div className="grid grid-cols-3 gap-1.5">
                   {["goalkeeper","defender","midfielder"].map((pos: string) => (
@@ -511,12 +511,12 @@ export function Dashboard() {
                   <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else alert("请先进「备课」生成训练方案"); }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
                     <Timer className="w-5 h-5 text-[#d92525] mb-1" />
                     <p className="text-xs font-bold text-white">计时跟练</p>
-                    <p className="text-[10px] text-gray-500">执行教案</p>
+                    <p className="text-[10px] text-gray-400">执行教案</p>
                   </button>
                   <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
                     <ClipboardList className="w-5 h-5 text-[#d92525] mb-1" />
                     <p className="text-xs font-bold text-white">花名册</p>
-                    <p className="text-[10px] text-gray-500">人数+伤病</p>
+                    <p className="text-[10px] text-gray-400">人数+伤病</p>
                   </button>
                 </>
               )}
@@ -587,7 +587,7 @@ export function Dashboard() {
               {((isFitness ? fitnessGoals.length > 0 : formData.goal) || (!isFitness && formData.phase) || formData.injurySites.length > 0) && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3">
                   <div className="flex flex-wrap gap-1.5 items-center">
-                    <span className="text-[10px] text-gray-500 mr-1">已选：</span>
+                    <span className="text-[10px] text-gray-400 mr-1">已选：</span>
                     {isFitness ? fitnessGoals.map((gid) => {
                       const g = FITNESS_GOALS.find(fg => fg.id === gid);
                       return (
@@ -688,7 +688,7 @@ export function Dashboard() {
                   </div>
                   {/* Smart filter hint */}
                   {formData.phase && PHASE_HINT_TEXT[formData.phase] && (
-                    <p className="text-[10px] text-gray-500 mt-3 leading-relaxed">{PHASE_HINT_TEXT[formData.phase]}</p>
+                    <p className="text-[10px] text-gray-400 mt-3 leading-relaxed">{PHASE_HINT_TEXT[formData.phase]}</p>
                   )}
                 </div>
                 )}
@@ -705,19 +705,19 @@ export function Dashboard() {
                   <p className="text-xs font-bold text-white">伤病情况</p>
                   {formData.injurySites.length > 0 && <span className="text-[10px] text-[#d92525]">{formData.injurySites.length}处</span>}
                 </div>
-                <span className="text-[10px] text-gray-500 transition-transform duration-200" style={{transform: injOpen["_main"] ? "rotate(180deg)" : "rotate(0deg)"}}>▼</span>
+                <span className="text-[10px] text-gray-400 transition-transform duration-200" style={{transform: injOpen["_main"] ? "rotate(180deg)" : "rotate(0deg)"}}>▼</span>
               </div>
               {injOpen["_main"] && (
                 <div className="mt-2 space-y-1.5">
                   {Object.entries(INJURY_GROUPS).map(([group, sites]) => (
                     <div key={group} className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-gray-500 w-8 flex-shrink-0">{group}</span>
+                      <span className="text-[10px] text-gray-400 w-8 flex-shrink-0">{group}</span>
                       <div className="flex flex-wrap gap-1">
                         {sites.map((s: string) => {
                           const active = formData.injurySites.includes(s as any);
                           return (
                             <button key={s} onClick={() => { const next = active ? formData.injurySites.filter((x: any) => x!==s) : [...formData.injurySites, s as any]; updateField("injurySites", next as any); }}
-                              className={`px-3 py-1.5 min-h-[44px] rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
+                              className={`px-3 py-1.5 min-h-[44px] rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-400 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
                           );
                         })}
                       </div>
@@ -734,7 +734,7 @@ export function Dashboard() {
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
                 🥗 营养方案
-                {!fitnessNutritionUnlocked && <span className="text-[10px] text-gray-500 font-normal">— 生成训练后解锁</span>}
+                {!fitnessNutritionUnlocked && <span className="text-[10px] text-gray-400 font-normal">— 生成训练后解锁</span>}
               </h3>
               {fitnessNutritionUnlocked && training.modules.length > 0 ? (
                 <div className="space-y-2">
@@ -764,11 +764,11 @@ export function Dashboard() {
                         </>
                       );
                     }
-                    return <p className="text-xs text-gray-500">该方案暂未包含营养数据，重新生成即可获取个性化营养建议。</p>;
+                    return <p className="text-xs text-gray-400">该方案暂未包含营养数据，重新生成即可获取个性化营养建议。</p>;
                   })()}
                 </div>
               ) : (
-                <p className="text-xs text-gray-500">完成训练方案生成后，AI 将根据你的健身目标自动生成个性化营养建议。</p>
+                <p className="text-xs text-gray-400">完成训练方案生成后，AI 将根据你的健身目标自动生成个性化营养建议。</p>
               )}
             </div>
           )}
@@ -796,7 +796,7 @@ export function Dashboard() {
           {/* Equipment selector — coach only */}
           {isCoach && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-gray-400 mb-3">
                 {"可选器材（不选则AI自动推荐）"}
                 {formData.equipmentAvailable?.length > 0 && (
                   <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
@@ -864,10 +864,10 @@ export function Dashboard() {
                   <History className="w-4 h-4 text-[#d92525]" />
                   方案历史
                   {formData.name && (
-                    <span className="text-xs text-gray-500 font-normal">· {formData.name}</span>
+                    <span className="text-xs text-gray-400 font-normal">· {formData.name}</span>
                   )}
                 </p>
-                <span className="text-[10px] text-gray-500">{playerPlans.length}条记录</span>
+                <span className="text-[10px] text-gray-400">{playerPlans.length}条记录</span>
               </div>
               <div className="space-y-1 max-h-48 overflow-y-auto">
                 {playerPlans.slice(0, 8).map((plan) => (
@@ -881,7 +881,7 @@ export function Dashboard() {
                       className="text-left flex-1 min-w-0"
                     >
                       <p className="text-xs text-gray-200 truncate">{plan.playerName}</p>
-                      <p className="text-[10px] text-gray-500">
+                      <p className="text-[10px] text-gray-400">
                         {new Date(plan.createdAt).toLocaleString("zh-CN", {
                           month: "numeric", day: "numeric",
                           hour: "2-digit", minute: "2-digit"
@@ -907,7 +907,7 @@ export function Dashboard() {
           <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4 space-y-3">
             {/* Phase quick-select */}
             <div className="flex gap-1 flex-wrap items-center">
-              <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
+              <span className="text-[10px] text-gray-400 mr-1">阶段:</span>
               {PHASES.map(p => (
                 <button key={p} onClick={() => updateField("phase", p)}
                   className={`px-3 py-1.5 min-h-[36px] rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
@@ -967,13 +967,13 @@ export function Dashboard() {
 
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={isFitness ? fitnessGoals.length === 0 : !isStepValid}
-            className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
+            className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
             <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
           </button>
 
           {/* Template Library — quick access */}
           <button onClick={() => setShowTemplates(true)}
-            className="w-full py-2.5 text-center text-xs text-gray-500 hover:text-[#d92525] transition-colors">
+            className="w-full py-2.5 text-center text-xs text-gray-400 hover:text-[#d92525] transition-colors">
             📁 从模板库套用方案
           </button>
 
@@ -1020,7 +1020,7 @@ export function Dashboard() {
             </svg>
           </div>
           <p className="text-white text-xl font-bold">分析完成</p>
-          <p className="text-gray-500 text-sm">正在整理训练方案...</p>
+          <p className="text-gray-400 text-sm">正在整理训练方案...</p>
         </div>
       )}
 
@@ -1062,7 +1062,7 @@ export function Dashboard() {
               ) : (
                 <>
                   <p className="text-white font-bold text-lg">训练方案</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {status === "streaming" ? `AI 生成中 ${training.modules.length}/${isCoach ? 3 : 5}...` : "✓ 生成完成"}
                   </p>
                   {savedPlanId && status === "complete" && (
@@ -1107,7 +1107,7 @@ export function Dashboard() {
                             <p className="text-xs text-gray-200 truncate">
                               {plan.playerName}
                             </p>
-                            <p className="text-[10px] text-gray-500">
+                            <p className="text-[10px] text-gray-400">
                               {new Date(plan.createdAt).toLocaleString("zh-CN", {
                                 month: "numeric", day: "numeric",
                                 hour: "2-digit", minute: "2-digit"
@@ -1165,7 +1165,7 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => { setShowManualSave(false); setManualSaveName(""); }}
-                className="text-gray-500 hover:text-white text-xs px-2"
+                className="text-gray-400 hover:text-white text-xs px-2"
               >
                 取消
               </button>

@@ -274,7 +274,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
           <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
             <div className="h-full bg-[#d92525] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
-          <p className="text-[10px] text-gray-500 text-center mt-1">{currentIdx + 1}/{totalExercises}</p>
+          <p className="text-[10px] text-gray-400 text-center mt-1">{currentIdx + 1}/{totalExercises}</p>
         </div>
         <span className="text-[10px] text-gray-600">{current.section}</span>
       </div>
@@ -293,16 +293,16 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
         <div className="flex items-center gap-4 mb-10">
           <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl px-5 py-3 text-center">
             <p className="text-2xl font-bold text-white">{current.sets}</p>
-            <p className="text-[10px] text-gray-500">组数</p>
+            <p className="text-[10px] text-gray-400">组数</p>
           </div>
           <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl px-5 py-3 text-center">
             <p className="text-2xl font-bold text-white">{current.reps}</p>
-            <p className="text-[10px] text-gray-500">次数</p>
+            <p className="text-[10px] text-gray-400">次数</p>
           </div>
           {current.rest > 0 && (
             <div className="bg-[#1e1e1e] border border-[#333] rounded-2xl px-5 py-3 text-center">
               <p className="text-2xl font-bold text-white">{current.rest}s</p>
-              <p className="text-[10px] text-gray-500">间歇</p>
+              <p className="text-[10px] text-gray-400">间歇</p>
             </div>
           )}
         </div>

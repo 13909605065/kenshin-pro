@@ -52,7 +52,7 @@ export function TrainingModule({ module, defaultExpanded = false }: Props) {
           />
           <h3 className="font-bold text-white">{module.title}</h3>
           {module.status === "skipped" && (
-            <span className="text-xs text-gray-500">无需康复</span>
+            <span className="text-xs text-gray-400">无需康复</span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -236,7 +236,7 @@ function PositionTrainingContent({ data }: { data: PositionTraining }) {
                   <span className="font-medium text-white">{w.name}</span>
                   <span className="text-xs text-gray-400">{w.duration}秒</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{w.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{w.description}</p>
               </div>
             ))}
           </div>
@@ -270,7 +270,7 @@ function PositionTrainingContent({ data }: { data: PositionTraining }) {
                   <span className="font-medium text-white">{c.name}</span>
                   <span className="text-xs text-gray-400">{c.duration}秒</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{c.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{c.description}</p>
               </div>
             ))}
           </div>
@@ -318,7 +318,7 @@ function AbilityTrainingContent({ data }: { data: AbilityTraining }) {
               {ex.sets}组 × {ex.reps}次 @ {ex.load} · 间歇{ex.rest}s
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-2">{ex.progression}</p>
+          <p className="text-xs text-gray-400 mt-2">{ex.progression}</p>
         </div>
       ))}
     </div>
@@ -353,7 +353,7 @@ function TechniqueRunningContent({ data }: { data: TechniqueRunning }) {
                     <span className="text-xs text-gray-400">{drill.duration}分钟</span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{drill.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{drill.description}</p>
 
                 {/* Purpose & Key Points */}
                 {(drill.purpose || (drill.key_points && drill.key_points.length > 0)) && (
@@ -442,7 +442,7 @@ function PhasePlanContent({ data }: { data: PhasePlan }) {
             title={`高强度 ${data.intensity_distribution.high}%`}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-2">
+        <div className="flex justify-between text-xs text-gray-400 mt-2">
           <span>低 {data.intensity_distribution.low}%</span>
           <span>中 {data.intensity_distribution.medium}%</span>
           <span>高 {data.intensity_distribution.high}%</span>

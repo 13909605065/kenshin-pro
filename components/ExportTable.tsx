@@ -11,7 +11,7 @@ function CoachTable({ modules }: { modules: TrainingModule[] }) {
   const session = modules.find((m) => m.module === "session_plan") as SessionPlan | undefined;
   const tactical = modules.find((m) => m.module === "tactical_focus") as any;
   const micro = modules.find((m) => m.module === "microcycle") as any;
-  if (!session) return <p className="text-gray-500 p-8 text-center">暂无教练方案数据</p>;
+  if (!session) return <p className="text-gray-400 p-8 text-center">暂无教练方案数据</p>;
 
   const date = new Date().toLocaleDateString("zh-CN");
 
@@ -192,7 +192,7 @@ function CoachTable({ modules }: { modules: TrainingModule[] }) {
         </div>
       )}
 
-      <p className="text-xs text-gray-500 text-center mt-6 border-t pt-2">
+      <p className="text-xs text-gray-400 text-center mt-6 border-t pt-2">
         Kenshinpro 足球训练助手 · {date}
       </p>
     </div>
@@ -206,7 +206,7 @@ function CoachTable({ modules }: { modules: TrainingModule[] }) {
 function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formData: PlayerFormData }) {
   const posModule = modules.find((m) => m.module === "position_training") as PositionTraining | undefined;
   const abilityModule = modules.find((m) => m.module === "ability_training") as any;
-  if (!posModule) return <p className="text-gray-500 p-8 text-center">暂无运动员方案数据</p>;
+  if (!posModule) return <p className="text-gray-400 p-8 text-center">暂无运动员方案数据</p>;
 
   const safeWarmup = Array.isArray(posModule.warmup) ? posModule.warmup : [];
   const safeCooldown = Array.isArray(posModule.cooldown) ? posModule.cooldown : [];
@@ -328,7 +328,7 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
         </>
       )}
 
-      <p className="text-xs text-gray-500 text-center mt-6 border-t pt-2">
+      <p className="text-xs text-gray-400 text-center mt-6 border-t pt-2">
         总训练时长约 {totalMin}min · Kenshinpro · {date}
       </p>
     </div>

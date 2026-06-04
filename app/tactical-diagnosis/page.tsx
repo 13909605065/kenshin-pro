@@ -9,17 +9,17 @@ import { createClient } from "@/lib/supabase/supabase-client";
 
 type Status = "idle" | "loading" | "done" | "error";
 
-const FORMATION_PRESETS = [
-  "4-3-3",
-  "4-4-2",
-  "4-2-3-1",
-  "3-5-2",
-  "3-4-3",
-  "5-4-1",
-  "5-3-2",
-  "4-1-4-1",
-  "4-3-2-1",
-  "3-4-2-1",
+const FORMATION_OPTIONS = [
+  { value: "4-3-3", label: "4-3-3 (四三三)" },
+  { value: "4-4-2", label: "4-4-2 (四四二)" },
+  { value: "4-2-3-1", label: "4-2-3-1 (四二三一)" },
+  { value: "3-5-2", label: "3-5-2 (三五二)" },
+  { value: "3-4-3", label: "3-4-3 (三四三)" },
+  { value: "5-4-1", label: "5-4-1 (五四一)" },
+  { value: "5-3-2", label: "5-3-2 (五三二)" },
+  { value: "4-1-4-1", label: "4-1-4-1 (四一四一)" },
+  { value: "4-3-2-1", label: "4-3-2-1 (四三二一)" },
+  { value: "3-4-2-1", label: "3-4-2-1 (三四二一)" },
 ];
 
 const MATCH_TYPES = ["联赛", "杯赛", "友谊赛"];
@@ -213,7 +213,7 @@ export default function TacticalDiagnosisPage() {
         <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 mb-4">
           <a
             href="/"
-            className="text-xs text-gray-500 hover:text-gray-300 mb-2 inline-block transition-colors"
+            className="text-xs text-gray-400 hover:text-gray-300 mb-2 inline-block transition-colors"
           >
             ← 返回
           </a>
@@ -280,7 +280,7 @@ export default function TacticalDiagnosisPage() {
           {/* Formation dropdowns */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">我方阵型</label>
+              <label className="block text-xs text-gray-400 mb-1.5">我方阵型</label>
               <select
                 value={formation}
                 onChange={(e) => setFormation(e.target.value)}
@@ -293,18 +293,18 @@ export default function TacticalDiagnosisPage() {
                   paddingRight: "2.5rem",
                 }}
               >
-                <option value="" className="bg-[#1e1e1e] text-gray-500">
+                <option value="" className="bg-[#1e1e1e] text-gray-400">
                   选择阵型...
                 </option>
-                {FORMATION_PRESETS.map((f) => (
-                  <option key={f} value={f} className="bg-[#1e1e1e] text-[#d1d1d1]">
-                    {f}
+                {FORMATION_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                    {f.label}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1.5">对方阵型</label>
+              <label className="block text-xs text-gray-400 mb-1.5">对方阵型</label>
               <select
                 value={opponentFormation}
                 onChange={(e) => setOpponentFormation(e.target.value)}
@@ -317,12 +317,12 @@ export default function TacticalDiagnosisPage() {
                   paddingRight: "2.5rem",
                 }}
               >
-                <option value="" className="bg-[#1e1e1e] text-gray-500">
+                <option value="" className="bg-[#1e1e1e] text-gray-400">
                   选择阵型...
                 </option>
-                {FORMATION_PRESETS.map((f) => (
-                  <option key={f} value={f} className="bg-[#1e1e1e] text-[#d1d1d1]">
-                    {f}
+                {FORMATION_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value} className="bg-[#1e1e1e] text-[#d1d1d1]">
+                    {f.label}
                   </option>
                 ))}
               </select>
@@ -333,7 +333,7 @@ export default function TacticalDiagnosisPage() {
           <div>
             <button
               onClick={() => setExtraOpen(!extraOpen)}
-              className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-300 transition-colors"
             >
               <svg
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
@@ -361,7 +361,7 @@ export default function TacticalDiagnosisPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {/* Match type */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">赛事类型</label>
+                    <label className="block text-xs text-gray-400 mb-1">赛事类型</label>
                     <select
                       value={matchType}
                       onChange={(e) => setMatchType(e.target.value)}
@@ -374,7 +374,7 @@ export default function TacticalDiagnosisPage() {
                         paddingRight: "2.5rem",
                       }}
                     >
-                      <option value="" className="bg-[#1e1e1e] text-gray-500">
+                      <option value="" className="bg-[#1e1e1e] text-gray-400">
                         不限
                       </option>
                       {MATCH_TYPES.map((t) => (
@@ -386,7 +386,7 @@ export default function TacticalDiagnosisPage() {
                   </div>
                   {/* Venue */}
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">场地</label>
+                    <label className="block text-xs text-gray-400 mb-1">场地</label>
                     <select
                       value={venue}
                       onChange={(e) => setVenue(e.target.value)}
@@ -399,7 +399,7 @@ export default function TacticalDiagnosisPage() {
                         paddingRight: "2.5rem",
                       }}
                     >
-                      <option value="" className="bg-[#1e1e1e] text-gray-500">
+                      <option value="" className="bg-[#1e1e1e] text-gray-400">
                         不限
                       </option>
                       {VENUES.map((v) => (
@@ -412,7 +412,7 @@ export default function TacticalDiagnosisPage() {
                 </div>
                 {/* Injuries */}
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">伤病球员</label>
+                  <label className="block text-xs text-gray-400 mb-1">伤病球员</label>
                   <input
                     value={injuries}
                     onChange={(e) => setInjuries(e.target.value)}
@@ -422,7 +422,7 @@ export default function TacticalDiagnosisPage() {
                 </div>
                 {/* Weather */}
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">天气</label>
+                  <label className="block text-xs text-gray-400 mb-1">天气</label>
                   <select
                     value={weather}
                     onChange={(e) => setWeather(e.target.value)}
@@ -435,7 +435,7 @@ export default function TacticalDiagnosisPage() {
                       paddingRight: "2.5rem",
                     }}
                   >
-                    <option value="" className="bg-[#1e1e1e] text-gray-500">
+                    <option value="" className="bg-[#1e1e1e] text-gray-400">
                       不限
                     </option>
                     {WEATHERS.map((w) => (
@@ -491,7 +491,7 @@ export default function TacticalDiagnosisPage() {
         {/* ================================================================ */}
         {status === "idle" && !diagnosis && (
           <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-5 mb-4">
-            <p className="text-sm text-gray-500 mb-3">试试这些例子：</p>
+            <p className="text-sm text-gray-400 mb-3">试试这些例子：</p>
             <div className="space-y-2">
               {EXAMPLES.map((ex, i) => (
                 <button
@@ -817,7 +817,7 @@ export default function TacticalDiagnosisPage() {
                 </h2>
                 <button
                   onClick={() => setHistoryOpen(false)}
-                  className="text-gray-500 hover:text-gray-300 transition-colors"
+                  className="text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                     <path
@@ -830,7 +830,7 @@ export default function TacticalDiagnosisPage() {
               </div>
 
               {history.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-8">暂无历史记录</p>
+                <p className="text-gray-400 text-sm text-center py-8">暂无历史记录</p>
               ) : (
                 <div className="space-y-2">
                   {history.map((item, i) => (

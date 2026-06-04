@@ -228,7 +228,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
     return sp;
   }, [rows]);
 
-  if (!total) return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-500 text-sm">暂无训练教案</div>;
+  if (!total) return <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-8 text-center text-gray-400 text-sm">暂无训练教案</div>;
 
   return (
     <div className="space-y-3">
@@ -245,7 +245,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
           {segments.map((seg, i) => (
             <div key={i} className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{backgroundColor: seg.color}} />
-              <span className="text-[9px] text-gray-500">{seg.label} {seg.count}项</span>
+              <span className="text-[9px] text-gray-400">{seg.label} {seg.count}项</span>
             </div>
           ))}
           <span className="text-[9px] text-gray-600">{total}项</span>
@@ -294,7 +294,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
                             {row.section}
                           </span>
                         )}
-                        <p className={"text-sm " + (isDone ? "text-gray-500 line-through" : "text-white")}
+                        <p className={"text-sm " + (isDone ? "text-gray-400 line-through" : "text-white")}
                           title={row.name.length > 20 ? row.name : undefined}>{row.name}</p>
                       </div>
                     </td>
@@ -329,7 +329,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
 
                     {/* 执教要点 */}
                     <td className="py-2 pr-2 text-center">
-                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-400")}
                         title={row.cp || undefined}>
                         {row.cp?.slice(0, 18) || "-"}
                       </span>
@@ -337,7 +337,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[]; onOp
 
                     {/* 进阶/退阶 */}
                     <td className="py-2 pr-2 text-center">
-                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-500")}
+                      <span className={"text-[10px] " + (isDone ? "text-gray-600" : "text-gray-400")}
                         title={row.prog || undefined}>
                         {row.prog?.slice(0, 15) || "-"}
                       </span>

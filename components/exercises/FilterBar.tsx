@@ -47,7 +47,7 @@ export function FilterBar({
     <div className="space-y-3">
       {/* Card 1: Body Part */}
       <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-        <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">身体分区 Body Part</p>
+        <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">身体分区 Body Part</p>
         <div className="flex flex-wrap gap-1.5">
           {BODY_OPTIONS.map((opt) => (
             <button
@@ -67,7 +67,7 @@ export function FilterBar({
 
       {/* Card 2: Equipment */}
       <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-        <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">器械 Equipment</p>
+        <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">器械 Equipment</p>
         <div className="flex flex-wrap gap-1.5">
           {EQUIP_OPTIONS.map((opt) => (
             <button
@@ -88,7 +88,7 @@ export function FilterBar({
       {/* Card 3: Football-Specific (NEW) */}
       {onFootballCategoryChange && (
         <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-          <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">
+          <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">
             <span className="mr-1">⚽</span>足球专项 Football-Specific
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -112,7 +112,7 @@ export function FilterBar({
       {/* Card 4: Exercise Type */}
       {onExerciseTypeChange && (
         <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
-          <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
+          <p className="text-[10px] text-gray-400 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
           <div className="flex flex-wrap gap-1.5">
             {(["all", "力量", "热身", "冷身", "技术"] as const).map((t) => (
               <button

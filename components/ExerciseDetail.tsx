@@ -145,7 +145,7 @@ export function ExerciseDetail({ exercise }: Props) {
           {/* Prime movers */}
           {exercise.prime_movers && exercise.prime_movers.length > 0 && (
             <div className="flex items-start gap-2">
-              <span className="text-[10px] text-gray-500 whitespace-nowrap mt-0.5">目标肌群</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap mt-0.5">目标肌群</span>
               <div className="flex flex-wrap gap-1">
                 {exercise.prime_movers.map((m, i) => (
                   <span
@@ -162,7 +162,7 @@ export function ExerciseDetail({ exercise }: Props) {
           {/* Cue points */}
           {exercise.cue_points && exercise.cue_points.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[10px] text-gray-500">动作要点</span>
+              <span className="text-[10px] text-gray-400">动作要点</span>
               {exercise.cue_points.map((cue, i) => (
                 <div key={i} className="flex items-start gap-1.5">
                   <span className="text-[10px] text-[#d92525] font-bold mt-0.5">{i + 1}.</span>
@@ -241,7 +241,7 @@ function ExercisePlaceholder({ name }: { name: string }) {
       <div className="w-16 h-16 rounded-2xl bg-[#1e1e1e] border border-[#222] flex items-center justify-center">
         <span className="text-2xl">🏋️</span>
       </div>
-      <p className="text-xs text-gray-500">{name}</p>
+      <p className="text-xs text-gray-400">{name}</p>
       <p className="text-[10px] text-gray-600">暂无动作示范图片</p>
     </div>
   );

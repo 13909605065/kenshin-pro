@@ -44,10 +44,10 @@ export default function OfflinePage() {
 
       {/* Offline plans */}
       <div className="w-full max-w-sm mb-10">
-        <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">离线可用方案</p>
+        <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">离线可用方案</p>
         {loaded && plans.length === 0 && (
           <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-5 text-center">
-            <p className="text-gray-500 text-sm">暂无离线方案</p>
+            <p className="text-gray-400 text-sm">暂无离线方案</p>
             <p className="text-gray-600 text-xs mt-1">生成方案后会自动保存到本地</p>
           </div>
         )}
@@ -59,7 +59,7 @@ export default function OfflinePage() {
             >
               <p className="text-white font-bold text-sm">{plan.name}</p>
               <div className="flex items-center gap-3 mt-1.5">
-                <span className="text-xs text-gray-500">{plan.date}</span>
+                <span className="text-xs text-gray-400">{plan.date}</span>
                 <span className="text-xs text-gray-600">·</span>
                 <span className="text-xs text-[#d92525]">{plan.modules} 个模块</span>
               </div>

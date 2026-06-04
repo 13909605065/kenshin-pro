@@ -95,7 +95,7 @@ export default function RosterPage() {
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">📋 球队花名册</h1>
-        <span className="text-xs text-gray-500">{players.length}名球员</span>
+        <span className="text-xs text-gray-400">{players.length}名球员</span>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcel} className="hidden" />
         <button onClick={() => fileRef.current?.click()}
@@ -126,11 +126,11 @@ export default function RosterPage() {
               <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                <p className="text-[10px] text-gray-500">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
+                <p className="text-[10px] text-gray-400">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
               </div>
               <button onClick={() => { setEditing(p); setShowAdd(true); }} className="text-gray-600 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition"><Trash2 className="w-3 h-3" /></button>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-gray-500">
+            <div className="flex items-center justify-between text-[10px] text-gray-400">
               <span>{p.age ? `${p.age}岁` : ""} {p.height ? `${p.height}cm` : ""} {p.weight ? `${p.weight}kg` : ""}</span>
               <select value={p.injuryStatus} onChange={(e) => handleUpdate(p.id, "injuryStatus", e.target.value)}
                 className="bg-[#1e1e1e] rounded px-1 py-0.5 text-[10px] border-none outline-none">
@@ -147,7 +147,7 @@ export default function RosterPage() {
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="text-gray-500 text-sm col-span-full text-center py-12">暂无球员，点击「导入Excel」或「添加球员」</p>
+          <p className="text-gray-400 text-sm col-span-full text-center py-12">暂无球员，点击「导入Excel」或「添加球员」</p>
         )}
       </div>
 
@@ -174,7 +174,7 @@ export default function RosterPage() {
               <input type="number" value={editing?.weight || ""} onChange={(e) => setEditing((p) => p ? { ...p, weight: Number(e.target.value) || null } : null)} placeholder="体重kg" className="input-field text-sm" />
             </div>
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">伤病状态</label>
+              <label className="text-[10px] text-gray-400 mb-1 block">伤病状态</label>
               <select value={editing?.injuryStatus || "healthy"} onChange={(e) => setEditing((p) => p ? { ...p, injuryStatus: e.target.value as any } : null)}
                 className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1.5 text-xs text-gray-300 w-full">
                 <option value="healthy">🟢 健康</option>
@@ -230,7 +230,7 @@ export default function RosterPage() {
                   {mapping.map((m) => (
                     <div key={m.field} className="flex items-center gap-1.5 bg-[#1e1e1e] rounded px-2 py-1">
                       <span className="text-gray-400 w-8">{m.field}</span>
-                      <span className="text-gray-500">→</span>
+                      <span className="text-gray-400">→</span>
                       <span className={m.found ? "text-green-400" : "text-red-400/60"}>{m.header || "未检测到"}</span>
                     </div>
                   ))}

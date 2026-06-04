@@ -438,7 +438,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
         <div className="lg:col-span-1 space-y-3">
           {/* Core Tactical Points */}
           <div className={CARD_CLASS}>
-            <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+            <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
               <Zap className="w-3 h-3 text-[#d92525]" /> 核心战术
             </h3>
             <div className="space-y-2">
@@ -466,7 +466,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
 
           {/* Player Roles */}
           <div className={CARD_CLASS}>
-            <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+            <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
               <Users className="w-3 h-3 text-[#d92525]" /> 球员角色
             </h3>
             <div className="space-y-1.5">
@@ -493,7 +493,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
           {/* Canvas card */}
           <div className={CARD_CLASS}>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[10px] text-gray-500 uppercase tracking-wider">阵型落位</h3>
+              <h3 className="text-[10px] text-gray-400 uppercase tracking-wider">阵型落位</h3>
               {/* Tab buttons */}
               <div className="flex gap-1">
                 {(Object.keys(TAB_LABELS) as DiagramTab[]).map((k) => (
@@ -503,7 +503,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
                     className={`px-2.5 py-1 rounded text-[9px] font-medium transition-all duration-150 border-b-2 ${
                       activeDiagram === k
                         ? "text-[#d92525] border-[#d92525] bg-[#291a1a]"
-                        : "text-gray-500 border-transparent hover:text-gray-300 hover:bg-[#291a1a]"
+                        : "text-gray-400 border-transparent hover:text-gray-300 hover:bg-[#291a1a]"
                     }`}
                   >
                     {TAB_LABELS[k]}
@@ -526,7 +526,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
             <div className="mt-2">
               <button
                 onClick={() => setNoteExpanded(!noteExpanded)}
-                className="flex items-center gap-1 text-[10px] text-gray-500 hover:text-gray-300 transition-colors duration-150"
+                className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-300 transition-colors duration-150"
               >
                 {noteExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 <span className="truncate max-w-[280px]">
@@ -592,7 +592,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
         <div className="lg:col-span-1 space-y-3">
           {/* Set Pieces */}
           <div className={CARD_CLASS}>
-            <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-1">
+            <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
               <Flag className="w-3 h-3 text-[#d92525]" /> 定位球
             </h3>
             <div className="space-y-2">
@@ -609,7 +609,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
 
           {/* Attack/Defense Key Points — accordion */}
           <div className={CARD_CLASS}>
-            <h3 className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">攻防要点</h3>
+            <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">攻防要点</h3>
             <div className="space-y-0">
               {/* 进攻 */}
               <AccordionSection title="进攻" emoji="⚔️" defaultOpen={true}>

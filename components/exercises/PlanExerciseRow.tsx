@@ -31,7 +31,7 @@ export function PlanExerciseRow({
           <button
             onClick={onMoveUp}
             disabled={index === 0}
-            className="p-0.5 text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition rounded"
+            className="p-0.5 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition rounded"
           >
             <ChevronUp className="w-4 h-4" />
           </button>
@@ -39,7 +39,7 @@ export function PlanExerciseRow({
           <button
             onClick={onMoveDown}
             disabled={index >= total - 1}
-            className="p-0.5 text-gray-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition rounded"
+            className="p-0.5 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition rounded"
           >
             <ChevronDown className="w-4 h-4" />
           </button>
@@ -57,7 +57,7 @@ export function PlanExerciseRow({
           {/* Editable fields */}
           <div className="grid grid-cols-4 gap-2">
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">组数</label>
+              <label className="block text-[10px] text-gray-400 mb-1">组数</label>
               <input
                 type="number"
                 value={exercise.sets}
@@ -68,7 +68,7 @@ export function PlanExerciseRow({
               />
             </div>
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">次数</label>
+              <label className="block text-[10px] text-gray-400 mb-1">次数</label>
               <input
                 type="number"
                 value={exercise.reps}
@@ -79,7 +79,7 @@ export function PlanExerciseRow({
               />
             </div>
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">负荷</label>
+              <label className="block text-[10px] text-gray-400 mb-1">负荷</label>
               <input
                 type="text"
                 value={exercise.load}
@@ -89,7 +89,7 @@ export function PlanExerciseRow({
               />
             </div>
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1">间歇(s)</label>
+              <label className="block text-[10px] text-gray-400 mb-1">间歇(s)</label>
               <input
                 type="number"
                 value={exercise.rest}

@@ -3,7 +3,7 @@
 const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
-  skipWaiting: true,
+  skipWaiting: false,
   disable: process.env.NODE_ENV === "development", // enable in production only
   runtimeCaching: [
     // API routes — Network First, fallback to cache

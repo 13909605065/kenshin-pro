@@ -248,7 +248,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
                   max={20}
                   className={`${inputClass} w-full text-center`}
                 />
-                <span className="text-gray-500 text-xs">-</span>
+                <span className="text-gray-400 text-xs">-</span>
                 <input
                   type="number"
                   value={setsMax ?? ""}
@@ -276,7 +276,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
                   max={100}
                   className={`${inputClass} w-full text-center`}
                 />
-                <span className="text-gray-500 text-xs">-</span>
+                <span className="text-gray-400 text-xs">-</span>
                 <input
                   type="number"
                   value={repsMax ?? ""}
@@ -304,7 +304,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
                   max={600}
                   className={`${inputClass} w-full text-center`}
                 />
-                <span className="text-gray-500 text-xs">-</span>
+                <span className="text-gray-400 text-xs">-</span>
                 <input
                   type="number"
                   value={restMax ?? ""}

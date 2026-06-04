@@ -47,7 +47,7 @@ export function InjuryStep({ selected, onToggle, injuryHistory, onHistoryChange 
       </div>
 
       <div className="text-center">
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           跳过此步，直接点击下方「生成训练方案」
         </p>
       </div>

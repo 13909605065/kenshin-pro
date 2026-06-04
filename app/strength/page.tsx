@@ -60,7 +60,7 @@ export default function StrengthPage() {
                 <Dumbbell className="w-5 h-5 text-[#d92525]" />
                 动作库
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 浏览器械力量训练动作，查看要点与进退阶方案
               </p>
             </div>
@@ -73,7 +73,7 @@ export default function StrengthPage() {
             />
 
             {filteredLibrary.length === 0 ? (
-              <div className="text-center py-16 text-gray-500">
+              <div className="text-center py-16 text-gray-400">
                 没有匹配的动作
               </div>
             ) : (
@@ -99,7 +99,7 @@ export default function StrengthPage() {
                 <Zap className="w-5 h-5 text-[#d92525]" />
                 自由选择
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 从动作库中自由选择，自定义组数、次数和负荷参数
               </p>
             </div>

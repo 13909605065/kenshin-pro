@@ -182,8 +182,8 @@ export default function GymPage() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#d92525]/20 flex items-center justify-center text-lg font-bold text-[#d92525] flex-shrink-0">{formData.name?.charAt(0) || "A"}</div>
           <div>
-            <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-500 ml-2 font-normal">{!isFitness && formData.position ? t("pos." + formData.position) : ""}</span></p>
-            <p className="text-[11px] text-gray-500">{age}岁 · {height}cm · {weight}kg · {years}年</p>
+            <p className="text-base font-bold text-white">{formData.name || "健身者"}<span className="text-[11px] text-gray-400 ml-2 font-normal">{!isFitness && formData.position ? t("pos." + formData.position) : ""}</span></p>
+            <p className="text-[11px] text-gray-400">{age}岁 · {height}cm · {weight}kg · {years}年</p>
           </div>
         </div>
 
@@ -192,7 +192,7 @@ export default function GymPage() {
           <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">今日训练建议</p>
           {/* Training Direction */}
           <div>
-            <p className="text-[10px] text-gray-500 mb-1">训练方向</p>
+            <p className="text-[10px] text-gray-400 mb-1">训练方向</p>
             <p className="text-sm text-gray-200 leading-relaxed">{trainRec}</p>
           </div>
           {/* Nutrition — separate from training direction */}
@@ -202,12 +202,12 @@ export default function GymPage() {
               <p className="text-sm text-gray-200 leading-relaxed">{nutritionRec}</p>
             </div>
           )}
-          {bodyNote ? <div className="border-t border-[#333] pt-3"><p className="text-[10px] text-gray-500 mb-1">身体状况</p><p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p></div> : null}
+          {bodyNote ? <div className="border-t border-[#333] pt-3"><p className="text-[10px] text-gray-400 mb-1">身体状况</p><p className="text-sm text-gray-200 leading-relaxed">{bodyNote}</p></div> : null}
           {hasInjury ? <div className="border-t border-[#333] pt-3"><p className="text-[10px] text-red-400 mb-1">伤病提醒</p><p className="text-sm text-red-300 leading-relaxed">检测到伤病部位，训练时避开直接负重，以康复性训练为主。如有不适立即停止。</p></div> : null}
           <div className="grid grid-cols-3 gap-2 pt-2">
-            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-500">年龄</p></div>
-            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-500">BMI</p></div>
-            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-500">训练年限</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
+            <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
           </div>
         </div>
 
@@ -244,7 +244,7 @@ export default function GymPage() {
               <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">AI 生成训练方案</p>
               <button
                 onClick={handleResetGeneration}
-                className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 transition"
+                className="text-xs text-gray-400 hover:text-gray-300 flex items-center gap-1 transition"
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> 返回建议
               </button>
@@ -321,7 +321,7 @@ export default function GymPage() {
               {recentPlans.slice(0, 3).map((p: any) => (
                 <button key={p.id} onClick={() => router.push("/")} className="w-full bg-[#1e1e1e] border border-[#333] hover:border-[#d92525]/30 rounded-lg px-4 py-3 text-left transition">
                   <p className="text-sm text-white font-medium">{p.playerName}</p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">{p.modules.length}模块 · {new Date(p.createdAt).toLocaleDateString("zh-CN")}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{p.modules.length}模块 · {new Date(p.createdAt).toLocaleDateString("zh-CN")}</p>
                 </button>
               ))}
             </div>

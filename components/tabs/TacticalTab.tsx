@@ -214,7 +214,7 @@ export function TacticalTab({ modules }: Props) {
                   title={`高强度 ${phaseModule.intensity_distribution.high}%`}
                 />
               </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-2">
+              <div className="flex justify-between text-xs text-gray-400 mt-2">
                 <span>低 {phaseModule.intensity_distribution.low}%</span>
                 <span>中 {phaseModule.intensity_distribution.medium}%</span>
                 <span>高 {phaseModule.intensity_distribution.high}%</span>
@@ -235,7 +235,7 @@ export function TacticalTab({ modules }: Props) {
         <div>
           <h4 className="text-[#d92525] text-sm font-bold mb-2">战术分析</h4>
           <div className="bg-[#1e1e1e]/50 rounded-lg p-6 text-center border border-dashed border-[#222]">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               战术板功能将在下一版本上线
             </p>
             <p className="text-xs text-gray-600 mt-1">
@@ -247,5 +247,5 @@ export function TacticalTab({ modules }: Props) {
     );
   }
 
-  return <p className="text-sm text-gray-500 py-8 text-center">暂无战术内容</p>;
+  return <p className="text-sm text-gray-400 py-8 text-center">暂无战术内容</p>;
 }

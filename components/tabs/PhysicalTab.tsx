@@ -21,7 +21,7 @@ export function PhysicalTab({ modules, position }: Props) {
 
   const hasAnyContent = upper.length > 0 || lower.length > 0 || core.length > 0 || abilityExercises.length > 0;
   if (!hasAnyContent) {
-    return <p className="text-sm text-gray-500 py-8 text-center">暂无体能训练内容</p>;
+    return <p className="text-sm text-gray-400 py-8 text-center">暂无体能训练内容</p>;
   }
 
   return (
@@ -53,7 +53,7 @@ export function PhysicalTab({ modules, position }: Props) {
       </div>
 
       {isGoalkeeper && (
-        <p className="text-xs text-gray-500 bg-[#1e1e1e]/50 rounded-lg p-2">
+        <p className="text-xs text-gray-400 bg-[#1e1e1e]/50 rounded-lg p-2">
           守门员仅展示无球训练内容
         </p>
       )}
@@ -91,7 +91,7 @@ export function PhysicalTab({ modules, position }: Props) {
                     {ex.sets}组 × {ex.reps}次 @ {ex.load} · 间歇{ex.rest}s
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">{ex.progression}</p>
+                <p className="text-xs text-gray-400 mt-2">{ex.progression}</p>
               </div>
             ))}
           </div>

@@ -35,7 +35,7 @@ export function SeasonPhaseStep({ selected, onChange, error }: Props) {
               <div className="text-2xl">{phase.icon}</div>
               <div>
                 <div className="font-bold text-white">{phase.label}</div>
-                <div className="text-sm text-gray-500 mt-1">{phase.desc}</div>
+                <div className="text-sm text-gray-400 mt-1">{phase.desc}</div>
               </div>
               <div className="ml-auto">
                 <div

@@ -142,7 +142,7 @@ export function StepWizard() {
         <div className="space-y-4">
           <GeneratingOverlay currentModule={training.currentEventName} isCoach={isCoach} />
           <div className="text-center">
-            <button onClick={() => window.location.reload()} className="text-xs text-gray-500 hover:text-white transition">
+            <button onClick={() => window.location.reload()} className="text-xs text-gray-400 hover:text-white transition">
               ← 取消并回到主页
             </button>
           </div>
@@ -255,7 +255,7 @@ export function StepWizard() {
       {status === "idle" && (
         <div className="glass-card p-6 sm:p-8">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm text-gray-500">Step {currentStep + 1}/{totalSteps}</span>
+            <span className="text-sm text-gray-400">Step {currentStep + 1}/{totalSteps}</span>
             <button
               onClick={() => {
                 setShowProfileSave(true);

@@ -74,7 +74,7 @@ export default function SchedulePage() {
                   {nextMatch.location === "home" ? "主场" : "客场"} vs {nextMatch.opponent}
                 </p>
                 <p className="text-xs text-gray-400">{nextMatch.date} {nextMatch.time || ""} {nextMatch.venue ? "· " + nextMatch.venue : ""}</p>
-                {nextMatch.opponentStyle && <p className="text-[11px] text-gray-500 mt-1">对手特点: {nextMatch.opponentStyle}</p>}
+                {nextMatch.opponentStyle && <p className="text-[11px] text-gray-400 mt-1">对手特点: {nextMatch.opponentStyle}</p>}
               </div>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function SchedulePage() {
           <div className="ml-auto flex rounded-lg bg-[#111] p-0.5">
             {(["upcoming", "played", "all"] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)}
-                className={"px-2 py-1 rounded text-[10px] font-medium " + (filter === f ? "bg-[#d92525] text-white" : "text-gray-500")}>
+                className={"px-2 py-1 rounded text-[10px] font-medium " + (filter === f ? "bg-[#d92525] text-white" : "text-gray-400")}>
                 {f === "upcoming" ? "未赛" : f === "played" ? "已赛" : "全部"}
               </button>
             ))}
@@ -121,7 +121,7 @@ export default function SchedulePage() {
                     </div>
                     <div>
                       <p className="text-white text-sm font-bold">{m.opponent}</p>
-                      <p className="text-[10px] text-gray-500">{m.date} {m.time || ""} {m.venue ? "· " + m.venue : ""} {m.league ? "· " + m.league : ""}</p>
+                      <p className="text-[10px] text-gray-400">{m.date} {m.time || ""} {m.venue ? "· " + m.venue : ""} {m.league ? "· " + m.league : ""}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ function MatchModal({ match, onSave, onDelete, onClose }: {
         </div>
 
         <div className="border-t border-[#333] pt-2">
-          <p className="text-[10px] text-gray-500 mb-2">对手分析（可选，帮助AI生成针对性训练）</p>
+          <p className="text-[10px] text-gray-400 mb-2">对手分析（可选，帮助AI生成针对性训练）</p>
           <textarea value={form.opponentStyle} onChange={e => set("opponentStyle", e.target.value)} placeholder="对手特点（如：边路速度快、中场控球强）" rows={2} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white resize-none" />
           <textarea value={form.opponentWeakness} onChange={e => set("opponentWeakness", e.target.value)} placeholder="对手弱点（如：定位球防守差、反击回不来）" rows={2} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white resize-none mt-2" />
           <textarea value={form.ourIssues} onChange={e => set("ourIssues", e.target.value)} placeholder="我方需注意（如：最近体能下降、中场衔接问题）" rows={2} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white resize-none mt-2" />

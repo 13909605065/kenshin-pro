@@ -78,7 +78,7 @@ export function FieldDiagram({ diagram }: Props) {
           场地示意图 · {layoutLabel(layout)}
         </span>
         {total_distance && (
-          <span className="text-[10px] text-gray-500">
+          <span className="text-[10px] text-gray-400">
             总距离 {total_distance}
           </span>
         )}
@@ -261,7 +261,7 @@ export function FieldDiagram({ diagram }: Props) {
           <span className="text-[10px] text-gray-400">跑动路线</span>
         </div>
         {cone_count > 0 && (
-          <span className="text-[10px] text-gray-500 ml-auto">
+          <span className="text-[10px] text-gray-400 ml-auto">
             {cone_count} 个点位
           </span>
         )}

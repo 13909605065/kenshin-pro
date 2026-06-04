@@ -16,7 +16,7 @@ export function WarmupTab({ modules, position }: Props) {
 
   const posModule = modules.find((m) => m.module === "position_training");
   if (!posModule || posModule.module !== "position_training" || !posModule.warmup) {
-    return <p className="text-sm text-gray-500 py-8 text-center">暂无热身内容</p>;
+    return <p className="text-sm text-gray-400 py-8 text-center">暂无热身内容</p>;
   }
 
   const warmup = posModule.warmup;
@@ -74,11 +74,11 @@ export function WarmupTab({ modules, position }: Props) {
       )}
 
       {isGoalkeeper && (
-        <p className="text-xs text-gray-500">守门员仅展示无球热身内容</p>
+        <p className="text-xs text-gray-400">守门员仅展示无球热身内容</p>
       )}
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-gray-500 py-4 text-center">
+        <p className="text-sm text-gray-400 py-4 text-center">
           {effectiveMode === "no_ball" ? "暂无无球热身项目" : "暂有球热身项目"}
         </p>
       ) : (
@@ -93,7 +93,7 @@ export function WarmupTab({ modules, position }: Props) {
                     <span className="font-medium text-white">{w.name}</span>
                     <span className="text-xs text-gray-400">{w.duration}秒</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{w.description}</p>
+                  <p className="text-xs text-gray-400 mt-1">{w.description}</p>
                 </div>
               ));
             }
@@ -120,7 +120,7 @@ export function WarmupTab({ modules, position }: Props) {
                         <span className="font-medium text-white">{w.name}</span>
                         <span className="text-xs text-gray-400">{w.duration}秒</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{w.description}</p>
+                      <p className="text-xs text-gray-400 mt-1">{w.description}</p>
                     </div>
                   ))}
                 </div>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
 import { ErrorCatcher } from "@/components/ErrorCatcher";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { UpdateBanner } from "@/components/UpdateBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen">
         <OfflineBanner />
+        <UpdateBanner />
         <ErrorCatcher>
           <Providers>{children}</Providers>
         </ErrorCatcher>

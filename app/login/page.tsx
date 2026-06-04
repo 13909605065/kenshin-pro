@@ -86,7 +86,7 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-white tracking-tight">
             Kenshinpro
           </h1>
-          <p className="text-sm text-gray-500">足球训练助手</p>
+          <p className="text-sm text-gray-400">足球训练助手</p>
         </div>
 
         {/* Error / Message */}
@@ -119,7 +119,7 @@ export default function LoginPage() {
                 <span className="text-sm text-gray-300">邮箱登录</span>
                 <button
                   onClick={() => setShowEmail(false)}
-                  className="text-xs text-gray-500 hover:text-white transition"
+                  className="text-xs text-gray-400 hover:text-white transition"
                 >
                   收起
                 </button>
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 />
                 <button
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -221,9 +221,9 @@ export default function LoginPage() {
         {/* Footer */}
         <p className="text-center text-gray-600 text-xs">
           登录即表示您同意我们的
-          <a href="#" className="text-gray-500 hover:text-gray-300 transition mx-0.5">服务条款</a>
+          <a href="#" className="text-gray-400 hover:text-gray-300 transition mx-0.5">服务条款</a>
           和
-          <a href="#" className="text-gray-500 hover:text-gray-300 transition mx-0.5">隐私政策</a>
+          <a href="#" className="text-gray-400 hover:text-gray-300 transition mx-0.5">隐私政策</a>
         </p>
       </div>
     </div>

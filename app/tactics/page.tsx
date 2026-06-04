@@ -731,7 +731,7 @@ export default function TacticsPage() {
 
       {saveOpen && (
         <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-72 space-y-2 shadow-2xl">
-          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
+          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           <input value={sName} onChange={(e)=>setSName(e.target.value)} placeholder="战术名称" className="input-field text-xs h-9" onKeyDown={(e)=>e.key==="Enter"&&hSave()}/>
           <div className="flex flex-wrap gap-1">{THEMES.map((t)=><button key={t} onClick={()=>setSTheme(t)} className={`px-2 py-0.5 rounded text-[10px] transition`} style={{backgroundColor: sTheme===t ? TAC_THEME.accent : "#22252d", color: sTheme===t ? "#fff" : "#888"}}>{t}</button>)}</div>
           <button onClick={hSave} disabled={!sName.trim()} className="w-full py-2 text-white font-bold rounded text-xs disabled:opacity-40" style={{backgroundColor:TAC_THEME.accent}}><Save className="w-3 h-3 inline mr-1"/>保存</button>
@@ -740,11 +740,11 @@ export default function TacticsPage() {
 
       {loadOpen && (
         <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
-          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
-          {scenes.length===0?<p className="text-gray-500 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
+          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
+          {scenes.length===0?<p className="text-gray-400 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
             <div key={s.id} className="flex items-center gap-2 p-2 rounded group" style={{backgroundColor:"#1a1d24"}}>
               <Bookmark className="w-3.5 h-3.5 flex-shrink-0" style={{color: TAC_THEME.accent}}/>
-              <div className="flex-1 min-w-0"><p className="text-xs text-white truncate">{s.name}</p><p className="text-[10px] text-gray-500">{s.theme} · {new Date(s.createdAt).toLocaleDateString()}</p></div>
+              <div className="flex-1 min-w-0"><p className="text-xs text-white truncate">{s.name}</p><p className="text-[10px] text-gray-400">{s.theme} · {new Date(s.createdAt).toLocaleDateString()}</p></div>
               <button onClick={()=>hLoad(s)} className="text-[10px] hover:underline flex-shrink-0" style={{color:TAC_THEME.accent}}>加载</button>
               <button onClick={()=>hDel(s.id)} className="text-gray-600 flex-shrink-0" style={{}}><X className="w-3 h-3"/></button>
             </div>

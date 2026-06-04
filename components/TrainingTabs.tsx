@@ -93,19 +93,19 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
         <div className="grid grid-cols-4 gap-3 text-center">
           <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.duration}</div>
-            <div className="text-[10px] text-gray-500">分钟</div>
+            <div className="text-[10px] text-gray-400">分钟</div>
           </div>
           <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.player_count}</div>
-            <div className="text-[10px] text-gray-500">球员</div>
+            <div className="text-[10px] text-gray-400">球员</div>
           </div>
           <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.warmup.length}</div>
-            <div className="text-[10px] text-gray-500">热身项</div>
+            <div className="text-[10px] text-gray-400">热身项</div>
           </div>
           <div className="bg-[#1e1e1e] rounded-lg p-2">
             <div className="text-[#d92525] font-bold text-xl">{m.activities.length}</div>
-            <div className="text-[10px] text-gray-500">练习项</div>
+            <div className="text-[10px] text-gray-400">练习项</div>
           </div>
         </div>
         {m.equipment.length > 0 && (
@@ -128,7 +128,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span className="font-medium text-white text-sm">{w.name}</span>
                   <span className="text-xs text-gray-400">{w.duration}min</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{w.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{w.description}</p>
               </div>
             ))}
           </div>
@@ -146,7 +146,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span className="font-bold text-white">{i+1}. {act.name}</span>
                   <span className="text-xs text-[#d92525]">{act.duration}min</span>
                 </div>
-                <div className="flex gap-3 text-[10px] text-gray-500 mb-2">
+                <div className="flex gap-3 text-[10px] text-gray-400 mb-2">
                   <span>场地: {act.area}</span>
                   <span>分组: {act.groups}</span>
                 </div>
@@ -158,7 +158,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                 )}
                 {act.coaching_points.length > 0 && (
                   <div className="mb-2">
-                    <span className="text-[10px] text-gray-500">指导要点:</span>
+                    <span className="text-[10px] text-gray-400">指导要点:</span>
                     <ul className="list-disc list-inside text-xs text-gray-300 mt-1 space-y-0.5">
                       {act.coaching_points.map((cp, j) => <li key={j}>{cp}</li>)}
                     </ul>
@@ -189,9 +189,9 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
           <h4 className="text-[#d92525] text-sm font-bold mb-2">🏟️ 分队比赛: {m.ssg.name}</h4>
           <div className="bg-[#1e1e1e]/50 rounded-lg p-4">
             <div className="grid grid-cols-3 gap-3 mb-3 text-center">
-              <div><div className="text-white font-bold">{m.ssg.duration}min</div><div className="text-[10px] text-gray-500">时长</div></div>
-              <div><div className="text-white font-bold">{m.ssg.area}</div><div className="text-[10px] text-gray-500">场地</div></div>
-              <div><div className="text-white font-bold">{m.ssg.players}</div><div className="text-[10px] text-gray-500">人数</div></div>
+              <div><div className="text-white font-bold">{m.ssg.duration}min</div><div className="text-[10px] text-gray-400">时长</div></div>
+              <div><div className="text-white font-bold">{m.ssg.area}</div><div className="text-[10px] text-gray-400">场地</div></div>
+              <div><div className="text-white font-bold">{m.ssg.players}</div><div className="text-[10px] text-gray-400">人数</div></div>
             </div>
             <p className="text-xs text-gray-400 mb-2">规则: {m.ssg.rules}</p>
             <div className="flex flex-wrap gap-1">
@@ -214,7 +214,7 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                   <span className="font-medium text-white text-sm">{c.name}</span>
                   <span className="text-xs text-gray-400">{c.duration}min</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{c.description}</p>
+                <p className="text-xs text-gray-400 mt-1">{c.description}</p>
               </div>
             ))}
           </div>
@@ -379,7 +379,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
                 <span className="font-bold text-white">{i+1}. {drill.name}</span>
                 <span className="text-xs text-[#d92525]">{drill.duration}min</span>
               </div>
-              <div className="flex gap-3 text-[10px] text-gray-500 mb-2">
+              <div className="flex gap-3 text-[10px] text-gray-400 mb-2">
                 <span>场地: {drill.area}</span>
                 <span>分组: {drill.groups}</span>
               </div>
@@ -391,7 +391,7 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
               )}
               {drill.coaching_points.length > 0 && (
                 <div className="mb-2">
-                  <span className="text-[10px] text-gray-500">指导要点:</span>
+                  <span className="text-[10px] text-gray-400">指导要点:</span>
                   <ul className="list-disc list-inside text-xs text-gray-300 mt-1 space-y-0.5">
                     {drill.coaching_points.map((cp, j) => <li key={j}>{cp}</li>)}
                   </ul>
@@ -437,7 +437,7 @@ function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-white font-medium">{d.focus}</p>
-              <p className="text-[10px] text-gray-500">{d.session_type} · {d.duration}min</p>
+              <p className="text-[10px] text-gray-400">{d.session_type} · {d.duration}min</p>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <div className={`w-2 h-2 rounded-full ${intensityColors[d.intensity] || "bg-gray-500"}`} />
@@ -555,7 +555,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
             className={`px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all duration-150 whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-[#d92525] text-[#d92525] bg-[#291a1a]"
-                : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-[#291a1a]"
+                : "border-transparent text-gray-400 hover:text-gray-300 hover:bg-[#291a1a]"
             }`}
           >
             <span className="sm:hidden">{tab.short}</span>
@@ -574,20 +574,20 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
               }} />
             )}
             {activeTab === "session" && !sessionPlan && (
-              <p className="text-sm text-gray-500 py-8 text-center">暂无训练教案内容</p>
+              <p className="text-sm text-gray-400 py-8 text-center">暂无训练教案内容</p>
             )}
             {activeTab === "tactical" && tacticalFocus && (
               <CoachTacticalBriefing module={tacticalFocus} onOpenBoard={() => { writeDrillContext(tacticalFocus.drills[0] as any); router.push("/tactics"); }}/>
             )}
             {activeTab === "tactical" && !tacticalFocus && (
-              <p className="text-sm text-gray-500 py-8 text-center">暂无战术专项内容</p>
+              <p className="text-sm text-gray-400 py-8 text-center">暂无战术专项内容</p>
             )}
             {activeTab === "microcycle" && microcycle && (
               <CoachMicrocycleView module={microcycle} />
             )}
             {activeTab === "microcycle" && !microcycle && (
               <div className="space-y-3 py-4">
-                <p className="text-xs text-gray-500 mb-3 text-center">暂无AI生成的微周期，以下为预设模板参考：</p>
+                <p className="text-xs text-gray-400 mb-3 text-center">暂无AI生成的微周期，以下为预设模板参考：</p>
                 {([
                   { day: "赛前3天", intensity: "中高", color: "bg-orange-500", borderColor: "border-orange-500", focus: "高强度战术演练与位置专项" },
                   { day: "赛前2天", intensity: "中等", color: "bg-yellow-500", borderColor: "border-yellow-500", focus: "团队配合与半场攻防" },

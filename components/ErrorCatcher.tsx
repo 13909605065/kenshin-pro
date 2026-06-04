@@ -32,7 +32,7 @@ export class ErrorCatcher extends Component<
                 {this.state.error.message}
               </p>
               <details className="mt-3">
-                <summary className="text-xs text-gray-500 cursor-pointer">
+                <summary className="text-xs text-gray-400 cursor-pointer">
                   查看完整堆栈
                 </summary>
                 <pre className="text-xs text-gray-400 mt-2 whitespace-pre-wrap overflow-auto max-h-96">

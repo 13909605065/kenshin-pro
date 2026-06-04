@@ -6,7 +6,7 @@ import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 
 function CoachShareView({ modules }: { modules: TrainingModule[] }) {
   const session = modules.find((m: any) => m.module === "session_plan") as any;
-  if (!session) return <p className="text-gray-500 p-8">暂无教案数据</p>;
+  if (!session) return <p className="text-gray-400 p-8">暂无教案数据</p>;
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
@@ -18,7 +18,7 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
         <div>
           <h2 className="text-[#d92525] text-sm font-bold mb-2">🔥 热身 ({session.warmup.reduce((s: number, w: any) => s + w.duration, 0)}min)</h2>
           {session.warmup.map((w: any, i: number) => (
-            <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-1"><span className="text-white text-sm">{w.name}</span><span className="text-xs text-gray-400 ml-2">{w.duration}min</span><p className="text-xs text-gray-500">{w.description}</p></div>
+            <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-1"><span className="text-white text-sm">{w.name}</span><span className="text-xs text-gray-400 ml-2">{w.duration}min</span><p className="text-xs text-gray-400">{w.description}</p></div>
           ))}
         </div>
       )}
@@ -30,7 +30,7 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
               <div className="flex justify-between"><span className="text-white font-bold">{i + 1}. {act.name}</span><span className="text-xs text-[#d92525]">{act.duration}min</span></div>
               <p className="text-xs text-gray-400">{act.area} · {act.groups}</p>
               <p className="text-xs text-gray-300 mt-1">{act.description}</p>
-              {act.coaching_points?.length > 0 && <p className="text-[10px] text-gray-500 mt-1">要点：{act.coaching_points.join("；")}</p>}
+              {act.coaching_points?.length > 0 && <p className="text-[10px] text-gray-400 mt-1">要点：{act.coaching_points.join("；")}</p>}
             </div>
           ))}
         </div>
@@ -55,7 +55,7 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
 
 function AthleteShareView({ modules, formData }: { modules: TrainingModule[]; formData: any }) {
   const posModule = modules.find((m: any) => m.module === "position_training") as any;
-  if (!posModule) return <p className="text-gray-500 p-8">暂无训练数据</p>;
+  if (!posModule) return <p className="text-gray-400 p-8">暂无训练数据</p>;
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
@@ -115,7 +115,7 @@ export default function SharePage() {
     load();
   }, []);
 
-  if (error) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><p className="text-gray-500">{error}</p></div>;
+  if (error) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><p className="text-gray-400">{error}</p></div>;
   if (!data) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-[#d92525] border-t-transparent animate-spin" /></div>;
 
   const isCoach = data.formData.role === "coach";
@@ -123,7 +123,7 @@ export default function SharePage() {
     <div className="min-h-screen bg-[#121212]">
       <div className="bg-[#1e1e1e] border-b border-[#222] px-4 py-2 flex items-center">
         <span className="text-white text-sm font-bold">📋 训练方案分享</span>
-        <span className="text-[10px] text-gray-500 ml-2">Kenshinpro · 只读</span>
+        <span className="text-[10px] text-gray-400 ml-2">Kenshinpro · 只读</span>
       </div>
       {isCoach ? <CoachShareView modules={data.modules} /> : <AthleteShareView modules={data.modules} formData={data.formData} />}
       <div className="text-center py-6"><button onClick={() => window.print()} className="px-4 py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm">🖨️ 打印方案</button></div>

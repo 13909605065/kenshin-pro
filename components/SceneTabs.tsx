@@ -39,7 +39,7 @@ export function SceneTabs() {
           >
             球场训练
           </p>
-          <p className="text-[10px] text-gray-500">AI 生成个性化方案</p>
+          <p className="text-[10px] text-gray-400">AI 生成个性化方案</p>
         </div>
       </button>
 
@@ -53,7 +53,7 @@ export function SceneTabs() {
         </div>
         <div className="text-left">
           <p className="text-sm font-bold text-white">健身房</p>
-          <p className="text-[10px] text-gray-500">动作库 + 力量训练</p>
+          <p className="text-[10px] text-gray-400">动作库 + 力量训练</p>
         </div>
       </button>
     </div>

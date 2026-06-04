@@ -67,7 +67,7 @@ export default function SettingsPage() {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
               ) : (
-                <Camera className="w-6 h-6 text-gray-500" />
+                <Camera className="w-6 h-6 text-gray-400" />
               )}
             </div>
             <input
@@ -109,7 +109,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex gap-2">
             {THEME_LABELS.map((t) => (
-              <span key={t.value} className="text-xs text-gray-500">{t.label}</span>
+              <span key={t.value} className="text-xs text-gray-400">{t.label}</span>
             ))}
           </div>
         </section>

@@ -16,9 +16,31 @@ interface Props {
 export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) {
   const [copyAllDone, setCopyAllDone] = useState(false);
   const [shareDone, setShareDone] = useState(false);
+  const [shareFailed, setShareFailed] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
   const supabase = createClient();
+
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -41,24 +63,37 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
       const json = await res.json();
       if (json.code === "ok" && json.id) {
         const url = `${window.location.origin}/share/?id=${json.id}`;
-        await navigator.clipboard.writeText(url);
-        setShareDone(true);
-        setTimeout(() => setShareDone(false), 2000);
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          setShareDone(true);
+          setTimeout(() => setShareDone(false), 2000);
+        } else {
+          setShareFailed(true);
+          setTimeout(() => setShareFailed(false), 3000);
+        }
       } else {
         const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: payload.formData })));
         const url = `${window.location.origin}/share/#${hash}`;
-        await navigator.clipboard.writeText(url);
-        setShareDone(true);
-        setTimeout(() => setShareDone(false), 2000);
+        const ok = await copyToClipboard(url);
+        if (ok) {
+          setShareDone(true);
+          setTimeout(() => setShareDone(false), 2000);
+        } else {
+          setShareFailed(true);
+          setTimeout(() => setShareFailed(false), 3000);
+        }
       }
     } catch {
-      try {
-        const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: { role: formData.role } })));
-        const url = `${window.location.origin}/share/#${hash}`;
-        await navigator.clipboard.writeText(url);
+      const hash = btoa(encodeURIComponent(JSON.stringify({ m: modules, f: { role: formData.role } })));
+      const url = `${window.location.origin}/share/#${hash}`;
+      const ok = await copyToClipboard(url);
+      if (ok) {
         setShareDone(true);
         setTimeout(() => setShareDone(false), 2000);
-      } catch {}
+      } else {
+        setShareFailed(true);
+        setTimeout(() => setShareFailed(false), 3000);
+      }
     }
   };
 
@@ -72,9 +107,11 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         }
       })
       .join("\n\n---\n\n");
-    await navigator.clipboard.writeText(text);
-    setCopyAllDone(true);
-    setTimeout(() => setCopyAllDone(false), 2000);
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopyAllDone(true);
+      setTimeout(() => setCopyAllDone(false), 2000);
+    }
   };
 
   const toggleFavorite = async () => {
@@ -132,10 +169,16 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
 
           <button
             onClick={handleShare}
-            className={`${btnBase} ${shareDone ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : ""}`}
+            className={`${btnBase} ${
+              shareFailed
+                ? "border-yellow-600 text-yellow-500 bg-yellow-500/10"
+                : shareDone
+                ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10"
+                : ""
+            }`}
           >
             <Share2 className="w-3.5 h-3.5" />
-            {shareDone ? "已复制" : "分享"}
+            {shareFailed ? "复制失败，请手动复制链接" : shareDone ? "已复制" : "分享"}
           </button>
         </div>
 
@@ -181,7 +224,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           className={`p-1.5 rounded-lg transition ${
             feedback === "up"
               ? "bg-[#d92525]/20 text-[#d92525]"
-              : "text-gray-500 hover:text-gray-300 hover:bg-[#222]"
+              : "text-gray-400 hover:text-gray-300 hover:bg-[#222]"
           }`}
         >
           <ThumbsUp className="w-3.5 h-3.5" />
@@ -191,7 +234,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           className={`p-1.5 rounded-lg transition ${
             feedback === "down"
               ? "bg-red-500/20 text-red-400"
-              : "text-gray-500 hover:text-gray-300 hover:bg-[#222]"
+              : "text-gray-400 hover:text-gray-300 hover:bg-[#222]"
           }`}
         >
           <ThumbsDown className="w-3.5 h-3.5" />

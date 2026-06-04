@@ -52,7 +52,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: "1px solid #222" }}>
           <div>
             <h2 className="text-white font-bold text-lg">训练模板库</h2>
-            <p className="text-[11px] text-gray-500 mt-0.5">保存的方案模板，一键套用生成新训练计划</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">保存的方案模板，一键套用生成新训练计划</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#333] transition text-gray-400 hover:text-white">
             <X className="w-5 h-5" />
@@ -63,7 +63,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {templates.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">暂无保存的模板</p>
+              <p className="text-gray-400 text-sm">暂无保存的模板</p>
               <p className="text-[11px] text-gray-600 mt-1">生成训练方案后，点击底部「保存模板」即可存入模板库</p>
             </div>
           ) : (
@@ -82,7 +82,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
                       </span>
                     </div>
                     {/* Meta */}
-                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-500">
+                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
                       <span className="flex items-center gap-1"><User className="w-3 h-3" /> {getRoleLabel(tpl.form_data)}</span>
                       {getGoalLabel(tpl.form_data) && (
                         <span className="flex items-center gap-1"><Target className="w-3 h-3" /> {getGoalLabel(tpl.form_data)}</span>
@@ -93,7 +93,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
                     {tpl.plan_content?.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {tpl.plan_content.slice(0, 4).map((m: any, i: number) => (
-                          <span key={i} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1a1a1a] text-gray-500">
+                          <span key={i} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1a1a1a] text-gray-400">
                             {m.module === "position_training" ? "位置训练" :
                              m.module === "session_plan" ? "训练教案" :
                              m.module === "tactical_focus" ? "战术专项" :
@@ -122,7 +122,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
                           确认删除
                         </button>
                         <button onClick={() => setConfirmDelete(null)}
-                          className="px-2 py-2 text-gray-500 hover:text-white rounded-lg text-[10px] transition">
+                          className="px-2 py-2 text-gray-400 hover:text-white rounded-lg text-[10px] transition">
                           取消
                         </button>
                       </div>

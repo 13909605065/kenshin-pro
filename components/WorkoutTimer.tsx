@@ -444,7 +444,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   if (!step) {
     return (
       <div className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl p-4 shadow-xl max-w-xs">
-        <p className="text-gray-500 text-sm">该方案暂无跟练内容</p>
+        <p className="text-gray-400 text-sm">该方案暂无跟练内容</p>
         <button onClick={onClose} className="absolute top-2 right-2 text-gray-400 hover:text-white">
           <X className="w-4 h-4" />
         </button>
@@ -473,12 +473,12 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
         className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl px-4 py-2.5 shadow-xl flex items-center gap-3 cursor-pointer select-none hover:border-[#d92525]/50 transition"
         onClick={() => setMinimized(false)}
       >
-        <div className={phase === "rest" ? "text-yellow-400" : phase === "paused" ? "text-gray-500" : "text-[#d92525]"}>
+        <div className={phase === "rest" ? "text-yellow-400" : phase === "paused" ? "text-gray-400" : "text-[#d92525]"}>
           <Timer className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-white font-medium truncate max-w-[120px]">{step.name}</p>
-          <p className="text-[10px] text-gray-500">
+          <p className="text-[10px] text-gray-400">
             {step.mode === "countdown" ? fmt(timer) : `${currentSet}/${step.sets}组`} · {currentStep + 1}/{totalSteps}
           </p>
         </div>
@@ -509,7 +509,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
           {catIcon(step.category)}
           <span className="text-[10px] text-gray-400 font-medium">{catLabel(step.category)}</span>
         </div>
-        <span className="text-[10px] text-gray-500 font-mono">{currentStep + 1}/{totalSteps}</span>
+        <span className="text-[10px] text-gray-400 font-mono">{currentStep + 1}/{totalSteps}</span>
         <span className="text-[10px] text-gray-600 font-mono">总 {fmt(elapsed)}</span>
         <button onClick={() => setMinimized(true)} className="text-gray-600 hover:text-gray-400 ml-1">
           <Minimize2 className="w-3.5 h-3.5" />
@@ -541,7 +541,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
           <p className="text-gray-400 text-xs mb-2">{step.reps}次 · {step.intensity || ""}</p>
         )}
         {step.description && (
-          <p className="text-gray-500 text-[10px] text-center mb-3 max-w-[200px] leading-relaxed line-clamp-2">
+          <p className="text-gray-400 text-[10px] text-center mb-3 max-w-[200px] leading-relaxed line-clamp-2">
             {step.description}
           </p>
         )}
@@ -560,7 +560,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
             {step.mode === "countdown" && phase === "active" && (
               <>
                 <div className="text-3xl font-bold text-white font-mono tracking-tight">{fmt(timer)}</div>
-                <div className="text-[9px] text-gray-500 mt-0.5">剩余</div>
+                <div className="text-[9px] text-gray-400 mt-0.5">剩余</div>
               </>
             )}
             {step.mode === "sets" && phase === "rest" && (
@@ -572,17 +572,17 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
             {step.mode === "sets" && phase === "active" && (
               <>
                 <div className="text-2xl font-bold text-white font-mono">{step.reps}次</div>
-                <div className="text-[9px] text-gray-500 mt-0.5">第{currentSet}组/共{step.sets}组</div>
+                <div className="text-[9px] text-gray-400 mt-0.5">第{currentSet}组/共{step.sets}组</div>
               </>
             )}
             {step.mode === "free" && (
               <>
                 <div className="text-3xl font-bold text-white font-mono tracking-tight">{fmt(elapsed)}</div>
-                <div className="text-[9px] text-gray-500 mt-0.5">已用</div>
+                <div className="text-[9px] text-gray-400 mt-0.5">已用</div>
               </>
             )}
             {phase === "paused" && (
-              <div className="text-xs text-gray-500">已暂停</div>
+              <div className="text-xs text-gray-400">已暂停</div>
             )}
           </div>
         </div>
