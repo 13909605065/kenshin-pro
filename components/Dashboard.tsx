@@ -18,7 +18,7 @@ import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/ma
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
 import { SceneTabs } from "./SceneTabs";
-import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Brain, Timer, Dumbbell, ClipboardList } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Activity, Save, History, Trash2, ChevronDown, Timer, ClipboardList } from "lucide-react";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const PHASES = ["preseason","competition","recovery","offseason"] as const;
@@ -386,20 +386,7 @@ export function Dashboard() {
       )}
 
 
-      {/* ====== Gym: redirect to full page ====== */}
-      {status === "idle" && scene === "gym" && (
-        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 text-center space-y-3">
-          <Dumbbell className="w-10 h-10 text-neon-pink mx-auto"/>
-          <p className="text-white font-bold text-lg">健身房</p>
-          <p className="text-xs text-gray-500">智能推荐 + 动作库 + 训练记录</p>
-          <button onClick={() => window.location.href = "/gym"}
-            className="w-full py-3 bg-neon-pink text-black font-bold rounded-xl text-sm flex items-center justify-center gap-2">
-            进入健身房 →
-          </button>
-        </div>
-      )}
-
-      {/* ====== Athlete: My Training ====== */}
+{/* ====== Athlete: My Training ====== */}
       {status === "idle" && !isCoach && playerPlans.length > 0 && (
         <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-4 space-y-3">
           <h3 className="text-sm font-bold text-white">📋 我的训练</h3>

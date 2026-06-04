@@ -1,27 +1,61 @@
 "use client";
 
 import { useScene } from "@/components/providers/SceneProvider";
-import type { Scene } from "@/lib/scene-types";
-import { ATHLETE_SCENES } from "@/lib/scene-types";
+import { useRouter } from "next/navigation";
+import { MapPin, Dumbbell } from "lucide-react";
 
-/* Coach: no tabs — one page does everything.
-   Athlete: 球场 / 健身房 */
+/* Coach: no scene tabs needed.
+   Athlete: 球场 / 健身房 — clean toggle cards */
 
 export function SceneTabs() {
   const { role, scene, setScene } = useScene();
+  const router = useRouter();
 
-  // Coach doesn't need scene tabs at all
   if (role === "coach") return null;
 
-  const scenes = ATHLETE_SCENES;
   return (
-    <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
-      {scenes.map((s) => (
-        <button key={s.id} onClick={() => setScene(s.id as Scene)}
-          className={"flex-1 py-1.5 rounded-md text-[10px] font-medium " + (scene===s.id ? "bg-[#222] text-white" : "text-gray-500 hover:text-gray-300")}>
-          {s.icon}{s.label}
-        </button>
-      ))}
+    <div className="flex gap-3">
+      {/* 球场训练 */}
+      <button
+        onClick={() => setScene("pitch")}
+        className={`flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all ${
+          scene === "pitch"
+            ? "bg-neon-pink/10 border-neon-pink/40 shadow-lg shadow-neon-pink/5"
+            : "bg-[#1a1a1a] border-[#333] hover:border-[#555]"
+        }`}
+      >
+        <div
+          className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition ${
+            scene === "pitch" ? "bg-neon-pink text-black" : "bg-[#111] text-gray-400"
+          }`}
+        >
+          <MapPin className="w-4.5 h-4.5" />
+        </div>
+        <div className="text-left">
+          <p
+            className={`text-sm font-bold transition ${
+              scene === "pitch" ? "text-neon-pink" : "text-white"
+            }`}
+          >
+            球场训练
+          </p>
+          <p className="text-[10px] text-gray-500">AI 生成个性化方案</p>
+        </div>
+      </button>
+
+      {/* 健身房 */}
+      <button
+        onClick={() => router.push("/gym")}
+        className="flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl border border-[#333] bg-[#1a1a1a] hover:border-[#555] transition-all"
+      >
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#111] text-gray-400">
+          <Dumbbell className="w-4.5 h-4.5" />
+        </div>
+        <div className="text-left">
+          <p className="text-sm font-bold text-white">健身房</p>
+          <p className="text-[10px] text-gray-500">动作库 + 力量训练</p>
+        </div>
+      </button>
     </div>
   );
 }
