@@ -36,12 +36,12 @@ export const TAC_THEME = {
   error: "#ef4444",
   success: "#279e46",
 
-  // 场地
-  grass: "#1a3828",
-  grassLight: "#1e4028",
-  fieldLine: "rgba(255,255,255,0.35)",
-  fieldLineStrong: "rgba(255,255,255,0.25)",
-  goalFill: "rgba(255,255,255,0.35)",
+  // 场地 — 明亮草绿色（白底清晰可见）
+  grass: "#4a8f3f",
+  grassLight: "#5a9f4f",
+  fieldLine: "rgba(255,255,255,0.6)",
+  fieldLineStrong: "rgba(255,255,255,0.5)",
+  goalFill: "rgba(255,255,255,0.55)",
 
   // 圆角
   radius: "6px",

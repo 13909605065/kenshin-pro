@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Canvas, Circle, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
-import { FabricBoard, exportBoardAsPNG, hideFieldMarkings } from "@/components/tactical/FabricBoard";
+import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
 import { MobileNav } from "@/components/MobileNav";
@@ -59,104 +59,99 @@ export default function TacticsPage() {
   const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
   const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
 
-  // 从训练教案联动：自动渲染练习内容
+  // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
   useEffect(() => {
-    const ctx = readDrillContext();
-    if (!ctx) return;
+    // 同时读取两个 context，谁有数据就渲染谁（诊断优先）
+    const drillCtx = readDrillContext();
+    const diagCtx = readDiagnosisContext();
+
+    // 互斥：清除另一个，确保只有一个渲染流程
+    if (diagCtx && drillCtx) {
+      // 诊断优先，把 drill 的也清掉（already read, just proceed）
+    }
+
+    if (!drillCtx && !diagCtx) return;
 
     let attempts = 0;
     const tryRender = () => {
       const canvas = boardRef.current;
       if (!canvas) {
-        if (attempts++ < 50) requestAnimationFrame(tryRender);
+        if (attempts++ < 80) requestAnimationFrame(tryRender);
         return;
       }
 
-      const fieldFile = mapAreaToField(ctx.area);
-      const { red, blue, neutral } = parseGroups(ctx.groups);
-      const positions = computePlayerPositions(red, blue, neutral, ctx.area);
-
-      FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
-        hideFieldMarkings(canvas);
-        canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
-        const margin = 15;
-        const s = Math.max((canvas.width!-margin*2)/img.width!, (canvas.height!-margin*2)/img.height!);
-        img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
-        (img as any)._isFieldBg = true;
-        const others = canvas.getObjects().filter((o:any)=>!o._isFieldBg);
-        others.forEach((o:any)=>canvas.remove(o));
-        canvas.add(img);
-        others.forEach((o:any)=>canvas.add(o));
-
-        // Clear previous drill objects
-        canvas.getObjects().filter((o: any) => (o as any)._isPlayer || (o as any)._isDrillAnnotation)
-          .forEach((o: any) => canvas.remove(o));
-
-        // Place players — hollow ring style
-        const R = TAC_THEME.playerRadius;
-        positions.forEach((p) => {
-          const cx = p.x, cy = p.y;
-          const cr = new Circle({ left: cx-R, top: cy-R, radius: R, fill: "transparent", stroke: p.c, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
-          const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
-          const g = new Group([cr, tx], { left: cx-R, top: cy-R });
-          (g as any)._isPlayer = true; (g as any).number = p.n;
-          g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
-          g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
-          canvas.add(g);
-        });
-
-        // Drill name annotation
-        const nameText = new FabricText(`练习: ${ctx.name}`, { left: 12, top: 8, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.6)", padding: 4 });
-        (nameText as any)._isDrillAnnotation = true; canvas.add(nameText);
-
-        // Group info
-        const infoText = new FabricText(`${ctx.groups} | ${ctx.area} | ${ctx.duration}min`, { left: 12, top: 40, fontSize: 12, fontFamily: "Arial", fill: "#CCC", backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
-        (infoText as any)._isDrillAnnotation = true; canvas.add(infoText);
-
-        // Coaching points
-        if (ctx.coaching_points.length > 0) {
-          const cpHeader = new FabricText("指导要点:", { left: 860, top: 100, fontSize: 12, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
-          (cpHeader as any)._isDrillAnnotation = true; canvas.add(cpHeader);
-          ctx.coaching_points.slice(0, 8).forEach((cp, i) => {
-            const txt = new FabricText(`${i + 1}. ${cp}`, { left: 860, top: 128 + i * 28, fontSize: 11, fontFamily: "Arial", fill: "#DDD", backgroundColor: "rgba(0,0,0,0.4)", padding: 2 });
-            (txt as any)._isDrillAnnotation = true; canvas.add(txt);
-          });
-        }
-
-        canvas.requestRenderAll();
-      }).catch(() => {
-        // 场地图片加载失败，忽略
-      });
-    };
-
-    tryRender();
-  }, []);
-
-  // 从AI诊断联动：自动渲染战术分析图
-  useEffect(() => {
-    const d = readDiagnosisContext();
-    if (!d) return;
-
-    let attempts = 0;
-    const tryRender = () => {
-      const canvas = boardRef.current;
-      if (!canvas) { if (attempts++ < 50) requestAnimationFrame(tryRender); return; }
-
-      hideFieldMarkings(canvas);
-      // Remove existing diagnosis objects
-      canvas.getObjects().filter((o: any) => (o as any)._isDrillAnnotation)
+      // ─── 统一清空：无论哪种渲染，先把画布清干净 ───
+      // Reset to default bright field
+      if ((canvas as any)._setFieldImage) {
+        (canvas as any)._setFieldImage("default");
+      }
+      // Remove ALL user content
+      canvas.getObjects().filter((o: any) => !o._isFieldBg)
         .forEach((o: any) => canvas.remove(o));
 
-      // Title annotation
-      const titleText = new FabricText(`诊断: ${d.title}`, {
-        left: 12, top: 8, fontSize: 16, fontFamily: "Arial",
-        fontWeight: "bold", fill: TAC_THEME.accent,
-        backgroundColor: "rgba(0,0,0,0.6)", padding: 4,
-      });
-      (titleText as any)._isDrillAnnotation = true; canvas.add(titleText);
+      // ─── 诊断渲染 ───
+      if (diagCtx) {
+        const titleText = new FabricText(`诊断: ${diagCtx.title}`, {
+          left: 12, top: 8, fontSize: 16, fontFamily: "Arial",
+          fontWeight: "bold", fill: TAC_THEME.accent,
+          backgroundColor: "rgba(0,0,0,0.6)", padding: 4,
+        });
+        (titleText as any)._isDrillAnnotation = true; canvas.add(titleText);
+        canvas.requestRenderAll();
+        return;
+      }
 
-      canvas.requestRenderAll();
+      // ─── Drill 教案渲染 ───
+      if (drillCtx) {
+        const fieldFile = mapAreaToField(drillCtx.area);
+        const { red, blue, neutral } = parseGroups(drillCtx.groups);
+        const positions = computePlayerPositions(red, blue, neutral, drillCtx.area);
+
+        FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
+          // Clear old field bg
+          canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
+          const margin = 15;
+          const s = Math.max((canvas.width!-margin*2)/img.width!, (canvas.height!-margin*2)/img.height!);
+          img.set({left:0, top:0, scaleX:s, scaleY:s, selectable:false, evented:false});
+          (img as any)._isFieldBg = true;
+          // Remove ALL non-field content before placing new
+          canvas.getObjects().filter((o:any)=>!o._isFieldBg).forEach((o:any)=>canvas.remove(o));
+          canvas.add(img);
+
+          // Place players
+          const R = TAC_THEME.playerRadius;
+          positions.forEach((p) => {
+            const cx = p.x, cy = p.y;
+            const cr = new Circle({ left: cx-R, top: cy-R, radius: R, fill: "transparent", stroke: p.c, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
+            const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
+            const g = new Group([cr, tx], { left: cx-R, top: cy-R });
+            (g as any)._isPlayer = true; (g as any).number = p.n;
+            g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
+            g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
+            canvas.add(g);
+          });
+
+          // Annotations
+          const nameText = new FabricText(`练习: ${drillCtx.name}`, { left: 12, top: 8, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.6)", padding: 4 });
+          (nameText as any)._isDrillAnnotation = true; canvas.add(nameText);
+
+          const infoText = new FabricText(`${drillCtx.groups} | ${drillCtx.area} | ${drillCtx.duration}min`, { left: 12, top: 40, fontSize: 12, fontFamily: "Arial", fill: "#CCC", backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+          (infoText as any)._isDrillAnnotation = true; canvas.add(infoText);
+
+          if (drillCtx.coaching_points.length > 0) {
+            const cpHeader = new FabricText("指导要点:", { left: 860, top: 100, fontSize: 12, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+            (cpHeader as any)._isDrillAnnotation = true; canvas.add(cpHeader);
+            drillCtx.coaching_points.slice(0, 8).forEach((cp, i) => {
+              const txt = new FabricText(`${i + 1}. ${cp}`, { left: 860, top: 128 + i * 28, fontSize: 11, fontFamily: "Arial", fill: "#DDD", backgroundColor: "rgba(0,0,0,0.4)", padding: 2 });
+              (txt as any)._isDrillAnnotation = true; canvas.add(txt);
+            });
+          }
+
+          canvas.requestRenderAll();
+        }).catch(() => {});
+      }
     };
+
     tryRender();
   }, []);
 
@@ -334,6 +329,17 @@ export default function TacticsPage() {
     if (!aiPrompt.trim() || aiLoading) return;
     setAiLoading(true); setAiError("");
 
+    // ─── 先清空画布，再请求生成 ───
+    const c = boardRef.current;
+    if (c) {
+      c.getObjects().filter((o: any) => !o._isFieldBg)
+        .forEach((o: any) => c.remove(o));
+      if ((c as any)._setFieldImage) {
+        (c as any)._setFieldImage("default");
+      }
+      c.requestRenderAll();
+    }
+
     try {
       const res = await fetch("/api/tactical-board-generate/", {
         method: "POST",
@@ -375,38 +381,38 @@ export default function TacticsPage() {
 
   return (
     <div className="h-screen flex flex-col" style={{ backgroundColor: TAC_THEME.bg }}>
-      <header className="px-3 h-11 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
-        <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1" title="返回首页">
-          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5}/><span className="text-[11px] hidden sm:inline font-light tracking-wide">返回</span>
+      <header className="px-2 sm:px-3 h-11 flex items-center gap-1 sm:gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+        <button onClick={()=>router.push("/")} className="text-gray-400 hover:text-white flex items-center gap-1 touch-target" title="返回首页">
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5}/>
         </button>
-        <h1 className="text-white font-semibold text-sm tracking-wide">战术板</h1>
+        <h1 className="text-white font-semibold text-sm tracking-wide hidden sm:block">战术板</h1>
         <div className="flex-1"/>
         <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{backgroundColor:TAC_THEME.bgCard, borderRadius: TAC_THEME.radius}}>
-          <button onClick={hZoomOut} className="p-1 text-gray-400 hover:text-white rounded" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
-          <button onClick={hZoomFit} className="p-1 text-gray-400 hover:text-white rounded text-[10px] font-mono px-1" title="重置">1:1</button>
-          <button onClick={hZoomIn} className="p-1 text-gray-400 hover:text-white rounded" title="放大"><ZoomIn className="w-3.5 h-3.5"/></button>
+          <button onClick={hZoomOut} className="p-1.5 text-gray-400 hover:text-white rounded touch-target flex items-center justify-center" title="缩小"><ZoomOut className="w-3.5 h-3.5"/></button>
+          <button onClick={hZoomFit} className="p-1.5 text-gray-400 hover:text-white rounded text-[10px] font-mono touch-target flex items-center justify-center" title="重置">1:1</button>
+          <button onClick={hZoomIn} className="p-1.5 text-gray-400 hover:text-white rounded touch-target flex items-center justify-center" title="放大"><ZoomIn className="w-3.5 h-3.5"/></button>
         </div>
         <button onClick={()=>setSaveOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs rounded-md transition touch-target"
           style={{color: TAC_THEME.textMain, backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.borderLight}`, borderRadius: TAC_THEME.radius}}
           title="保存当前战术">
-          <Save className="w-3.5 h-3.5"/>保存战术
+          <Save className="w-3.5 h-3.5"/><span className="hidden sm:inline">保存战术</span>
         </button>
         <button onClick={()=>{setScenes(JSON.parse(localStorage.getItem("tac_scenes")||"[]"));setLoadOpen(true);}}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs rounded-md transition touch-target"
           style={{color: TAC_THEME.textMain, backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.borderLight}`, borderRadius: TAC_THEME.radius}}
           title="打开已保存的战术">
-          <FolderOpen className="w-3.5 h-3.5"/>战术库{scenes.length>0&&<span style={{color: TAC_THEME.accent}} className="ml-0.5">{scenes.length}</span>}
+          <FolderOpen className="w-3.5 h-3.5"/>{scenes.length>0&&<span style={{color: TAC_THEME.accent}} className="ml-0.5 text-[10px]">{scenes.length}</span>}
         </button>
         {selObj && (selObj as any)._isPlayer && (
-          <div className="flex items-center gap-1 ml-2">
-            <span className="text-[10px] text-gray-500">号码:</span>
+          <div className="flex items-center gap-1 ml-1">
+            <span className="text-[10px] text-gray-500 hidden sm:inline">号码:</span>
             <input
               defaultValue={(selObj as any).number || ""}
               onBlur={(e) => hUpdatePlayerNum(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
-              className="w-10 h-5 border rounded text-white text-[10px] text-center" style={{backgroundColor:"#1e2128",borderColor:"#2a2d35"}}
-              title="编辑球员号码（也可双击球员编辑）"
+              className="w-8 sm:w-10 h-6 border rounded text-white text-[10px] text-center" style={{backgroundColor:"#1e2128",borderColor:"#2a2d35"}}
+              title="编辑球员号码"
             />
           </div>
         )}
@@ -414,7 +420,7 @@ export default function TacticsPage() {
       </header>
 
       {saveOpen && (
-        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-72 space-y-2 shadow-2xl">
+        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-72 space-y-2 shadow-2xl">
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           <input value={sName} onChange={(e)=>setSName(e.target.value)} placeholder="战术名称" className="input-field text-xs h-9" onKeyDown={(e)=>e.key==="Enter"&&hSave()}/>
           <div className="flex flex-wrap gap-1">{THEMES.map((t)=><button key={t} onClick={()=>setSTheme(t)} className={`px-2 py-0.5 rounded text-[10px] transition`} style={{backgroundColor: sTheme===t ? TAC_THEME.accent : "#22252d", color: sTheme===t ? "#fff" : "#888"}}>{t}</button>)}</div>
@@ -423,7 +429,7 @@ export default function TacticsPage() {
       )}
 
       {loadOpen && (
-        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
+        <div className="absolute top-11 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
           <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-500 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
           {scenes.length===0?<p className="text-gray-500 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
             <div key={s.id} className="flex items-center gap-2 p-2 rounded group" style={{backgroundColor:"#1a1d24"}}>
@@ -437,24 +443,24 @@ export default function TacticsPage() {
       )}
 
       {/* ─── AI 自动生成 ─── */}
-      <div className="px-3 py-2 flex items-center gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
-        <span className="text-sm flex-shrink-0">🦋</span>
+      <div className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bg, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+        <span className="text-sm flex-shrink-0 hidden sm:inline">🦋</span>
         <input
           value={aiPrompt}
           onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
           onKeyDown={(e) => { if (e.key === "Enter") hAIGenerate(); }}
-          placeholder="描述战术场景，如：4-3-3 边路套上传中..."
+          placeholder="描述战术场景..."
           disabled={aiLoading}
-          className="flex-1 px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none disabled:opacity-40 rounded-md"
+          className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-white text-xs sm:text-sm placeholder-gray-500 focus:outline-none disabled:opacity-40 rounded-md"
           style={{ backgroundColor: TAC_THEME.bgInput, border: `1px solid ${aiError ? TAC_THEME.error : TAC_THEME.border}`, borderRadius: TAC_THEME.radius }}
         />
         <button onClick={hAIGenerate}
           disabled={aiLoading || !aiPrompt.trim()}
-          className="px-4 py-2 text-sm font-bold rounded-md transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+          className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-md transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0 touch-target"
           style={{ backgroundColor: TAC_THEME.accent, color: "#fff", borderRadius: TAC_THEME.radius }}>
-          {aiLoading ? "生成中..." : "自动生成"}
+          {aiLoading ? "..." : "生成"}
         </button>
-        {aiError && <span className="text-[11px] flex-shrink-0" style={{ color: TAC_THEME.error }}>{aiError}</span>}
+        {aiError && <span className="text-[10px] sm:text-[11px] flex-shrink-0 hidden sm:inline" style={{ color: TAC_THEME.error }}>{aiError}</span>}
       </div>
 
       <div className="flex flex-1 overflow-hidden">

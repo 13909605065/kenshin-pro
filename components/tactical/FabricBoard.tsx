@@ -21,6 +21,11 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const tempLineRef = useRef<Path | null>(null);
+  // Touch gesture state
+  const pinchStartRef = useRef<{ dist: number; zoom: number; cx: number; cy: number } | null>(null);
+  const panStartRef = useRef<{ x: number; y: number; vptX: number; vptY: number } | null>(null);
+  const touchCountRef = useRef<number>(0);
+  const lastTouchRef = useRef<number>(0);
 
   useEffect(() => {
     if (!canvasElRef.current || boardRef.current) return;
@@ -35,9 +40,13 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       cornerColor: TAC_THEME.accent,
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
+      // Mobile touch optimizations
+      allowTouchScrolling: false,
+      stopContextMenu: true,
+      fireRightClick: true,
     });
 
-    // Mouse wheel zoom
+    // Mouse wheel zoom (desktop)
     canvas.on("mouse:wheel", (opt: any) => {
       const delta = opt.e.deltaY;
       let zoom = canvas.getZoom();
@@ -48,6 +57,82 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
+
+    // ─── Mobile Touch Gestures ───
+    // Pinch-to-zoom: track two-finger distance changes
+    const getTouchDist = (t1: Touch, t2: Touch): number => {
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const getTouchCenter = (t1: Touch, t2: Touch): { x: number; y: number } => {
+      return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchCountRef.current = e.touches.length;
+      lastTouchRef.current = Date.now();
+
+      if (e.touches.length === 2) {
+        // Two fingers — start pinch/pan
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const dist = getTouchDist(t1, t2);
+        const center = getTouchCenter(t1, t2);
+        const vpt = canvas.viewportTransform!;
+        pinchStartRef.current = { dist, zoom: canvas.getZoom(), cx: center.x, cy: center.y };
+        panStartRef.current = { x: center.x, y: center.y, vptX: vpt[4], vptY: vpt[5] };
+        // Prevent Fabric from handling 1-finger events while pinching
+        canvas.selection = false;
+        e.preventDefault();
+      } else if (e.touches.length === 1 && isRouteTool) {
+        // Single finger route drawing — let Fabric handle it
+        canvas.selection = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStartRef.current) {
+        // Pinch zoom + pan
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const dist = getTouchDist(t1, t2);
+        const center = getTouchCenter(t1, t2);
+        const scale = dist / pinchStartRef.current.dist;
+        let newZoom = pinchStartRef.current.zoom * scale;
+        newZoom = Math.min(Math.max(newZoom, 0.3), 5);
+
+        // Pan based on center movement
+        const panDx = center.x - panStartRef.current!.x;
+        const panDy = center.y - panStartRef.current!.y;
+
+        const vpt = canvas.viewportTransform!;
+        vpt[0] = newZoom;
+        vpt[3] = newZoom;
+        vpt[4] = panStartRef.current!.vptX + panDx;
+        vpt[5] = panStartRef.current!.vptY + panDy;
+        canvas.requestRenderAll();
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        pinchStartRef.current = null;
+        panStartRef.current = null;
+        // Restore selection mode
+        if (!isRouteTool) {
+          canvas.selection = true;
+        }
+      }
+      touchCountRef.current = e.touches.length;
+    };
+
+    // Attach touch handlers to the canvas element
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    el.addEventListener("touchcancel", onTouchEnd);
+
     boardRef.current = canvas;
 
     // History
@@ -92,8 +177,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
-    // Load field image — scale to fill canvas with tight margins
-    FabricImage.fromURL("/equipment/场地.png").then((img) => {
+    // Load field image — bright white line-drawing template
+    FabricImage.fromURL("/equipment/场地14.png").then((img) => {
       const margin = 15;
       const scaleX = (FW - margin * 2) / (img.width || 1);
       const scaleY = (FH - margin * 2) / (img.height || 1);
@@ -174,7 +259,15 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     container.addEventListener("drop", onDrop);
     container.addEventListener("dragover", (e) => { e.preventDefault(); e.dataTransfer!.dropEffect = "copy"; });
 
-    return () => { container.removeEventListener("drop", onDrop); canvas.dispose(); boardRef.current = null; };
+    return () => {
+      container.removeEventListener("drop", onDrop);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+      canvas.dispose();
+      boardRef.current = null;
+    };
   }, []);
 
   // ---- Route tools: straight (跑动/传球/直线) vs curved (带球 only) ----
@@ -369,12 +462,11 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     (c as any)._setFieldImage = (fn: string) => {
       // Clear old field objects (both vector and image)
       c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-      // If 'default' or vector field, use the built-in drawing
+      // Default → bright white field template (场地14 = white line drawing)
       if (fn === "default" || !fn) {
-        drawVectorField(c);
-        return;
+        fn = "场地14";
       }
-      // Otherwise load PNG field — fill canvas with tight margins
+      // Load field PNG — fill canvas with tight margins
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
         c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
         const margin = 15;
@@ -395,8 +487,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 flex items-start justify-center overflow-auto bg-pitch-900 p-2" style={{ minHeight: 0 }}>
-      <canvas ref={canvasElRef} className="max-w-full" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 120px)", objectFit: "contain" }} />
+    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-auto bg-pitch-900 p-1 sm:p-2" style={{ minHeight: 0, WebkitOverflowScrolling: "touch" }}>
+      <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 140px)", objectFit: "contain", touchAction: "none" }} />
     </div>
   );
 }
