@@ -729,6 +729,38 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 </div>
               )}
 
+              {/* Gym scene — show gym-specific panel instead of goals */}
+              {!isCoach && !isFitness && scene === "gym" ? (
+                <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-2xl p-5 space-y-4">
+                  <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">🏋️ 健身房训练</p>
+                  {(() => {
+                    const age = formData.age || 25;
+                    const weight = formData.weight || 70;
+                    const height = formData.height || 175;
+                    const bmi = weight / ((height / 100) ** 2);
+                    const years = formData.years || 1;
+                    const isU18 = age < 18;
+                    const isO35 = age > 35;
+                    const hasInjury = (formData.injurySites || []).length > 0;
+                    return (
+                      <>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
+                        </div>
+                        {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(>85%1RM)，专注动作质量</p>}
+                        {isO35 && <p className="text-xs text-amber-400">热身延长至20min，关节保护优先</p>}
+                        {hasInjury && <p className="text-xs text-red-400">检测到伤病部位，训练时避开直接负重</p>}
+                      </>
+                    );
+                  })()}
+                  <div className="text-xs text-gray-400">
+                    选择下方训练目标后生成健身房方案。可用目标：力量、爆发力、灵敏、对抗。
+                  </div>
+                </div>
+              ) : null}
+
               <div className={isFitness ? "" : "grid grid-cols-2 gap-3"}>
                 {/* Left: Training Goals */}
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
