@@ -12,9 +12,8 @@ import { PhysicalTab } from "./tabs/PhysicalTab";
 import { TacticalTab } from "./tabs/TacticalTab";
 import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
-import { SequentialTrainingList } from "./SequentialTrainingList";
 import { CoachSessionTable } from "./CoachSessionTable";
-import { AthleteSequentialView, AthleteCategoryView } from "./AthleteTrainingView";
+import { AthleteCategoryView } from "./AthleteTrainingView";
 import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
 
 interface Props {
@@ -455,7 +454,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const tabs = isCoach ? COACH_TABS : ATHLETE_TABS;
   const [activeTab, setActiveTab] = useState<string>(tabs[0].id);
   const [showTimer, setShowTimer] = useState(false);
-  const [viewMode, setViewMode] = useState<"sequential" | "tabs">("tabs");
+
   const touchStartX = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -552,29 +551,10 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
         </div>
       )}
 
-      {/* Athlete sequential — clean card view (secondary, accessed from bottom link) */}
-      {!isCoach && viewMode === "sequential" && (
-        <div className="flex-1">
-          <div className="flex justify-between items-center mb-2">
-            <button onClick={() => setViewMode("tabs")}
-              className="text-[10px] text-gray-500 hover:text-[#d92525] transition-colors">
-              ← 返回分类视图
-            </button>
-          </div>
-          <AthleteSequentialView modules={modules} formData={formData}/>
-        </div>
-      )}
-
-      {/* Athlete category — table + export (default view) */}
-      {!isCoach && viewMode === "tabs" && (
+      {/* Athlete category view — only tab-based display */}
+      {!isCoach && (
         <div className="flex-1">
           <AthleteCategoryView modules={modules}/>
-          <div className="flex justify-end mt-3">
-            <button onClick={() => setViewMode("sequential")}
-              className="text-[10px] text-gray-500 hover:text-[#d92525] transition-colors">
-              📋 切换跟练模式 →
-            </button>
-          </div>
         </div>
       )}
 
