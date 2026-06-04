@@ -2,13 +2,13 @@
 
 import { MousePointer2, Circle, Type, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { TAC_THEME } from "@/lib/tactical-theme";
 
-// ─── Design tokens ───────────────────────────────────────
-const ACCENT = "#c82630";
-const BAR_BG = "#0a0a0a";
-const BORDER = "#2a2d35";
-const TEXT_DIM = "#6b6f78";
-const TEXT_MAIN = "#c8ccd4";
+const ACCENT = TAC_THEME.accent;
+const BAR_BG = TAC_THEME.bgToolbar;
+const BORDER = TAC_THEME.border;
+const TEXT_DIM = TAC_THEME.textDim;
+const TEXT_MAIN = TAC_THEME.textMain;
 
 // ─── Inline line-style icons ─────────────────────────────
 
@@ -65,7 +65,7 @@ const TOOLS: ToolDef[] = [
   { id: "erase", label: "删除", icon: <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} /> },
 ];
 
-const COLORS = ["#c82630","#2563eb","#121419","#ffffff","#eab308","#279e46","#f97316","#ef4444","#a855f7"];
+const COLORS = [TAC_THEME.accent, TAC_THEME.blue, "#121419", "#ffffff", "#eab308", TAC_THEME.success, "#f97316", TAC_THEME.error, "#a855f7"];
 const FORMATIONS = ["4-3-3","4-4-2","3-5-2","4-2-3-1","3-4-3"];
 
 export const ROUTE_STYLES: Record<string, { strokeDash: number[] | null; width: number; label: string }> = {
@@ -149,7 +149,7 @@ export function BoardToolbar(p: Props) {
                 borderRadius: "6px",
                 color: isActive ? ACCENT : TEXT_DIM,
                 backgroundColor: "transparent",
-                border: isActive ? `1.5px solid ${ACCENT}` : "1.5px solid transparent",
+                border: isActive ? `1px solid ${ACCENT}` : "1px solid transparent",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -180,10 +180,10 @@ export function BoardToolbar(p: Props) {
               key={c}
               onClick={() => p.onColorChange(c)}
               title={c}
-              className="w-5 h-5 rounded-full transition-transform hover:scale-110 flex-shrink-0"
+              className="w-4 h-4 rounded-full transition-transform hover:scale-110 flex-shrink-0"
               style={{
                 backgroundColor: c,
-                border: p.activeColor === c ? `2px solid ${TEXT_MAIN}` : `2px solid ${BORDER}`,
+                border: p.activeColor === c ? `1.5px solid ${TEXT_MAIN}` : `1px solid ${BORDER}`,
                 boxShadow: c === "#ffffff" ? `inset 0 0 0 1px ${BORDER}` : "none",
               }}
             />
@@ -198,10 +198,10 @@ export function BoardToolbar(p: Props) {
           onChange={(e) => { if (e.target.value) { p.onFormation(e.target.value); e.target.value = ""; } }}
           className="text-[10px] font-medium rounded-md px-2 py-1.5 flex-shrink-0 cursor-pointer transition-colors"
           style={{
-            borderRadius: "6px",
-            backgroundColor: "transparent",
-            border: `1.5px solid ${BORDER}`,
-            color: TEXT_DIM,
+            borderRadius: TAC_THEME.radius,
+            backgroundColor: TAC_THEME.bgCard,
+            border: `1px solid ${BORDER}`,
+            color: TEXT_MAIN,
           }}
           defaultValue=""
         >
@@ -248,7 +248,7 @@ export function BoardToolbar(p: Props) {
         <button
           onClick={p.onExport}
           className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-bold rounded-md transition-opacity hover:opacity-90 flex-shrink-0"
-          style={{ backgroundColor: ACCENT, color: "#fff", borderRadius: "6px" }}
+          style={{ backgroundColor: "transparent", color: ACCENT, border: `1px solid ${ACCENT}`, borderRadius: TAC_THEME.radius }}
         >
           <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />

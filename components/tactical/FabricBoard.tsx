@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Canvas, Rect, Circle, Line, IText, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
 import { ROUTE_STYLES } from "./BoardToolbar";
+import { TAC_THEME } from "@/lib/tactical-theme";
 
 const FW = 1050;
 const FH = 680;
@@ -26,12 +27,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: "#000",
+      backgroundColor: TAC_THEME.bg,
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
       cornerSize: 10,
-      cornerColor: "#c82630",
+      cornerColor: TAC_THEME.accent,
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
     });
@@ -299,22 +300,20 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const players = c.getObjects().filter((o: any) => o._isPlayer);
       const nextNum = players.length + 1;
       const color = activeColor;
-      const R = 20;
+      const R = TAC_THEME.playerRadius;
       const cx = opt.scenePoint.x, cy = opt.scenePoint.y;
-      const textColor = ["#FFD700", "#FFF", "#00FF88"].includes(color) ? "#000" : "#FFF";
 
-      // Circle — centered at click
+      // Hollow ring player marker — thin colored ring + white number
       const cr = new Circle({
         left: cx - R, top: cy - R,
         radius: R,
-        fill: color,
-        stroke: "#FFF",
-        strokeWidth: 2.5,
+        fill: "transparent",
+        stroke: color,
+        strokeWidth: TAC_THEME.playerRingWidth,
         selectable: false,
         evented: false,
       });
 
-      // Text — perfectly centered using origin
       const tx = new FabricText(String(nextNum), {
         left: cx, top: cy,
         originX: "center",
@@ -322,12 +321,11 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         fontSize: R * 0.8,
         fontFamily: "Arial",
         fontWeight: "bold",
-        fill: textColor,
+        fill: "#FFF",
         selectable: false,
         evented: false,
       });
 
-      // Group with 8-point circular anchors
       const g = new Group([cr, tx], {
         left: cx - R, top: cy - R,
       });
@@ -341,7 +339,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       g.set({
         cornerStyle: "circle",
         cornerSize: 10,
-        cornerColor: "#c82630",
+        cornerColor: TAC_THEME.accent,
         cornerStrokeColor: "#FFF",
         transparentCorners: false,
         padding: 0,
@@ -430,15 +428,15 @@ export function drawVectorField(canvas: Canvas) {
 
   const grass = new Rect({
     left: margin, top: margin, width: fw, height: fh,
-    fill: "#1e4028", stroke: "rgba(255,255,255,0.5)", strokeWidth: 2,
+    fill: TAC_THEME.grass, stroke: TAC_THEME.fieldLine, strokeWidth: 1.5,
     selectable: false, evented: false,
   });
 
   const items: any[] = [grass];
 
-  // Halfway line (vertical line at center)
+  // Halfway line
   items.push(new Line([cx, margin, cx, margin + fh], {
-    stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
+    stroke: TAC_THEME.fieldLine, strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
 
@@ -446,12 +444,12 @@ export function drawVectorField(canvas: Canvas) {
   const cr = 55;
   items.push(new Circle({
     left: cx - cr, top: cy - cr, radius: cr,
-    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
+    fill: "transparent", stroke: TAC_THEME.fieldLine, strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
   items.push(new Circle({
     left: cx - 3, top: cy - 3, radius: 3,
-    fill: "rgba(255,255,255,0.6)", stroke: "",
+    fill: TAC_THEME.fieldLineStrong, stroke: "",
     selectable: false, evented: false,
   }));
 
@@ -461,12 +459,12 @@ export function drawVectorField(canvas: Canvas) {
   const paTop = margin + (fh - paH) / 2;
   items.push(new Rect({
     left: margin, top: paTop, width: paW, height: paH,
-    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
+    fill: "transparent", stroke: TAC_THEME.fieldLineStrong, strokeWidth: 2,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - paW, top: paTop, width: paW, height: paH,
-    fill: "transparent", stroke: "rgba(255,255,255,0.6)", strokeWidth: 2,
+    fill: "transparent", stroke: TAC_THEME.fieldLineStrong, strokeWidth: 2,
     selectable: false, evented: false,
   }));
 
@@ -476,12 +474,12 @@ export function drawVectorField(canvas: Canvas) {
   const gaTop = margin + (fh - gaH) / 2;
   items.push(new Rect({
     left: margin, top: gaTop, width: gaW, height: gaH,
-    fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
+    fill: "transparent", stroke: TAC_THEME.goalFill, strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - gaW, top: gaTop, width: gaW, height: gaH,
-    fill: "transparent", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5,
+    fill: "transparent", stroke: TAC_THEME.goalFill, strokeWidth: 1.5,
     selectable: false, evented: false,
   }));
 
@@ -491,12 +489,12 @@ export function drawVectorField(canvas: Canvas) {
   const goalTop = margin + (fh - goalH) / 2;
   items.push(new Rect({
     left: margin - goalW / 2, top: goalTop, width: goalW, height: goalH,
-    fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
+    fill: TAC_THEME.goalFill, stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
   items.push(new Rect({
     left: margin + fw - goalW / 2, top: goalTop, width: goalW, height: goalH,
-    fill: "rgba(255,255,255,0.5)", stroke: "", rx: 2, ry: 2,
+    fill: TAC_THEME.goalFill, stroke: "", rx: 2, ry: 2,
     selectable: false, evented: false,
   }));
 
@@ -511,7 +509,7 @@ export function drawVectorField(canvas: Canvas) {
     const sy = cy2 === margin ? 1 : -1;
     const arc = new Path(
       `M ${cx2} ${cy2 + sy * arcR} A ${arcR} ${arcR} 0 0 ${sy > 0 ? 1 : 0} ${cx2 + sx * arcR} ${cy2}`,
-      { stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.5, fill: "transparent", selectable: false, evented: false }
+      { stroke: TAC_THEME.goalFill, strokeWidth: 1.5, fill: "transparent", selectable: false, evented: false }
     );
     items.push(arc);
   });

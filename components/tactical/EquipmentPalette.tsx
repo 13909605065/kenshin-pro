@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { TAC_THEME } from "@/lib/tactical-theme";
 
 // ─── Design tokens ───────────────────────────────────────
-const ACCENT = "#c82630";
-const BLUE = "#2563eb";
-const GREEN = "#279e46";
-const BG = "#000";
-const CARD_BG = "#0d0d0d";
-const BORDER = "#2a2d35";
-const TEXT_DIM = "#6b6f78";
-const TEXT_MAIN = "#c8ccd4";
+const ACCENT = TAC_THEME.accent;
+const BLUE = TAC_THEME.blue;
+const GREEN = TAC_THEME.success;
+const BG = TAC_THEME.bg;
+const CARD_BG = TAC_THEME.bgCard;
+const BORDER = TAC_THEME.border;
+const TEXT_DIM = TAC_THEME.textDim;
+const TEXT_MAIN = TAC_THEME.textMain;
 
 // ─── Professional SVG equipment icons (2px stroke, linear minimal) ──
 
@@ -220,10 +221,10 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
     <button
       key={t.id}
       onClick={() => setTab(t.id)}
-      className="flex-1 py-2 text-[10px] font-medium tracking-wide transition-colors border-b-2"
+      className="flex-1 py-2 text-[10px] font-medium tracking-wide transition-colors"
       style={{
         color: tab === t.id ? ACCENT : TEXT_DIM,
-        borderBottomColor: tab === t.id ? ACCENT : "transparent",
+        borderBottom: tab === t.id ? `1px solid ${ACCENT}` : "1px solid transparent",
       }}
     >
       {t.label}
@@ -369,36 +370,31 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
                     onClick={() => handleFieldClick(field)}
                     className="relative w-full aspect-[4/3] rounded-md overflow-hidden transition-colors group"
                     style={{
-                      border: `1.5px solid ${previewField === field ? ACCENT : BORDER}`,
+                      border: `1px solid ${previewField === field ? ACCENT : "#333"}`,
                       borderRadius: "6px",
                     }}
                     title={field === "default" ? "标准全场" : field}
                   >
                     {field === "default" ? (
                       <div className="w-full h-full flex items-center justify-center"
-                        style={{ backgroundColor: "#1e4028" }}>
-                        <svg width="32" height="24" viewBox="0 0 32 24" fill="none" opacity="0.4">
-                          <rect x="1" y="1" width="30" height="22" stroke={GREEN} strokeWidth="1.5" fill="none" />
-                          <line x1="16" y1="1" x2="16" y2="23" stroke={GREEN} strokeWidth="1" />
-                          <circle cx="16" cy="12" r="3" stroke={GREEN} strokeWidth="1" fill="none" />
+                        style={{ backgroundColor: TAC_THEME.grass }}>
+                        <svg width="32" height="24" viewBox="0 0 32 24" fill="none" opacity="0.3">
+                          <rect x="1" y="1" width="30" height="22" stroke="#fff" strokeWidth="1" fill="none" />
+                          <line x1="16" y1="1" x2="16" y2="23" stroke="#fff" strokeWidth="0.5" />
+                          <circle cx="16" cy="12" r="3" stroke="#fff" strokeWidth="0.5" fill="none" />
                         </svg>
                       </div>
                     ) : (
                       <img
                         src={`/equipment/${field}.png`}
                         alt={field}
-                        className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
                       />
                     )}
-                    <span className="absolute bottom-0.5 right-1 text-[8px] font-medium"
-                      style={{ color: previewField === field ? ACCENT : TEXT_DIM }}>
+                    <span className="absolute bottom-0.5 right-1.5 text-[8px] font-medium"
+                      style={{ color: previewField === field ? ACCENT : "#555" }}>
                       {field === "default" ? "标准" : field.replace("场地", "")}
                     </span>
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
-                      <span className="text-[9px] font-medium" style={{ color: ACCENT }}>预览</span>
-                    </div>
                   </button>
                 ))}
               </div>
@@ -426,7 +422,7 @@ export function EquipmentPalette({ onFieldSelect }: Props) {
             {previewField === "default" ? (
               <div className="w-full aspect-[1050/680] flex items-center justify-center"
                 style={{ backgroundColor: "#1e4028", maxHeight: "60vh" }}>
-                <span className="text-sm" style={{ color: TEXT_DIM }}>标准11人制足球场（矢量绘制）</span>
+                <span className="text-sm" style={{ color: TEXT_DIM }}>标准 11 人制足球场</span>
               </div>
             ) : (
               <img src={`/equipment/${previewField}.png`} alt={previewField}
