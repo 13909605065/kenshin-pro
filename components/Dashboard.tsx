@@ -23,6 +23,7 @@ import { OnboardingGuide } from "./OnboardingGuide";
 import { PlanCompareModal } from "./PlanCompareModal";
 import { useEquipmentInventory } from "@/hooks/useEquipmentInventory";
 import { useRouter } from "next/navigation";
+import { syncFormDataToSupabase, SupabaseProfile } from "@/hooks/useSupabaseSync";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const FITNESS_GOALS = [
@@ -336,13 +337,13 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
 
 const DRAFT_KEY = "kenshin_dashboard_draft";
 
-export function Dashboard() {
+export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: SupabaseProfile | null; userId?: string | null }) {
   const wizard = useWizard();
   const training = useTraining();
   const profiles = useProfiles();
   const templates = useTemplates();
   const planHistory = usePlanHistory();
-  const { formData, updateField, setRole: setWizardRole, isStepValid } = wizard;
+  const { formData, updateField, setRole: setWizardRole, isStepValid, loadProfile: wizardLoadProfile } = wizard;
   const { role, scene, setRole, setScene } = useScene();
   const isCoach = role === "coach";
   const isFitness = role === "fitness";
@@ -398,6 +399,7 @@ export function Dashboard() {
   const [showManualSave, setShowManualSave] = useState(false);
   const [manualSaveName, setManualSaveName] = useState("");
   const [fitnessGoals, setFitnessGoals] = useState<string[]>([]);
+  const [athleteGoals, setAthleteGoals] = useState<string[]>([]);
   const { t } = useLang();
   const router = useRouter();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
@@ -432,6 +434,14 @@ export function Dashboard() {
     }
   }, [isFitness, formData.goal]);
 
+  // Initialize athleteGoals from saved formData.goal (single→multi migration)
+  useEffect(() => {
+    if (!isCoach && !isFitness && formData.goal && athleteGoals.length === 0) {
+      setAthleteGoals([formData.goal as string]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCoach, isFitness, formData.goal]);
+
   // Restore form draft from localStorage on mount
   useEffect(() => {
     try {
@@ -440,6 +450,7 @@ export function Dashboard() {
         const draft = JSON.parse(raw);
         if (draft.coachInput) setCoachInput(draft.coachInput);
         if (draft.fitnessGoals) setFitnessGoals(draft.fitnessGoals);
+        if (draft.athleteGoals) setAthleteGoals(draft.athleteGoals);
       }
     } catch {}
   }, []);
@@ -451,12 +462,32 @@ export function Dashboard() {
         localStorage.setItem(DRAFT_KEY, JSON.stringify({
           coachInput,
           fitnessGoals,
+          athleteGoals,
           ts: Date.now(),
         }));
       } catch {}
     }, 1000);
     return () => clearTimeout(timer);
-  }, [coachInput, fitnessGoals]);
+  }, [coachInput, fitnessGoals, athleteGoals]);
+
+  // Restore Supabase profile formData on mount (overrides localStorage)
+  useEffect(() => {
+    if (supabaseProfile?.form_data && wizard.mounted) {
+      const fd = supabaseProfile.form_data;
+      wizardLoadProfile(fd);
+      // Restore athleteGoals from profile if present
+      if ((fd as any).athleteGoals && Array.isArray((fd as any).athleteGoals)) {
+        setAthleteGoals((fd as any).athleteGoals);
+      } else if (fd.goal && !isCoach && !isFitness) {
+        setAthleteGoals([fd.goal as string]);
+      }
+      // Restore fitnessGoals from profile if present
+      if ((fd as any).fitnessGoals && Array.isArray((fd as any).fitnessGoals)) {
+        setFitnessGoals((fd as any).fitnessGoals);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabaseProfile, wizard.mounted]);
 
   // Sync fitnessGoals to formData.goal for validation
   const updateFitnessGoals = useCallback((goals: string[]) => {
@@ -472,12 +503,26 @@ export function Dashboard() {
     [planHistory, formData.name]
   );
 
+  /** Sync current formData to Supabase profiles table (fire-and-forget) */
+  const syncToSupabase = useCallback(() => {
+    if (!userId) return;
+    const fdToSync: any = { ...formData };
+    if (!isCoach && !isFitness && athleteGoals.length > 0) fdToSync.athleteGoals = athleteGoals;
+    if (isFitness && fitnessGoals.length > 0) fdToSync.fitnessGoals = fitnessGoals;
+    syncFormDataToSupabase(userId, fdToSync).catch(() => {});
+  }, [userId, formData, isCoach, isFitness, athleteGoals, fitnessGoals]);
+
   const handleGenerate = useCallback(async () => {
     if (!formData.position && !isCoach && !isFitness) { setValidationError("请先编辑档案，填写场上位置"); setTimeout(()=>setValidationError(null),3000); return; }
     if (isFitness && fitnessGoals.length === 0) { setValidationError("请先选择健身目标"); setTimeout(()=>setValidationError(null),3000); return; }
+    if (!isCoach && !isFitness && athleteGoals.length === 0) { setValidationError("请先选择训练目标"); setTimeout(()=>setValidationError(null),3000); return; }
     // Inject fitnessGoals array into formData for AI context
     if (isFitness && fitnessGoals.length > 0) {
       (formData as any).fitnessGoals = fitnessGoals;
+    }
+    // Inject athleteGoals array into formData for AI context
+    if (!isCoach && !isFitness && athleteGoals.length > 0) {
+      (formData as any).athleteGoals = athleteGoals;
     }
     // Inject coachInput into formData as weakness/notes for AI context
     if (coachInput.trim()) {
@@ -514,6 +559,8 @@ export function Dashboard() {
         const name = formData.name?.trim() || (isCoach ? "教练" : "未命名球员");
         const saved = planHistory.savePlan(name, formData, training.modules);
         setSavedPlanId(saved.id);
+        // Sync formData to Supabase for next login restore (fire-and-forget)
+        syncToSupabase();
         setShowDone(true);
         setTimeout(() => { setShowDone(false); setStatus("complete"); }, 1500);
       } else {
@@ -616,7 +663,7 @@ export function Dashboard() {
           {!isCoach && (
             <>
               {/* Selected Items Preview Bar */}
-              {((isFitness ? fitnessGoals.length > 0 : formData.goal) || (!isFitness && formData.phase) || formData.injurySites.length > 0) && (
+              {((isFitness ? fitnessGoals.length > 0 : isCoach ? formData.goal : athleteGoals.length > 0) || (!isFitness && !isCoach && formData.phase) || formData.injurySites.length > 0) && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-4 py-3">
                   <div className="flex flex-wrap gap-1.5 items-center">
                     <span className="text-[10px] text-gray-400 mr-1">已选：</span>
@@ -628,10 +675,14 @@ export function Dashboard() {
                           <button onClick={() => updateFitnessGoals(fitnessGoals.filter(x => x !== gid))} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                         </span>
                       );
-                    }) : (formData.goal && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
-                        {GOAL_LABELS[formData.goal] || t(`goal.${formData.goal}`)}
-                        <button onClick={() => updateField("goal", null)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                    }) : athleteGoals.map((gid) => (
+                      <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                        {GOAL_LABELS[gid] || t(`goal.${gid}`)}
+                        <button onClick={() => {
+                          const next = athleteGoals.filter(x => x !== gid);
+                          setAthleteGoals(next);
+                          updateField("goal", next.length > 0 ? (next[0] as any) : null);
+                        }} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     ))}
                     {!isFitness && formData.phase && (
@@ -676,13 +727,16 @@ export function Dashboard() {
                         })}
                       </div>
                     ) : GOALS.map((g) => {
-                      const isSelected = formData.goal === g;
+                      const isSelected = athleteGoals.includes(g);
                       const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g) : false;
                       return (
                         <button key={g} onClick={() => {
-                          updateField("goal", g);
-                          if (!formData.phase && GOAL_TO_PHASE_SUGGEST[g]) {
-                            updateField("phase", GOAL_TO_PHASE_SUGGEST[g] as any);
+                          const next = isSelected ? athleteGoals.filter(x => x !== g) : [...athleteGoals, g];
+                          setAthleteGoals(next);
+                          updateField("goal", next.length > 0 ? (next[0] as any) : null);
+                          // Auto-suggest phase based on first selected goal
+                          if (!formData.phase && next.length > 0 && GOAL_TO_PHASE_SUGGEST[next[0]]) {
+                            updateField("phase", GOAL_TO_PHASE_SUGGEST[next[0]] as any);
                           }
                         }}
                           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
@@ -1041,6 +1095,11 @@ export function Dashboard() {
               {isCoach ? "请先点击「编辑」完善教练档案" : "请先填写场上位置"}
             </p>
           )}
+          {!isCoach && !isFitness && isStepValid && athleteGoals.length === 0 && (
+            <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
+              请先选择训练目标
+            </p>
+          )}
           {isFitness && fitnessGoals.length === 0 && (
             <p className="text-center text-xs text-amber-400/90 bg-amber-400/5 border border-amber-400/20 rounded-lg py-2 px-3">
               请先选择健身目标
@@ -1055,9 +1114,9 @@ export function Dashboard() {
           )}
 
           {/* Generate Button */}
-          <button onClick={handleGenerate} disabled={isFitness ? fitnessGoals.length === 0 : !isStepValid}
+          <button onClick={handleGenerate} disabled={isCoach ? !isStepValid : isFitness ? fitnessGoals.length === 0 : (!isStepValid || athleteGoals.length === 0)}
             className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
-            <Zap className="w-5 h-5" /> {isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid ? "生成训练方案" : "请完善训练配置")}
+            <Zap className="w-5 h-5" /> {isCoach ? (isStepValid ? "生成训练方案" : "请完善训练配置") : isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid && athleteGoals.length > 0 ? "生成训练方案" : "请完善训练配置")}
           </button>
 
           {/* Template Library — quick access */}
@@ -1070,8 +1129,8 @@ export function Dashboard() {
           {showProfileSave && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-3 flex items-center gap-2">
               <input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="档案名称" className="input-field text-sm flex-1"
-                onKeyDown={(e) => { if(e.key==="Enter"&&profileName){ profiles.saveProfile(profileName, wizard.formData); setProfileName(""); setShowProfileSave(false); }}} />
-              <button onClick={() => { if(profileName){ profiles.saveProfile(profileName, wizard.formData); setProfileName(""); setShowProfileSave(false); }}}
+                onKeyDown={(e) => { if(e.key==="Enter"&&profileName){ profiles.saveProfile(profileName, wizard.formData); syncToSupabase(); setProfileName(""); setShowProfileSave(false); }}} />
+              <button onClick={() => { if(profileName){ profiles.saveProfile(profileName, wizard.formData); syncToSupabase(); setProfileName(""); setShowProfileSave(false); }}}
                 className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
             </div>
           )}
@@ -1252,6 +1311,7 @@ export function Dashboard() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && manualSaveName.trim()) {
                     planHistory.savePlan(manualSaveName.trim(), formData, training.modules);
+                    syncToSupabase();
                     setManualSaveName("");
                     setShowManualSave(false);
                   }
@@ -1261,6 +1321,7 @@ export function Dashboard() {
                 onClick={() => {
                   if (manualSaveName.trim()) {
                     planHistory.savePlan(manualSaveName.trim(), formData, training.modules);
+                    syncToSupabase();
                     setManualSaveName("");
                     setShowManualSave(false);
                   }

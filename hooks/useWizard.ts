@@ -150,6 +150,16 @@ export function useWizard() {
     setErrors({});
   }, []);
 
+  /** Bulk-load profile data — used for Supabase profile restore */
+  const loadProfile = useCallback((fd: Partial<PlayerFormData>) => {
+    setFormData((prev) => {
+      const next = { ...prev, ...fd };
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+    setErrors({});
+  }, []);
+
   const nextStep = useCallback(() => {
     const validator = STEP_VALIDATORS[currentStep];
     if (validator) {
@@ -189,6 +199,7 @@ export function useWizard() {
     updateField,
     toggleInjurySite,
     setRole,
+    loadProfile,
     nextStep,
     prevStep,
     reset,

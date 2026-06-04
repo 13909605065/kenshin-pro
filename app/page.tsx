@@ -7,6 +7,7 @@ import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { LogOut } from "lucide-react";
+import { loadProfileFromSupabase, SupabaseProfile } from "@/hooks/useSupabaseSync";
 
 
 class ErrorBoundary extends Component<
@@ -41,7 +42,9 @@ class ErrorBoundary extends Component<
 export default function Home() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
+  const [supabaseProfile, setSupabaseProfile] = useState<SupabaseProfile | null>(null);
   const supabase = createClient();
   const { lang, setLang } = useLang();
 
@@ -55,9 +58,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user) {
         setUserEmail(data.user.email || data.user.phone || "User");
+        setUserId(data.user.id);
+        // Load profile from Supabase for auto-fill
+        try {
+          const profile = await loadProfileFromSupabase(data.user.id);
+          if (profile) {
+            setSupabaseProfile(profile);
+          }
+        } catch { /* fallback to localStorage */ }
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,7 +133,7 @@ export default function Home() {
           </div>
         )}
         <ErrorBoundary>
-          <Dashboard />
+          <Dashboard supabaseProfile={supabaseProfile} userId={userId} />
         </ErrorBoundary>
       </main>
 
