@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { TacticalDiagnosis } from "@/lib/ai/tactical-diagnosis";
 import { MobileNav } from "@/components/MobileNav";
@@ -45,6 +45,11 @@ export default function TacticalDiagnosisPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"analysis" | "solution" | "training" | "board">("analysis");
   const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
+  const voiceSupported = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return ("SpeechRecognition" in window) || ("webkitSpeechRecognition" in window);
+  }, []);
   const [supabaseSaved, setSupabaseSaved] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [matchType, setMatchType] = useState("");
@@ -60,9 +65,10 @@ export default function TacticalDiagnosisPage() {
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("当前浏览器不支持语音输入，请使用 Chrome");
+      setVoiceError("当前浏览器不支持语音输入，请使用 Chrome");
       return;
     }
+    setVoiceError("");
 
     const recognition = new SpeechRecognition();
     recognition.lang = "zh-CN";
@@ -230,37 +236,45 @@ export default function TacticalDiagnosisPage() {
               rows={5}
               className="w-full min-h-[120px] bg-[#121212] border border-[#333] rounded-xl px-4 py-3 text-[#d1d1d1] placeholder-gray-500 focus:border-[#d92525]/50 focus:outline-none focus:ring-1 focus:ring-[#d92525]/30 resize-none text-base"
             />
-            {/* Voice button inside textarea */}
-            <div className="absolute right-3 bottom-3 flex items-center gap-2">
-              {isListening && (
-                <span className="text-xs text-[#d92525] animate-pulse font-medium">
-                  正在聆听...
-                </span>
-              )}
-              <button
-                onClick={startVoice}
-                disabled={isListening}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                  isListening
-                    ? "bg-[#d92525] animate-pulse shadow-lg shadow-[#d92525]/50 ring-2 ring-[#d92525]/40"
-                    : "bg-[#2a2a2a] hover:bg-[#333]"
-                }`}
-                title="语音输入"
-              >
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+            {/* Voice button inside textarea — only shown when supported */}
+            {voiceSupported && (
+              <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                {isListening && (
+                  <span className="text-xs text-[#d92525] animate-pulse font-medium">
+                    正在聆听...
+                  </span>
+                )}
+                <button
+                  onClick={startVoice}
+                  disabled={isListening}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    isListening
+                      ? "bg-[#d92525] animate-pulse shadow-lg shadow-[#d92525]/50 ring-2 ring-[#d92525]/40"
+                      : "bg-[#2a2a2a] hover:bg-[#333]"
+                  }`}
+                  title="语音输入"
                 >
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                  <line x1="12" y1="19" x2="12" y2="23" />
-                  <line x1="8" y1="23" x2="16" y2="23" />
-                </svg>
-              </button>
-            </div>
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {/* Voice error message */}
+            {voiceError && (
+              <div className="absolute right-3 bottom-3 text-xs text-red-400 bg-[#1e1e1e]/90 px-2 py-1 rounded">
+                {voiceError}
+              </div>
+            )}
           </div>
 
           {/* Formation dropdowns */}

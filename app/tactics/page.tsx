@@ -81,6 +81,7 @@ const FabricBoardDynamic = dynamic(
 export default function TacticsPage() {
   const router = useRouter();
   const boardRef = useRef<Canvas | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [activeTool, setActiveTool] = useState("select");
   const [activeColor, setActiveColor] = useState<string>(TAC_THEME.accent);
   const [canUndo, setCanUndo] = useState(false); const [canRedo, setCanRedo] = useState(false);
@@ -552,6 +553,49 @@ export default function TacticsPage() {
   const hLoad = (s:SavedScene) => { const c=boardRef.current; if(!c)return; c.loadFromJSON(JSON.parse(s.json)).then(()=>c.requestRenderAll()); setLoadOpen(false); };
   const hDel = (id:string) => { const up=scenes.filter((s)=>s.id!==id); setScenes(up); localStorage.setItem("tac_scenes",JSON.stringify(up)); };
 
+  // ─── JSON File Import ──────────────────────────────────
+  const handleFileImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const raw = evt.target?.result as string;
+        const parsed = JSON.parse(raw);
+        // Validate: either a saved scene wrapper or raw fabric JSON
+        let fabricJSON: any;
+        if (parsed.json && typeof parsed.json === "string") {
+          // Saved scene format: { id, name, theme, json, createdAt }
+          fabricJSON = JSON.parse(parsed.json);
+        } else if (parsed.objects || parsed.version) {
+          // Raw fabric JSON
+          fabricJSON = parsed;
+        } else {
+          setToastMsg("导入失败：文件格式不正确");
+          setTimeout(() => setToastMsg(""), 2500);
+          return;
+        }
+        const c = boardRef.current;
+        if (!c) return;
+        c.loadFromJSON(fabricJSON).then(() => {
+          c.requestRenderAll();
+          autoSave();
+          setToastMsg("战术导入成功");
+          setTimeout(() => setToastMsg(""), 2000);
+        }).catch(() => {
+          setToastMsg("导入失败：无法加载战术数据");
+          setTimeout(() => setToastMsg(""), 2500);
+        });
+      } catch {
+        setToastMsg("导入失败：JSON 解析错误");
+        setTimeout(() => setToastMsg(""), 2500);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-imported
+    e.target.value = "";
+  }, [autoSave]);
+
   const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
@@ -625,8 +669,8 @@ export default function TacticsPage() {
           <span className="hidden sm:inline">AI自动生成</span>
         </button>
 
-        {/* 导入战术 (placeholder) */}
-        <button onClick={() => { setToastMsg("导入战术功能即将支持"); setTimeout(() => setToastMsg(""), 2000); }}
+        {/* 导入战术 */}
+        <button onClick={() => fileInputRef.current?.click()}
           className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
           style={{ color: TAC_THEME.textDim }}
           onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
@@ -635,6 +679,13 @@ export default function TacticsPage() {
           <Upload className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">导入战术</span>
         </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileImport}
+          className="hidden"
+        />
 
         {/* 保存 */}
         <button onClick={() => setSaveOpen(true)}

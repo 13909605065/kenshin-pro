@@ -132,6 +132,7 @@ function ProfileSummary({ formData, t }: any) {
 
 function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles }: any) {
   const [subPos, setSubPos] = useState("");
+  const [autoFillToast, setAutoFillToast] = useState<{name: string, prevData: Record<string, any>} | null>(null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -150,7 +151,8 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                   const name = e.target.value.trim();
                   if (!name) return;
                   const match = profiles.findByName(name);
-                  if (match && confirm(`找到存档「${match.name}」，是否自动填入信息？`)) {
+                  if (match) {
+                    const prev = { name: formData.name, gender: formData.gender, position: formData.position, age: formData.age, height: formData.height, weight: formData.weight, years: formData.years, goal: formData.goal, phase: formData.phase, injuryTags: formData.injuryTags, injuryHistory: formData.injuryHistory, weakness: formData.weakness };
                     const fd = match.formData;
                     updateField("name", fd.name);
                     if (fd.gender) updateField("gender", fd.gender);
@@ -164,12 +166,14 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                     if (fd.injuryTags) updateField("injuryTags", fd.injuryTags);
                     if (fd.injuryHistory) updateField("injuryHistory", fd.injuryHistory);
                     if (fd.weakness) updateField("weakness", fd.weakness);
+                    setAutoFillToast({ name: match.name, prevData: prev });
                   }
                   // Fallback: check roster
                   if (!match) {
                     const roster = await getPlayers();
                     const rp = roster.find((p) => p.name === name);
-                    if (rp && confirm(`${rp.name} 在花名册中（${rp.position}），是否自动填入信息？`)) {
+                    if (rp) {
+                      const prev = { name: formData.name, age: formData.age, height: formData.height, weight: formData.weight, position: formData.position, injuryTags: formData.injuryTags, injuryHistory: formData.injuryHistory };
                       updateField("name", rp.name);
                       if (rp.age) updateField("age", rp.age);
                       if (rp.height) updateField("height", rp.height);
@@ -204,6 +208,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                         updateField("injuryTags", [site]);
                         updateField("injuryHistory", `${statusLabel[rp.injuryStatus] || "伤病"}: ${note || "花名册记录"}`);
                       }
+                      setAutoFillToast({ name: rp.name, prevData: prev });
                     }
                   }
                 }}
@@ -284,6 +289,36 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
               <option value="" disabled>联赛/梯队</option>
               {["youth_u12","youth_u15","youth_u18","campus_u6_u12","amateur_team","china_league_two","china_league_one","chinese_super_league"].map((l: string) => <option key={l} value={l}>{(LEAGUE_TAG_LABELS as any)[l]}</option>)}
             </select>
+          </div>
+        )}
+
+        {/* Auto-fill toast with undo */}
+        {autoFillToast && (
+          <div className="flex items-center justify-between bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg px-3 py-2">
+            <span className="text-xs text-[#d92525]">已自动填入「{autoFillToast.name}」的档案</span>
+            <button
+              onClick={() => {
+                if (autoFillToast.prevData) {
+                  const prev = autoFillToast.prevData;
+                  if (prev.name !== undefined) updateField("name", prev.name);
+                  if (prev.gender !== undefined) updateField("gender", prev.gender);
+                  if (prev.position !== undefined) updateField("position", prev.position);
+                  if (prev.age !== undefined) updateField("age", prev.age);
+                  if (prev.height !== undefined) updateField("height", prev.height);
+                  if (prev.weight !== undefined) updateField("weight", prev.weight);
+                  if (prev.years !== undefined) updateField("years", prev.years);
+                  if (prev.goal !== undefined) updateField("goal", prev.goal);
+                  if (prev.phase !== undefined) updateField("phase", prev.phase);
+                  if (prev.injuryTags !== undefined) updateField("injuryTags", prev.injuryTags);
+                  if (prev.injuryHistory !== undefined) updateField("injuryHistory", prev.injuryHistory);
+                  if (prev.weakness !== undefined) updateField("weakness", prev.weakness);
+                }
+                setAutoFillToast(null);
+              }}
+              className="text-xs text-[#d92525] underline hover:text-white transition-colors ml-2 flex-shrink-0"
+            >
+              撤销
+            </button>
           </div>
         )}
 
@@ -558,25 +593,25 @@ export function Dashboard() {
                       return (
                         <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                           {g?.label || gid}
-                          <button onClick={() => updateFitnessGoals(fitnessGoals.filter(x => x !== gid))} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                          <button onClick={() => updateFitnessGoals(fitnessGoals.filter(x => x !== gid))} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                         </span>
                       );
                     }) : (formData.goal && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {GOAL_LABELS[formData.goal] || t(`goal.${formData.goal}`)}
-                        <button onClick={() => updateField("goal", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                        <button onClick={() => updateField("goal", null)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     ))}
                     {!isFitness && formData.phase && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {PHASE_LABELS[formData.phase] || t(`phase.${formData.phase}`)}
-                        <button onClick={() => updateField("phase", null)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                        <button onClick={() => updateField("phase", null)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     )}
                     {formData.injurySites.map((s: string) => (
                       <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
                         {t(`injury.${s}`)}
-                        <button onClick={() => updateField("injurySites", formData.injurySites.filter(x => x !== s) as any)} className="hover:text-white transition-colors"><X className="w-3 h-3" /></button>
+                        <button onClick={() => updateField("injurySites", formData.injurySites.filter(x => x !== s) as any)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     ))}
                   </div>
@@ -682,7 +717,7 @@ export function Dashboard() {
                           const active = formData.injurySites.includes(s as any);
                           return (
                             <button key={s} onClick={() => { const next = active ? formData.injurySites.filter((x: any) => x!==s) : [...formData.injurySites, s as any]; updateField("injurySites", next as any); }}
-                              className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
+                              className={`px-3 py-1.5 min-h-[44px] rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-500 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
                           );
                         })}
                       </div>
@@ -747,7 +782,7 @@ export function Dashboard() {
                   const active = formData.tacticalThemes.includes(k as any);
                   return (
                     <button key={k} onClick={() => { const next = active ? formData.tacticalThemes.filter((x) => x!==k) : [...formData.tacticalThemes, k]; updateField("tacticalThemes", next as any); }}
-                      className={`px-1.5 py-0.5 rounded text-sm font-medium transition-all duration-150 border ${
+                      className={`px-3 py-1.5 min-h-[36px] rounded text-sm font-medium transition-all duration-150 border ${
                         active
                           ? "bg-[#d92525] border-[#d92525] text-white"
                           : "bg-[#1e1e1e] border-transparent text-[#777]"
@@ -875,14 +910,14 @@ export function Dashboard() {
               <span className="text-[10px] text-gray-500 mr-1">阶段:</span>
               {PHASES.map(p => (
                 <button key={p} onClick={() => updateField("phase", p)}
-                  className={`px-2 py-0.5 rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
+                  className={`px-3 py-1.5 min-h-[36px] rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
               ))}
             </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
               placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
-              rows={2}
-              className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-none"
+              rows={3}
+              className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-y min-h-[80px]"
             />
           </div>
           )}
@@ -907,7 +942,7 @@ export function Dashboard() {
                   const isSelected = (formData.trainingDuration || 60) === mins;
                   return (
                     <button key={mins} onClick={() => updateField("trainingDuration", mins)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 border ${
+                      className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all duration-150 border ${
                         isSelected
                           ? "bg-[#d92525] text-white border-[#d92525]"
                           : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#d92525]/30"

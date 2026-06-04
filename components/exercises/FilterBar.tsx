@@ -7,9 +7,11 @@ interface Props {
   bodyPart: BodyPart | "all";
   equipment: Equipment | "all";
   footballCategory?: "all" | "爆发力" | "灵敏" | "速度" | "力量" | "耐力";
+  exerciseType?: "all" | "力量" | "热身" | "冷身" | "技术";
   onBodyPartChange: (v: BodyPart | "all") => void;
   onEquipmentChange: (v: Equipment | "all") => void;
   onFootballCategoryChange?: (v: "all" | "爆发力" | "灵敏" | "速度" | "力量" | "耐力") => void;
+  onExerciseTypeChange?: (v: "all" | "力量" | "热身" | "冷身" | "技术") => void;
 }
 
 const BODY_OPTIONS: { value: BodyPart | "all"; label: string }[] = [
@@ -35,9 +37,11 @@ export function FilterBar({
   bodyPart,
   equipment,
   footballCategory,
+  exerciseType,
   onBodyPartChange,
   onEquipmentChange,
   onFootballCategoryChange,
+  onExerciseTypeChange,
 }: Props) {
   return (
     <div className="space-y-3">
@@ -99,6 +103,28 @@ export function FilterBar({
                 }`}
               >
                 {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Card 4: Exercise Type */}
+      {onExerciseTypeChange && (
+        <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
+          <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
+          <div className="flex flex-wrap gap-1.5">
+            {(["all", "力量", "热身", "冷身", "技术"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => onExerciseTypeChange(t)}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
+                  exerciseType === t
+                    ? "bg-[#d92525] text-white"
+                    : "text-gray-400 hover:text-white hover:bg-[#222]"
+                }`}
+              >
+                {t === "all" ? "全部" : t}
               </button>
             ))}
           </div>

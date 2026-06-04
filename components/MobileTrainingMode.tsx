@@ -173,20 +173,65 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
 
   const startTimeRef = useRef<number>(Date.now());
 
+  // Confetti state
+  const [confettiParticles, setConfettiParticles] = useState<Array<{id:number,x:number,y:number,color:string,delay:number}>>([]);
+  const confettiTriggered = useRef(false);
+
   // All done
   if (currentIdx >= totalExercises) {
     saveRecord();
+
+    // Haptic + confetti — fire once
+    if (!confettiTriggered.current) {
+      confettiTriggered.current = true;
+      navigator.vibrate?.([100, 80, 100, 80, 200]);
+
+      const colors = ["#d92525", "#e8780a", "#ffffff", "#4a90d9"];
+      const particles = Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        x: (Math.random() - 0.5) * 280,
+        y: (Math.random() - 0.5) * 360 - 80,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        delay: Math.random() * 0.4,
+      }));
+      setConfettiParticles(particles);
+    }
+
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121212] p-8">
-        <CheckCircle2 className="w-20 h-20 text-[#d92525] mb-6" />
-        <h1 className="text-2xl font-bold text-white mb-2">训练完成！🎉</h1>
-        <p className="text-gray-400 text-sm mb-8">共完成 {totalExercises} 项训练</p>
-        <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121212] p-8 overflow-hidden">
+        {/* Confetti particles */}
+        {confettiParticles.map((p) => (
+          <div
+            key={p.id}
+            className="absolute rounded-full"
+            style={{
+              width: 6,
+              height: 6,
+              backgroundColor: p.color,
+              left: "50%",
+              top: "50%",
+              animation: `confettiBurst 1.2s ${p.delay}s ease-out forwards`,
+              opacity: 0,
+            }}
+          >
+            <style>{`
+              @keyframes confettiBurst {
+                0% { transform: translate(-50%, -50%) translate(0, 0); opacity: 1; }
+                20% { opacity: 1; }
+                100% { transform: translate(-50%, -50%) translate(${p.x}px, ${p.y}px); opacity: 0; }
+              }
+            `}</style>
+          </div>
+        ))}
+        <CheckCircle2 className="w-20 h-20 text-[#d92525] mb-6 relative z-10" />
+        <h1 className="text-2xl font-bold text-white mb-2 relative z-10">训练完成！🎉</h1>
+        <p className="text-gray-400 text-sm mb-8 relative z-10">共完成 {totalExercises} 项训练</p>
+        <div className="grid grid-cols-2 gap-3 w-full max-w-xs relative z-10">
           <button onClick={onClose}
             className="py-4 bg-[#d92525] text-white font-bold rounded-xl text-sm">
             返回方案
           </button>
-          <button onClick={() => { setCurrentIdx(0); setCompletedSets({}); }}
+          <button onClick={() => { setCurrentIdx(0); setCompletedSets({}); confettiTriggered.current = false; }}
             className="py-4 bg-[#1e1e1e] border border-[#333] text-white font-bold rounded-xl text-sm">
             再来一轮
           </button>

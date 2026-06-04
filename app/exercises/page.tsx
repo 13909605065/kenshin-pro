@@ -281,6 +281,7 @@ export default function ExercisesPage() {
   const [bodyPart, setBodyPart] = useState<BodyPart>("all");
   const [equipment, setEquipment] = useState<Equipment>("all");
   const [footballCat, setFootballCat] = useState<FootballCategory>("all");
+  const [exerciseType, setExerciseType] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -292,10 +293,11 @@ export default function ExercisesPage() {
       if (bodyPart !== "all" && ex.bodyPart !== bodyPart) return false;
       if (equipment !== "all" && ex.equipment !== equipment) return false;
       if (footballCat !== "all" && ex.footballCategory !== footballCat) return false;
+      if (exerciseType !== "all" && ex.type !== exerciseType) return false;
       if (search && !ex.name.includes(search) && !ex.id.includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [allExercises, bodyPart, equipment, footballCat, search]);
+  }, [allExercises, bodyPart, equipment, footballCat, exerciseType, search]);
 
   // Category counts pre-computed
 
@@ -476,6 +478,26 @@ export default function ExercisesPage() {
                   }`}
                 >
                   {fc === "all" ? "全部" : fc}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Card 4: Exercise Type */}
+          <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3">
+            <p className="text-[10px] text-gray-500 mb-2 font-medium uppercase tracking-wider">类型 Type</p>
+            <div className="flex flex-wrap gap-1.5">
+              {(["all", "力量", "热身", "冷身", "技术"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setExerciseType(t)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
+                    exerciseType === t
+                      ? "bg-[#d92525] text-white"
+                      : "text-gray-400 hover:text-white hover:bg-[#222]"
+                  }`}
+                >
+                  {t === "all" ? "全部" : t}
                 </button>
               ))}
             </div>
