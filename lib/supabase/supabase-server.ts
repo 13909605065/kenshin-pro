@@ -1,13 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-// Server-side: use internal URL (direct to Supabase, works on Vercel)
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
-
 export const createServerSupabase = () => {
   const cookieStore = cookies();
   return createServerClient(
-    SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -28,6 +25,6 @@ export const createServerSupabase = () => {
 import { createClient } from "@supabase/supabase-js";
 export const supabaseAdmin = () =>
   createClient(
-    SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
