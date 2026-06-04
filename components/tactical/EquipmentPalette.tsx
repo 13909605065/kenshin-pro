@@ -238,8 +238,7 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
         key={item.filename}
         draggable
         onDragStart={(e) => handleDragStart(e, item)}
-        onClick={() => onPlaceEquipment?.(item.filename, item.name)}
-        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-pointer transition-colors group active:scale-95"
+        className="flex flex-col items-center gap-1 p-1.5 rounded-md cursor-grab transition-colors group"
         style={{ borderRadius: "6px" }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = "#22252d";
@@ -261,10 +260,17 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment }: Props) {
             });
           }
         }}
-        title={collapsed ? item.name : undefined}
+        title={collapsed ? item.name : "拖拽放置 · 点击 ⊕ 快捷添加"}
       >
         <div className="relative">
           {getEquipmentIcon(item.name)}
+          {/* Quick-add button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onPlaceEquipment?.(item.filename, item.name); }}
+            className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none opacity-60 group-hover:opacity-100 transition-opacity"
+            style={{ backgroundColor: ACCENT, color: "#fff" }}
+            title="点击添加"
+          >+</button>
           {coneColor && (
             <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full border border-[#1a1d24]"
               style={{ backgroundColor: coneColor }} />
