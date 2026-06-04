@@ -353,6 +353,16 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
     if (formData.role !== role) setWizardRole(role);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
+
+  // Auto-clear goals invalid for current scene
+  useEffect(() => {
+    if (isCoach || isFitness) return;
+    if (scene === "pitch") {
+      setAthleteGoals(prev => prev.filter(g => g !== "combat"));
+    } else if (scene === "gym") {
+      setAthleteGoals(prev => prev.filter(g => g !== "speed" && g !== "mas_endurance"));
+    }
+  }, [scene, isCoach, isFitness]);
   const [status, setStatus] = useState<GenerationStatus>("idle");
   const [showDone, setShowDone] = useState(false);
   const [errorCode, setErrorCode] = useState<string | null>(null);
@@ -726,7 +736,14 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           );
                         })}
                       </div>
-                    ) : GOALS.map((g) => {
+                    ) : GOALS.filter(g => {
+                        // Scene-aware goal filtering
+                        if (!isCoach && !isFitness) {
+                          if (scene === "pitch" && g === "combat") return false; // 对抗需要搭档，球场单人不可练
+                          if (scene === "gym" && (g === "speed" || g === "mas_endurance")) return false; // 速度需要跑道 耐力不符合足球专项
+                        }
+                        return true;
+                      }).map((g) => {
                       const isSelected = athleteGoals.includes(g);
                       const isHighlighted = formData.phase ? PHASE_TO_GOAL_HIGHLIGHT[formData.phase]?.includes(g) : false;
                       return (
