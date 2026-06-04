@@ -48,6 +48,7 @@ export interface PlayerFormData {
   tacticalThemes: TacticalTheme[];
   equipmentAvailable: string[]; // 可用器材列表
   trainingDuration?: number; // 30 | 45 | 60 | 90 (minutes)
+  playerCount?: number; // coach: number of players in session
 }
 
 // ---- Training Module Output ----

@@ -97,15 +97,11 @@ export default function Home() {
             </a>
             <nav className="flex items-center gap-1">
               <a href="/" className="px-3 py-1.5 text-sm text-[#d92525] font-semibold relative transition">
-                首页
+                体能训练
                 <span className="absolute -bottom-px left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#d92525] rounded-full" />
               </a>
-              <a href="/tactical-diagnosis" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术诊断</a>
-              <a href="/tactics" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">战术板</a>
               <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
-              <a href="/schedule" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">赛程</a>
-              <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">花名册</a>
-              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">历史</a>
+              <a href="/history" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">历史方案</a>
               <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">设置</a>
             </nav>
           </div>

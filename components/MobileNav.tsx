@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Brain, Layout, Ellipsis, Users, History, Settings, Calendar, Dumbbell, X } from "lucide-react";
+import { Home, Ellipsis, History, Settings, Dumbbell, X } from "lucide-react";
 import { useLang } from "@/components/providers/LanguageProvider";
 
 export function MobileNav() {
@@ -13,15 +13,11 @@ export function MobileNav() {
 
   const TABS = [
     { id: "home", label: t("nav.home"), icon: Home, path: "/" },
-    { id: "diagnosis", label: "战术诊断", icon: Brain, path: "/tactical-diagnosis" },
-    { id: "tactics", label: "战术板", icon: Layout, path: "/tactics" },
+    { id: "exercises", label: "动作库", icon: Dumbbell, path: "/exercises" },
+    { id: "history", label: "历史", icon: History, path: "/history" },
   ];
 
   const MORE_TABS = [
-    { id: "exercises", label: "动作库", icon: Dumbbell, path: "/exercises" },
-    { id: "schedule", label: "赛程", icon: Calendar, path: "/schedule" },
-    { id: "roster", label: "花名册", icon: Users, path: "/roster" },
-    { id: "history", label: "历史", icon: History, path: "/history" },
     { id: "settings", label: "设置", icon: Settings, path: "/settings" },
   ];
 

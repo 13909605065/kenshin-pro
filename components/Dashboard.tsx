@@ -18,7 +18,7 @@ import { getNextMatch } from "@/lib/match-store";
 import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
-import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell, Minus, Plus, GitCompare } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell, Minus, Plus, GitCompare, Users } from "lucide-react";
 import { OnboardingGuide } from "./OnboardingGuide";
 import { PlanCompareModal } from "./PlanCompareModal";
 import { useEquipmentInventory } from "@/hooks/useEquipmentInventory";
@@ -1115,6 +1115,15 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 <button key={p} onClick={() => updateField("phase", p)}
                   className={`px-3 py-1.5 min-h-[36px] rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
               ))}
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#d92525]" />
+                <span className="text-xs text-gray-400">训练人数</span>
+                <input type="number" min={1} max={50} defaultValue={formData.playerCount || 11}
+                  onChange={(e) => updateField("playerCount", parseInt(e.target.value) || undefined)}
+                  className="w-16 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#d92525] focus:outline-none" />
+              </div>
             </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}

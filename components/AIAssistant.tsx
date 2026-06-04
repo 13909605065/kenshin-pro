@@ -254,7 +254,6 @@ export default function AIAssistant() {
         </div>
         </>
       )}
-      )}
 
       {/* Scale-in animation */}
       <style jsx>{`
