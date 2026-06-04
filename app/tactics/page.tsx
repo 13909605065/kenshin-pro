@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Canvas, Circle, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
-import { FabricBoard, exportBoardAsPNG } from "@/components/tactical/FabricBoard";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
 
@@ -65,6 +65,18 @@ const THEMES = ["控球","射门","传中","防守","压迫","反击","定位球
 interface SavedScene { id: string; name: string; theme: string; json: string; createdAt: string; }
 
 const AUTOSAVE_KEY = "tac_autosave";
+
+const FabricBoardDynamic = dynamic(
+  () => import("@/components/tactical/FabricBoard").then(m => ({ default: m.FabricBoard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 flex items-center justify-center bg-[#121212]">
+        <div className="w-8 h-8 border-2 border-[#d92525] border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  }
+);
 
 export default function TacticsPage() {
   const router = useRouter();
@@ -230,7 +242,14 @@ export default function TacticsPage() {
   },[autoSave]);
   const hUndo = () => (boardRef.current as any)?._undo?.();
   const hRedo = () => (boardRef.current as any)?._redo?.();
-  const hExport = () => { if(boardRef.current) exportBoardAsPNG(boardRef.current); };
+  const hExport = () => {
+    const c = boardRef.current;
+    if (!c) return;
+    const a = document.createElement("a");
+    a.href = c.toDataURL({ format: "png", multiplier: 2 });
+    a.download = `tactical-${Date.now()}.png`;
+    a.click();
+  };
 
   const hClear = () => {
     const c=boardRef.current; if(!c)return;
@@ -729,7 +748,7 @@ export default function TacticsPage() {
 
       <div className="flex flex-1 overflow-hidden relative">
         <EquipmentPalette activeTool={activeTool} onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment} collapsed={paletteCollapsed} onToggleCollapsed={() => setPaletteCollapsed(!paletteCollapsed)}/>
-        <FabricBoard activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} boardRef={boardRef} onPlayerDoubleClick={hPlayerDoubleClick} lockPlayers={lockPlayers} lockRoutes={lockRoutes}/>
+        <FabricBoardDynamic activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} onCanvasChange={autoSave} boardRef={boardRef} onPlayerDoubleClick={hPlayerDoubleClick} lockPlayers={lockPlayers} lockRoutes={lockRoutes}/>
         <div className="absolute bottom-0 left-0 right-0 z-20">
           <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear} onZoomIn={hZoomIn} onZoomOut={hZoomOut} onZoomFit={hZoomFit} lockPlayers={lockPlayers} onLockPlayersChange={setLockPlayers} lockRoutes={lockRoutes} onLockRoutesChange={setLockRoutes}/>
         </div>

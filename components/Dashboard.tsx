@@ -296,6 +296,8 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
   );
 }
 
+const DRAFT_KEY = "kenshin_dashboard_draft";
+
 export function Dashboard() {
   const wizard = useWizard();
   const training = useTraining();
@@ -367,6 +369,32 @@ export function Dashboard() {
       setFitnessGoals([formData.goal as string]);
     }
   }, [isFitness, formData.goal]);
+
+  // Restore form draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft.coachInput) setCoachInput(draft.coachInput);
+        if (draft.fitnessGoals) setFitnessGoals(draft.fitnessGoals);
+      }
+    } catch {}
+  }, []);
+
+  // Auto-save form draft to localStorage (debounced 1s)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          coachInput,
+          fitnessGoals,
+          ts: Date.now(),
+        }));
+      } catch {}
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [coachInput, fitnessGoals]);
 
   // Sync fitnessGoals to formData.goal for validation
   const updateFitnessGoals = useCallback((goals: string[]) => {

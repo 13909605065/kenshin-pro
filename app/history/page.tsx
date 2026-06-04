@@ -41,7 +41,7 @@ export default function HistoryPage() {
       if (raw) setRecords(JSON.parse(raw));
     } catch {}
     try {
-      const raw = localStorage.getItem("kenshin_plan_history");
+      const raw = localStorage.getItem("kenshin_plans");
       if (raw) setPlans(JSON.parse(raw));
     } catch {}
   }, []);

@@ -13,6 +13,7 @@ interface FabricBoardProps {
   activeColor: string;
   onObjectSelected?: (obj: any) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
+  onCanvasChange?: () => void;
   boardRef: React.MutableRefObject<Canvas | null>;
   onPlayerDoubleClick?: (playerObj: any, screenX: number, screenY: number) => void;
   /** Layer lock states */
@@ -20,7 +21,7 @@ interface FabricBoardProps {
   lockRoutes?: boolean;
 }
 
-export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, boardRef, onPlayerDoubleClick, lockPlayers, lockRoutes }: FabricBoardProps) {
+export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, onCanvasChange, boardRef, onPlayerDoubleClick, lockPlayers, lockRoutes }: FabricBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -29,6 +30,15 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const pinchStartRef = useRef<{ dist: number; zoom: number; cx: number; cy: number } | null>(null);
   const touchCountRef = useRef<number>(0);
   const lastTouchRef = useRef<number>(0);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedAutoSave = useCallback(() => {
+    if (!onCanvasChange) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = setTimeout(() => {
+      onCanvasChange();
+    }, 800);
+  }, [onCanvasChange]);
 
   useEffect(() => {
     if (!canvasElRef.current || boardRef.current) return;
@@ -148,8 +158,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     };
     (canvas as any)._undo = () => { if (historyIdx <= 0) return; historyIdx--; load(history[historyIdx]); onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1); };
     (canvas as any)._redo = () => { if (historyIdx >= history.length - 1) return; historyIdx++; load(history[historyIdx]); onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1); };
-    canvas.on("object:modified", save);
-    canvas.on("object:added", (e) => { if (e.target && !restoring) save(); });
+    canvas.on("object:modified", () => { save(); debouncedAutoSave(); });
+    canvas.on("object:added", (e) => { if (e.target && !restoring) { save(); debouncedAutoSave(); } });
     canvas.on("selection:created", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:updated", (e) => onObjectSelected?.(e.selected?.[0] || null));
     canvas.on("selection:cleared", () => onObjectSelected?.(null));
