@@ -32,7 +32,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: TAC_THEME.bg,
+      backgroundColor: "#0d0d0d",
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
@@ -177,30 +177,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
-    // Load field image — bright white line-drawing template
-    // Use Math.min to fit entire field within canvas without cropping
-    FabricImage.fromURL("/equipment/场地14.png").then((img) => {
-      const margin = 30;
-      const scaleW = (FW - margin * 2) / (img.width || 1);
-      const scaleH = (FH - margin * 2) / (img.height || 1);
-      const scale = Math.min(scaleW, scaleH); // fit (not fill) — center with equal margins
-      img.set({
-        left: (FW - (img.width || 0) * scale) / 2,
-        top: (FH - (img.height || 0) * scale) / 2,
-        scaleX: scale,
-        scaleY: scale,
-        selectable: false,
-        evented: false,
-        excludeFromExport: false,
-      });
-      (img as any)._isFieldBg = true;
-      canvas.add(img);
-      canvas.sendObjectToBack(img);
-      canvas.requestRenderAll();
-    }).catch(() => {
-      // Fallback to vector field if image fails
-      drawVectorField(canvas);
-    });
+    // Default: vector field with dark muted green grass
+    drawVectorField(canvas);
 
     // Drop handler — with proper scaling controls for all equipment
     const container = containerRef.current!;
@@ -463,9 +441,10 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     (c as any)._setFieldImage = (fn: string) => {
       // Clear old field objects (both vector and image)
       c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-      // Default → bright white field template (场地14 = white line drawing)
+      // Default → dark muted green vector field
       if (fn === "default" || !fn) {
-        fn = "场地14";
+        drawVectorField(c);
+        return;
       }
       // Load field PNG — fill canvas with tight margins
       FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
@@ -490,7 +469,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, []);
 
   return (
-    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden bg-pitch-900" style={{ minHeight: 0 }}>
+    <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden" style={{ minHeight: 0, backgroundColor: "#0d0d0d" }}>
       <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
     </div>
   );
