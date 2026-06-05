@@ -298,6 +298,36 @@ export default function LoadPage() {
 
   const todayTraining = useMemo(() => weekDays.find((d: any) => d.isToday) || null, [weekDays]);
 
+  // ── Last training record date (data integrity indicator) ──
+  const lastRecord = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("kenshin_daily_training_log");
+      if (!raw) return null;
+      const logs = JSON.parse(raw);
+      if (!Array.isArray(logs) || logs.length === 0) return null;
+      // Find the latest non-rest entry with actual duration
+      const latestLog = logs.find((l: any) => l.timeSlot !== 'rest' && l.duration > 0);
+      if (!latestLog) return null;
+      const logDate = new Date(latestLog.date + "T00:00:00");
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const daysAgo = Math.round((now.getTime() - logDate.getTime()) / 86400000);
+      const timeStr = latestLog.savedAt
+        ? new Date(latestLog.savedAt).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })
+        : "";
+      const dateLabel = `${logDate.getMonth() + 1}月${logDate.getDate()}日`;
+      return {
+        dateLabel,
+        timeStr,
+        daysAgo,
+        isToday: daysAgo === 0,
+        needsWarning: daysAgo > 2,
+      };
+    } catch {
+      return null;
+    }
+  }, [refreshKey]);
+
   const statusEmoji = pct >= 90 ? '🔴' : pct >= 70 ? '🟡' : '🟢';
   const statusText = pct >= 90 ? '超负荷' : pct >= 70 ? '关注' : '安全';
 
@@ -626,6 +656,35 @@ export default function LoadPage() {
             )}
           </div>
         </div>
+
+        {/* ── Data Integrity: Last Record Indicator ── */}
+        {lastRecord && (
+          <div className={`mt-3 pt-3 border-t text-[10px] flex items-center gap-2 ${
+            lastRecord.needsWarning
+              ? 'border-yellow-500/20 text-yellow-400'
+              : 'border-[#222] text-gray-500'
+          }`}>
+            {lastRecord.needsWarning ? (
+              <>
+                <AlertTriangle className="w-3 h-3 shrink-0" />
+                <span>
+                  注意：最近{lastRecord.daysAgo}天无训练记录 ·
+                  最近记录: {lastRecord.dateLabel}
+                </span>
+              </>
+            ) : (
+              <span>
+                上次记录: {lastRecord.isToday ? '今天' : lastRecord.dateLabel}
+                {lastRecord.timeStr && ` ${lastRecord.timeStr}`}
+              </span>
+            )}
+          </div>
+        )}
+        {!lastRecord && (
+          <div className="mt-3 pt-3 border-t border-[#222] text-[10px] text-gray-600 flex items-center gap-2">
+            暂无训练记录
+          </div>
+        )}
       </div>
 
       {/* ═══ MUSCLE GROUP LOAD HEATMAP ═══ */}

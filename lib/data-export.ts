@@ -62,8 +62,19 @@ const LS_KEYS = {
   coachPhase: "kenshin_coach_phase",
   coachMatchDate: "kenshin_coach_matchDate",
   coachPlanMode: "kenshin_coach_planMode",
+  coachWeather: "kenshin_coach_weather",
   workbenchPreset: "kenshin_workbench_preset",
   periodizationPreset: "kenshin_periodization_preset",
+  // Daily training & TRIMP
+  dailyTrainingLog: "kenshin_daily_training_log",
+  playerTRIMP: "kenshin_player_trimp",
+  structuredNotes: "kenshin_structured_notes",
+  // Roster
+  roster: "kenshin_roster",
+  // Supplement tracking
+  supplementCompleted: "kenshin_supplement_completed",
+  // Match state (additional)
+  matchStateKey: "kenshin_match_state",
 } as const;
 
 // ── Types ──
@@ -258,6 +269,76 @@ function matchesToCsvRows(): CsvRow[] {
     load: m.load != null ? String(m.load) : "",
     notes: m.notes || "",
   }));
+}
+
+// ── Import / Restore ──
+
+export interface ImportPreview {
+  exportedAt: string;
+  keyCount: number;
+  keys: { key: string; type: string; size: string }[];
+}
+
+/**
+ * Preview a backup JSON file without writing anything.
+ * Returns structured preview info for user confirmation.
+ */
+export function previewImport(jsonStr: string): ImportPreview {
+  const bundle = JSON.parse(jsonStr);
+  const data = bundle.data || {};
+  const keys = Object.keys(data);
+
+  const keyList = keys.map((k) => {
+    const val = data[k];
+    let type = "未知";
+    let size = "0";
+    if (val === null || val === undefined) {
+      type = "空";
+      size = "0";
+    } else if (Array.isArray(val)) {
+      type = `数组 (${val.length}项)`;
+      size = `${Math.round(JSON.stringify(val).length / 1024)}KB`;
+    } else if (typeof val === "object") {
+      type = `对象 (${Object.keys(val).length}键)`;
+      size = `${Math.round(JSON.stringify(val).length / 1024)}KB`;
+    } else {
+      type = typeof val;
+      size = `${JSON.stringify(val).length}B`;
+    }
+    return { key: k, type, size };
+  });
+
+  return {
+    exportedAt: bundle.exportedAt || "未知",
+    keyCount: keys.length,
+    keys: keyList,
+  };
+}
+
+/**
+ * Execute import — write all keys from a backup bundle to localStorage.
+ * Returns the number of keys written.
+ */
+export function executeImport(jsonStr: string): number {
+  const bundle = JSON.parse(jsonStr);
+  const data = bundle.data || {};
+  let count = 0;
+
+  for (const [key, value] of Object.entries(data)) {
+    try {
+      if (value === null || value === undefined) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+      count++;
+    } catch {
+      // Skip keys that fail (e.g., quota exceeded)
+      console.warn(`Failed to restore key: ${key}`);
+    }
+  }
+
+  return count;
 }
 
 /**

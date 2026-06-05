@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useTheme, THEME_LABELS } from "@/components/providers/ThemeProvider";
-import { ArrowLeft, Save, Camera, Download, AlertTriangle } from "lucide-react";
-import { exportAsJSON, exportAsCSV, exportAllData, DataStats } from "@/lib/data-export";
+import { ArrowLeft, Save, Camera, Download, AlertTriangle, Upload, Shield } from "lucide-react";
+import { exportAsJSON, exportAsCSV, exportAllData, DataStats, previewImport, executeImport, type ImportPreview } from "@/lib/data-export";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -17,6 +17,13 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [stats, setStats] = useState<DataStats | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // ── Import state ──
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importPreview, setImportPreview] = useState<ImportPreview | null>(null);
+  const [importJson, setImportJson] = useState<string>("");
+  const [importing, setImporting] = useState(false);
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -55,6 +62,49 @@ export default function SettingsPage() {
     setTimeout(() => setMessage(""), 2000);
   };
 
+  // ── Import handlers ──
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const text = evt.target?.result as string;
+        const preview = previewImport(text);
+        setImportJson(text);
+        setImportPreview(preview);
+        setShowImportConfirm(true);
+      } catch {
+        setMessage("文件格式错误，无法解析");
+        setTimeout(() => setMessage(""), 3000);
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset input so same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleConfirmImport = () => {
+    setImporting(true);
+    try {
+      const count = executeImport(importJson);
+      setMessage(`已恢复 ${count} 项数据 ✅`);
+      setShowImportConfirm(false);
+      setImportPreview(null);
+      setImportJson("");
+      // Refresh stats
+      if (typeof window !== "undefined") {
+        setStats(exportAllData().stats);
+      }
+    } catch {
+      setMessage("恢复失败，请检查文件");
+    }
+    setImporting(false);
+    setTimeout(() => setMessage(""), 3000);
+  };
+
   return (
     <div className="min-h-screen bg-[#121212]">
       <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#1e1e1e]">
@@ -63,11 +113,28 @@ export default function SettingsPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-bold text-white">个人设置</h1>
-          {message && <span className="text-xs text-[#d92525]">{message}</span>}
+          {message && <span className={`text-xs ${message.includes('✅') ? 'text-green-400' : 'text-[#d92525]'}`}>{message}</span>}
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+        {/* ── Backup Reminder Banner ── */}
+        <section className="bg-[#d92525]/10 border border-[#d92525]/20 rounded-xl p-4 flex items-start gap-3">
+          <Shield className="w-5 h-5 text-[#d92525] shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm text-white font-bold">建议每次训练后导出数据备份</p>
+            <p className="text-xs text-gray-400 mt-1">
+              训练记录是教练最重要的资产。定期导出备份，防止数据丢失。
+              <button
+                onClick={() => document.getElementById("data-management")?.scrollIntoView({ behavior: "smooth" })}
+                className="text-[#d92525] underline ml-1 hover:text-[#ff4444] transition"
+              >
+                前往数据管理
+              </button>
+            </p>
+          </div>
+        </section>
+
         {/* Avatar */}
         <section className="glass-card p-6 space-y-4">
           <h2 className="text-white font-bold">头像</h2>
@@ -123,12 +190,15 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Data Export */}
-        <section className="glass-card p-6 space-y-4">
+        {/* ── Data Management (id for scroll anchor) ── */}
+        <section id="data-management" className="glass-card p-6 space-y-4">
           <h2 className="text-white font-bold flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            数据导出
+            <Shield className="w-4 h-4 text-[#d92525]" />
+            数据管理
           </h2>
+          <p className="text-xs text-gray-500">
+            导出训练数据备份或从备份文件恢复。建议每次训练后导出。
+          </p>
 
           {/* Stats Summary */}
           {stats && (
@@ -139,29 +209,106 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <div className="flex gap-3">
+          {/* Export buttons */}
+          <div className="space-y-3">
+            <p className="text-[10px] text-gray-500 font-medium">导出备份</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { exportAsJSON(); setMessage("JSON 备份已下载 ✅"); setTimeout(() => setMessage(""), 2000); }}
+                className="flex-1 py-3 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                导出全部数据 (JSON)
+              </button>
+              <button
+                onClick={() => { exportAsCSV(); setMessage("CSV 已下载 ✅"); setTimeout(() => setMessage(""), 2000); }}
+                className="flex-1 py-3 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                导出训练日志 (CSV)
+              </button>
+            </div>
+          </div>
+
+          {/* Import / Restore */}
+          <div className="border-t border-[#222] pt-4 space-y-3">
+            <p className="text-[10px] text-gray-500 font-medium">导入恢复</p>
+            <p className="text-[9px] text-gray-600">
+              上传之前导出的 JSON 备份文件，预览后确认恢复。恢复将覆盖当前数据。
+            </p>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
             <button
-              onClick={() => { exportAsJSON(); setMessage("JSON 备份已下载"); setTimeout(() => setMessage(""), 2000); }}
-              className="flex-1 py-2 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-3 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
             >
-              <Download className="w-4 h-4" />
-              导出全部数据 (JSON)
-            </button>
-            <button
-              onClick={() => { exportAsCSV(); setMessage("CSV 已下载"); setTimeout(() => setMessage(""), 2000); }}
-              className="flex-1 py-2 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              导出训练日志 (CSV)
+              <Upload className="w-4 h-4" />
+              选择备份文件恢复数据
             </button>
           </div>
         </section>
+
+        {/* ── Import Confirm Modal ── */}
+        {showImportConfirm && importPreview && (
+          <section className="glass-card p-6 space-y-4 border-[#d92525]/50">
+            <h2 className="text-white font-bold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#d92525]" />
+              确认数据恢复
+            </h2>
+
+            <div className="bg-[#1a1a1a] rounded-lg p-3 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-400">备份日期</span>
+                <span className="text-white">{importPreview.exportedAt.slice(0, 10)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">包含数据类型</span>
+                <span className="text-white">{importPreview.keyCount} 项</span>
+              </div>
+              <div className="border-t border-[#222] pt-2 mt-2 max-h-[180px] overflow-y-auto space-y-1">
+                {importPreview.keys.map((k) => (
+                  <div key={k.key} className="flex justify-between text-[10px]">
+                    <span className="text-gray-500 truncate max-w-[60%]">{k.key}</span>
+                    <span className="text-gray-600">{k.type} · {k.size}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-red-400 bg-red-500/10 rounded p-2">
+              确认恢复将覆盖当前所有同名数据。建议先导出当前数据备份。
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmImport}
+                disabled={importing}
+                className="flex-1 py-3 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {importing ? "恢复中..." : "确认恢复，将覆盖当前数据"}
+              </button>
+              <button
+                onClick={() => { setShowImportConfirm(false); setImportPreview(null); setImportJson(""); }}
+                className="flex-1 py-3 bg-[#1e1e1e] border border-[#333] text-gray-300 rounded-lg text-sm hover:bg-[#252525] transition"
+              >
+                取消
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Clear All Data */}
         <section className="glass-card p-6 space-y-4">
           <h2 className="text-white font-bold flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-400" />
-            数据管理
+            清除全部数据
           </h2>
           <p className="text-xs text-gray-500">
             清除所有本地存储的训练数据。建议先导出备份。

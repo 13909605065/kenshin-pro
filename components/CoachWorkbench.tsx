@@ -439,6 +439,8 @@ export default function CoachWorkbench() {
 
   // ── share toast ──
   const [shareToast, setShareToast] = useState<string | null>(null);
+  // ── save confirmation toast (TrainingTimer close) ──
+  const [saveToast, setSaveToast] = useState(false);
 
   // ── player check-in notifications ──
   const [checkinCount, setCheckinCount] = useState(0);
@@ -1719,6 +1721,10 @@ export default function CoachWorkbench() {
 
               // Notify load management page to refresh
               window.dispatchEvent(new CustomEvent('training-log-updated'));
+
+              // Show save confirmation toast
+              setSaveToast(true);
+              setTimeout(() => setSaveToast(false), 2500);
             }
           }}
         />
@@ -1748,6 +1754,13 @@ export default function CoachWorkbench() {
       {shareToast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#d92525] text-white text-xs px-4 py-2 rounded-xl shadow-xl animate-in slide-in-from-top-2">
           {shareToast}
+        </div>
+      )}
+
+      {/* ══ SAVE TOAST ══ */}
+      {saveToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white text-xs px-4 py-2 rounded-xl shadow-xl animate-in slide-in-from-bottom-2">
+          数据已保存
         </div>
       )}
 
