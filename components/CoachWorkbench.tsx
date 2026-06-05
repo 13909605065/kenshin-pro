@@ -292,6 +292,27 @@ export default function CoachWorkbench() {
   const trainingStartRef = useRef(0);
   const [workoutTimerActive, setWorkoutTimerActive] = useState(true);
 
+  // ── training attendees selector ──
+  const [trainingAttendees, setTrainingAttendees] = useState<Set<string>>(new Set());
+  const [showAttendeeSelector, setShowAttendeeSelector] = useState(false);
+  const [trainingRoster, setTrainingRoster] = useState<{id: string; name: string}[]>([]);
+
+  function loadTrainingRoster(): {id: string; name: string}[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      let raw = localStorage.getItem('kenshin_roster');
+      if (!raw) raw = localStorage.getItem('roster_players');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  // Initialize training attendees from roster on mount
+  useEffect(() => {
+    const roster = loadTrainingRoster();
+    setTrainingRoster(roster);
+    setTrainingAttendees(new Set(roster.map(p => p.name)));
+  }, []);
+
   // ── MD calculation from match date ──
   const mdDay = useMemo(() => {
     const match = new Date(matchDate + 'T00:00:00');
@@ -461,15 +482,30 @@ export default function CoachWorkbench() {
 
     // Auto-save to daily training log for load management
     const date = trainDate;
+    const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
+    const attendeeNames = Array.from(trainingAttendees);
     try {
       const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-      const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
       const existing = logs.findIndex((l: any) => l.date === date);
-      const entry = { date, trainType, timeSlot, duration: 0, savedAt: new Date().toISOString() };
+      const entry = { date, trainType, timeSlot, duration: 0, savedAt: new Date().toISOString(), players: attendeeNames };
       if (existing >= 0) logs[existing] = entry;
       else logs.unshift(entry);
       localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
     } catch {}
+
+    // Save estimated TRIMP for each attending player
+    if (attendeeNames.length > 0) {
+      try {
+        const trimpMultiplier = trainType === 'pitch' ? 2.5 : 2.0;
+        const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
+        const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
+        const savedAt = new Date().toISOString();
+        for (const playerName of attendeeNames) {
+          existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt, estimated: true });
+        }
+        localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+      } catch {}
+    }
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
@@ -889,6 +925,63 @@ export default function CoachWorkbench() {
           )}
         </div>
 
+        {/* ── 参训球员选择器 (collapsible) ── */}
+        <div className="bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowAttendeeSelector(!showAttendeeSelector)}
+            className="w-full flex items-center justify-between px-3 py-2.5 text-xs hover:bg-[#222] transition"
+          >
+            <span className="text-gray-300 font-medium">
+              👥 参训球员: <span className="text-[#d92525]">{trainingAttendees.size}人已选</span>
+            </span>
+            <span className="text-gray-500 text-[10px] transition-transform duration-200" style={{ transform: showAttendeeSelector ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              ▼
+            </span>
+          </button>
+          {showAttendeeSelector && (
+            <div className="px-3 pb-3 border-t border-[#222]">
+              <div className="flex items-center gap-2 mt-2 mb-2">
+                <button
+                  onClick={() => setTrainingAttendees(new Set(trainingRoster.map(p => p.name)))}
+                  className="text-[10px] px-2 py-1 rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] transition"
+                >全选</button>
+                <button
+                  onClick={() => setTrainingAttendees(new Set())}
+                  className="text-[10px] px-2 py-1 rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] transition"
+                >全不选</button>
+              </div>
+              {trainingRoster.length === 0 ? (
+                <p className="text-[10px] text-gray-600 py-1">暂无花名册数据</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
+                  {trainingRoster.map(p => (
+                    <label key={p.id} className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded cursor-pointer transition ${
+                      trainingAttendees.has(p.name)
+                        ? 'bg-[#d92525]/20 text-[#d92525] ring-1 ring-[#d92525]/50'
+                        : 'bg-[#111] text-gray-500 hover:text-gray-300'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        checked={trainingAttendees.has(p.name)}
+                        onChange={() => {
+                          setTrainingAttendees(prev => {
+                            const next = new Set(prev);
+                            if (next.has(p.name)) next.delete(p.name);
+                            else next.add(p.name);
+                            return next;
+                          });
+                        }}
+                        className="accent-[#d92525] w-3 h-3"
+                      />
+                      {p.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* ══ MAIN CTA — one-button generate ══ */}
         <button onClick={handleGenerate} disabled={isLoading}
           className="w-full py-4 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
@@ -1258,16 +1351,33 @@ export default function CoachWorkbench() {
             const elapsedMin = Math.round((Date.now() - trainingStartRef.current) / 60000);
             if (elapsedMin > 0) {
               const date = trainDate;
+              const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
               try {
                 const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
                 const existing = logs.findIndex((l: any) => l.date === date);
                 if (existing >= 0) { logs[existing].duration = elapsedMin; logs[existing].savedAt = new Date().toISOString(); }
                 else {
-                  const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
                   logs.unshift({ date, trainType, timeSlot, duration: elapsedMin, savedAt: new Date().toISOString() });
                 }
                 localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
               } catch {}
+
+              // Update individual TRIMP with actual duration
+              const attendeeNames = Array.from(trainingAttendees);
+              if (attendeeNames.length > 0) {
+                try {
+                  const trimpMultiplier = trainType === 'pitch' ? 2.5 : 2.0;
+                  const perPlayerTRIMP = Math.round((elapsedMin * trimpMultiplier) / attendeeNames.length);
+                  let existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
+                  // Remove estimated entries for this date
+                  existingTRIMP = existingTRIMP.filter((e: any) => !(e.date === date && e.estimated));
+                  const savedAt = new Date().toISOString();
+                  for (const playerName of attendeeNames) {
+                    existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
+                  }
+                  localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+                } catch {}
+              }
             }
           }}
         />
