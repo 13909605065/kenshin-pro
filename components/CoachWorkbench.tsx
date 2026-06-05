@@ -132,21 +132,42 @@ export default function CoachWorkbench() {
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
   const [duration, setDuration] = useState(60);
-  const [phase, setPhase] = useState<SeasonPhase>('competition');
+  const [phase, setPhase] = useState<SeasonPhase>(
+    (localStorage.getItem('kenshin_coach_phase') as SeasonPhase) || 'competition'
+  );
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [showPlan, setShowPlan] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [matchDate, setMatchDate] = useState<string>(() => { const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay())); return dateStr(d); });
-  const [planMode, setPlanMode] = useState<'team' | 'individual'>('team');
+  const [matchDate, setMatchDate] = useState<string>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('kenshin_coach_matchDate') : null;
+    if (saved) return saved;
+    const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay())); return dateStr(d);
+  });
+  const [planMode, setPlanMode] = useState<'team' | 'individual'>(
+    (localStorage.getItem('kenshin_coach_planMode') as 'team' | 'individual') || 'team'
+  );
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // ── coach profile ──
-  const [coachCert, setCoachCert] = useState('b');
-  const [coachRole, setCoachRole] = useState('semi_pro');
-  const [leagueTag, setLeagueTag] = useState('china_league_two');
-  const [playerCount, setPlayerCount] = useState(20);
+  // ── coach profile — persisted to localStorage ──
+  const COACH_KEY = 'kenshin_coach_profile';
+  const loadCoachProfile = () => { try { return JSON.parse(localStorage.getItem(COACH_KEY) || '{}'); } catch { return {}; } };
+  const savedProfile = loadCoachProfile();
+  const [coachCert, setCoachCert] = useState(savedProfile.coachCert || 'b');
+  const [coachRole, setCoachRole] = useState(savedProfile.coachRole || 'semi_pro');
+  const [leagueTag, setLeagueTag] = useState(savedProfile.leagueTag || 'china_league_two');
+  const [playerCount, setPlayerCount] = useState(savedProfile.playerCount || 20);
+
+  // ── persist coach profile on change ──
+  useEffect(() => {
+    try { localStorage.setItem(COACH_KEY, JSON.stringify({ coachCert, coachRole, leagueTag, playerCount })); } catch {}
+  }, [coachCert, coachRole, leagueTag, playerCount]);
+
+  // ── persist matchDate + phase ──
+  useEffect(() => { try { localStorage.setItem('kenshin_coach_matchDate', matchDate); } catch {} }, [matchDate]);
+  useEffect(() => { try { localStorage.setItem('kenshin_coach_phase', phase); } catch {} }, [phase]);
+  useEffect(() => { try { localStorage.setItem('kenshin_coach_planMode', planMode); } catch {} }, [planMode]);
 
   // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
