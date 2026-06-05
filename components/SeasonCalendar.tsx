@@ -10,10 +10,10 @@ import { ChevronLeft, ChevronRight, X, Download, Calendar, ChevronDown, ChevronU
 export type EventType =
   | 'league_match'
   | 'cup_match'
-  | 'international_break'
-  | 'preseason'
-  | 'recovery_week'
+  | 'playoff_match'
+  | 'preseason_friendly'
   | 'fitness_test'
+  | 'recovery_week'
   | 'deload_week';
 
 export interface SeasonEvent {
@@ -24,15 +24,24 @@ export interface SeasonEvent {
   createdAt: string;
 }
 
-export type PhaseType = 'preseason_build' | 'competition' | 'winter_break' | 'final_push';
+export type PhaseType = 'offseason' | 'preseason_build' | 'regular_season' | 'playoffs';
 
 export interface BatchPlanConfig {
   phaseType: PhaseType;
   notes: string;
 }
 
+export interface PhaseRange {
+  id: string;
+  startDate: string;
+  endDate: string;
+  phase: PhaseType;
+  notes: string;
+}
+
 export interface SeasonCalendarData {
   events: SeasonEvent[];
+  phaseRanges: PhaseRange[];
   matchDates: string[]; // ISO dates of league/cup matches
   seasonStart: string; // first date of the season timeline
   seasonEnd: string; // last date of the season timeline
@@ -48,20 +57,20 @@ const SEASON_MONTHS = [8, 9, 10, 11, 12, 1, 2, 3, 4, 5]; // Aug → May
 const MONTH_LABELS = ['8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月', '4月', '5月'];
 
 const EVENT_CONFIG: Record<EventType, { label: string; emoji: string; color: string; bg: string; border: string }> = {
-  league_match: { label: '联赛', emoji: '🔴', color: '#ef4444', bg: '#ef4444/15', border: '#ef4444/40' },
-  cup_match: { label: '杯赛', emoji: '🟠', color: '#f97316', bg: '#f97316/15', border: '#f97316/40' },
-  international_break: { label: '国际比赛日', emoji: '🔵', color: '#3b82f6', bg: '#3b82f6/15', border: '#3b82f6/40' },
-  preseason: { label: '季前', emoji: '🟢', color: '#22c55e', bg: '#22c55e/15', border: '#22c55e/40' },
-  recovery_week: { label: '恢复周', emoji: '⚪', color: '#9ca3af', bg: '#9ca3af/15', border: '#9ca3af/40' },
+  league_match: { label: '联赛日', emoji: '🔴', color: '#ef4444', bg: '#ef4444/15', border: '#ef4444/40' },
+  cup_match: { label: '杯赛日', emoji: '🟠', color: '#f97316', bg: '#f97316/15', border: '#f97316/40' },
+  playoff_match: { label: '附加赛', emoji: '💀', color: '#dc2626', bg: '#dc2626/15', border: '#dc2626/40' },
+  preseason_friendly: { label: '季前热身赛', emoji: '🟢', color: '#22c55e', bg: '#22c55e/15', border: '#22c55e/40' },
   fitness_test: { label: '体能测试', emoji: '🟣', color: '#a855f7', bg: '#a855f7/15', border: '#a855f7/40' },
+  recovery_week: { label: '恢复周', emoji: '⚪', color: '#9ca3af', bg: '#9ca3af/15', border: '#9ca3af/40' },
   deload_week: { label: '减量周', emoji: '🟡', color: '#eab308', bg: '#eab308/15', border: '#eab308/40' },
 };
 
-const PHASE_CONFIG: Record<PhaseType, { label: string; icon: string; defaultEvent: EventType }> = {
-  preseason_build: { label: '季前备战期', icon: '🟢', defaultEvent: 'preseason' },
-  competition: { label: '联赛期', icon: '🔴', defaultEvent: 'league_match' },
-  winter_break: { label: '冬歇期', icon: '🔵', defaultEvent: 'recovery_week' },
-  final_push: { label: '冲刺期', icon: '🟣', defaultEvent: 'fitness_test' },
+const PHASE_CONFIG: Record<PhaseType, { label: string; icon: string; desc: string; defaultEvent: EventType }> = {
+  offseason: { label: '休赛期', icon: '🧊', desc: '主力轮休 · 伤病康复 · 身体重塑 · 短板补强', defaultEvent: 'recovery_week' },
+  preseason_build: { label: '季前备战期', icon: '🏋️', desc: '体能储备 · 战术磨合 · 热身赛检验 · 阵容确定', defaultEvent: 'preseason_friendly' },
+  regular_season: { label: '常规赛季', icon: '⚽', desc: '联赛日+杯赛日 · 一周双赛节奏 · 状态维持', defaultEvent: 'league_match' },
+  playoffs: { label: '附加赛', icon: '🏆', desc: '保级生死战 或 冲甲关键战 · 最高强度 · 心理准备', defaultEvent: 'playoff_match' },
 };
 
 const STORAGE_KEY = 'kenshin_season_calendar';
@@ -294,7 +303,7 @@ export default function SeasonCalendar() {
     const year = getDefaultSeasonYear();
     const seasonStart = `${year}-08-01`;
     const seasonEnd = `${year + 1}-05-31`;
-    return { events: [], matchDates: [], seasonStart, seasonEnd };
+    return { events: [], phaseRanges: [], matchDates: [], seasonStart, seasonEnd };
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>('season');
@@ -302,7 +311,7 @@ export default function SeasonCalendar() {
   const [focusedWeekStart, setFocusedWeekStart] = useState<string>(() => dateStr(getMonday(new Date())));
   const [showEventEditor, setShowEventEditor] = useState<{ date: string; event: SeasonEvent | null } | null>(null);
   const [showBatchPanel, setShowBatchPanel] = useState(false);
-  const [batchPhase, setBatchPhase] = useState<PhaseType>('competition');
+  const [batchPhase, setBatchPhase] = useState<PhaseType>('regular_season');
   const [batchStartMonth, setBatchStartMonth] = useState<number>(8);
   const [batchEndMonth, setBatchEndMonth] = useState<number>(10);
   const [batchNotes, setBatchNotes] = useState('');
@@ -334,7 +343,7 @@ export default function SeasonCalendar() {
         : [...prev.events, evt];
       // Update matchDates
       const matchDates = events
-        .filter(e => e.type === 'league_match' || e.type === 'cup_match')
+        .filter(e => e.type === 'league_match' || e.type === 'cup_match' || e.type === 'playoff_match')
         .map(e => e.date)
         .sort();
       return { ...prev, events, matchDates };
@@ -345,7 +354,7 @@ export default function SeasonCalendar() {
     updateData(prev => {
       const events = prev.events.filter(e => e.id !== id);
       const matchDates = events
-        .filter(e => e.type === 'league_match' || e.type === 'cup_match')
+        .filter(e => e.type === 'league_match' || e.type === 'cup_match' || e.type === 'playoff_match')
         .map(e => e.date)
         .sort();
       return { ...prev, events, matchDates };
@@ -354,9 +363,10 @@ export default function SeasonCalendar() {
 
   // ── Auto calculations ──
   const autoStats = useMemo(() => {
-    const matchEvents = data.events.filter(e => e.type === 'league_match' || e.type === 'cup_match');
+    const matchEvents = data.events.filter(e => e.type === 'league_match' || e.type === 'cup_match' || e.type === 'playoff_match');
     const leagueCount = data.events.filter(e => e.type === 'league_match').length;
     const cupCount = data.events.filter(e => e.type === 'cup_match').length;
+    const playoffCount = data.events.filter(e => e.type === 'playoff_match').length;
     const testCount = data.events.filter(e => e.type === 'fitness_test').length;
     const recoveryWeeks = data.events.filter(e => e.type === 'recovery_week').length;
     const deloadWeeks = data.events.filter(e => e.type === 'deload_week').length;
@@ -380,11 +390,12 @@ export default function SeasonCalendar() {
       preseasonWeeks,
       leagueCount,
       cupCount,
+      playoffCount,
       testCount,
       recoveryWeeks,
       deloadWeeks,
       totalWeeks,
-      totalMatches: leagueCount + cupCount,
+      totalMatches: leagueCount + cupCount + playoffCount,
     };
   }, [data]);
 
@@ -406,38 +417,26 @@ export default function SeasonCalendar() {
   // ── Batch planning ──
   const handleBatchPlan = useCallback(() => {
     updateData(prev => {
-      const newEvents = [...prev.events];
-      const cfg = PHASE_CONFIG[batchPhase];
+      const yrStart = yearForMonth(batchStartMonth);
+      const yrEnd = yearForMonth(batchEndMonth);
+      const startDate = dateStr(new Date(yrStart, batchStartMonth - 1, 1));
+      const endDays = getDaysInMonth(yrEnd, batchEndMonth);
+      const endDate = dateStr(new Date(yrEnd, batchEndMonth - 1, endDays));
 
-      // Remove existing events in the selected month range (keep non-phase events)
-      // Actually, add phase-typical markers to each week in the range
-      for (let m = batchStartMonth; m <= batchEndMonth; m++) {
-        const yr = yearForMonth(m);
-        const daysInMonth = getDaysInMonth(yr, m);
+      const newRange: PhaseRange = {
+        id: genId(),
+        startDate,
+        endDate,
+        phase: batchPhase,
+        notes: batchNotes || PHASE_CONFIG[batchPhase].label,
+      };
 
-        // Add one marker per week (every 7 days, starting from day 1)
-        for (let d = 1; d <= daysInMonth; d += 7) {
-          const ds = dateStr(new Date(yr, m - 1, d));
-          // Check if there's already an event of the same type on this date
-          const hasExisting = newEvents.some(e => e.date === ds && e.type === cfg.defaultEvent);
-          if (!hasExisting) {
-            newEvents.push({
-              id: genId(),
-              date: ds,
-              type: cfg.defaultEvent,
-              notes: `${cfg.label} · ${batchNotes || '批量规划'}`,
-              createdAt: new Date().toISOString(),
-            });
-          }
-        }
-      }
+      // Remove overlapping ranges of same phase
+      const ranges = prev.phaseRanges.filter(
+        r => !(r.phase === batchPhase && r.startDate >= startDate && r.endDate <= endDate)
+      );
 
-      const matchDates = newEvents
-        .filter(e => e.type === 'league_match' || e.type === 'cup_match')
-        .map(e => e.date)
-        .sort();
-
-      return { ...prev, events: newEvents, matchDates };
+      return { ...prev, phaseRanges: [...ranges, newRange] };
     });
     setShowBatchPanel(false);
   }, [updateData, batchPhase, batchStartMonth, batchEndMonth, batchNotes, yearForMonth]);
@@ -553,6 +552,21 @@ export default function SeasonCalendar() {
     return cols;
   }, [seasonTimeline, yearForMonth]);
 
+  // ── Get phase range color for a date ──
+  const getPhaseForDate = useCallback((d: string): PhaseType | null => {
+    for (const range of data.phaseRanges) {
+      if (d >= range.startDate && d <= range.endDate) return range.phase;
+    }
+    return null;
+  }, [data.phaseRanges]);
+
+  const PHASE_COLORS: Record<PhaseType, string> = {
+    offseason: '#374151',
+    preseason_build: '#166534',
+    regular_season: '#450a0a',
+    playoffs: '#7f1d1d',
+  };
+
   // ── Determine if a date is a match day ──
   const isMatchDay = useCallback((d: string): boolean => {
     return data.matchDates.includes(d);
@@ -563,9 +577,10 @@ export default function SeasonCalendar() {
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();
-    const weekday = WEEKDAY_CN[parsed.getDay()];
-    const isWeekend = parsed.getDay() === 0 || parsed.getDay() === 6;
     const matchDay = isMatchDay(d);
+    const isWeekend = parsed.getDay() === 0 || parsed.getDay() === 6;
+    const phase = getPhaseForDate(d);
+    const phaseBg = phase ? PHASE_COLORS[phase] : undefined;
 
     return (
       <button
@@ -574,9 +589,10 @@ export default function SeasonCalendar() {
         className={`relative flex flex-col items-center justify-center rounded transition cursor-pointer group
           w-9 h-9 text-[10px]
           ${isToday ? 'ring-1 ring-[#d92525] bg-[#d92525]/10' : ''}
-          ${matchDay ? 'bg-[#d92525]/10' : 'hover:bg-[#1a1a1a]'}
+          ${matchDay ? 'bg-[#d92525]/10' : phaseBg ? '' : 'hover:bg-[#1a1a1a]'}
           ${isWeekend ? 'opacity-70' : ''}
         `}
+        style={phaseBg && !isToday && !matchDay ? { backgroundColor: phaseBg } : undefined}
         title={events.map(e => EVENT_CONFIG[e.type].label).join(', ') || `${d} — 无事件`}
       >
         <span className={`font-bold leading-none ${isToday ? 'text-[#d92525]' : matchDay ? 'text-white' : 'text-gray-400'}`}>
@@ -1017,33 +1033,25 @@ export default function SeasonCalendar() {
           <div className="px-4 py-3 border-t border-[#222] bg-[#0a0a0a]">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px]">
               <span className="text-gray-500 font-medium">赛季概览</span>
-              <span className="text-gray-400">
-                季前{autoStats.preseasonWeeks}周
-              </span>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-400">
-                联赛{autoStats.leagueCount || '?'}轮
-              </span>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-400">
-                杯赛预计{autoStats.cupCount || '?'}场
-              </span>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-400">
-                体能测试{autoStats.testCount || '?'}次
-              </span>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-400">
-                总{autoStats.totalWeeks}周
-              </span>
-              <span className="text-gray-500">·</span>
-              <span className="text-gray-400">
-                {autoStats.totalMatches}场比赛
-              </span>
-              {autoStats.recoveryWeeks > 0 && (
+              {data.phaseRanges.map(range => {
+                const cfg = PHASE_CONFIG[range.phase];
+                return (
+                  <span key={range.id} className="text-gray-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[range.phase] }} />
+                    {cfg.icon} {cfg.label}: {range.startDate} → {range.endDate}
+                  </span>
+                );
+              })}
+              {data.phaseRanges.length === 0 && (
                 <>
+                  <span className="text-gray-400">季前{autoStats.preseasonWeeks}周</span>
                   <span className="text-gray-500">·</span>
-                  <span className="text-gray-400">恢复{autoStats.recoveryWeeks}周</span>
+                  <span className="text-gray-400">联赛{autoStats.leagueCount || '?'}轮</span>
+                  <span className="text-gray-500">·</span>
+                  <span className="text-gray-400">杯赛{autoStats.cupCount || '?'}场</span>
+                  <span className="text-gray-500">·</span>
+                  {autoStats.playoffCount > 0 && <><span className="text-gray-400">附加赛{autoStats.playoffCount}场</span><span className="text-gray-500">·</span></>}
+                  <span className="text-gray-400">总{autoStats.totalWeeks}周 {autoStats.totalMatches}场</span>
                 </>
               )}
             </div>
