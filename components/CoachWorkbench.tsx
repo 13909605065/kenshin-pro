@@ -132,9 +132,10 @@ export default function CoachWorkbench() {
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
   const [duration, setDuration] = useState(60);
-  const [phase, setPhase] = useState<SeasonPhase>(
-    (localStorage.getItem('kenshin_coach_phase') as SeasonPhase) || 'competition'
-  );
+  const [phase, setPhase] = useState<SeasonPhase>(() => {
+    if (typeof window === 'undefined') return 'competition';
+    return (localStorage.getItem('kenshin_coach_phase') as SeasonPhase) || 'competition';
+  });
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [showPlan, setShowPlan] = useState(false);
@@ -144,16 +145,17 @@ export default function CoachWorkbench() {
     if (saved) return saved;
     const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay())); return dateStr(d);
   });
-  const [planMode, setPlanMode] = useState<'team' | 'individual'>(
-    (localStorage.getItem('kenshin_coach_planMode') as 'team' | 'individual') || 'team'
-  );
+  const [planMode, setPlanMode] = useState<'team' | 'individual'>(() => {
+    if (typeof window === 'undefined') return 'team';
+    return (localStorage.getItem('kenshin_coach_planMode') as 'team' | 'individual') || 'team';
+  });
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   // ── coach profile — persisted to localStorage ──
   const COACH_KEY = 'kenshin_coach_profile';
-  const loadCoachProfile = () => { try { return JSON.parse(localStorage.getItem(COACH_KEY) || '{}'); } catch { return {}; } };
-  const savedProfile = loadCoachProfile();
+  const loadCoachProfile = () => { if (typeof window === 'undefined') return {}; try { return JSON.parse(localStorage.getItem(COACH_KEY) || '{}'); } catch { return {}; } };
+  const savedProfile = typeof window !== 'undefined' ? loadCoachProfile() : {};
   const [coachCert, setCoachCert] = useState(savedProfile.coachCert || 'b');
   const [coachRole, setCoachRole] = useState(savedProfile.coachRole || 'semi_pro');
   const [leagueTag, setLeagueTag] = useState(savedProfile.leagueTag || 'china_league_two');
