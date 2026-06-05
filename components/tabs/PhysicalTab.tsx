@@ -10,7 +10,7 @@ interface Props {
 }
 
 /* ================================================================
-   Excel-Style Structured Table — 上体超级组体能训练
+   Excel-Style Structured Table — 职业三段式体能训练
    7 columns: 阶段 | 练习内容 | 负重 | 组数 | 次/米/秒 | 组间休息 | 备注
    ================================================================ */
 
@@ -169,7 +169,7 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-black text-white">
-            {isGoalkeeper ? "守门员体能训练" : "上体超级组体能训练"}
+            {isGoalkeeper ? "守门员体能训练" : "职业三段式体能训练"}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             {rows.length} 项动作 · 总时长约 {totalAllTime}min

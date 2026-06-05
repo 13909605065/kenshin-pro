@@ -245,10 +245,10 @@ export default function VoiceNotes({ players, activeModules, planId }: Props) {
   return (
     <>
       {/* Floating mic button */}
-      <div className="fixed bottom-24 right-4 z-40 flex flex-col items-end gap-2">
+      <div className="fixed bottom-24 left-4 z-30 flex flex-col items-start gap-2">
         {/* Saved toast */}
         {savedToast && (
-          <div className="bg-green-500/90 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-lg animate-in slide-in-from-right-2">
+          <div className="bg-green-500/90 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-lg animate-in slide-in-from-left-2">
             ✓ {savedToast}
           </div>
         )}

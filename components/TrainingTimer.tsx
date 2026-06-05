@@ -272,7 +272,7 @@ export default function TrainingTimer({
     return (
       <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
         <p className="text-gray-400 text-lg mb-4">该方案暂无跟练动作</p>
-        <button onClick={onClose}
+        <button type="button" onClick={onClose}
           className="px-6 py-3 bg-[#d92525] text-white font-bold rounded-xl text-base active:scale-95 transition">
           返回方案
         </button>
@@ -311,14 +311,14 @@ export default function TrainingTimer({
         </div>
 
         {/* Save button */}
-        <button
+        <button type="button"
           onClick={handleSaveLog}
           className="w-full max-w-xs py-4 bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold rounded-xl text-base active:scale-95 transition mb-3"
         >
           保存训练日志
         </button>
 
-        <button
+        <button type="button"
           onClick={onClose}
           className="w-full max-w-xs py-3 bg-[#1a1a1a] border border-[#333] text-gray-300 font-medium rounded-xl text-sm active:scale-95 transition"
         >
