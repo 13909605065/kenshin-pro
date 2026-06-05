@@ -608,7 +608,7 @@ export default function CoachWorkbench() {
                 {mdLabel}
               </span>
               <span className="text-xs text-gray-500">
-                · {mdRecommendation.label}
+                · 外场训练
               </span>
             </div>
             <p className="text-[10px] text-gray-600 mt-0.5">{PHASE_LABELS[phase]} · 比赛日 {matchDate}</p>
@@ -676,112 +676,11 @@ export default function CoachWorkbench() {
           )}
         </div>
 
-        {/* Row 4: Plan mode toggle */}
-        <div className="flex gap-1 bg-[#0d0d0d] border border-[#222] rounded-xl p-1">
-          <button onClick={() => setPlanMode('team')}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
-              planMode === 'team' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white'
-            }`}>👥 全队方案</button>
-          <button onClick={() => setPlanMode('individual')}
-            className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
-              planMode === 'individual' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white'
-            }`}>➕ 加练小组</button>
-        </div>
-
-        {/* Add-on group controls */}
-        {planMode === 'individual' && (() => {
-          const roster = loadRoster();
-          const selectedRoster = roster.filter(p => selectedPlayers.has(p.name));
-          return (
-            <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 space-y-3">
-              {/* Player selection */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] text-gray-400">选择加练球员 <span className="text-[#d92525]">{selectedRoster.length > 0 ? `已选${selectedRoster.length}人` : ''}</span></label>
-                  {roster.length > 0 && (
-                    <div className="flex gap-2">
-                      <button onClick={selectAllHealthy} className="text-[9px] text-gray-500 hover:text-white transition">全选健康</button>
-                      <button onClick={() => setSelectedPlayers(new Set())} className="text-[9px] text-gray-500 hover:text-white transition">清空</button>
-                    </div>
-                  )}
-                </div>
-                {roster.length === 0 ? (
-                  <p className="text-[10px] text-gray-600">暂无花名册 · <a href="/roster" className="text-[#d92525] underline">去录入球员</a></p>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto">
-                    {roster.map(p => (
-                      <button key={p.id} onClick={() => togglePlayerSelect(p.name)}
-                        className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
-                          selectedPlayers.has(p.name)
-                            ? 'bg-[#d92525]/20 text-[#d92525] ring-1 ring-[#d92525]'
-                            : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
-                        }`}>
-                        {p.name} · {p.position || '?'}
-                        {p.injuryStatus !== 'healthy' && (p.injuryStatus === 'out' ? ' 🔴' : ' 🟡')}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Selected players injury summary */}
-              {selectedRoster.length > 0 && (() => {
-                const injuredList = selectedRoster.filter(p => p.injuryStatus !== 'healthy');
-                const allDisabled = Array.from(new Set(selectedRoster.flatMap(p => p.disabledExercises || [])));
-                return (
-                  <div className="p-2 bg-[#1a1a1a] rounded-lg text-[10px] text-gray-400 space-y-1">
-                    <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                      {selectedRoster.map(p => (
-                        <span key={p.id} className={p.injuryStatus === 'healthy' ? 'text-green-400' : p.injuryStatus === 'minor' ? 'text-yellow-400' : 'text-red-400'}>
-                          {p.name}{p.injuryStatus !== 'healthy' ? `(${p.injuryNote || p.injuryStatus})` : ''}
-                        </span>
-                      ))}
-                    </div>
-                    {injuredList.length > 0 && <div className="text-[9px] text-yellow-400/70">⚠ 伤病: {injuredList.map(p => `${p.name}:${p.injuryNote || p.injuryStatus}`).join('、')}</div>}
-                    {allDisabled.length > 0 && <div className="text-[9px] text-orange-500/70">🚫 禁用: {allDisabled.join('、')}</div>}
-                  </div>
-                );
-              })()}
-
-              {/* Add-on theme input */}
-              <div>
-                <label className="text-[10px] text-gray-400 block mb-1.5">加练主题</label>
-                <input type="text" value={addonTheme} onChange={e => setAddonTheme(e.target.value)}
-                  placeholder="例如：腘绳肌离心强化、冲刺加练、上肢补强..."
-                  className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#d92525] transition" />
-              </div>
-
-              {/* Scene + Duration for add-on */}
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-gray-500 shrink-0">场景</span>
-                <div className="flex gap-1">
-                  {SCENES.map(s => (
-                    <button key={s.id} onClick={() => setAddonScene(s.id)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-medium transition ${
-                        addonScene === s.id ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
-                      }`}>
-                      {s.icon} {s.label}
-                    </button>
-                  ))}
-                </div>
-                <span className="text-[10px] text-gray-500 shrink-0 ml-3">时长</span>
-                <div className="flex gap-1">
-                  {ADDON_DURATIONS.map(d => (
-                    <button key={d} onClick={() => setDuration(d)}
-                      className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${duration === d ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{d}min</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
         {/* ══ MAIN CTA — one-button generate ══ */}
         <button onClick={handleGenerate} disabled={isLoading}
           className="w-full py-4 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
           {isLoading ? <><span className="animate-spin">⏳</span> 生成中…</> :
            hasPlanForToday ? `📋 ${mdLabel}方案已存在 · 重新生成` :
-           planMode === 'individual' && selectedPlayers.size > 0 ? `⚡ 生成加练方案` :
            `⚡ 生成${mdLabel}训练方案`}
         </button>
 
