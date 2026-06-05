@@ -216,7 +216,18 @@ export default function RosterPage() {
         <h1 className="text-white font-bold text-lg">📋 球队花名册</h1>
         <span className="text-xs text-gray-400">{players.length}名球员</span>
         <div className="flex-1" />
-        <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcel} className="hidden" />
+        <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
+        <button onClick={() => {
+          const csv = '﻿姓名,位置,号码,年龄,身高(cm),体重(kg)\n张三,中后卫,5,25,185,78\n李四,后腰,8,23,178,72\n王五,边锋,11,21,175,68';
+          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = '花名册模板.csv'; a.click();
+          URL.revokeObjectURL(url);
+        }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
+          📥 下载模板
+        </button>
         <button onClick={() => fileRef.current?.click()}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
           <Upload className="w-3.5 h-3.5" />导入Excel
