@@ -7,10 +7,12 @@ import { WorkoutTimer } from './WorkoutTimer';
 import { ExportTable } from './ExportTable';
 import AIAssistant from './AIAssistant';
 import { ExerciseEditor } from './ExerciseEditor';
+import { TrainingLogPanel } from './TrainingLogPanel';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
 import { PHASE_LABELS } from '@/lib/constants';
 import { getPhaseParams, getGoalParams } from '@/lib/periodization';
+import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment } from '@/lib/fitness-store';
 import { getAtRiskPlayers } from '@/lib/acwr';
 
 // ── helpers ──
@@ -99,7 +101,7 @@ interface EditState {
 }
 
 export default function CoachWorkbench() {
-  const { modules, planId, generate, loadModules } = useTraining();
+  const { modules, planId, generate, loadModules, isOffline } = useTraining();
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
   const [duration, setDuration] = useState(60);
@@ -118,8 +120,9 @@ export default function CoachWorkbench() {
   const [leagueTag, setLeagueTag] = useState('china_league_two');
   const [playerCount, setPlayerCount] = useState(20);
 
-  // ── exercise editor ──
+  // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
+  const [showLog, setShowLog] = useState(false);
 
   // ── MD calculation from match date ──
   const mdDay = useMemo(() => {
@@ -212,7 +215,12 @@ export default function CoachWorkbench() {
           injuryHistory: player.injuryHistory || player.injuryNote || '',
           goal: goal as TrainingGoal, phase,
           injurySites: [],
-          weakness: player.disabledExercises?.join(',') || '',
+          weakness: [
+            player.disabledExercises?.join(',') || '',
+            fitnessSummary(getFitnessProfile(selectedPlayerId)),
+            player.weight ? strengthAssessment(getFitnessProfile(selectedPlayerId), player.weight) : '',
+            speedAssessment(getFitnessProfile(selectedPlayerId)),
+          ].filter(Boolean).join(' | '),
           coachCert: coachCert as any, coachRole: coachRole as any, leagueTag: leagueTag as any,
           tacticalThemes: [], equipmentAvailable: [],
           trainingDuration: duration, playerCount: 1,
@@ -431,17 +439,29 @@ export default function CoachWorkbench() {
             {selectedPlayerId && (() => {
               const p = roster.find(r => r.id === selectedPlayerId);
               if (!p) return null;
+              const fit = getFitnessProfile(selectedPlayerId);
+              const hasFit = fit.squat1RM || fit.sprint30m || fit.yoYoIR1 || fit.verticalJump;
               return (
-                <div className="mt-2 p-2 bg-[#1a1a1a] rounded-lg text-[10px] text-gray-400">
-                  {p.age && <span>{p.age}岁 · </span>}
-                  {p.height && <span>{p.height}cm · </span>}
-                  {p.weight && <span>{p.weight}kg · </span>}
-                  <span className={p.injuryStatus === 'healthy' ? 'text-green-400' : p.injuryStatus === 'minor' ? 'text-yellow-400' : 'text-red-400'}>
-                    {p.injuryStatus === 'healthy' ? '健康' : p.injuryStatus === 'minor' ? '轻伤' : '缺阵'}
-                  </span>
-                  {p.injuryNote && <span className="ml-1">— {p.injuryNote}</span>}
-                  {p.injuryHistory && <span className="block text-[9px] text-gray-600 mt-0.5">📋 {p.injuryHistory}</span>}
-                  {(p.disabledExercises?.length ?? 0) > 0 && <span className="block text-[9px] text-orange-500/70 mt-0.5">🚫 禁用: {(p.disabledExercises || []).join('、')}</span>}
+                <div className="mt-2 p-2 bg-[#1a1a1a] rounded-lg text-[10px] text-gray-400 space-y-1">
+                  <div>
+                    {p.age && <span>{p.age}岁 · </span>}
+                    {p.height && <span>{p.height}cm · </span>}
+                    {p.weight && <span>{p.weight}kg · </span>}
+                    <span className={p.injuryStatus === 'healthy' ? 'text-green-400' : p.injuryStatus === 'minor' ? 'text-yellow-400' : 'text-red-400'}>
+                      {p.injuryStatus === 'healthy' ? '健康' : p.injuryStatus === 'minor' ? '轻伤' : '缺阵'}
+                    </span>
+                    {p.injuryNote && <span className="ml-1">— {p.injuryNote}</span>}
+                  </div>
+                  {p.injuryHistory && <div className="text-[9px] text-gray-600">📋 {p.injuryHistory}</div>}
+                  {(p.disabledExercises?.length ?? 0) > 0 && <div className="text-[9px] text-orange-500/70">🚫 禁用: {(p.disabledExercises || []).join('、')}</div>}
+                  {hasFit && (
+                    <div className="border-t border-[#333] pt-1.5 mt-1">
+                      <span className="text-green-400 font-medium">📊 体能数据</span>
+                      <span className="text-gray-500 ml-1">{fitnessSummary(fit)}</span>
+                      {p.weight && fit.squat1RM && <div className="text-[9px] text-gray-500 mt-0.5">{strengthAssessment(fit, p.weight)}</div>}
+                      {fit.sprint30m && <div className="text-[9px] text-gray-500">{speedAssessment(fit)}</div>}
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -616,8 +636,10 @@ export default function CoachWorkbench() {
             <h3 className="text-sm font-bold text-white">
               {planMode === 'individual' && selectedPlayerId ? `🧑 ${loadRoster().find(p => p.id === selectedPlayerId)?.name || '个体'} · ` : ''}
               {scene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · {duration}min · {activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`} · 职业三段式
+              {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">📡 离线模式</span>}
             </h3>
             <div className="flex items-center gap-2">
+              <button onClick={() => setShowLog(!showLog)} className={`text-[10px] transition ${showLog ? 'text-[#d92525]' : 'text-gray-500 hover:text-white'}`}>📝 日志</button>
               <ExportTable modules={modules} formData={buildFormData()} />
               <WorkoutTimer modules={modules} planId={planId ?? undefined} onClose={() => {}} />
               <button onClick={() => setShowPlan(false)} className="text-[10px] text-gray-500 hover:text-white">收起</button>
@@ -626,6 +648,19 @@ export default function CoachWorkbench() {
           <div className="p-4">
             <PhysicalTab modules={modules} position={null} onUpdateExercise={handleEditExercise} />
           </div>
+
+          {showLog && (
+            <TrainingLogPanel
+              modules={modules}
+              planId={planId}
+              scene={scene}
+              goal={goal}
+              duration={duration}
+              matchDay={activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
+              playerName={planMode === 'individual' && selectedPlayerId ? loadRoster().find(p => p.id === selectedPlayerId)?.name : undefined}
+              onClose={() => setShowLog(false)}
+            />
+          )}
         </div>
       )}
 

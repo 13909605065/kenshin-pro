@@ -6,7 +6,7 @@ import { COACH_CERT_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "../cons
 import { getPhaseParams, getGoalParams } from "../periodization";
 import { LANG_INSTRUCTIONS } from "./athlete";
 
-export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
+export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string, fitnessHint?: string): string {
   const langInstruction = LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.zh;
 
   const cert = data.coachCert || 'b';
@@ -61,6 +61,8 @@ ${injuryHistory}
 
 ${(data as any).equipmentAvailable?.length ? `**可用器材:** ${(data as any).equipmentAvailable.join('、')}` : ''}
 ${weatherHint ? `**天气:** ${weatherHint}` : ''}
+  ${fitnessHint ? "\n**📊 体能测试数据（基于实测——直接决定负荷）:**\n" + fitnessHint + "\n- 使用以上测试数据设定具体的负重(kg)、配速、间歇时间\n- 禁止使用训练年限或经验猜测负荷" : ""}
+
 
 ${langInstruction}
 

@@ -10,6 +10,16 @@ import {
   parseExcelData,
   type PlayerRecord,
 } from "@/lib/roster-utils";
+import {
+  getFitnessProfile,
+  updateFitnessProfile,
+  fitnessSummary,
+  strengthAssessment,
+  speedAssessment,
+  enduranceAssessment,
+  positionBenchmark,
+  type FitnessProfile,
+} from "@/lib/fitness-store";
 import { ArrowLeft, Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
@@ -20,35 +30,7 @@ const POSITION_OPTIONS = [
   "左边翼卫", "右边翼卫", "中锋", "影锋", "边锋",
 ];
 
-/* ---- Fitness baselines (per-player, localStorage) ---- */
-interface FitnessBaseline {
-  sprint30m?: number;
-  squat1RM?: number;
-  verticalJump?: number;
-  date?: string;
-}
-
-const FITNESS_KEY = "roster_fitness_baselines";
-
-function getFitnessBaselines(): Record<string, FitnessBaseline> {
-  try {
-    return JSON.parse(localStorage.getItem(FITNESS_KEY) || "{}");
-  } catch { return {}; }
-}
-
-function saveFitnessBaselines(data: Record<string, FitnessBaseline>) {
-  localStorage.setItem(FITNESS_KEY, JSON.stringify(data));
-}
-
-function getFitnessForPlayer(playerId: string): FitnessBaseline {
-  return getFitnessBaselines()[playerId] || {};
-}
-
-function updateFitnessForPlayer(playerId: string, update: Partial<FitnessBaseline>) {
-  const all = getFitnessBaselines();
-  all[playerId] = { ...(all[playerId] || {}), ...update, date: new Date().toISOString().slice(0, 10) };
-  saveFitnessBaselines(all);
-}
+/* ---- Fitness baselines — now using centralized lib/fitness-store.ts ---- */
 
 /* ---- Supplement load: per-player match minutes stored locally ---- */
 interface PlayerMatchEntry {
@@ -104,7 +86,7 @@ export default function RosterPage() {
 
   // Fitness panel state — which player's fitness panel is open
   const [fitnessPanelPlayerId, setFitnessPanelPlayerId] = useState<string | null>(null);
-  const [fitnessEdit, setFitnessEdit] = useState<FitnessBaseline>({});
+  const [fitnessEdit, setFitnessEdit] = useState<FitnessProfile>({});
 
   // Supp load dialog
   const [suppDialogPlayer, setSuppDialogPlayer] = useState<PlayerRecord | null>(null);
@@ -165,14 +147,14 @@ export default function RosterPage() {
 
   // Open fitness panel for a player
   const openFitnessPanel = (playerId: string) => {
-    const current = getFitnessForPlayer(playerId);
+    const current = getFitnessProfile(playerId);
     setFitnessEdit(current);
     setFitnessPanelPlayerId(playerId);
   };
 
   const saveFitness = () => {
     if (!fitnessPanelPlayerId) return;
-    updateFitnessForPlayer(fitnessPanelPlayerId, fitnessEdit);
+    updateFitnessProfile(fitnessPanelPlayerId, fitnessEdit);
     setFitnessPanelPlayerId(null);
   };
 
@@ -259,8 +241,8 @@ export default function RosterPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {filtered.map((p) => {
           const supp = getSuppIndicator(p);
-          const fit = getFitnessForPlayer(p.id);
-          const hasFitData = fit.sprint30m != null || fit.squat1RM != null || fit.verticalJump != null;
+          const fit = getFitnessProfile(p.id);
+          const hasFitData = fit.sprint30m != null || fit.squat1RM != null || fit.verticalJump != null || fit.yoYoIR1 != null;
           return (
             <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#d92525] transition group">
               {/* Top section: name + position + number */}
@@ -322,31 +304,88 @@ export default function RosterPage() {
               {/* Fitness panel (inline expand) */}
               {fitnessPanelPlayerId === p.id && (
                 <div className="border-t border-[#222]/50 px-3 py-3 bg-[#121212]/50 rounded-b-xl">
-                  <p className="text-xs text-white font-medium mb-2">体能档案</p>
-                  <div className="space-y-1.5">
+                  <p className="text-xs text-white font-medium mb-2">体能档案 {fitnessEdit.date && <span className="text-gray-500 font-normal">· {fitnessEdit.date}</span>}</p>
+
+                  {/* Strength */}
+                  <p className="text-[9px] text-gray-600 mb-1.5 mt-2">💪 力量</p>
+                  <div className="grid grid-cols-2 gap-1.5">
                     {[
-                      { key: "sprint30m" as const, label: "30m冲刺", unit: "秒" },
                       { key: "squat1RM" as const, label: "深蹲1RM", unit: "kg" },
-                      { key: "verticalJump" as const, label: "垂直起跳", unit: "cm" },
-                    ].map((metric) => (
-                      <div key={metric.key} className="flex items-center gap-2">
-                        <span className="text-[10px] text-gray-500 w-14 shrink-0">{metric.label}</span>
-                        <input
-                          type="number"
-                          value={fitnessEdit[metric.key] ?? ""}
-                          onChange={(e) =>
-                            setFitnessEdit((prev) => ({
-                              ...prev,
-                              [metric.key]: e.target.value ? Number(e.target.value) : undefined,
-                            }))
-                          }
-                          placeholder="—"
-                          className="bg-[#1e1e1e] border border-[#222] rounded px-2 py-1 text-xs text-gray-300 w-16 text-center"
-                        />
-                        <span className="text-[10px] text-gray-500">{metric.unit}</span>
+                      { key: "bench1RM" as const, label: "卧推1RM", unit: "kg" },
+                      { key: "deadlift1RM" as const, label: "硬拉1RM", unit: "kg" },
+                      { key: "powerClean1RM" as const, label: "高翻1RM", unit: "kg" },
+                    ].map((m) => (
+                      <div key={m.key} className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-500 w-14">{m.label}</span>
+                        <input type="number" value={fitnessEdit[m.key] ?? ""}
+                          onChange={(e) => setFitnessEdit(p => ({...p, [m.key]: e.target.value ? Number(e.target.value) : undefined}))}
+                          placeholder="—" className="bg-[#1e1e1e] border border-[#222] rounded px-1.5 py-1 text-[10px] text-gray-300 w-14 text-center" />
+                        <span className="text-[8px] text-gray-600">{m.unit}</span>
                       </div>
                     ))}
                   </div>
+                  {p.weight && fitnessEdit.squat1RM && (
+                    <p className="text-[9px] text-gray-500 mt-1">{strengthAssessment(fitnessEdit, p.weight)}</p>
+                  )}
+
+                  {/* Speed */}
+                  <p className="text-[9px] text-gray-600 mb-1.5 mt-2">⚡ 速度</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: "sprint10m" as const, label: "10m冲刺", unit: "s" },
+                      { key: "sprint30m" as const, label: "30m冲刺", unit: "s" },
+                    ].map((m) => (
+                      <div key={m.key} className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-500 w-14">{m.label}</span>
+                        <input type="number" step="0.01" value={fitnessEdit[m.key] ?? ""}
+                          onChange={(e) => setFitnessEdit(p => ({...p, [m.key]: e.target.value ? Number(e.target.value) : undefined}))}
+                          placeholder="—" className="bg-[#1e1e1e] border border-[#222] rounded px-1.5 py-1 text-[10px] text-gray-300 w-14 text-center" />
+                        <span className="text-[8px] text-gray-600">{m.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {fitnessEdit.sprint30m && <p className="text-[9px] text-gray-500 mt-1">{speedAssessment(fitnessEdit)}</p>}
+
+                  {/* Power + Agility */}
+                  <p className="text-[9px] text-gray-600 mb-1.5 mt-2">🦘 爆发/敏捷</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: "verticalJump" as const, label: "CMJ", unit: "cm" },
+                      { key: "broadJump" as const, label: "立定跳远", unit: "cm" },
+                      { key: "proAgility" as const, label: "5-10-5", unit: "s" },
+                      { key: "nordicCurlReps" as const, label: "北欧弯举", unit: "次" },
+                    ].map((m) => (
+                      <div key={m.key} className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-500 w-14">{m.label}</span>
+                        <input type="number" step="0.01" value={fitnessEdit[m.key] ?? ""}
+                          onChange={(e) => setFitnessEdit(p => ({...p, [m.key]: e.target.value ? Number(e.target.value) : undefined}))}
+                          placeholder="—" className="bg-[#1e1e1e] border border-[#222] rounded px-1.5 py-1 text-[10px] text-gray-300 w-14 text-center" />
+                        <span className="text-[8px] text-gray-600">{m.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Endurance */}
+                  <p className="text-[9px] text-gray-600 mb-1.5 mt-2">🫁 耐力</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      { key: "yoYoIR1" as const, label: "Yo-Yo IR1", unit: "m" },
+                      { key: "thirtyFifteenIFT" as const, label: "30-15IFT", unit: "km/h" },
+                      { key: "bodyFat" as const, label: "体脂率", unit: "%" },
+                    ].map((m) => (
+                      <div key={m.key} className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-500 w-14">{m.label}</span>
+                        <input type="number" step={m.key === 'bodyFat' ? 0.1 : 1} value={fitnessEdit[m.key] ?? ""}
+                          onChange={(e) => setFitnessEdit(p => ({...p, [m.key]: e.target.value ? Number(e.target.value) : undefined}))}
+                          placeholder="—" className="bg-[#1e1e1e] border border-[#222] rounded px-1.5 py-1 text-[10px] text-gray-300 w-14 text-center" />
+                        <span className="text-[8px] text-gray-600">{m.unit}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {fitnessEdit.yoYoIR1 && <p className="text-[9px] text-gray-500 mt-1">{enduranceAssessment(fitnessEdit)}</p>}
+
+                  {/* Position benchmark */}
+                  <p className="text-[8px] text-gray-600 mt-2">{positionBenchmark(p.position)}</p>
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={saveFitness}
