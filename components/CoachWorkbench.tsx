@@ -1272,6 +1272,34 @@ export default function CoachWorkbench() {
         </a>
       </div>
 
+      {/* ── 热身方案库 ── */}
+      {(() => {
+        const lib = (() => { try { return JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]'); } catch { return []; } })();
+        if (lib.length === 0) return null;
+        return (
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
+            <h3 className="text-xs font-semibold text-gray-400 mb-2">📦 热身方案库</h3>
+            <div className="flex flex-wrap gap-2">
+              {lib.slice(0, 8).map((w: any) => (
+                <button key={w.id} onClick={() => {
+                  const todayStr = new Date().toISOString().slice(0, 10);
+                  try {
+                    const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
+                    cal[todayStr] = { warmupId: w.id, warmupDuration: 15, ballOption: 'no-ball', notes: w.name };
+                    localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
+                    alert('已选用：' + w.name);
+                  } catch {}
+                }}
+                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50 transition text-left">
+                  🏃 {w.name}
+                  <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ═══════════════════════════════════════════════
           PLAN OUTPUT AREA
           ═══════════════════════════════════════════════ */}
