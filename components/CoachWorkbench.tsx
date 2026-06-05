@@ -131,13 +131,21 @@ interface EditState {
   exercise: any;
 }
 
-function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
+function DailyTrainingNotes({ matchDate, modules, setTrainingActive, trainingStartRef }: {
+    matchDate: string;
+    modules: TrainingModule[];
+    setTrainingActive: (v: boolean) => void;
+    trainingStartRef: React.MutableRefObject<number>;
+  }) {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   // ── manual input state ──
   const [tactical, setTactical] = useState('');
   const [coachNotes, setCoachNotes] = useState('');
   const [saved, setSaved] = useState(false);
+
+  // ── warmup confirmation state ──
+  const [warmupConfirmed, setWarmupConfirmed] = useState<{ confirmedAt: string; diagramExportReady: boolean } | null>(null);
 
   // ── load existing notes on mount ──
   useEffect(() => {
@@ -147,6 +155,13 @@ function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
       if (today) {
         setTactical(today.tactical || '');
         setCoachNotes(today.notes || '');
+      }
+    } catch {}
+    // ── check warmup confirmation ──
+    try {
+      const confirmed = JSON.parse(localStorage.getItem('kenshin_warmup_confirmed') || 'null');
+      if (confirmed?.confirmedAt) {
+        setWarmupConfirmed(confirmed);
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -219,6 +234,31 @@ function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
           <span className="text-gray-500 shrink-0 w-[72px]">热身内容:</span>
           <span className={warmupName ? 'text-white' : 'text-gray-600'}>{warmupName || '（未绑定热身方案）'}</span>
         </div>
+
+        {/* ── warmup confirmation status ── */}
+        {warmupConfirmed && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🏃</span>
+              <span className="text-green-400 text-xs font-medium">热身已确认 · 点击开始场地训练</span>
+              <span className="text-[10px] text-gray-500 ml-auto">
+                {new Date(warmupConfirmed.confirmedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (modules.length > 0) {
+                  trainingStartRef.current = Date.now();
+                  setTrainingActive(true);
+                }
+              }}
+              className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition active:scale-[0.98] flex items-center justify-center gap-1.5"
+            >
+              ▶ 进入场地训练
+            </button>
+          </div>
+        )}
 
         {/* ── tactical: manual input ── */}
         <div className="flex gap-2 items-start">
@@ -1450,7 +1490,7 @@ export default function CoachWorkbench() {
       {/* ═══════════════════════════════════════════════
           今日训练笔记 — auto-generated from saved data
           ═══════════════════════════════════════════════ */}
-      <DailyTrainingNotes matchDate={matchDate} />
+      <DailyTrainingNotes matchDate={matchDate} modules={modules} setTrainingActive={setTrainingActive} trainingStartRef={trainingStartRef} />
 
       {editState && (
         <ExerciseEditor

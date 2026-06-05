@@ -111,6 +111,17 @@ export default function WarmupDesignPage() {
     autoSave();
   };
 
+  // ─── Confirm warmup design ──────────────────────────────
+  const hConfirmWarmup = () => {
+    try {
+      localStorage.setItem('kenshin_warmup_confirmed', JSON.stringify({
+        confirmedAt: new Date().toISOString(),
+        diagramExportReady: true,
+      }));
+    } catch {}
+    router.push('/');
+  };
+
   const hZoomIn = () => {
     const c = boardRef.current; if (!c) return;
     let z = c.getZoom() * 1.15; z = Math.min(z, 5);
@@ -309,6 +320,16 @@ export default function WarmupDesignPage() {
           onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
           title="快速热身模板">
           ⚡ <span className="hidden sm:inline">快速模板</span>
+        </button>
+
+        {/* 确认热身方案 */}
+        <button onClick={hConfirmWarmup}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: '#fff', backgroundColor: '#22c55e' }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="确认热身方案">
+          ✅ <span className="hidden sm:inline">确认热身方案</span>
         </button>
 
         {/* 导出 PNG */}
