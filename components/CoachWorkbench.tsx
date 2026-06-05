@@ -9,7 +9,7 @@ import AIAssistant from './AIAssistant';
 import { ExerciseEditor } from './ExerciseEditor';
 import { TrainingLogPanel } from './TrainingLogPanel';
 import TrainingTimer from './TrainingTimer';
-import VoiceNotes from './VoiceNotes';
+
 import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
@@ -1760,13 +1760,6 @@ export default function CoachWorkbench() {
           {shareToast}
         </div>
       )}
-
-      {/* ══ VOICE NOTES FLOATING BUTTON ══ */}
-      <VoiceNotes
-        players={players.map(p => ({ name: p.name }))}
-        activeModules={showPlan ? modules : undefined}
-        planId={planId}
-      />
 
       {/* ═══════════════════════════════════════════════
           NOTES DRAWER — floating button + slide-out panel
