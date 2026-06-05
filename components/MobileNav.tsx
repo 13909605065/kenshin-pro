@@ -13,6 +13,7 @@ export function MobileNav() {
 
   const TABS = [
     { id: "home", label: t("nav.home"), icon: Home, path: "/" },
+    { id: "gym", label: "力量房", icon: Dumbbell, path: "/gym" },
     { id: "exercises", label: "动作库", icon: Dumbbell, path: "/exercises" },
     { id: "planning", label: "周期方案", icon: Dumbbell, path: "/planning" },
   ];
