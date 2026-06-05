@@ -13,6 +13,7 @@ import VoiceNotes from './VoiceNotes';
 import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
+import WeeklyLoadBar from './WeeklyLoadBar';
 import TrainingCalendar, { type DayNotes } from './TrainingCalendar';
 import SeasonCalendar from './SeasonCalendar';
 import { PHASE_LABELS } from '@/lib/constants';
@@ -671,6 +672,11 @@ export default function CoachWorkbench() {
           </div>
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════
+          WEEKLY LOAD BAR — automatic load tracking
+          ═══════════════════════════════════════════════ */}
+      <WeeklyLoadBar matchDate={matchDate} mdDay={mdDay} />
 
       {/* ═══════════════════════════════════════════════
           DASHBOARD HEADER — overview at a glance

@@ -24,8 +24,9 @@ interface WarmupDesign {
   id: string;
   name: string;
   duration: number;
-  ballOption: "ball" | "no-ball";
-  hasEquipmentFreeVariant: boolean;
+  /** Warmup description — free text, coach types whatever */
+  description: string;
+  hasEquipmentFreeVariant?: boolean;
   segments: Segment[];
   canvasJSON: object;
   notes: string;
@@ -519,14 +520,14 @@ function Toolbar({
 function ConfigPanel({
   name, setName,
   duration, setDuration,
-  ballOption, setBallOption,
+  description, setDescription,
   notes, setNotes,
   injuryEnabled, setInjuryEnabled,
   injuryNotesText, setInjuryNotesText,
 }: {
   name: string; setName: (v: string) => void;
   duration: number; setDuration: (v: number) => void;
-  ballOption: "ball" | "no-ball"; setBallOption: (v: "ball" | "no-ball") => void;
+  description: string; setDescription: (v: string) => void;
   notes: string; setNotes: (v: string) => void;
   injuryEnabled: boolean; setInjuryEnabled: (v: boolean) => void;
   injuryNotesText: string; setInjuryNotesText: (v: string) => void;
@@ -567,31 +568,16 @@ function ConfigPanel({
         </div>
       </div>
 
-      {/* Ball toggle */}
+      {/* Warmup description — free text */}
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] text-gray-500 font-medium">用球</label>
-        <div className="flex bg-[#121212] rounded-lg p-0.5">
-          <button
-            onClick={() => setBallOption("ball")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${
-              ballOption === "ball"
-                ? "bg-[#d92525] text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            有球
-          </button>
-          <button
-            onClick={() => setBallOption("no-ball")}
-            className={`flex-1 py-1.5 rounded-md text-xs font-medium transition ${
-              ballOption === "no-ball"
-                ? "bg-[#d92525] text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            无球
-          </button>
-        </div>
+        <label className="text-[10px] text-gray-500 font-medium">热身描述</label>
+        <input
+          type="text"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="如: 2min弹力带 5min动态拉伸 8min有球敏捷 3min北欧弯举"
+          className="w-full bg-[#121212] border border-[#333] rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-[#d92525]"
+        />
       </div>
 
       {/* Injury player notes */}
@@ -816,7 +802,7 @@ function WarmupLibrary({
                       )}
                     </div>
                     <span className="text-[10px] text-gray-500">
-                      {design.duration}min · {design.ballOption === "ball" ? "有球" : "无球"}
+                      {design.duration}min · {design.description.includes('') ? "" : ""}
                       {" · "}{design.segments.length}环节
                     </span>
                     {design.equipmentCount && Object.values(design.equipmentCount).some((c) => c > 0) && (
@@ -873,7 +859,7 @@ export default function WarmupPage() {
   // Warmup config state
   const [name, setName] = useState("");
   const [duration, setDuration] = useState(12);
-  const [ballOption, setBallOption] = useState<"ball" | "no-ball">("ball");
+  const [description, setDescription] = useState("");
   const [hasEquipmentFreeVariant, setHasEquipmentFreeVariant] = useState(false);
   const [notes, setNotes] = useState("");
   const [segments, setSegments] = useState<Segment[]>([]);
@@ -1047,7 +1033,7 @@ export default function WarmupPage() {
         id: currentLoadedId || generateId(),
         name,
         duration,
-        ballOption,
+        description,
         hasEquipmentFreeVariant,
         segments,
         canvasJSON: canvasJSON as object,
@@ -1079,7 +1065,7 @@ export default function WarmupPage() {
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
     }
-  }, [name, duration, ballOption, hasEquipmentFreeVariant, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
+  }, [name, duration, description, hasEquipmentFreeVariant, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
 
   // Export PNG
   const handleExport = useCallback(() => {
@@ -1113,7 +1099,7 @@ export default function WarmupPage() {
         id: generateId(),
         name: variantName,
         duration,
-        ballOption,
+        description,
         hasEquipmentFreeVariant: true,
         segments,
         canvasJSON: variantJSON as object,
@@ -1146,7 +1132,7 @@ export default function WarmupPage() {
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
     }
-  }, [name, duration, ballOption, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
+  }, [name, duration, description, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
 
   // Load from library
   const handleLoad = useCallback((design: WarmupDesign) => {
@@ -1154,8 +1140,8 @@ export default function WarmupPage() {
 
     setName(design.name);
     setDuration(design.duration);
-    setBallOption(design.ballOption);
-    setHasEquipmentFreeVariant(design.hasEquipmentFreeVariant);
+    setDescription(design.description);
+    setHasEquipmentFreeVariant(design.hasEquipmentFreeVariant || false);
     setSegments(design.segments);
     setNotes(design.notes);
     setInjuryNotesText(design.injuryNotes || "");
@@ -1185,7 +1171,7 @@ export default function WarmupPage() {
     if (!fabricRef.current) return;
     setName("");
     setDuration(12);
-    setBallOption("ball");
+    setDescription("ball");
     setHasEquipmentFreeVariant(false);
     setSegments([]);
     setNotes("");
@@ -1355,8 +1341,8 @@ export default function WarmupPage() {
               setName={setName}
               duration={duration}
               setDuration={setDuration}
-              ballOption={ballOption}
-              setBallOption={setBallOption}
+              description={description}
+              setDescription={setDescription}
               notes={notes}
               setNotes={setNotes}
               injuryEnabled={injuryEnabled}
@@ -1374,8 +1360,8 @@ export default function WarmupPage() {
             setName={setName}
             duration={duration}
             setDuration={setDuration}
-            ballOption={ballOption}
-            setBallOption={setBallOption}
+            description={description}
+            setDescription={setDescription}
             notes={notes}
             setNotes={setNotes}
             injuryEnabled={injuryEnabled}

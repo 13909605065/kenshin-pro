@@ -670,7 +670,7 @@ export default function FieldPage() {
       const others = sessions.filter(s => s.id !== prev.id);
       saveSessions([archived, ...others]);
 
-      // Also save to training log
+      // Save to training log
       saveSessionLog({
         id: archived.id,
         date: archived.date,
@@ -690,6 +690,19 @@ export default function FieldPage() {
         },
         createdAt: new Date().toISOString(),
       });
+
+      // Sync load to training calendar
+      try {
+        const calRaw = localStorage.getItem('kenshin_warmup_calendar');
+        if (calRaw) {
+          const cal = JSON.parse(calRaw);
+          if (!cal[archived.date]) cal[archived.date] = {};
+          cal[archived.date].fieldLoad = archived.totalTRIMP;
+          cal[archived.date].fieldTime = archived.totalFieldTimeMin;
+          cal[archived.date].fieldPhases = archived.phases.length;
+          localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
+        }
+      } catch {}
 
       return archived;
     });
@@ -1196,6 +1209,18 @@ export default function FieldPage() {
                     {/* TRIMP */}
                     <span className="text-[#d92525] font-bold">
                       TRIMP {phase.phaseTRIMP}
+                    </span>
+                  </div>
+
+                  {/* AI advisory line */}
+                  <div className="mt-1.5 pt-1.5 border-t border-[#1a1a1a]">
+                    <span className="text-[9px] text-gray-500">AI评估强度：</span>
+                    <span className={`text-[9px] font-medium ${phase.trimpCoefficient > 1.1 ? 'text-red-400' : phase.trimpCoefficient > 0.9 ? 'text-yellow-400' : 'text-green-400'}`}>
+                      {phase.intensityLabel}
+                    </span>
+                    <span className="text-[9px] text-gray-600 ml-1">｜系数{phase.trimpCoefficient}</span>
+                    <span className="text-[9px] text-gray-500 ml-2">
+                      {phase.trimpCoefficient > 1.1 ? '⚠ 强度偏高，建议增加休息' : phase.trimpCoefficient > 0.9 ? '强度合理' : '💡 可适当增加单组时间'}
                     </span>
                   </div>
                 </div>
