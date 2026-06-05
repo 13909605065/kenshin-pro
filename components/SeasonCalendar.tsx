@@ -67,10 +67,10 @@ const EVENT_CONFIG: Record<EventType, { label: string; emoji: string; color: str
 };
 
 const PHASE_CONFIG: Record<PhaseType, { label: string; icon: string; desc: string; defaultEvent: EventType }> = {
-  offseason: { label: '休赛期', icon: '🧊', desc: '主力轮休 · 伤病康复 · 身体重塑 · 短板补强', defaultEvent: 'recovery_week' },
-  preseason_build: { label: '季前备战期', icon: '🏋️', desc: '体能储备 · 战术磨合 · 热身赛检验 · 阵容确定', defaultEvent: 'preseason_friendly' },
-  regular_season: { label: '常规赛季', icon: '⚽', desc: '联赛日+杯赛日 · 一周双赛节奏 · 状态维持', defaultEvent: 'league_match' },
-  playoffs: { label: '附加赛', icon: '🏆', desc: '保级生死战 或 冲甲关键战 · 最高强度 · 心理准备', defaultEvent: 'playoff_match' },
+  offseason: { label: '休赛期', icon: '🧊', desc: '灰色恢复周 · 禁用全队MD · 仅加练小组 · 短板补强+身体重塑', defaultEvent: 'recovery_week' },
+  preseason_build: { label: '季前备战期', icon: '🏋️', desc: '绿色季前 · 体能储备+战术磨合 · 末尾1周自动黄色减量', defaultEvent: 'preseason_friendly' },
+  regular_season: { label: '常规赛季', icon: '⚽', desc: '红色联赛+橙色杯赛 · 以赛代练维持状态 · 关键战前可手动标记黄色减量周', defaultEvent: 'league_match' },
+  playoffs: { label: '附加赛', icon: '🏆', desc: '收官冲刺段 · 巅峰激活+生死备战 · 大量减量管控 · 黄色减量高频启用', defaultEvent: 'playoff_match' },
 };
 
 const STORAGE_KEY = 'kenshin_season_calendar';
@@ -561,10 +561,10 @@ export default function SeasonCalendar() {
   }, [data.phaseRanges]);
 
   const PHASE_COLORS: Record<PhaseType, string> = {
-    offseason: '#374151',
-    preseason_build: '#166534',
-    regular_season: '#450a0a',
-    playoffs: '#7f1d1d',
+    offseason: '#374151',       // 灰色 — 恢复周
+    preseason_build: '#166534',  // 绿色 — 季前
+    regular_season: '#991b1b',   // 红色 — 联赛 + 杯赛橙
+    playoffs: '#7f1d1d',         // 深红 — 冲刺段
   };
 
   // ── Determine if a date is a match day ──
