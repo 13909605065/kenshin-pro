@@ -943,8 +943,11 @@ export default function CoachWorkbench() {
 
       {/* ── 训练日期 + 类型 + 时段 ── */}
       <div className="flex items-center gap-2 bg-[#0d0d0d] border border-[#222] rounded-xl p-2.5 flex-wrap">
+        <input type="date" value={trainDate} onChange={e => setTrainDate(e.target.value)}
+          className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:border-[#d92525] outline-none" />
         <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '⚽ 外场' : '🏋️ 力量房'}</span>
         <span className="text-gray-700">|</span>
+        <a href="/planning" className="text-[10px] px-2 py-1 rounded bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white no-underline">提前排课</a>
         <button onClick={() => setTimeSlot('morning')}
           className={`px-2 py-1 rounded text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>上午</button>
         <button onClick={() => setTimeSlot('afternoon')}
