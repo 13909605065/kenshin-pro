@@ -362,6 +362,7 @@ export default function CoachWorkbench() {
   // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [showNotesDrawer, setShowNotesDrawer] = useState(false);
 
   // ── share toast ──
   const [shareToast, setShareToast] = useState<string | null>(null);
@@ -792,27 +793,28 @@ export default function CoachWorkbench() {
         const data = raw ? JSON.parse(raw) : null;
         const ranges = data?.phaseRanges || [];
         const phase = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
-        if (!phase) return null;
         const phaseMap: Record<string, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
           offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
           preseason_build: { label: '季前备战期', icon: '🏋️', color: '#166534', defaultMode: 'football' },
           regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b', defaultMode: 'football' },
           playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d', defaultMode: 'football' },
         };
-        const info = phaseMap[phase.phase];
-        if (!info) return null;
-        // Auto-switch workbench mode to match phase
-        if (workbenchMode !== info.defaultMode && typeof window !== 'undefined') {
+        const info = phase ? phaseMap[phase.phase] : null;
+        if (info && workbenchMode !== info.defaultMode) {
           setTimeout(() => setWorkbenchMode(info.defaultMode), 0);
         }
         const mdLabel = mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`;
         return (
-          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${info.color}` }}>
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${info?.color || '#444'}` }}>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">{info.icon}</span>
+              <span className="text-2xl">{info?.icon || '📅'}</span>
               <div className="flex-1">
-                <span className="text-sm font-bold text-white">{info.label}</span>
-                <span className="text-[10px] text-gray-500 ml-2">{phase.startDate} → {phase.endDate}</span>
+                <span className="text-sm font-bold text-white">{info?.label || '赛季阶段未设置'}</span>
+                {phase ? (
+                  <span className="text-[10px] text-gray-500 ml-2">{phase.startDate} → {phase.endDate}</span>
+                ) : (
+                  <a href="/planning" className="text-[10px] text-[#d92525] ml-2 underline">去周期方案设置赛季全景</a>
+                )}
               </div>
               <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
                 mdDay === 0 ? 'bg-[#d92525] text-white' :
@@ -1524,6 +1526,54 @@ export default function CoachWorkbench() {
         activeModules={showPlan ? modules : undefined}
         planId={planId}
       />
+
+      {/* ═══════════════════════════════════════════════
+          NOTES DRAWER — floating button + slide-out panel
+          ═══════════════════════════════════════════════ */}
+      {/* Floating trigger button */}
+      <button
+        onClick={() => setShowNotesDrawer(true)}
+        className="fixed right-0 top-1/3 w-12 h-12 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-l-full flex items-center justify-center shadow-lg z-40 transition active:scale-95"
+        title="训练笔记"
+      >
+        <span className="text-xl">📝</span>
+      </button>
+
+      {/* Slide-out drawer + overlay */}
+      {showNotesDrawer && (
+        <>
+          {/* Semi-transparent backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowNotesDrawer(false)}
+          />
+
+          {/* Drawer panel */}
+          <div className="fixed right-0 top-0 h-full w-[380px] max-w-[100vw] z-50 bg-[#0d0d0d] border-l border-[#222] shadow-2xl overflow-y-auto">
+            {/* Drawer header */}
+            <div className="sticky top-0 bg-[#0d0d0d] border-b border-[#222] p-4 flex items-center justify-between z-10">
+              <h3 className="text-sm font-bold text-white">📝 训练笔记</h3>
+              <button
+                onClick={() => setShowNotesDrawer(false)}
+                className="w-8 h-8 rounded-full bg-[#1a1a1a] hover:bg-[#333] text-gray-400 hover:text-white flex items-center justify-center transition text-sm"
+                aria-label="关闭"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Drawer body — DailyTrainingNotes inline */}
+            <div className="p-4">
+              <DailyTrainingNotes
+                matchDate={matchDate}
+                modules={modules}
+                setTrainingActive={setTrainingActive}
+                trainingStartRef={trainingStartRef}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
