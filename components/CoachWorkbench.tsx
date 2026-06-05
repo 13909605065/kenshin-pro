@@ -583,30 +583,6 @@ export default function CoachWorkbench() {
       {workbenchMode === 'football' && (
       <>
 
-      {/* ── ① 热身设计 ── */}
-      <a href="/warmup" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl">🏃</div>
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">热身设计</h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">RAMP系统 · FIFA 11+ · 有球/无球</p>
-          </div>
-          <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
-        </div>
-      </a>
-
-      {/* ── ② 场地训练监控 ── */}
-      <a href="/field" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl">📊</div>
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">场地训练监控</h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
-          </div>
-          <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
-        </div>
-      </a>
-
       {/* ═══════════════════════════════════════════════
           WEEKLY LOAD BAR — automatic load tracking
           ═══════════════════════════════════════════════ */}
@@ -994,6 +970,30 @@ export default function CoachWorkbench() {
 
         </div>
       </details>
+
+      {/* ── 训练流程：① 热身 → ② 场地监控 ── */}
+      <div className="space-y-3">
+        <a href="/warmup" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">🏃</div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">① 热身设计</h3>
+              <p className="text-[10px] text-gray-500 mt-0.5">RAMP系统 · FIFA 11+ · 有球/无球</p>
+            </div>
+            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+          </div>
+        </a>
+        <a href="/field" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">📊</div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">② 场地训练监控</h3>
+              <p className="text-[10px] text-gray-500 mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
+            </div>
+            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+          </div>
+        </a>
+      </div>
 
       {/* ═══════════════════════════════════════════════
           PLAN OUTPUT AREA
