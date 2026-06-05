@@ -1,15 +1,18 @@
 import { NextRequest } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/supabase-server";
 import { buildSystemPrompt, buildUserPrompt } from "@/lib/ai";
-import { PlayerFormData } from "@/lib/types";
-import { resolveModule, resolveCoachModule, resolveCombo, type CompactModule, type CoachCompactModule } from "@/lib/training-library";
+import { PlayerFormData, SeasonPhase, Position } from "@/lib/types";
+import { assemblePlan, shouldUseAssembler } from "@/lib/plan-assembler";
+import { validatePlan, type ValidationInput } from "@/lib/plan-validator";
+import type { FitnessProfile } from "@/lib/fitness-store";
+import { generateOfflinePlan, type OfflinePlanInput } from "@/lib/offline-plan";
 import { getWeather, weatherHint } from "@/lib/weather";
 
 // Rate limiting: simple in-memory map (resets on cold start)
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 60_000; // 1 minute per user
 const MAX_TOKENS = 8000;
-const API_TIMEOUT_MS = 90_000; // 90s
+const API_TIMEOUT_MS = 90_000;
 
 // Provider configs — auto-detect from env vars
 const PROVIDERS = {
@@ -31,20 +34,78 @@ function getPrimaryProvider() {
   return null;
 }
 function getFallbackProvider() {
-  // Return the OTHER provider if both are available
   if (PROVIDERS.deepseek.key && PROVIDERS.doubao.key && PROVIDERS.doubao.model) return PROVIDERS.doubao;
   return null;
 }
 
+// ── SSE encoding helpers ──
+const encoder = new TextEncoder();
+function sseEvent(event: string, data: string): Uint8Array {
+  return encoder.encode(`event: ${event}\ndata: ${data}\n\n`);
+}
+
+// ═══════════════════════════════════════════
+// AI RAW OUTPUT PARSER
+// ═══════════════════════════════════════════
+
+interface ParsedAIEvent {
+  event: string;
+  data: any;
+  raw: string;
+}
+
+/**
+ * Parse the buffered AI text output into structured SSE events.
+ * AI outputs lines like:
+ *   event: module_1
+ *   data: {"module":"position_training",...}
+ *   event: module_2
+ *   data: {...}
+ *   event: done
+ *   data: {"totalModules":...}
+ */
+function parseAIBuffer(buffer: string): ParsedAIEvent[] {
+  const events: ParsedAIEvent[] = [];
+  const lines = buffer.split("\n");
+  let currentEvent = "";
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.startsWith("event: ")) {
+      currentEvent = trimmed.slice(7).trim();
+    } else if (trimmed.startsWith("data: ") && currentEvent) {
+      const dataStr = trimmed.slice(6).trim();
+      try {
+        const data = JSON.parse(dataStr);
+        events.push({ event: currentEvent, data, raw: dataStr });
+      } catch {
+        events.push({ event: currentEvent, data: dataStr, raw: dataStr });
+      }
+      currentEvent = "";
+    }
+  }
+
+  return events;
+}
+
+// ═══════════════════════════════════════════
+// POST /api/generate
+// ═══════════════════════════════════════════
+
 export async function POST(request: NextRequest) {
-  // Auth check
+  // ── Auth check ──
   const supabase = createServerSupabase();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) {
     return Response.json({ code: "auth-required", message: "请先登录" }, { status: 401 });
   }
 
-  // API key check — primary + optional fallback
+  // ── API key check ──
   const primary = getPrimaryProvider();
   const fallback = getFallbackProvider();
   if (!primary) {
@@ -54,10 +115,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Rate limit check
-  // Primary: in-memory Map (fast, but resets on Vercel cold start)
-  // Fallback: if Map has no entry for this user (cold start), check Supabase
-  //   training_plans for recent activity as a proxy for the last request time.
+  // ── Rate limit check ──
   const lastRequest = rateLimitMap.get(user.id);
   const now = Date.now();
   if (lastRequest && now - lastRequest < RATE_LIMIT_MS) {
@@ -68,7 +126,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Cold-start fallback: in-memory Map is empty, check Supabase for recent activity
   if (!lastRequest) {
     const { data: recentPlan } = await supabase
       .from("training_plans")
@@ -92,7 +149,8 @@ export async function POST(request: NextRequest) {
 
   rateLimitMap.set(user.id, now);
 
-  // Parse and validate input
+  // ── Parse & validate input ──
+  // NOTE: tacticalThemes removed — S&C coach, not tactical coach.
   let formData: PlayerFormData;
   let lang = "zh";
   let scene: string | undefined;
@@ -105,7 +163,6 @@ export async function POST(request: NextRequest) {
     matchContext = body.matchContext;
     const isCoach = formData.role === "coach";
     if (isCoach) {
-      // S&C coach only needs cert + role + league. tacticalThemes removed (tactical era leftover).
       if (!formData.coachCert || !formData.coachRole || !formData.leagueTag) {
         return Response.json(
           { code: "invalid-form", message: "请填写教练必填项（证书、身份、联赛）" },
@@ -131,7 +188,7 @@ export async function POST(request: NextRequest) {
   const systemPrompt = buildSystemPrompt(formData, scene);
   const weather = await getWeather().catch(() => null);
 
-  // Scene hint: constrain AI output based on 四大板块场景
+  // ── Scene hint for AI ──
   let sceneHint = "";
   if (scene === "gym") {
     sceneHint = `## 场景限制：力量房训练
@@ -158,16 +215,29 @@ export async function POST(request: NextRequest) {
 🟢 训练目标自动改为：弱侧强化+替代训练+渐进恢复`;
   }
 
-  const userMessage = buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +
+  // Inject fitness data hint if available
+  const fitnessData = (formData as any).fitnessProfile || null;
+  let fitnessHint = "";
+  if (fitnessData) {
+    fitnessHint = `\n## 📊 球员体能档案（基于实测数据）
+${JSON.stringify(fitnessData, null, 1)}
+请基于以上实测数据设定具体的负重、配速和间歇时间。`;
+  }
+
+  const userMessage =
+    buildUserPrompt(formData, lang, weather ? weatherHint(weather) : undefined, sceneHint) +
+    (fitnessHint ? "\n" + fitnessHint : "") +
     (matchContext ? "\n\n" + matchContext : "");
 
-  const encoder = new TextEncoder();
-
+  // ═══════════════════════════════════════════
+  // MAIN STREAM
+  // ═══════════════════════════════════════════
   const stream = new ReadableStream({
     async start(controller) {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
       try {
-        // Try primary, fallback to secondary on failure
+        // ── Phase A: Call AI ──
         let response: Response | null = null;
         let lastError: Error | null = null;
 
@@ -176,29 +246,50 @@ export async function POST(request: NextRequest) {
           timeoutId = setTimeout(() => ac.abort(), 60000);
           const r = await fetch(prov.base, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${prov.key}` },
-            body: JSON.stringify({ model: prov.model, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userMessage }], max_tokens: MAX_TOKENS, stream: true, temperature: 0.7, thinking: { type: "disabled" } }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${prov.key}`,
+            },
+            body: JSON.stringify({
+              model: prov.model,
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userMessage },
+              ],
+              max_tokens: MAX_TOKENS,
+              stream: true,
+              temperature: 0.7,
+              thinking: { type: "disabled" },
+            }),
             signal: ac.signal,
           });
           clearTimeout(timeoutId);
           return r;
         };
 
-        try { response = await tryProvider(primary); } catch (e: any) { lastError = e; }
+        try {
+          response = await tryProvider(primary);
+        } catch (e: any) {
+          lastError = e;
+        }
         if (!response || !response.ok) {
           if (fallback) {
-            try { response = await tryProvider(fallback); } catch (e: any) { lastError = e; }
+            try {
+              response = await tryProvider(fallback);
+            } catch (e: any) {
+              lastError = e;
+            }
           }
         }
         if (!response || !response.ok) throw lastError || new Error("AI 接口不可用");
 
+        // ── Phase B: Read full AI stream into buffer ──
         const reader = response.body?.getReader();
         if (!reader) throw new Error("No response body");
 
         const decoder = new TextDecoder();
-        let buffer = "";
         let sseBuffer = "";
-        let currentEvent = "";
+        let rawBuffer = ""; // Accumulated AI text output (event: ... / data: ... lines)
 
         while (true) {
           const { done, value } = await reader.read();
@@ -219,102 +310,214 @@ export async function POST(request: NextRequest) {
               const content = delta?.content || delta?.reasoning_content || "";
               if (!content) continue;
 
-              buffer += content;
-
-              // Parse our custom SSE events from model's text output
-              const outLines = buffer.split("\n");
-              buffer = outLines.pop() || "";
-
-              for (const outLine of outLines) {
-                if (outLine.startsWith("event: ")) {
-                  currentEvent = outLine.slice(7).trim();
-                } else if (outLine.startsWith("data: ") && currentEvent) {
-                  const dataStr = outLine.slice(6).trim();
-
-                  if (currentEvent === "done") {
-                    controller.enqueue(
-                      encoder.encode(`event: done\ndata: ${dataStr}\n\n`)
-                    );
-                    currentEvent = "";
-                    continue;
-                  }
-
-                  // Resolve compact IDs → full data
-                  let resolvedData = dataStr;
-                  try {
-                    const compact = JSON.parse(dataStr);
-
-                    if (isCoach) {
-                      // Coach mode: use coach resolver
-                      const full = resolveCoachModule(compact as CoachCompactModule);
-                      if (full) resolvedData = JSON.stringify(full);
-                    } else {
-                      // Athlete mode: support combo_id shorthand
-                      if (compact.combo_id && compact.module === "position_training") {
-                        const combo = resolveCombo(compact.combo_id);
-                        if (combo) {
-                          // Expand combo into full compact module then resolve
-                          const expanded: CompactModule = {
-                            module: "position_training",
-                            title: compact.title || combo.label,
-                            analysis: compact.analysis,
-                            warmup_ids: combo.warmup_ids,
-                            upper_ids: compact.upper_ids || combo.upper_ids,
-                            lower_ids: compact.lower_ids || combo.lower_ids,
-                            core_ids: compact.core_ids || combo.core_ids,
-                            cooldown_ids: combo.cooldown_ids,
-                            nutrition_goal: compact.nutrition_goal || combo.nutrition_goal,
-                            ability_exercise_ids: compact.ability_exercise_ids,
-                            status: "complete",
-                          };
-                          const full = resolveModule(expanded, formData.position);
-                          if (full) resolvedData = JSON.stringify(full);
-                        } else {
-                          // Combo not found — fall back to standard resolution
-                          const full = resolveModule(compact as CompactModule, formData.position);
-                          if (full) resolvedData = JSON.stringify(full);
-                        }
-                      } else if (currentEvent.startsWith("module_")) {
-                        // Standard athlete module resolution
-                        const full = resolveModule(compact as CompactModule, formData.position);
-                        if (full) resolvedData = JSON.stringify(full);
-                      }
-                    }
-                  } catch {
-                    // If parsing/resolution fails, send raw data
-                  }
-
-                  controller.enqueue(
-                    encoder.encode(`event: ${currentEvent}\ndata: ${resolvedData}\n\n`)
-                  );
-                  currentEvent = "";
-                }
-              }
+              // Accumulate into our raw buffer
+              rawBuffer += content;
             } catch {
               // Skip malformed JSON chunks
             }
           }
         }
 
-        // Flush remaining
-        if (buffer.trim()) {
-          controller.enqueue(encoder.encode(`data: ${buffer.trim()}\n\n`));
+        // Flush remaining SSE
+        if (sseBuffer.trim()) {
+          try {
+            const line = sseBuffer.trim();
+            if (line.startsWith("data: ")) {
+              const jsonStr = line.slice(6).trim();
+              if (jsonStr !== "[DONE]") {
+                const parsed = JSON.parse(jsonStr);
+                const delta = parsed.choices?.[0]?.delta;
+                const content = delta?.content || delta?.reasoning_content || "";
+                if (content) rawBuffer += content;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        // ── Phase C: Parse AI output into structured events ──
+        const aiEvents = parseAIBuffer(rawBuffer);
+
+        if (aiEvents.length === 0) {
+          throw new Error("AI 返回空内容");
+        }
+
+        // Find module_1 (position_training) data
+        const module1Event = aiEvents.find(
+          (e) => e.event === "module_1" && typeof e.data === "object"
+        );
+
+        // Determine if we should use the B+C pipeline (validation + assembly)
+        const usePipeline = scene !== "rehab" && shouldUseAssembler(scene || "gym", formData.goal || "strength");
+
+        if (usePipeline && module1Event && typeof module1Event.data === "object") {
+          // ═══════════════════════════════════════
+          // B+C PIPELINE: Validate → Assemble → Stream
+          // ═══════════════════════════════════════
+
+          const mod1 = module1Event.data as Record<string, any>;
+          const aiComboId: string | null = mod1.combo_id || null;
+
+          // Extract AI exercise IDs from all categories
+          const aiUpperIds: string[] = Array.isArray(mod1.upper_ids) ? mod1.upper_ids : [];
+          const aiLowerIds: string[] = Array.isArray(mod1.lower_ids) ? mod1.lower_ids : [];
+          const aiCoreIds: string[] = Array.isArray(mod1.core_ids) ? mod1.core_ids : [];
+          const aiAbilityIds: string[] = Array.isArray(mod1.ability_exercise_ids)
+            ? mod1.ability_exercise_ids
+            : [];
+          const allAiExerciseIds = [...aiUpperIds, ...aiLowerIds, ...aiCoreIds, ...aiAbilityIds];
+
+          const phaseVal = (formData.phase || "competition") as SeasonPhase;
+          const goalVal = formData.goal || "strength";
+          const sceneVal = scene || "gym";
+
+          // ── B: Validate plan (combo + exercises + injury filtering) ──
+          const injurySites: string[] = Array.isArray(formData.injurySites)
+            ? formData.injurySites.filter((s: string) => s && s !== "none")
+            : [];
+
+          const validationInput: ValidationInput = {
+            aiComboId,
+            aiExerciseIds: allAiExerciseIds,
+            scene: sceneVal,
+            goal: goalVal,
+            phase: phaseVal,
+            position: formData.position,
+            injuries: injurySites,
+            disabledExercises: [],
+            playerCount: formData.playerCount || 1,
+          };
+
+          const planValidation = validatePlan(validationInput);
+
+          console.log(
+            `[B+C] Plan validated. Score: ${planValidation.score}/100. ` +
+            `Combo: ${planValidation.finalComboId}. ` +
+            `Exercises: ${planValidation.finalExerciseIds.length}. ` +
+            `Replacements: ${planValidation.replacements.length}. ` +
+            `Warnings: ${planValidation.warnings.length}.`
+          );
+          if (planValidation.warnings.length > 0) {
+            console.log(`[B+C] Warnings:`, planValidation.warnings);
+          }
+          if (planValidation.replacements.length > 0) {
+            console.log(`[B+C] Replacements:`, planValidation.replacements.map(r => `${r.original}→${r.replaced}`));
+          }
+
+          // ── C: Assemble the plan ──
+          const fitnessProfile: FitnessProfile = (fitnessData as FitnessProfile) || {};
+          const assembledModules = assemblePlan(
+            planValidation,
+            fitnessProfile,
+            phaseVal,
+            goalVal,
+            sceneVal,
+            formData.position
+          );
+
+          // ── Stream back assembled modules ──
+          let moduleCount = 0;
+          for (const mod of assembledModules) {
+            moduleCount++;
+            let eventName: string;
+            if (mod.module === "position_training") {
+              eventName = "module_1";
+            } else if (mod.module === "ability_training") {
+              eventName = "module_2";
+            } else if (mod.module === "phase_plan") {
+              eventName = "module_3";
+            } else {
+              eventName = `module_${moduleCount}`;
+            }
+
+            controller.enqueue(sseEvent(eventName, JSON.stringify(mod)));
+          }
+
+          // Pass through other AI modules (technique_running, injury_recovery, etc.)
+          // Skip modules we already emitted
+          let extraModuleCount = 0;
+          const emittedModules = new Set(assembledModules.map(m => m.module));
+          for (const ev of aiEvents) {
+            if (ev.event === "module_1" || ev.event === "done") continue;
+            if (typeof ev.data === "object" && ev.data.module && emittedModules.has(ev.data.module)) continue;
+            extraModuleCount++;
+            controller.enqueue(sseEvent(ev.event, typeof ev.data === "string" ? ev.data : JSON.stringify(ev.data)));
+          }
+
+          controller.enqueue(
+            sseEvent("done", JSON.stringify({ totalModules: moduleCount + extraModuleCount }))
+          );
+        } else {
+          // ═══════════════════════════════════════
+          // LEGACY PATH: Pass AI output through (rehab or no module_1 found)
+          // ═══════════════════════════════════════
+
+          // Still try to resolve IDs using the training-library if possible
+          // For this fallback path, just pass the raw AI output through
+          let moduleCount = 0;
+          for (const ev of aiEvents) {
+            if (ev.event === "done") {
+              controller.enqueue(
+                sseEvent("done", typeof ev.data === "object" ? JSON.stringify(ev.data) : ev.data)
+              );
+            } else {
+              moduleCount++;
+              controller.enqueue(
+                sseEvent(ev.event, typeof ev.data === "string" ? ev.data : JSON.stringify(ev.data))
+              );
+            }
+          }
+
+          if (!aiEvents.some((e) => e.event === "done")) {
+            controller.enqueue(sseEvent("done", JSON.stringify({ totalModules: moduleCount })));
+          }
         }
 
         controller.close();
       } catch (error: any) {
+        // ═══════════════════════════════════════
+        // AI FAILED → Use offline plan engine
+        // ═══════════════════════════════════════
         clearTimeout(timeoutId);
-        const isTimeout = error.name === "AbortError" || error.name === "TimeoutError";
-        controller.enqueue(
-          encoder.encode(
-            `event: error\ndata: ${JSON.stringify({
-              code: isTimeout ? "timeout" : "api-error",
-              message: isTimeout
-                ? "AI 服务响应超时，请稍后重试"
-                : error.message || "AI 服务调用失败",
-            })}\n\n`
-          )
-        );
+        console.error("[B+C] AI failed, falling back to offline plan:", error.message);
+
+        try {
+          const offlineInput: OfflinePlanInput = {
+            scene: scene || "gym",
+            goal: formData.goal || "strength",
+            phase: (formData.phase || "competition") as SeasonPhase,
+            duration: formData.trainingDuration || 60,
+            position: formData.position as Position | null,
+            playerName: formData.name || undefined,
+          };
+
+          const offlineModules = generateOfflinePlan(offlineInput);
+          let moduleCount = 0;
+          for (const mod of offlineModules) {
+            moduleCount++;
+            controller.enqueue(
+              sseEvent(`module_${moduleCount}`, JSON.stringify(mod))
+            );
+          }
+          controller.enqueue(
+            sseEvent(
+              "done",
+              JSON.stringify({ totalModules: moduleCount, offline: true })
+            )
+          );
+        } catch (offlineError: any) {
+          controller.enqueue(
+            sseEvent(
+              "error",
+              JSON.stringify({
+                code: "offline-error",
+                message: "离线引擎也失败了，请稍后重试",
+              })
+            )
+          );
+        }
+
         controller.close();
       }
     },

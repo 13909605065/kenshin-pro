@@ -3300,9 +3300,14 @@ export const SESSION_TEMPLATES: Record<string, SessionTemplateRef> = {
 // ═══════════════════════════════════════════════
 
 export interface CoachCompactModule {
-  module: string;
-  title: string;
-  // session_plan fields
+  module?: string;          // optional: "position_training" for B+C mode, "session_plan"/"tactical_focus"/"microcycle" for legacy
+  title?: string;            // optional in B+C mode
+  // B+C architecture fields (AI selects IDs only)
+  combo_id?: string | null;  // training combo ID, or null if no match
+  exercise_ids?: string[];   // individual exercise IDs (when combo_id is null)
+  tactical_scene?: string;   // selection analysis text (books, logic, history, gaps)
+  injury_exclude?: string;   // injury body parts to exclude
+  // session_plan fields (legacy)
   duration?: number;
   player_count?: number;
   equipment?: string[];
@@ -3310,7 +3315,7 @@ export interface CoachCompactModule {
   activity_ids?: string[];
   ssg_id?: string;
   cooldown_ids?: string[];
-  // tactical_focus fields
+  // tactical_focus fields (legacy)
   tactical_theme?: string;
   drill_ids?: string[];
   tactical_analysis?: string[];
@@ -3376,6 +3381,54 @@ function resolveMicrocycle(idOrMatchDay: string): MicrocycleRef | null {
  * Resolve coach compact AI output → full coach module
  */
 export function resolveCoachModule(c: CoachCompactModule): TrainingModule | null {
+  // B+C Architecture: position_training with combo_id (new primary path)
+  if (c.combo_id || c.module === "position_training") {
+    const combo = c.combo_id ? resolveCombo(c.combo_id) : null;
+    if (combo) {
+      // Expand combo into full position_training
+      return {
+        module: "position_training",
+        title: c.title || combo.label,
+        analysis: c.tactical_scene || "",
+        warmup: resolveCoachWarmup(combo.warmup_ids || []),
+        upper_limb: resolveExercises(combo.upper_ids || []),
+        lower_limb: resolveExercises(combo.lower_ids || []),
+        core: resolveExercises(combo.core_ids || []),
+        cooldown: combo.cooldown_ids?.length ? resolveCoachCooldown(combo.cooldown_ids) : resolveCoachCooldown(["cool-static-stretch", "cool-foam-roll"]),
+        nutrition: NUTRITION_TEMPLATES[combo.nutrition_goal || "default"],
+        status: "complete",
+      } as any;
+    }
+    // Combo not found but exercise_ids provided — build from individual IDs
+    if (c.exercise_ids && c.exercise_ids.length > 0) {
+      return {
+        module: "position_training",
+        title: c.title || "体能训练方案",
+        analysis: c.tactical_scene || "",
+        warmup: resolveCoachWarmup(["warm-hip-open", "warm-dynamic-stretch"]),
+        upper_limb: [],
+        lower_limb: resolveExercises(c.exercise_ids.filter(id => id.startsWith("ex-"))),
+        core: resolveExercises(["ex-plank", "ex-dead-bug"]),
+        cooldown: resolveCoachCooldown(["cool-static-stretch", "cool-foam-roll"]),
+        nutrition: NUTRITION_TEMPLATES["default"],
+        status: "complete",
+      } as any;
+    }
+    // Fallback: combo_id was null and no exercise_ids — return analysis-only module
+    return {
+      module: "position_training",
+      title: c.title || "体能训练方案（文库未覆盖）",
+      analysis: c.tactical_scene || "训练文库中暂无完全匹配的套餐，建议补充相关书籍知识。",
+      warmup: resolveCoachWarmup(["warm-hip-open", "warm-dynamic-stretch"]),
+      upper_limb: [],
+      lower_limb: [],
+      core: resolveExercises(["ex-plank", "ex-dead-bug"]),
+      cooldown: resolveCoachCooldown(["cool-static-stretch", "cool-foam-roll"]),
+      nutrition: NUTRITION_TEMPLATES["default"],
+      status: "complete",
+    } as any;
+  }
+
   switch (c.module) {
     case "session_plan": {
       const warmupIds = c.warmup_ids || ["warm-light-jog","warm-dynamic-stretch","warm-rondo"];

@@ -1,12 +1,19 @@
 /**
- * S&C Coach prompt builder — 职业足球体能教练
+ * S&C Coach prompt builder — B+C Architecture: AI selects combo_id + exercise_ids only
+ * All numeric parameters (sets, reps, loads, rest, distances) handled by TypeScript
  */
 import { PlayerFormData } from "../types";
 import { COACH_CERT_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "../constants";
-import { getPhaseParams, getGoalParams } from "../periodization";
+import { getPhaseParams } from "../periodization";
 import { LANG_INSTRUCTIONS } from "./athlete";
 
-export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string, fitnessHint?: string): string {
+export function buildCoachPrompt(
+  data: PlayerFormData,
+  lang: string = "zh",
+  weatherHint?: string,
+  sceneHint?: string,
+  fitnessHint?: string
+): string {
   const langInstruction = LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.zh;
 
   const cert = data.coachCert || 'b';
@@ -16,66 +23,61 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
   const trainingDuration = data.trainingDuration || 60;
   const goal = data.goal || 'strength';
   const phase = data.phase || 'competition';
+  const position = data.position || 'midfielder';
 
-  // ── 伤病 + ACWR 信息 ──
+  // Injury + ACWR
   const injuryHistory = (data as any).injuryHistory || '';
   const hasInjuries = injuryHistory && injuryHistory.trim().length > 10 && !injuryHistory.startsWith('ACWR');
   const hasACWR = injuryHistory && injuryHistory.includes('ACWR预警');
 
-  // ── 周期阶段 → 负荷区间（来自 lib/periodization.ts） ──
+  // Periodization context (selection reference only)
   const phaseParams = getPhaseParams(phase);
-  const goalParams = getGoalParams(goal);
-  const phaseLoadStr = `${phaseParams.intensityPercent[0]}-${phaseParams.intensityPercent[1]}% 1RM，${phaseParams.repsRange[0]}-${phaseParams.repsRange[1]}次，${phaseParams.setsRange[0]}-${phaseParams.setsRange[1]}组，间歇${phaseParams.restBetweenSets[0]}-${phaseParams.restBetweenSets[1]}s，${phaseParams.variationStrategy}`;
-  const goalLoadStr = goalParams
-    ? `${goalParams.labelCn}: ${goalParams.percent1RM[0]}-${goalParams.percent1RM[1]}%1RM, ${goalParams.setsReps}, 间歇${goalParams.rest}, 节奏${goalParams.tempo}`
-    : '';
+  const phaseCtx = `${phase}阶段(${phaseParams.intensityPercent[0]}-${phaseParams.intensityPercent[1]}%1RM区间)`;
 
-  // ── 级别参数 ──
-  let levelNote = '';
-  if (league === 'chinese_super_league') levelNote = '中超顶级，训练强度接近比赛，负荷精确到个体';
-  else if (league === 'china_league_one' || league === 'china_league_two') levelNote = '职业级，强调对抗强度和动作质量';
-  else if (league.startsWith('youth')) levelNote = '青少年发展期，禁>85%1RM，优先动作模式教学';
-  else levelNote = '业余/校园，效率优先，基础动作质量';
+  // Level context
+  let levelCtx = '';
+  if (league === 'chinese_super_league') levelCtx = '中超职业级';
+  else if (league === 'china_league_one' || league === 'china_league_two') levelCtx = '职业级';
+  else if (league.startsWith('youth')) levelCtx = '青少年,禁>85%1RM';
+  else levelCtx = '业余/校园';
 
-  return `## 体能教练训练任务
+  // Tactical scene selection hints
+  const tacticalThemes = (data as any).tacticalThemes as string[] | undefined;
+  let tacticalCtx = '';
+  if (tacticalThemes && tacticalThemes.length > 0) {
+    const themeMap: Record<string, string> = {
+      high_press: '高位逼抢→优先RSA/短间歇',
+      possession: '传控→优先小空间敏捷/耐力',
+      counter_attack: '防守反击→优先长距加速/冲刺',
+      low_block: '低位防守→优先对抗力量',
+    };
+    const hints = tacticalThemes.map(t => themeMap[t] || t).filter(Boolean);
+    if (hints.length > 0) tacticalCtx = `\n战术场景选型提示: ${hints.join('；')}`;
+  }
 
-**教练档案:**
-- 证书: ${COACH_CERT_LABELS[cert] || cert} | 身份: ${COACH_ROLE_LABELS[role] || role} | 联赛: ${LEAGUE_TAG_LABELS[league] || league}
-- 训练人数: ${playerCount}人 | 时长: ${trainingDuration}min
+  return `## 训练选型任务（仅选ID，不填任何数值）
 
-**训练设定:**
-- 训练目标: ${goal}${goalLoadStr ? ` (${goalLoadStr})` : ''}
-- 周期阶段: ${phase} → 推荐负荷区间: ${phaseLoadStr}
-- 级别: ${levelNote}
+你是体能训练选型引擎。唯一职责：从文库套餐ID池中挑选最佳combo_id。所有组数、次数、负荷、间歇、距离由TS代码根据NSCA-CSCS/周期化书籍确定性计算——你绝不输出任何数字。
 
-${hasInjuries ? `**⚠️ 伤病球员（必须处理）:**
-${injuryHistory}
-- 严格排除伤病部位的禁忌动作（参考系统提示的伤病排除规则表）
-- 为伤病球员使用安全替代动作
-- 方案中标注哪些动作是替伤变式` : ''}
+**训练上下文:**
+- 场景: ${sceneHint || '由系统决定'} | 位置: ${position} | 目标: ${goal} | 周期: ${phaseCtx}
+- 级别: ${levelCtx} | 人数: ${playerCount}人 | 教练: ${COACH_CERT_LABELS[cert] || cert} ${COACH_ROLE_LABELS[role] || role} ${LEAGUE_TAG_LABELS[league] || league}${tacticalCtx}
+${hasInjuries ? `\n⚠️ 伤病(须排除禁忌): ${injuryHistory.substring(0, 200)}` : ''}\
+${hasACWR ? '\n⚠️ ACWR预警: 优先低冲击/恢复型套餐' : ''}\
+${(data as any).equipmentAvailable?.length ? `\n器材: ${(data as any).equipmentAvailable.join('、')}` : ''}\
+${weatherHint ? `\n天气: ${weatherHint}` : ''}\
+${fitnessHint ? `\n📊 体能实测(选型参考,不输出数字): ${fitnessHint.substring(0, 300)}` : ''}
 
-${hasACWR ? `**⚠️ 负荷预警（必须处理）:**
-${injuryHistory}
-- 整体训练强度下调10-20%
-- 减少高强度组数，增加恢复间歇时间` : ''}
+## 输出（唯一格式）
 
-${(data as any).equipmentAvailable?.length ? `**可用器材:** ${(data as any).equipmentAvailable.join('、')}` : ''}
-${weatherHint ? `**天气:** ${weatherHint}` : ''}
-  ${fitnessHint ? "\n**📊 体能测试数据（基于实测——直接决定负荷）:**\n" + fitnessHint + "\n- 使用以上测试数据设定具体的负重(kg)、配速、间歇时间\n- 禁止使用训练年限或经验猜测负荷" : ""}
+event: module_1
+data: {"combo_id":"从系统提示的套餐ID池选择或null","exercise_ids":[],"tactical_scene":"参考书目+选型逻辑+训练关联+缺库笔记(全程无数字)","injury_exclude":"伤病部位或空","status":"complete"}
+event: done
+data: {"totalModules":1}
 
+选型规则: 足球专著套餐优先 > 位置不跨用(GK不用DF) > 场景不跨用(力量房不选外场) > 伤病排除禁忌 > 无匹配时combo_id=null并在tactical_scene写缺书原因
 
 ${langInstruction}
 
-${sceneHint || ''}
-
-直接输出 event: module_1，不要开场白。生成2个模块：
-1. position_training — 职业三段式体能方案（准备激活→主体负荷→整理放松）
-2. nutrition_recovery — 营养建议+恢复指导（使用 nutrition_goal 匹配训练目标）
-
-约束:
-- 训练时长按${trainingDuration}min设计
-- 场景铁律必须遵守（系统提示中已定义）
-- 只能从系统提示的ID列表中选择动作
-- nutrition_goal 匹配训练类型: ${goal}
-- 直接开始输出 event: module_1，禁止任何前缀文字`;
+直接输出event流，禁止前缀文字。`;
 }

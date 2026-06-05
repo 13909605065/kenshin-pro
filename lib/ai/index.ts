@@ -72,9 +72,9 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 /**
  * Build user prompt based on role.
  */
-export function buildUserPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
+export function buildUserPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string, fitnessHint?: string): string {
   if (data.role === "coach") {
-    return buildCoachPrompt(data, lang, weatherHint, sceneHint);
+    return buildCoachPrompt(data, lang, weatherHint, sceneHint, fitnessHint);
   }
   return buildAthletePrompt(data, lang, weatherHint, sceneHint);
 }
