@@ -218,6 +218,7 @@ function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
   const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
+  const [timeSlot, setTimeSlot] = useState<'morning' | 'afternoon'>(new Date().getHours() < 12 ? 'morning' : 'afternoon');
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
   const [duration, setDuration] = useState(60);
@@ -456,6 +457,18 @@ export default function CoachWorkbench() {
     setGenError(null);
     setShowPlan(true);
     setWorkoutTimerActive(true);
+
+    // Auto-save to daily training log for load management
+    const todayStr = new Date().toISOString().slice(0, 10);
+    try {
+      const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+      const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
+      const existing = logs.findIndex((l: any) => l.date === todayStr);
+      const entry = { date: todayStr, trainType, timeSlot, duration, savedAt: new Date().toISOString() };
+      if (existing >= 0) logs[existing] = entry;
+      else logs.unshift(entry);
+      localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
+    } catch {}
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
@@ -645,6 +658,26 @@ export default function CoachWorkbench() {
           className={`flex-1 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${
             workbenchMode === 'gym' ? 'bg-[#d92525] text-white shadow-lg' : 'text-gray-500 hover:text-white'
           }`}>🏋️ 力量房</button>
+      </div>
+
+      {/* ── 今日时段选择 ── */}
+      <div className="flex items-center gap-3 bg-[#0d0d0d] border border-[#222] rounded-xl p-3">
+        <span className="text-[10px] text-gray-500 shrink-0">今天练什么</span>
+        <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '⚽ 外场训练' : '🏋️ 力量房'}</span>
+        <span className="text-[10px] text-gray-600">·</span>
+        <span className="text-[10px] text-gray-500 shrink-0">时段</span>
+        <button onClick={() => setTimeSlot('morning')}
+          className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌅 上午</button>
+        <button onClick={() => setTimeSlot('afternoon')}
+          className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'afternoon' ? 'bg-[#f97316] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌇 下午</button>
+        <span className="text-[10px] text-gray-600">·</span>
+        <span className="text-[10px] text-gray-500 shrink-0">时长</span>
+        <div className="flex gap-1">
+          {[45, 60, 75, 90, 120].map(d => (
+            <button key={d} onClick={() => setDuration(d)}
+              className={`px-2 py-1 rounded text-[10px] font-medium transition ${duration === d ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{d}min</button>
+          ))}
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════
