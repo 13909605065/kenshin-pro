@@ -567,13 +567,13 @@ export default function SeasonCalendar() {
     return data.matchDates.includes(d);
   }, [data.matchDates]);
 
-  // ── Render a mini day cell ──
-  const renderMiniDay = useCallback((d: string, isToday: boolean) => {
+  // ── Render a mini day cell (season view) ──
+  const renderMiniDay = useCallback((d: string, isToday: boolean, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return <div key={d} className="w-9 h-9" />;
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();
     const matchDay = isMatchDay(d);
-    const isWeekend = parsed.getDay() === 0 || parsed.getDay() === 6;
     const phase = getPhaseForDate(d);
     const phaseBg = phase ? PHASE_COLORS[phase] : undefined;
 
@@ -581,29 +581,19 @@ export default function SeasonCalendar() {
       <button
         key={d}
         onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
-        className={`relative flex flex-col items-center justify-center rounded transition cursor-pointer group
-          w-9 h-9 text-[10px]
-          ${isToday ? 'ring-1 ring-[#d92525] bg-[#d92525]/10' : ''}
-          ${matchDay ? 'bg-[#d92525]/10' : phaseBg ? '' : 'hover:bg-[#1a1a1a]'}
-          ${isWeekend ? 'opacity-70' : ''}
-        `}
-        style={phaseBg && !isToday && !matchDay ? { backgroundColor: phaseBg } : undefined}
-        title={events.map(e => EVENT_CONFIG[e.type].label).join(', ') || `${d} — 无事件`}
+        className="relative flex items-center justify-center rounded transition cursor-pointer w-9 h-9 text-[11px]"
+        style={{ backgroundColor: phaseBg || (matchDay ? '#d9252520' : 'transparent') }}
+        title={events.map(e => EVENT_CONFIG[e.type].label).join(', ') || d}
       >
-        <span className={`font-bold leading-none ${isToday ? 'text-[#d92525]' : matchDay ? 'text-white' : 'text-gray-400'}`}>
-          {dayNum}
-        </span>
+        <span className={`font-medium leading-none ${
+          isToday ? 'text-[#d92525] font-bold' : matchDay ? 'text-white font-bold' : 'text-gray-400'
+        }`}>{dayNum}</span>
         {events.length > 0 && (
-          <div className="flex gap-0.5 absolute -bottom-0.5">
-            {events.slice(0, 2).map((e, i) => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: EVENT_CONFIG[e.type].color }} />
-            ))}
-            {events.length > 2 && <span className="text-[7px] text-gray-500 leading-none">+</span>}
-          </div>
+          <span className="absolute -bottom-0.5 text-[8px]">{EVENT_CONFIG[events[0].type].emoji}</span>
         )}
       </button>
     );
-  }, [getEventsForDate, isMatchDay]);
+  }, [getEventsForDate, isMatchDay, getPhaseForDate]);
 
   // ── Render a full day cell (month/week view) ──
   const renderFullDay = useCallback((d: string, isToday: boolean) => {
@@ -655,10 +645,13 @@ export default function SeasonCalendar() {
   }, [getEventsForDate, isMatchDay]);
 
   // ── Render a week strip in the season view ──
-  const renderWeekStrip = useCallback((week: typeof seasonTimeline[0]) => {
+  const renderWeekStrip = useCallback((week: typeof seasonTimeline[0], targetMonth: number) => {
     return (
-      <div key={week.weekStart} className="flex gap-1 items-center">
-        {week.days.map(d => renderMiniDay(d, d === today))}
+      <div key={week.weekStart} className="flex gap-0.5 items-center">
+        {week.days.map(d => {
+          const isCurrentMonth = parseDate(d).getMonth() + 1 === targetMonth;
+          return renderMiniDay(d, d === today, isCurrentMonth);
+        })}
       </div>
     );
   }, [renderMiniDay, today]);
@@ -741,13 +734,10 @@ export default function SeasonCalendar() {
 
       {!collapsed && (
         <>
-          {/* ══ LEGEND ══ */}
-          <div className="px-4 py-2 border-b border-[#222] flex flex-wrap items-center gap-x-3 gap-y-1">
+          {/* ══ LEGEND — compact ══ */}
+          <div className="px-4 py-1.5 border-b border-[#222] flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[9px] text-gray-500">
             {(Object.entries(EVENT_CONFIG) as [EventType, typeof EVENT_CONFIG[EventType]][]).map(([key, cfg]) => (
-              <span key={key} className="flex items-center gap-1 text-[9px] text-gray-500">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.color }} />
-                {cfg.emoji} {cfg.label}
-              </span>
+              <span key={key} className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />{cfg.emoji}{cfg.label}</span>
             ))}
           </div>
 
@@ -860,32 +850,8 @@ export default function SeasonCalendar() {
                     </div>
 
                     {/* Weeks */}
-                    <div className="space-y-1">
-                      {col.weeks.map(w => renderWeekStrip(w))}
-                    </div>
-
-                    {/* Month summary pins */}
-                    <div className="mt-1.5 space-y-0.5">
-                      {(() => {
-                        const yr = yearForMonth(col.month);
-                        const monthStart = dateStr(new Date(yr, col.month - 1, 1));
-                        const monthEndDays = getDaysInMonth(yr, col.month);
-                        const monthEnd = dateStr(new Date(yr, col.month - 1, monthEndDays));
-                        const monthEvents = data.events.filter(e => e.date >= monthStart && e.date <= monthEnd);
-                        const typeCount: Partial<Record<EventType, number>> = {};
-                        for (const e of monthEvents) {
-                          typeCount[e.type] = (typeCount[e.type] || 0) + 1;
-                        }
-                        return (Object.entries(typeCount) as [EventType, number][]).map(([type, count]) => {
-                          const cfg = EVENT_CONFIG[type];
-                          return (
-                            <div key={type} className="text-[8px] px-1.5 py-0.5 rounded flex items-center gap-1" style={{ backgroundColor: `${cfg.color}15` }}>
-                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.color }} />
-                              <span className="text-gray-400">{cfg.label} ×{count}</span>
-                            </div>
-                          );
-                        });
-                      })()}
+                    <div className="space-y-0.5">
+                      {col.weeks.map(w => renderWeekStrip(w, col.month))}
                     </div>
                   </div>
                 ))}
