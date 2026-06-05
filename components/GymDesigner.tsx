@@ -4,8 +4,9 @@ import { useState, useMemo, useCallback } from "react";
 import {
   Search, X, GripVertical, ChevronRight, CheckCircle2,
   XCircle, AlertTriangle, Dumbbell, Save, Calendar,
-  Shuffle,
+  Shuffle, MapPin, Edit3,
 } from "lucide-react";
+import { GymLayout } from "@/components/GymLayout";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import {
@@ -169,7 +170,7 @@ const MUSCLE_GROUPS: Record<string, MuscleInfo> = {
    ─────────────────────────────────────────── */
 
 interface ValidationResult {
-  pass: boolean | null; // null = uncategorized/skip
+  status: 'pass' | 'warn' | 'fail' | 'skip'; // pass=通过 warn=建议 fail=不推荐 skip=数据不足
   label: string;
   reason: string;
   suggestion?: string;
@@ -250,24 +251,12 @@ function runValidation(
 ): ValidationResult[] {
   if (exerciseIds.length < 3) {
     return [
-      {
-        pass: null, label: "拮抗交替", reason: "至少需要3个动作才能校验",
-      },
-      {
-        pass: null, label: "大肌群优先", reason: "至少需要3个动作才能校验",
-      },
-      {
-        pass: null, label: "复合优先", reason: "至少需要3个动作才能校验",
-      },
-      {
-        pass: null, label: "强度递减", reason: "至少需要3个动作才能校验",
-      },
-      {
-        pass: null, label: "关节分散", reason: "至少需要3个动作才能校验",
-      },
-      {
-        pass: null, label: "伤病规避", reason: injuries.length === 0 ? "未设置伤病信息" : "至少需要3个动作才能校验",
-      },
+      { status: "skip", label: "拮抗交替", reason: "至少需要3个动作才能校验" },
+      { status: "skip", label: "大肌群优先", reason: "至少需要3个动作才能校验" },
+      { status: "skip", label: "复合优先", reason: "至少需要3个动作才能校验" },
+      { status: "skip", label: "强度递减", reason: "至少需要3个动作才能校验" },
+      { status: "skip", label: "关节分散", reason: "至少需要3个动作才能校验" },
+      { status: "skip", label: "伤病规避", reason: injuries.length === 0 ? "未设置伤病信息" : "至少需要3个动作才能校验" },
     ];
   }
 
@@ -278,20 +267,26 @@ function runValidation(
 
   // ── Check 1: 拮抗交替 ──
   // Consecutive exercises should not target the same muscle category
-  let antagonistPass = true;
   const antagonistIssues: string[] = [];
   for (let i = 0; i < infos.length - 1; i++) {
     const a = infos[i];
     const b = infos[i + 1];
     if (a && b && a.category === b.category) {
-      antagonistPass = false;
       antagonistIssues.push(`#${i + 1} ${exercises[i]} → #${i + 2} ${exercises[i + 1]} 同为${categoryLabel(a.category)}`);
     }
+  }
+  let antagonistStatus: ValidationResult['status'] = 'pass';
+  let antagonistReason = "相邻动作不重复刺激同一肌群，拮抗肌群交替合理";
+  if (antagonistIssues.length >= 3) {
+    antagonistStatus = 'fail';
+    antagonistReason = antagonistIssues.join("; ");
+  } else if (antagonistIssues.length >= 1) {
+    antagonistStatus = 'warn';
+    antagonistReason = antagonistIssues.join("; ");
   }
 
   // ── Check 2: 大肌群优先 ──
   // Compound exercises should appear before isolation exercises
-  let bigFirstPass = true;
   const compoundIndices: number[] = [];
   const isolationIndices: number[] = [];
   infos.forEach((info, idx) => {
@@ -299,32 +294,47 @@ function runValidation(
     if (info.isCompound) compoundIndices.push(idx);
     else isolationIndices.push(idx);
   });
+  let bigFirstStatus: ValidationResult['status'] = 'pass';
+  let bigFirstReason = "大肌群复合动作优先安排，小肌群孤立动作后置";
+  const bigFirstIssues: string[] = [];
   if (compoundIndices.length > 0 && isolationIndices.length > 0) {
     const maxCompoundIdx = Math.max(...compoundIndices);
-    const minIsolationIdx = Math.min(...isolationIndices);
-    if (maxCompoundIdx > minIsolationIdx) {
-      bigFirstPass = false;
+    isolationIndices.forEach(isoIdx => {
+      if (isoIdx < maxCompoundIdx) {
+        bigFirstIssues.push(`#${isoIdx + 1} "${exercises[isoIdx]}"（孤立）排在复合动作之前`);
+      }
+    });
+    if (bigFirstIssues.length >= 2) {
+      bigFirstStatus = 'fail';
+      bigFirstReason = bigFirstIssues.join("; ");
+    } else if (bigFirstIssues.length === 1) {
+      bigFirstStatus = 'warn';
+      bigFirstReason = bigFirstIssues[0];
     }
   }
 
   // ── Check 3: 复合优先 ──
   // Multi-joint (compound) should come before single-joint (isolation)
-  // This is similar to check 2 but with more granularity
-  let compoundFirstPass = true;
   const compoundFirstIssues: string[] = [];
   for (let i = 0; i < infos.length - 1; i++) {
     const a = infos[i];
     const b = infos[i + 1];
     if (a && b && a.isCompound === false && b.isCompound === true) {
-      compoundFirstPass = false;
       compoundFirstIssues.push(`孤立动作 #${i + 1} "${exercises[i]}" 排在复合动作 #${i + 2} "${exercises[i + 1]}" 之前`);
     }
   }
-  // Also check if uncategorized exercises are mixed (skip)
+  let compoundFirstStatus: ValidationResult['status'] = 'pass';
+  let compoundFirstReason = "多关节复合动作在前，单关节孤立动作在后";
+  if (compoundFirstIssues.length >= 2) {
+    compoundFirstStatus = 'fail';
+    compoundFirstReason = compoundFirstIssues.join("; ");
+  } else if (compoundFirstIssues.length === 1) {
+    compoundFirstStatus = 'warn';
+    compoundFirstReason = compoundFirstIssues[0];
+  }
 
   // ── Check 4: 强度递减 ──
   // Heavy → Medium → Light order
-  let intensityPass = true;
   const intensityIssues: string[] = [];
   const intensityOrder = { heavy: 3, medium: 2, light: 1 };
   for (let i = 0; i < infos.length - 1; i++) {
@@ -334,126 +344,151 @@ function runValidation(
     const aInt = intensityOrder[a.intensity];
     const bInt = intensityOrder[b.intensity];
     if (aInt < bInt) {
-      intensityPass = false;
       intensityIssues.push(
         `#${i + 1} "${exercises[i]}" (${intensityLabel(a.intensity)}) → #${i + 2} "${exercises[i + 1]}" (${intensityLabel(b.intensity)})，强度不递减`,
       );
     }
   }
+  let intensityStatus: ValidationResult['status'] = 'pass';
+  let intensityReason = "大重量→中等→轻量，强度合理递减";
+  if (intensityIssues.length >= 3) {
+    intensityStatus = 'fail';
+    intensityReason = intensityIssues.join("; ");
+  } else if (intensityIssues.length >= 1) {
+    intensityStatus = 'warn';
+    intensityReason = intensityIssues.join("; ");
+  }
 
   // ── Check 5: 关节分散 ──
-  // No 3 consecutive knee-dominant or shoulder-dominant exercises
-  let jointPass = true;
+  // Check consecutive same-joint exercises
   const jointIssues: string[] = [];
+  // Check 2 consecutive same joint
+  for (let i = 0; i <= infos.length - 2; i++) {
+    const a = infos[i];
+    const b = infos[i + 1];
+    if (a && b && a.jointStress && b.jointStress &&
+        a.jointStress !== 'none' && b.jointStress !== 'none' &&
+        a.jointStress === b.jointStress) {
+      jointIssues.push(`#${i + 1}-#${i + 2} 连续2个${jointLabel(a.jointStress)}动作: ${exercises[i]}, ${exercises[i + 1]}`);
+    }
+  }
+  // Check 3+ consecutive same joint
+  const tripleIssues: string[] = [];
   for (let i = 0; i <= infos.length - 3; i++) {
     const slice = infos.slice(i, i + 3);
-    const allKnee = slice.every((info) => info?.jointStress === "knee");
-    const allShoulder = slice.every((info) => info?.jointStress === "shoulder");
-    if (allKnee) {
-      jointPass = false;
-      jointIssues.push(`#${i + 1}-#${i + 3} 连续3个膝关节主导动作: ${exercises.slice(i, i + 3).join(", ")}`);
+    const joints = slice.map(s => s?.jointStress || '');
+    const allSame = joints[0] && joints[0] !== 'none' && joints.every(j => j === joints[0]);
+    if (allSame) {
+      tripleIssues.push(`#${i + 1}-#${i + 3} 连续3个${jointLabel(joints[0])}动作: ${exercises.slice(i, i + 3).join(", ")}`);
     }
-    if (allShoulder) {
-      jointPass = false;
-      jointIssues.push(`#${i + 1}-#${i + 3} 连续3个肩关节主导动作: ${exercises.slice(i, i + 3).join(", ")}`);
-    }
+  }
+  let jointStatus: ValidationResult['status'] = 'pass';
+  let jointReason = "关节压力分散合理，无连续同关节负荷";
+  if (tripleIssues.length > 0) {
+    jointStatus = 'fail';
+    jointReason = tripleIssues.join("; ");
+  } else if (jointIssues.length > 0) {
+    jointStatus = 'warn';
+    jointReason = jointIssues.join("; ");
   }
 
   // ── Check 6: 伤病规避 ──
-  // Check against injury list
-  let injuryPass = true;
+  // Check against injury list (joint stress keywords from injuries)
   const injuryIssues: string[] = [];
   if (injuries.length > 0) {
-    // Map injury types to joint stresses to avoid
+    // Map injury body parts / types to joint stresses to avoid
     const injuryJointMap: Record<string, string> = {
-      knee: "knee",
-      acl: "knee",
-      mcl: "knee",
-      meniscus: "knee",
-      shoulder: "shoulder",
-      rotator_cuff: "shoulder",
-      dislocation: "shoulder",
-      hip: "hip",
-      groin: "hip",
-      ankle: "ankle",
-      achilles: "ankle",
-      sprain: "ankle",
-      back: "spine",
-      spine: "spine",
-      herniated_disc: "spine",
-      waist: "spine",
-      hamstring: "knee",
-      wrist: "shoulder",
-      elbow: "shoulder",
+      knee: "knee", knee_l: "knee", knee_r: "knee",
+      acl: "knee", mcl: "knee", meniscus: "knee",
+      shoulder: "shoulder", shoulder_l: "shoulder", shoulder_r: "shoulder",
+      rotator_cuff: "shoulder", dislocation: "shoulder",
+      hip: "hip", hip_l: "hip", hip_r: "hip",
+      groin: "hip", thigh_l: "knee", thigh_r: "knee",
+      ankle: "ankle", ankle_l: "ankle", ankle_r: "ankle",
+      achilles: "ankle", sprain: "ankle", foot_l: "ankle", foot_r: "ankle",
+      back: "spine", spine: "spine", herniated_disc: "spine", waist: "spine",
+      hamstring: "knee", shin_l: "ankle", shin_r: "ankle",
+      wrist: "shoulder", wrist_l: "shoulder", wrist_r: "shoulder",
+      elbow: "shoulder", elbow_l: "shoulder", elbow_r: "shoulder",
     };
 
-    const stressedJoints = injuries
-      .map((inj) => injuryJointMap[inj] || null)
-      .filter((j): j is string => j !== null);
+    const stressedJoints = new Set<string>();
+    injuries.forEach((inj) => {
+      // Try direct match first, then substring match
+      const mapped = injuryJointMap[inj];
+      if (mapped) {
+        stressedJoints.add(mapped);
+      } else {
+        // Fuzzy: check if any key contains this injury or vice versa
+        const injLower = inj.toLowerCase();
+        for (const [key, joint] of Object.entries(injuryJointMap)) {
+          if (injLower.includes(key) || key.includes(injLower)) {
+            stressedJoints.add(joint);
+          }
+        }
+      }
+    });
 
     exerciseIds.forEach((id, idx) => {
       const info = MUSCLE_GROUPS[id];
       if (!info) return;
-      if (info.jointStress && stressedJoints.includes(info.jointStress)) {
-        injuryPass = false;
+      if (info.jointStress && info.jointStress !== 'none' && stressedJoints.has(info.jointStress)) {
         injuryIssues.push(
-          `#${idx + 1} "${exercises[idx]}" 会加压${jointLabel(info.jointStress)}，可能影响伤病`,
+          `#${idx + 1} "${exercises[idx]}" 会加压${jointLabel(info.jointStress)}，可能加重伤病`,
         );
       }
     });
   }
 
+  let injuryStatus: ValidationResult['status'] = 'pass';
+  let injuryReason: string;
+  if (injuries.length === 0) {
+    injuryStatus = 'skip';
+    injuryReason = "未设置伤病信息（可在花名册或伤报页添加）";
+  } else if (injuryIssues.length > 0) {
+    injuryStatus = 'fail';
+    injuryReason = injuryIssues.join("; ");
+  } else {
+    injuryReason = "当前方案未触发伤病禁忌关节，可安全执行";
+  }
+
   // Build results
   const results: ValidationResult[] = [
     {
-      pass: antagonistPass,
+      status: antagonistStatus,
       label: "拮抗交替",
-      reason: antagonistPass
-        ? "相邻动作不重复刺激同一肌群，拮抗肌群交替合理"
-        : antagonistIssues.join("; "),
-      suggestion: antagonistPass ? undefined : "将同一肌群动作分散到不同位置，中间插入拮抗肌群动作",
+      reason: antagonistReason,
+      suggestion: antagonistStatus !== 'pass' ? "将同一肌群动作分散到不同位置，中间插入拮抗肌群动作" : undefined,
     },
     {
-      pass: bigFirstPass,
+      status: bigFirstStatus,
       label: "大肌群优先",
-      reason: bigFirstPass
-        ? "大肌群复合动作优先安排，小肌群孤立动作后置"
-        : "孤立动作出现在复合动作之前，应调整顺序",
-      suggestion: bigFirstPass ? undefined : "将复合动作（深蹲、硬拉、卧推等）移至训练前半段",
+      reason: bigFirstReason,
+      suggestion: bigFirstStatus !== 'pass' ? "将复合动作（深蹲、硬拉、卧推等）移至训练前半段" : undefined,
     },
     {
-      pass: compoundFirstPass,
+      status: compoundFirstStatus,
       label: "复合优先",
-      reason: compoundFirstPass
-        ? "多关节复合动作在前，单关节孤立动作在后"
-        : compoundFirstIssues.join("; "),
-      suggestion: compoundFirstPass ? undefined : "将复合动作提前，孤立动作移至训练末尾",
+      reason: compoundFirstReason,
+      suggestion: compoundFirstStatus !== 'pass' ? "将复合动作提前，孤立动作移至训练末尾" : undefined,
     },
     {
-      pass: intensityPass,
+      status: intensityStatus,
       label: "强度递减",
-      reason: intensityPass
-        ? "大重量→中等→轻量，强度合理递减"
-        : intensityIssues.join("; "),
-      suggestion: intensityPass ? undefined : "按大重量→中等→轻量的顺序排列动作",
+      reason: intensityReason,
+      suggestion: intensityStatus !== 'pass' ? "按大重量→中等→轻量的顺序排列动作" : undefined,
     },
     {
-      pass: jointPass,
+      status: jointStatus,
       label: "关节分散",
-      reason: jointPass
-        ? "没有连续3个同关节主导动作，关节压力分散"
-        : jointIssues.join("; "),
-      suggestion: jointPass ? undefined : "在连续同关节动作之间插入其他肌群或核心训练",
+      reason: jointReason,
+      suggestion: jointStatus !== 'pass' ? "在连续同关节动作之间插入其他肌群或核心训练" : undefined,
     },
     {
-      pass: injuryPass,
+      status: injuryStatus,
       label: "伤病规避",
-      reason: injuries.length === 0
-        ? "未设置伤病信息（可在设置页添加）"
-        : injuryPass
-          ? "当前方案未触发伤病禁忌关节"
-          : injuryIssues.join("; "),
-      suggestion: !injuryPass ? "移除或替换涉及伤病关节的动作" : undefined,
+      reason: injuryReason,
+      suggestion: injuryStatus === 'fail' ? "移除或替换涉及伤病关节的动作" : undefined,
     },
   ];
 
@@ -464,7 +499,7 @@ function runValidation(
       (id) => EXERCISE_LIBRARY.find((e) => e.id === id)?.name || id,
     );
     results.push({
-      pass: null,
+      status: "skip",
       label: "未分类动作",
       reason: `${names.join(", ")} 未在分类库中，相关检查可能不完整`,
     });
@@ -822,8 +857,42 @@ function ValidationPanel({
     [selectedIds, injuries],
   );
 
-  const passCount = results.filter((r) => r.pass === true).length;
-  const failCount = results.filter((r) => r.pass === false).length;
+  const passCount = results.filter((r) => r.status === 'pass').length;
+  const warnCount = results.filter((r) => r.status === 'warn').length;
+  const failCount = results.filter((r) => r.status === 'fail').length;
+
+  const statusLabel = (s: ValidationResult['status']) => {
+    switch (s) {
+      case 'pass': return '通过';
+      case 'warn': return '建议';
+      case 'fail': return '不推荐';
+      case 'skip': return '待定';
+    }
+  };
+  const statusEmoji = (s: ValidationResult['status']) => {
+    switch (s) {
+      case 'pass': return '✅';
+      case 'warn': return '⚠️';
+      case 'fail': return '❌';
+      case 'skip': return '—';
+    }
+  };
+  const statusColor = (s: ValidationResult['status']) => {
+    switch (s) {
+      case 'pass': return { bg: 'bg-green-500/5', border: 'border-green-500/20', text: 'text-green-400', badge: 'bg-green-500/20 text-green-400' };
+      case 'warn': return { bg: 'bg-yellow-500/5', border: 'border-yellow-500/20', text: 'text-yellow-400', badge: 'bg-yellow-500/20 text-yellow-400' };
+      case 'fail': return { bg: 'bg-[#d92525]/5', border: 'border-[#d92525]/20', text: 'text-[#d92525]', badge: 'bg-[#d92525]/20 text-[#d92525]' };
+      case 'skip': return { bg: 'bg-[#222]/50', border: 'border-[#333]', text: 'text-gray-400', badge: 'bg-[#333] text-gray-500' };
+    }
+  };
+  const statusIcon = (s: ValidationResult['status']) => {
+    switch (s) {
+      case 'pass': return <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />;
+      case 'warn': return <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />;
+      case 'fail': return <XCircle className="w-4 h-4 text-[#d92525] shrink-0 mt-0.5" />;
+      case 'skip': return <AlertTriangle className="w-3.5 h-3.5 text-gray-500 shrink-0 mt-0.5" />;
+    }
+  };
 
   if (selectedIds.length < 3) {
     return (
@@ -851,68 +920,43 @@ function ValidationPanel({
           <AlertTriangle className="w-4 h-4 text-[#d92525]" />
           <span className="text-sm font-bold text-white">AI 校验</span>
           <span className="text-[10px] text-gray-500 ml-auto">
-            {passCount}通过 / {failCount}未通过
+            {passCount}通过 {warnCount > 0 ? `/ ${warnCount}建议` : ''} {failCount > 0 ? `/ ${failCount}不推荐` : ''}
           </span>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-        {results.map((r, i) => (
+        {results.map((r, i) => {
+          const c = statusColor(r.status);
+          return (
           <div
             key={i}
-            className={`p-2.5 rounded-lg border text-xs ${
-              r.pass === true
-                ? "bg-green-500/5 border-green-500/20"
-                : r.pass === false
-                  ? "bg-[#d92525]/5 border-[#d92525]/20"
-                  : "bg-[#222]/50 border-[#333]"
-            }`}
+            className={`p-2.5 rounded-lg border text-xs ${c.bg} ${c.border}`}
           >
             <div className="flex items-start gap-2">
-              {r.pass === true ? (
-                <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
-              ) : r.pass === false ? (
-                <XCircle className="w-4 h-4 text-[#d92525] shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-3.5 h-3.5 text-gray-500 shrink-0 mt-0.5" />
-              )}
+              {statusIcon(r.status)}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span
-                    className={`font-bold ${
-                      r.pass === true
-                        ? "text-green-400"
-                        : r.pass === false
-                          ? "text-[#d92525]"
-                          : "text-gray-400"
-                    }`}
-                  >
-                    {r.label}
+                  <span className={`font-bold ${c.text}`}>
+                    {statusEmoji(r.status)} {r.label}
                   </span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                      r.pass === true
-                        ? "bg-green-500/20 text-green-400"
-                        : r.pass === false
-                          ? "bg-[#d92525]/20 text-[#d92525]"
-                          : "bg-[#333] text-gray-500"
-                    }`}
-                  >
-                    {r.pass === true ? "通过" : r.pass === false ? "未通过" : "待定"}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${c.badge}`}>
+                    {statusLabel(r.status)}
                   </span>
                 </div>
-                <p className={`leading-relaxed ${r.pass === false ? "text-[#d92525]/80" : "text-gray-400"}`}>
+                <p className={`leading-relaxed ${r.status === 'fail' ? 'text-[#d92525]/80' : r.status === 'warn' ? 'text-yellow-400/80' : 'text-gray-400'}`}>
                   {r.reason}
                 </p>
                 {r.suggestion && (
-                  <p className="mt-1 text-[10px] text-[#d92525]/60">
-                    建议: {r.suggestion}
+                  <p className={`mt-1 text-[10px] ${r.status === 'fail' ? 'text-[#d92525]/60' : 'text-yellow-400/60'}`}>
+                    {r.status === 'fail' ? '建议: ' : '提示: '}{r.suggestion}
                   </p>
                 )}
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -1026,7 +1070,37 @@ export function GymDesigner() {
   const [workoutName, setWorkoutName] = useState("");
   const [phase, setPhase] = useState<string>("preseason");
   const [goal, setGoal] = useState<string>("strength");
-  const [injuries] = useState<string[]>([]);
+  // Read actual injury data from localStorage roster and injury reports
+  const injuries = useMemo<string[]>(() => {
+    const tags: string[] = [];
+    try {
+      // 1. Read roster players with injury status
+      const rosterRaw = localStorage.getItem('roster_players');
+      if (rosterRaw) {
+        const roster = JSON.parse(rosterRaw);
+        roster.forEach((p: any) => {
+          if (p.injuryStatus && p.injuryStatus !== 'healthy') {
+            if (p.injuryNote) tags.push(p.injuryNote.toLowerCase());
+            if (p.injuryStatus === 'out') tags.push('out');
+            if (p.injuryStatus === 'minor') tags.push('minor');
+          }
+        });
+      }
+      // 2. Read detailed injury reports
+      const reportsRaw = localStorage.getItem('kenshin_injury_reports');
+      if (reportsRaw) {
+        const reports = JSON.parse(reportsRaw);
+        reports.forEach((r: any) => {
+          if (r.bodyPart) tags.push(r.bodyPart.toLowerCase());
+          if (r.severity && r.severity >= 3) tags.push('severe');
+        });
+      }
+    } catch {}
+    return tags;
+  }, []);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState<"editor" | "layout">("editor");
 
   // Modals
   const [dayPickerOpen, setDayPickerOpen] = useState(false);
@@ -1138,7 +1212,11 @@ export function GymDesigner() {
 
       {/* Main content: 3-panel layout */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 pb-24 lg:pb-4">
-        <div className="flex flex-col lg:flex-row gap-3 h-[calc(100vh-140px)]">
+        <div className={`flex flex-col lg:flex-row gap-3 ${
+          activeTab === "layout"
+            ? "h-[400px] lg:h-[350px]"
+            : "h-[calc(100vh-140px)]"
+        }`}>
           {/* Left Panel: Exercise Library */}
           <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 h-[400px] lg:h-full">
             <ExerciseLibraryPanel
@@ -1171,81 +1249,113 @@ export function GymDesigner() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-3 bg-[#1a1a1a] border border-[#222] rounded-xl p-3">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            {/* Workout name */}
-            <div className="flex-1 min-w-0 w-full sm:w-auto">
-              <input
-                type="text"
-                value={workoutName}
-                onChange={(e) => setWorkoutName(e.target.value)}
-                placeholder="方案名称（如：基础力量日）"
-                className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition"
-              />
-            </div>
+        {/* Tab Switcher */}
+        <div className="mt-3 flex items-center gap-1 bg-[#1a1a1a] border border-[#222] rounded-xl p-1">
+          <button
+            onClick={() => setActiveTab("editor")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
+              activeTab === "editor"
+                ? "bg-[#d92525] text-white"
+                : "text-gray-400 hover:text-white hover:bg-[#222]"
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            方案编辑
+          </button>
+          <button
+            onClick={() => setActiveTab("layout")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
+              activeTab === "layout"
+                ? "bg-[#d92525] text-white"
+                : "text-gray-400 hover:text-white hover:bg-[#222]"
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            训练站布局
+          </button>
+        </div>
 
-            {/* Phase selector */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-gray-500">周期:</span>
-              <div className="flex bg-[#121212] rounded-lg p-0.5">
-                {PHASES.map((p) => (
-                  <button
-                    key={p.value}
-                    onClick={() => setPhase(p.value)}
-                    className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
-                      phase === p.value
-                        ? "bg-[#d92525] text-white"
-                        : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+        {/* Bottom Content: Editor Controls or Layout */}
+        {activeTab === "editor" ? (
+          <div className="mt-3 bg-[#1a1a1a] border border-[#222] rounded-xl p-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Workout name */}
+              <div className="flex-1 min-w-0 w-full sm:w-auto">
+                <input
+                  type="text"
+                  value={workoutName}
+                  onChange={(e) => setWorkoutName(e.target.value)}
+                  placeholder="方案名称（如：基础力量日）"
+                  className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition"
+                />
               </div>
-            </div>
 
-            {/* Goal selector */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-gray-500">目标:</span>
-              <div className="flex bg-[#121212] rounded-lg p-0.5">
-                {GOALS.map((g) => (
-                  <button
-                    key={g.value}
-                    onClick={() => setGoal(g.value)}
-                    className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
-                      goal === g.value
-                        ? "bg-[#d92525] text-white"
-                        : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    {g.label}
-                  </button>
-                ))}
+              {/* Phase selector */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] text-gray-500">周期:</span>
+                <div className="flex bg-[#121212] rounded-lg p-0.5">
+                  {PHASES.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => setPhase(p.value)}
+                      className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
+                        phase === p.value
+                          ? "bg-[#d92525] text-white"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={handleSaveToLibrary}
-                disabled={selectedIds.length === 0}
-                className="flex items-center gap-1.5 px-3 py-2 bg-[#d92525] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Save className="w-3.5 h-3.5" />
-                保存到资料库
-              </button>
-              <button
-                onClick={() => setDayPickerOpen(true)}
-                disabled={selectedIds.length === 0}
-                className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#d92525]/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                绑定到训练日历
-              </button>
+              {/* Goal selector */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] text-gray-500">目标:</span>
+                <div className="flex bg-[#121212] rounded-lg p-0.5">
+                  {GOALS.map((g) => (
+                    <button
+                      key={g.value}
+                      onClick={() => setGoal(g.value)}
+                      className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
+                        goal === g.value
+                          ? "bg-[#d92525] text-white"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleSaveToLibrary}
+                  disabled={selectedIds.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#d92525] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  保存到资料库
+                </button>
+                <button
+                  onClick={() => setDayPickerOpen(true)}
+                  disabled={selectedIds.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#d92525]/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  绑定到训练日历
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-3">
+            <GymLayout selectedIds={selectedIds} />
+          </div>
+        )}
       </main>
 
       {/* Day Picker Modal */}

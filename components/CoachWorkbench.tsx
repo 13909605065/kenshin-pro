@@ -353,6 +353,7 @@ export default function CoachWorkbench() {
   const [trainingActive, setTrainingActive] = useState(false);
   const trainingStartRef = useRef(0);
   const [workoutTimerActive, setWorkoutTimerActive] = useState(true);
+  const [selectedWarmup, setSelectedWarmup] = useState<{id: string; name: string} | null>(null);
 
   // ── training attendees selector ──
   const [trainingAttendees, setTrainingAttendees] = useState<Set<string>>(new Set());
@@ -786,6 +787,47 @@ export default function CoachWorkbench() {
                 mdDay > 0 ? 'bg-[#d92525]/20 text-[#d92525]' :
                 'bg-green-500/20 text-green-400'
               }`}>{mdLabel}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════
+          PRE-PLANNED TRAINING PROMPT — 今日预排方案提示
+          ═══════════════════════════════════════════════ */}
+      {(() => {
+        const tdo = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
+        const tp = getMicrocyclePlan(matchDate, tdo);
+        if (!tp) return null;
+        return (
+          <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-4" style={{ borderLeft: '3px solid #d92525' }}>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm">📋</span>
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-bold text-white">
+                  今日已预排训练方案 · {tp.duration}min {tp.scene === 'gym' ? '🏋️力量房' : '⚽外场'}
+                </span>
+                <span className="text-[10px] text-gray-500 ml-2">
+                  {GOAL_LABELS[tp.goal] || tp.goal} · {PHASE_LABELS[tp.phase as SeasonPhase] || tp.phase}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    const tdo2 = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
+                    loadPlanForDay(tdo2);
+                  }}
+                  className="px-4 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98]"
+                >
+                  📥 加载方案
+                </button>
+                <button
+                  onClick={handleGenerate}
+                  className="px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-300 hover:text-white rounded-lg text-xs transition"
+                >
+                  🔄 重新生成
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -1280,22 +1322,52 @@ export default function CoachWorkbench() {
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
             <h3 className="text-xs font-semibold text-gray-400 mb-2">📦 热身方案库</h3>
             <div className="flex flex-wrap gap-2">
-              {lib.slice(0, 8).map((w: any) => (
-                <button key={w.id} onClick={() => {
-                  const todayStr = new Date().toISOString().slice(0, 10);
-                  try {
-                    const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
-                    cal[todayStr] = { warmupId: w.id, warmupDuration: 15, ballOption: 'no-ball', notes: w.name };
-                    localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
-                    alert('已选用：' + w.name);
-                  } catch {}
-                }}
-                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50 transition text-left">
-                  🏃 {w.name}
-                  <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
-                </button>
-              ))}
+              {lib.slice(0, 8).map((w: any) => {
+                const isActive = selectedWarmup?.id === w.id;
+                return (
+                  <button key={w.id} onClick={() => {
+                    if (isActive) { setSelectedWarmup(null); }
+                    else { setSelectedWarmup({ id: w.id, name: w.name }); }
+                  }}
+                    className={`text-[10px] px-3 py-1.5 rounded-lg transition text-left ${
+                      isActive
+                        ? 'border-[#d92525] bg-[#d92525]/10 text-white'
+                        : 'bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50'
+                    }`}>
+                    🏃 {w.name}
+                    <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
+                  </button>
+                );
+              })}
             </div>
+            {/* ── confirmation bar ── */}
+            {selectedWarmup && (
+              <div className="mt-3 flex items-center gap-3 border-t border-[#222] pt-3">
+                <span className="text-xs text-gray-300 flex-1">
+                  已选：<span className="text-[#d92525] font-bold">{selectedWarmup.name}</span>
+                </span>
+                <button
+                  onClick={() => setSelectedWarmup(null)}
+                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    try {
+                      const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
+                      cal[todayStr] = { warmupId: selectedWarmup.id, warmupDuration: 15, ballOption: 'no-ball', notes: selectedWarmup.name };
+                      localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
+                      setSelectedWarmup(null);
+                    } catch {}
+                  }}
+                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold transition active:scale-[0.98]"
+                >
+                  ✅ 确认选用
+                </button>
+              </div>
+            )}
           </div>
         );
       })()}

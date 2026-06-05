@@ -180,6 +180,103 @@ export default function LoadPage() {
     return { weekDays: days, usedTRIMP: used, remainingTRIMP: remaining, pct: pctVal };
   }, [logs, weekCap]);
 
+  // ═══════════════════════════════════════════
+  // Muscle Group Load Heatmap
+  // ═══════════════════════════════════════════
+
+  /** Map exercise IDs → 8 main muscle groups */
+  const EXERCISE_MUSCLE_GROUP: Record<string, string> = {
+    // 股四头肌 — knee-dominant compound
+    "barbell-back-squat": "股四头肌", "front-squat": "股四头肌", "goblet-squat": "股四头肌",
+    "bulgarian-split-squat": "股四头肌", "split-squat": "股四头肌", "cossack-squat": "股四头肌",
+    "sumo-squat": "股四头肌", "leg-press": "股四头肌", "lunge-squat": "股四头肌",
+    "walking-lunge": "股四头肌", "lateral-lunge": "股四头肌", "dumbbell-lunges": "股四头肌",
+    "kettlebell-goblet-split-squat": "股四头肌", "barbell-squat-jump": "股四头肌",
+    "box-jump": "股四头肌", "squat-to-sprint": "股四头肌",
+    // 腘绳肌 — hip-dominant RDLs + nordic
+    "deadlift": "腘绳肌", "romanian-deadlift": "腘绳肌", "single-leg-rdl": "腘绳肌",
+    "kettlebell-single-leg-rdl": "腘绳肌", "nordic-hamstring-curl": "腘绳肌",
+    "hamstring-glute-bridge": "腘绳肌",
+    // 臀大肌 — hip thrusts/bridges + swing
+    "barbell-hip-thrust": "臀大肌", "weighted-glute-bridge": "臀大肌",
+    "single-leg-glute-bridge": "臀大肌", "kneeling-hip-extension": "臀大肌",
+    "rapid-hip-thrust": "臀大肌", "kettlebell-swing": "臀大肌",
+    // 胸大肌 — horizontal push + chest fly
+    "bench-press": "胸大肌", "dumbbell-bench-press": "胸大肌", "push-up": "胸大肌",
+    "dynamic-pushup": "胸大肌", "wide-pushup": "胸大肌", "single-leg-db-bench-press": "胸大肌",
+    "lying-med-ball-chest-push": "胸大肌", "cable-chest-fly": "胸大肌",
+    // 背阔肌 — horizontal pull + vertical pull
+    "bent-over-row": "背阔肌", "cable-row": "背阔肌", "dumbbell-row": "背阔肌",
+    "inverted-row": "背阔肌", "trx-row": "背阔肌", "pull-up": "背阔肌", "lat-pulldown": "背阔肌",
+    // 三角肌 — vertical push + shoulder isolation
+    "overhead-press": "三角肌", "dumbbell-shoulder-press": "三角肌",
+    "single-arm-kettlebell-press": "三角肌", "face-pull": "三角肌", "band-face-pull": "三角肌",
+    "med-ball-overhead-slam": "三角肌",
+    // 核心
+    "plank": "核心", "dead-bug": "核心", "bird-dog": "核心", "copenhagen-plank": "核心",
+    "russian-twist": "核心", "bosu-russian-twist": "核心", "v-up": "核心",
+    "opposite-arm-leg-raise": "核心", "adductor-raise": "核心", "plank-shoulder-tap": "核心",
+    "saw-plank": "核心", "hollow-body-hold": "核心", "side-plank": "核心",
+    "banded-plank-variation": "核心", "sit-up": "核心", "pallof-press": "核心",
+    // 小腿
+    "seated-calf-raise": "小腿", "standing-calf-raise": "小腿", "rapid-calf-raise": "小腿",
+    // Other → map to closest group
+    "tricep-pushdown": "三角肌", "farmers-walk": "背阔肌",
+  };
+
+  const MUSCLE_GROUP_NAMES = ["股四头肌", "腘绳肌", "臀大肌", "胸大肌", "背阔肌", "三角肌", "核心", "小腿"];
+  const WEEKLY_MUSCLE_MAX = 6; // max direct exercises per muscle group per week
+
+  const muscleHeatmap = useMemo(() => {
+    try {
+      const cal = JSON.parse(localStorage.getItem('kenshin_gym_calendar') || '[]');
+      const today = new Date();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+
+      // Filter this week's gym calendar entries
+      const weekEntries = cal.filter((e: any) => {
+        const d = e.date;
+        return d >= monday.toISOString().slice(0, 10) && d <= sunday.toISOString().slice(0, 10);
+      });
+
+      // Count exercises per muscle group
+      const counts: Record<string, number> = {};
+      MUSCLE_GROUP_NAMES.forEach(g => { counts[g] = 0; });
+
+      weekEntries.forEach((entry: any) => {
+        (entry.exerciseIds || []).forEach((eid: string) => {
+          const group = EXERCISE_MUSCLE_GROUP[eid];
+          if (group && counts[group] !== undefined) {
+            counts[group]++;
+          }
+        });
+      });
+
+      // Build heatmap rows
+      const rows = MUSCLE_GROUP_NAMES.map(name => {
+        const count = counts[name] || 0;
+        const pct = Math.min(100, Math.round((count / WEEKLY_MUSCLE_MAX) * 100));
+        let level: 'high' | 'medium' | 'low' = 'low';
+        if (pct > 80) level = 'high';
+        else if (pct >= 50) level = 'medium';
+        return { name, count, pct, level };
+      });
+
+      // Find highest and lowest
+      const maxCount = Math.max(...rows.map(r => r.count), 0);
+      const minCount = Math.min(...rows.map(r => r.count), 0);
+      const highest = rows.filter(r => r.count === maxCount && maxCount > 0).map(r => r.name);
+      const lowest = rows.filter(r => r.count === minCount).map(r => r.name);
+
+      return { rows, highest, lowest, hasData: weekEntries.length > 0, totalExercises: Object.values(counts).reduce((a, b) => a + b, 0) };
+    } catch {
+      return { rows: MUSCLE_GROUP_NAMES.map(name => ({ name, count: 0, pct: 0, level: 'low' as const })), highest: [], lowest: [], hasData: false, totalExercises: 0 };
+    }
+  }, [refreshKey]);
+
   // Today's date string and training info for team overview
   const todayStr = useMemo(() => {
     const d = new Date();
@@ -511,6 +608,86 @@ export default function LoadPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* ═══ MUSCLE GROUP LOAD HEATMAP ═══ */}
+      <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
+        <h3 className="text-xs font-semibold text-gray-400 mb-3 flex items-center gap-2">
+          <Activity className="w-3.5 h-3.5 text-[#d92525]" /> 肌肉群负荷热力图
+          <span className="text-[9px] text-gray-600 ml-auto">本周力量训练统计</span>
+        </h3>
+
+        {!muscleHeatmap.hasData ? (
+          <p className="text-xs text-gray-600 text-center py-4">本周暂无力量训练数据，在力量房排课后自动统计</p>
+        ) : (
+          <>
+            {/* Horizontal bar chart */}
+            <div className="space-y-1.5 mb-3">
+              {muscleHeatmap.rows.map(row => {
+                const barColor = row.level === 'high' ? '#ef4444' : row.level === 'medium' ? '#eab308' : '#22c55e';
+                const bgBar = row.level === 'high' ? 'bg-red-500/10' : row.level === 'medium' ? 'bg-yellow-500/5' : 'bg-green-500/5';
+                return (
+                  <div key={row.name} className={`flex items-center gap-2 py-1 px-2 rounded ${bgBar}`}>
+                    <span className="text-[10px] text-gray-300 w-16 shrink-0 font-medium">{row.name}</span>
+                    <div className="flex-1 h-3 bg-[#1a1a1a] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(2, row.pct)}%`, backgroundColor: barColor }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono w-16 text-right shrink-0" style={{ color: barColor }}>
+                      {row.count}次 ({row.pct}%)
+                    </span>
+                    <span className="text-[9px] w-10 shrink-0 text-right" style={{ color: barColor }}>
+                      {row.level === 'high' ? '过高' : row.level === 'medium' ? '适中' : '偏低'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-3 text-[9px] text-gray-500 mb-2">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444] inline-block" /> 过高(&gt;80%)</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#eab308] inline-block" /> 适中(50-80%)</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#22c55e] inline-block" /> 偏低(&lt;50%)</span>
+            </div>
+
+            {/* Auto-detection alerts */}
+            <div className="space-y-1 mt-2 pt-2 border-t border-[#1a1a1a]">
+              {muscleHeatmap.highest.length > 0 && (
+                <div className="text-[10px] flex items-center gap-1.5">
+                  <span className="text-red-400 font-medium">负荷最高:</span>
+                  <span className="text-gray-400">
+                    {muscleHeatmap.highest.join('、')}
+                    {muscleHeatmap.rows.find(r => muscleHeatmap.highest.includes(r.name))?.level === 'high' &&
+                      <span className="text-red-400 ml-1">— 建议减少该肌群动作或增加恢复时间</span>
+                    }
+                  </span>
+                </div>
+              )}
+              {muscleHeatmap.lowest.length > 0 && (
+                <div className="text-[10px] flex items-center gap-1.5">
+                  <span className="text-green-400 font-medium">负荷最低:</span>
+                  <span className="text-gray-400">
+                    {muscleHeatmap.lowest.join('、')}
+                    {(() => {
+                      const lowestRow = muscleHeatmap.rows.find(r => muscleHeatmap.lowest.includes(r.name));
+                      return lowestRow && lowestRow.count === 0
+                        ? <span className="text-green-400 ml-1">— 本周未训练，建议适当补充</span>
+                        : null;
+                    })()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Summary */}
+            <div className="text-[9px] text-gray-600 mt-2">
+              本周共 {muscleHeatmap.totalExercises} 个力量动作覆盖 {muscleHeatmap.rows.filter(r => r.count > 0).length}/{MUSCLE_GROUP_NAMES.length} 个肌群
+            </div>
+          </>
+        )}
       </div>
 
       {/* ═══ WEEKLY LOAD BAR ═══ */}
