@@ -29,6 +29,8 @@ interface WarmupDesign {
   segments: Segment[];
   canvasJSON: object;
   notes: string;
+  equipmentCount: Record<string, number>;
+  injuryNotes: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +55,145 @@ const EQUIPMENT_COLORS = {
   player: "#3b82f6",
   arrow: "#d92525",
 };
+
+const EQUIPMENT_LABEL_CN: Record<string, string> = {
+  cone: "标志盘",
+  pole: "标志杆",
+  ladder: "绳梯",
+  hoop: "敏捷圈",
+  hurdle: "栏架",
+  band: "弹力带",
+  player: "球员站位",
+};
+
+/** Count equipment types from a fabric canvas JSON snapshot */
+function countEquipmentFromJSON(canvasJSON: Record<string, unknown>): Record<string, number> {
+  const counts: Record<string, number> = { cone: 0, pole: 0, ladder: 0, hoop: 0, hurdle: 0, band: 0, player: 0 };
+  const objects = (canvasJSON as { objects?: Array<Record<string, unknown>> }).objects;
+  if (!objects) return counts;
+
+  for (const obj of objects) {
+    if (obj.selectable === false) continue;
+
+    const objType = obj.type as string | undefined;
+    const fill = obj.fill as string | undefined;
+    const stroke = obj.stroke as string | undefined;
+    const width = obj.width as number | undefined;
+
+    // Cone: Circle with orange fill
+    if (objType === "circle" && fill === "#f97316") {
+      counts.cone++; continue;
+    }
+    // Pole: Rect with red fill, narrow
+    if (objType === "rect" && fill === "#d92525" && width !== undefined && width < 15) {
+      counts.pole++; continue;
+    }
+    // Hoop: Circle with white stroke, transparent fill
+    if (objType === "circle" && stroke === "#ffffff" && fill === "transparent") {
+      counts.hoop++; continue;
+    }
+    // Groups — inspect sub-objects to identify type
+    if (objType === "group") {
+      const subObjects = (obj as { objects?: Array<Record<string, unknown>> }).objects;
+      if (!subObjects || subObjects.length === 0) continue;
+
+      const firstFillable = subObjects.find((o: Record<string, unknown>) => typeof o.fill === "string");
+      const firstLine = subObjects.find((o: Record<string, unknown>) => o.type === "line" || typeof o.stroke === "string");
+
+      const subFill = firstFillable?.fill as string | undefined;
+      const subStroke = firstLine?.stroke as string | undefined;
+
+      if (subFill === "#fbbf24") counts.ladder++;
+      else if (subFill === "#facc15") counts.hurdle++;
+      else if (subFill === "#3b82f6") counts.player++;
+      else if (subStroke === "#c084fc") counts.band++;
+    }
+  }
+  return counts;
+}
+
+/** Transform canvas JSON to equipment-free variant (body-weight markers) */
+function transformCanvasToEquipmentFree(canvasJSON: Record<string, unknown>): Record<string, unknown> {
+  const cloned = JSON.parse(JSON.stringify(canvasJSON)) as { objects?: Array<Record<string, unknown>> };
+  if (!cloned.objects) return cloned;
+
+  const newObjects: Array<Record<string, unknown>> = [];
+
+  for (const obj of cloned.objects) {
+    // Keep pitch markings unchanged
+    if (obj.selectable === false) {
+      newObjects.push(obj); continue;
+    }
+
+    const objType = obj.type as string | undefined;
+    const fill = obj.fill as string | undefined;
+    const stroke = obj.stroke as string | undefined;
+    const width = obj.width as number | undefined;
+
+    // Cone → small floor dot
+    if (objType === "circle" && fill === "#f97316") {
+      newObjects.push({ ...obj, radius: 8, fill: "#ef4444", stroke: "", strokeWidth: 0 });
+      continue;
+    }
+    // Pole → tape line on ground
+    if (objType === "rect" && fill === "#d92525" && width !== undefined && width < 15) {
+      newObjects.push({
+        ...obj,
+        width: 30, height: 3,
+        fill: "rgba(255,255,255,0.6)", stroke: "",
+        rx: 0, ry: 0,
+        top: (obj.top as number || 0) + 30,
+      });
+      continue;
+    }
+    // Hoop → dashed ground circle
+    if (objType === "circle" && stroke === "#ffffff" && fill === "transparent") {
+      newObjects.push({ ...obj, strokeDashArray: [6, 4], strokeWidth: 2 });
+      continue;
+    }
+    // Groups
+    if (objType === "group") {
+      const subObjects = (obj as { objects?: Array<Record<string, unknown>> }).objects;
+      if (!subObjects || subObjects.length === 0) { newObjects.push(obj); continue; }
+
+      const firstFillable = subObjects.find((o: Record<string, unknown>) => typeof o.fill === "string");
+      const firstLine = subObjects.find((o: Record<string, unknown>) => o.type === "line" || typeof o.stroke === "string");
+      const subFill = firstFillable?.fill as string | undefined;
+      const subStroke = firstLine?.stroke as string | undefined;
+
+      // Ladder (yellow) → tape marks
+      if (subFill === "#fbbf24") {
+        const transSubs = subObjects.map((sub: Record<string, unknown>) => {
+          if (sub.type === "rect") {
+            return { ...sub, height: 3, fill: "rgba(255,255,255,0.5)", stroke: "", strokeWidth: 0 };
+          }
+          return sub;
+        });
+        newObjects.push({ ...obj, objects: transSubs });
+        continue;
+      }
+      // Hurdle (yellow) → flat floor lines
+      if (subFill === "#facc15") {
+        const transSubs = subObjects.map((sub: Record<string, unknown>) => {
+          if (sub.type === "rect") {
+            if ((sub.height as number) <= 4) return sub; // base plate stays
+            return { ...sub, height: 3, fill: "rgba(255,255,255,0.5)", stroke: "", strokeWidth: 0, top: (sub.top as number || 0) + 15 };
+          }
+          return sub;
+        });
+        newObjects.push({ ...obj, objects: transSubs });
+        continue;
+      }
+      // Band (purple lines) → remove
+      if (subStroke === "#c084fc") continue;
+    }
+    // Default: keep as-is (players, arrows, etc.)
+    newObjects.push(obj);
+  }
+
+  cloned.objects = newObjects;
+  return cloned;
+}
 
 /* ───────────────────────────────────────────
    Fabric object factories
@@ -491,14 +632,16 @@ function ConfigPanel({
   name, setName,
   duration, setDuration,
   ballOption, setBallOption,
-  hasEquipmentFreeVariant, setHasEquipmentFreeVariant,
   notes, setNotes,
+  injuryEnabled, setInjuryEnabled,
+  injuryNotesText, setInjuryNotesText,
 }: {
   name: string; setName: (v: string) => void;
   duration: number; setDuration: (v: number) => void;
   ballOption: "ball" | "no-ball"; setBallOption: (v: "ball" | "no-ball") => void;
-  hasEquipmentFreeVariant: boolean; setHasEquipmentFreeVariant: (v: boolean) => void;
   notes: string; setNotes: (v: string) => void;
+  injuryEnabled: boolean; setInjuryEnabled: (v: boolean) => void;
+  injuryNotesText: string; setInjuryNotesText: (v: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-4 p-4 bg-[#1e1e1e] border border-[#222] rounded-xl">
@@ -563,16 +706,27 @@ function ConfigPanel({
         </div>
       </div>
 
-      {/* Equipment-free variant toggle */}
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={hasEquipmentFreeVariant}
-          onChange={(e) => setHasEquipmentFreeVariant(e.target.checked)}
-          className="w-4 h-4 accent-[#d92525] rounded"
-        />
-        <span className="text-xs text-gray-300">无器材应急变式</span>
-      </label>
+      {/* Injury player notes */}
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={injuryEnabled}
+            onChange={(e) => setInjuryEnabled(e.target.checked)}
+            className="w-4 h-4 accent-[#d92525] rounded"
+          />
+          <span className="text-xs text-gray-300">标注伤病球员替代动作</span>
+        </label>
+        {injuryEnabled && (
+          <textarea
+            value={injuryNotesText}
+            onChange={(e) => setInjuryNotesText(e.target.value)}
+            placeholder="伤病球员替代说明（将标注在场地布置图上）..."
+            rows={3}
+            className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition resize-none"
+          />
+        )}
+      </div>
 
       {/* Notes */}
       <div className="flex flex-col gap-1">
@@ -765,14 +919,26 @@ function WarmupLibrary({
                   className="flex items-center justify-between p-3 bg-[#121212] rounded-lg border border-[#222] hover:border-[#444] transition group"
                 >
                   <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm text-white font-medium truncate">
-                      {design.name || "未命名热身"}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm text-white font-medium truncate">
+                        {design.name || "未命名热身"}
+                      </span>
+                      {design.hasEquipmentFreeVariant && (
+                        <span className="text-[10px] shrink-0" title="无器材变体">🔧</span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-gray-500">
                       {design.duration}min · {design.ballOption === "ball" ? "有球" : "无球"}
-                      {design.hasEquipmentFreeVariant ? " · 无器材变式" : ""}
                       {" · "}{design.segments.length}环节
                     </span>
+                    {design.equipmentCount && Object.values(design.equipmentCount).some((c) => c > 0) && (
+                      <span className="text-[9px] text-gray-500 truncate">
+                        {Object.entries(design.equipmentCount)
+                          .filter(([, c]) => c > 0)
+                          .map(([key, count]) => `${EQUIPMENT_LABEL_CN[key] || key}×${count}`)
+                          .join(" · ")}
+                      </span>
+                    )}
                     <span className="text-[9px] text-gray-600">
                       {design.updatedAt ? new Date(design.updatedAt).toLocaleDateString("zh-CN") : ""}
                     </span>
@@ -825,6 +991,10 @@ export default function WarmupPage() {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [currentLoadedId, setCurrentLoadedId] = useState<string | null>(null);
+  const [injuryEnabled, setInjuryEnabled] = useState(false);
+  const [injuryNotesText, setInjuryNotesText] = useState("");
+  const [equipmentCount, setEquipmentCount] = useState<Record<string, number>>({});
+  const injuryLabelRef = useRef<Group | null>(null);
 
   // Library refresh trigger
   const triggerLibraryRefresh = () => {
@@ -865,6 +1035,17 @@ export default function WarmupPage() {
     // Draw pitch markings
     drawPitch(canvas);
 
+    // Equipment count tracking
+    const refreshEquipCount = () => {
+      try {
+        const json = canvas.toJSON() as Record<string, unknown>;
+        setEquipmentCount(countEquipmentFromJSON(json));
+      } catch { /* ignore serialization errors */ }
+    };
+    canvas.on("object:added", refreshEquipCount);
+    canvas.on("object:removed", refreshEquipCount);
+    refreshEquipCount();
+
     // Delete key handler
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && fabricRef.current) {
@@ -899,6 +1080,59 @@ export default function WarmupPage() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Injury label on canvas — add/remove based on toggle
+  useEffect(() => {
+    const canvas = fabricRef.current;
+    if (!canvas) return;
+
+    // Remove previous label if any
+    if (injuryLabelRef.current) {
+      try { canvas.remove(injuryLabelRef.current); } catch { /* already removed */ }
+      injuryLabelRef.current = null;
+    }
+
+    // Add new label if injury mode is on and notes exist
+    if (injuryEnabled && injuryNotesText.trim()) {
+      const labelW = 240;
+      const labelH = 30;
+      const padX = 6;
+      const padY = 4;
+
+      const bg = new Rect({
+        left: CANVAS_W - labelW - 10,
+        top: CANVAS_H - labelH - 8,
+        width: labelW,
+        height: labelH,
+        fill: "#dc2626",
+        rx: 4,
+        ry: 4,
+        selectable: true,
+        evented: true,
+      });
+      const text = new IText("\u{1F3A5} 伤病: " + injuryNotesText, {
+        left: CANVAS_W - labelW - 10 + padX,
+        top: CANVAS_H - labelH - 8 + padY,
+        fontSize: 11,
+        fill: "#ffffff",
+        fontFamily: "Inter, system-ui, sans-serif",
+        selectable: true,
+        evented: true,
+      });
+      const group = new Group([bg, text], {
+        left: 0,
+        top: 0,
+        selectable: true,
+        evented: true,
+        hasControls: true,
+        hasBorders: true,
+      });
+      canvas.add(group);
+      injuryLabelRef.current = group;
+    }
+
+    canvas.renderAll();
+  }, [injuryEnabled, injuryNotesText]);
+
   // Add object to canvas
   const handleAddObject = useCallback((factory: () => FabricObject) => {
     if (!fabricRef.current) return;
@@ -924,8 +1158,10 @@ export default function WarmupPage() {
         ballOption,
         hasEquipmentFreeVariant,
         segments,
-        canvasJSON,
+        canvasJSON: canvasJSON as object,
         notes,
+        equipmentCount: countEquipmentFromJSON(canvasJSON as Record<string, unknown>),
+        injuryNotes: injuryEnabled ? injuryNotesText : "",
         createdAt: now,
         updatedAt: now,
       };
@@ -951,7 +1187,7 @@ export default function WarmupPage() {
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 2000);
     }
-  }, [name, duration, ballOption, hasEquipmentFreeVariant, segments, notes, currentLoadedId]);
+  }, [name, duration, ballOption, hasEquipmentFreeVariant, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
 
   // Export PNG
   const handleExport = useCallback(() => {
@@ -969,6 +1205,57 @@ export default function WarmupPage() {
     document.body.removeChild(link);
   }, [name]);
 
+  // Create equipment-free variant
+  const handleCreateEquipmentFreeVariant = useCallback(() => {
+    if (!fabricRef.current) return;
+    setSaveStatus("saving");
+
+    try {
+      const canvasJSON = fabricRef.current.toJSON() as Record<string, unknown>;
+      const variantJSON = transformCanvasToEquipmentFree(canvasJSON);
+      const now = new Date().toISOString();
+
+      const variantName = name ? `${name} [无器材]` : `球场热身 [无器材]`;
+
+      const design: WarmupDesign = {
+        id: generateId(),
+        name: variantName,
+        duration,
+        ballOption,
+        hasEquipmentFreeVariant: true,
+        segments,
+        canvasJSON: variantJSON as object,
+        notes: notes ? `${notes}\n\n[无器材变体 — 器材已替换为地面标记]` : "[无器材变体 — 器材已替换为地面标记]",
+        equipmentCount: countEquipmentFromJSON(variantJSON),
+        injuryNotes: injuryEnabled ? injuryNotesText : "",
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const library = loadLibrary();
+      library.unshift(design);
+      saveLibrary(library);
+
+      // Also mark current design as having a variant
+      if (currentLoadedId) {
+        const mainIdx = library.findIndex((d) => d.id === currentLoadedId);
+        if (mainIdx >= 0) {
+          library[mainIdx] = { ...library[mainIdx], hasEquipmentFreeVariant: true };
+          saveLibrary(library);
+          setHasEquipmentFreeVariant(true);
+        }
+      }
+
+      setSaveStatus("saved");
+      triggerLibraryRefresh();
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (e) {
+      console.error("Failed to create equipment-free variant:", e);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    }
+  }, [name, duration, ballOption, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
+
   // Load from library
   const handleLoad = useCallback((design: WarmupDesign) => {
     if (!fabricRef.current) return;
@@ -979,6 +1266,9 @@ export default function WarmupPage() {
     setHasEquipmentFreeVariant(design.hasEquipmentFreeVariant);
     setSegments(design.segments);
     setNotes(design.notes);
+    setInjuryNotesText(design.injuryNotes || "");
+    setInjuryEnabled(!!design.injuryNotes);
+    setEquipmentCount(design.equipmentCount || {});
     setCurrentLoadedId(design.id);
 
     // Load canvas state
@@ -1005,7 +1295,11 @@ export default function WarmupPage() {
     setHasEquipmentFreeVariant(false);
     setSegments([]);
     setNotes("");
+    setInjuryEnabled(false);
+    setInjuryNotesText("");
+    setEquipmentCount({});
     setCurrentLoadedId(null);
+    injuryLabelRef.current = null;
 
     const canvas = fabricRef.current;
     canvas.clear();
@@ -1062,6 +1356,14 @@ export default function WarmupPage() {
                 <Save className="w-3.5 h-3.5" />
               )}
               {saveStatus === "saved" ? "已保存" : saveStatus === "error" ? "保存失败" : "保存"}
+            </button>
+            <button
+              onClick={handleCreateEquipmentFreeVariant}
+              disabled={saveStatus === "saving"}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#d92525]/50 transition disabled:opacity-50"
+              title="基于当前场地布置创建无器材版本（器材替换为地面标记）"
+            >
+              📦 创建无器材变体
             </button>
             <button
               onClick={handleExport}
@@ -1137,6 +1439,19 @@ export default function WarmupPage() {
                 setTotalDuration={setDuration}
               />
             </div>
+
+            {/* Equipment checklist */}
+            {Object.values(equipmentCount).some((c) => c > 0) && (
+              <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#1e1e1e] border border-[#222] rounded-lg">
+                <span className="text-xs text-gray-400 shrink-0">📋 器材清单:</span>
+                <span className="text-xs text-gray-300">
+                  {Object.entries(equipmentCount)
+                    .filter(([, c]) => c > 0)
+                    .map(([key, count]) => `${EQUIPMENT_LABEL_CN[key] || key}×${count}`)
+                    .join(" · ")}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Right: Config panel */}
@@ -1148,10 +1463,12 @@ export default function WarmupPage() {
               setDuration={setDuration}
               ballOption={ballOption}
               setBallOption={setBallOption}
-              hasEquipmentFreeVariant={hasEquipmentFreeVariant}
-              setHasEquipmentFreeVariant={setHasEquipmentFreeVariant}
               notes={notes}
               setNotes={setNotes}
+              injuryEnabled={injuryEnabled}
+              setInjuryEnabled={setInjuryEnabled}
+              injuryNotesText={injuryNotesText}
+              setInjuryNotesText={setInjuryNotesText}
             />
           </div>
         </div>
@@ -1165,10 +1482,12 @@ export default function WarmupPage() {
             setDuration={setDuration}
             ballOption={ballOption}
             setBallOption={setBallOption}
-            hasEquipmentFreeVariant={hasEquipmentFreeVariant}
-            setHasEquipmentFreeVariant={setHasEquipmentFreeVariant}
             notes={notes}
             setNotes={setNotes}
+            injuryEnabled={injuryEnabled}
+            setInjuryEnabled={setInjuryEnabled}
+            injuryNotesText={injuryNotesText}
+            setInjuryNotesText={setInjuryNotesText}
           />
         </div>
 

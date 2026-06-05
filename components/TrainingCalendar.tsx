@@ -15,6 +15,7 @@ export interface DayNotes {
   notes: string;
   warmupId: string | null;
   warmupDuration: number; // 5-25
+  scaledSegments?: { name: string; duration: number }[];
 }
 
 export interface WarmupDesign {
@@ -210,7 +211,28 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
 
   // ── duration change handler ──
   const handleDurationChange = useCallback((dayDate: string, duration: number) => {
-    updateDayNotes(dayDate, { warmupDuration: duration });
+    // Read current notes to get warmupId
+    const allData = loadCalendar();
+    const currentNotes = allData[dayDate];
+    const warmupId = currentNotes?.warmupId;
+
+    let scaledSegments: { name: string; duration: number }[] | undefined;
+
+    if (warmupId) {
+      const lib = loadWarmupLibrary();
+      const warmup = lib.find(w => w.id === warmupId);
+      if (warmup && warmup.segments && warmup.segments.length > 0) {
+        const originalTotal = warmup.segments.reduce((s, seg) => s + seg.duration, 0);
+        if (originalTotal > 0) {
+          scaledSegments = warmup.segments.map(seg => ({
+            name: seg.name,
+            duration: Math.max(1, Math.round(seg.duration * (duration / originalTotal))),
+          }));
+        }
+      }
+    }
+
+    updateDayNotes(dayDate, { warmupDuration: duration, scaledSegments });
     onDurationChange?.(dayDate, duration);
   }, [updateDayNotes, onDurationChange]);
 
