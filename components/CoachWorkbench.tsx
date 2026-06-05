@@ -890,7 +890,17 @@ export default function CoachWorkbench() {
       {(() => {
         const tdo = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
         const tp = getMicrocyclePlan(matchDate, tdo);
-        if (!tp) return null;
+        if (!tp) return (
+          <a href="/planning" className="bg-[#0d0d0d] border border-dashed border-[#444] hover:border-[#d92525]/50 rounded-xl p-4 no-underline block transition">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">📅</span>
+              <div className="flex-1">
+                <span className="text-sm font-bold text-gray-400">今日暂无预排方案</span>
+                <p className="text-[10px] text-gray-600 mt-0.5">去周期方案提前编排本周训练 →</p>
+              </div>
+            </div>
+          </a>
+        );
         return (
           <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-4" style={{ borderLeft: '3px solid #d92525' }}>
             <div className="flex items-center gap-3 flex-wrap">
@@ -935,10 +945,6 @@ export default function CoachWorkbench() {
 
       {/* ── 训练日期 + 类型 + 时段 ── */}
       <div className="flex items-center gap-3 bg-[#0d0d0d] border border-[#222] rounded-xl p-3 flex-wrap">
-        <span className="text-[10px] text-gray-500 shrink-0">日期</span>
-        <input type="date" value={trainDate} onChange={e => setTrainDate(e.target.value)}
-          className="bg-[#1a1a1a] border border-[#333] rounded-lg px-2 py-1 text-xs text-white focus:border-[#d92525] outline-none" />
-        <span className="text-[10px] text-gray-600">·</span>
         <span className="text-[10px] text-gray-500 shrink-0">训练</span>
         <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '⚽ 外场' : '🏋️ 力量房'}</span>
         <span className="text-[10px] text-gray-600">·</span>
