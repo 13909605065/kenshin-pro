@@ -79,17 +79,60 @@ const WARMUP_TRIMP_RATE = 0.8;
 /** 球场外场 TRIMP/分钟（默认） */
 const FIELD_DEFAULT_TRIMP_RATE = 2.5;
 
-/** 单日高风险阈值 */
-const DAY_HIGH_THRESHOLD = 300;
+// ═══════════════════════════════════════════
+// 阶段感知负荷阈值（读取赛季全景自动切换）
+// ═══════════════════════════════════════════
 
-/** 单日偏高阈值 */
-const DAY_ELEVATED_THRESHOLD = 200;
+type SeasonPhaseKey = 'offseason' | 'preseason_build' | 'regular_season' | 'playoffs';
 
-/** 周总超负荷阈值 */
-const WEEK_OVERLOAD_THRESHOLD = 1500;
+interface PhaseThresholds {
+  dayElevated: number;
+  dayHigh: number;
+  weekWarning: number;
+  weekOverload: number;
+}
 
-/** 周总警告阈值 */
-const WEEK_WARNING_THRESHOLD = 1200;
+const PHASE_THRESHOLDS: Record<SeasonPhaseKey, PhaseThresholds> = {
+  offseason: {
+    dayElevated: 120,
+    dayHigh: 180,
+    weekWarning: 700,
+    weekOverload: 1000,
+  },
+  preseason_build: {
+    dayElevated: 200,
+    dayHigh: 300,
+    weekWarning: 1200,
+    weekOverload: 1500,
+  },
+  regular_season: {
+    dayElevated: 180,
+    dayHigh: 280,
+    weekWarning: 1100,
+    weekOverload: 1400,
+  },
+  playoffs: {
+    dayElevated: 140,
+    dayHigh: 220,
+    weekWarning: 800,
+    weekOverload: 1100,
+  },
+};
+
+function getCurrentPhaseThresholds(): PhaseThresholds {
+  try {
+    const raw = localStorage.getItem('kenshin_season_calendar');
+    if (!raw) return PHASE_THRESHOLDS.regular_season;
+    const data = JSON.parse(raw);
+    const ranges = data.phaseRanges || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const phase = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
+    if (phase && PHASE_THRESHOLDS[phase.phase as SeasonPhaseKey]) {
+      return PHASE_THRESHOLDS[phase.phase as SeasonPhaseKey];
+    }
+  } catch {}
+  return PHASE_THRESHOLDS.regular_season;
+}
 
 // ═══════════════════════════════════════════
 // 工具函数
@@ -352,8 +395,9 @@ function aggregateDailyLoad(
 
   // ── 风险判定 ──
   let riskLevel: DailyLoad['riskLevel'] = 'normal';
-  if (totalTRIMP > DAY_HIGH_THRESHOLD) riskLevel = 'high';
-  else if (totalTRIMP > DAY_ELEVATED_THRESHOLD) riskLevel = 'elevated';
+  const t = getCurrentPhaseThresholds();
+  if (totalTRIMP > t.dayHigh) riskLevel = 'high';
+  else if (totalTRIMP > t.dayElevated) riskLevel = 'elevated';
 
   return { date: dateISO, weekday, mdLabel, segments, totalTRIMP, riskLevel };
 }
@@ -399,12 +443,13 @@ export function getWeeklyLoad(matchDate: string): WeeklyLoadReport {
   let status: WeeklyLoadReport['status'] = 'safe';
   const warnings: string[] = [];
 
-  if (totalTRIMP > WEEK_OVERLOAD_THRESHOLD) {
+  const t = getCurrentPhaseThresholds();
+  if (totalTRIMP > t.weekOverload) {
     status = 'overload';
-    warnings.push(`周总负荷 ${totalTRIMP} > ${WEEK_OVERLOAD_THRESHOLD}，处于超负荷区间`);
-  } else if (totalTRIMP > WEEK_WARNING_THRESHOLD) {
+    warnings.push(`周总负荷 ${totalTRIMP} > ${t.weekOverload}，处于超负荷区间（当前阶段上限）`);
+  } else if (totalTRIMP > t.weekWarning) {
     status = 'warning';
-    warnings.push(`周总负荷 ${totalTRIMP} > ${WEEK_WARNING_THRESHOLD}，偏高须关注恢复`);
+    warnings.push(`周总负荷 ${totalTRIMP} > ${t.weekWarning}，偏高须关注恢复`);
   }
 
   // 连续 3 天高风险
