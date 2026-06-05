@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useTheme, THEME_LABELS } from "@/components/providers/ThemeProvider";
-import { ArrowLeft, Save, Camera } from "lucide-react";
+import { ArrowLeft, Save, Camera, Download, AlertTriangle } from "lucide-react";
+import { exportAsJSON, exportAsCSV, exportAllData, DataStats } from "@/lib/data-export";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function SettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [stats, setStats] = useState<DataStats | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -30,6 +33,12 @@ export default function SettingsPage() {
       }
     };
     load();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setStats(exportAllData().stats);
+    }
   }, []);
 
   const save = async () => {
@@ -114,13 +123,83 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Clear Cache */}
-        <section className="glass-card p-4">
-          <h2 className="text-white font-bold text-sm mb-2">💾 数据管理</h2>
-          <button onClick={()=>{localStorage.clear();setMessage('已清除所有本地缓存，请刷新页面');setTimeout(()=>window.location.reload(),800)}}
-            className="w-full py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-sm hover:bg-red-500/30 transition">
-            🗑️ 清除本地缓存（解决数据显示异常）
-          </button>
+        {/* Data Export */}
+        <section className="glass-card p-6 space-y-4">
+          <h2 className="text-white font-bold flex items-center gap-2">
+            <Download className="w-4 h-4" />
+            数据导出
+          </h2>
+
+          {/* Stats Summary */}
+          {stats && (
+            <div className="text-xs text-gray-400 bg-[#1a1a1a] rounded-lg p-3 leading-relaxed">
+              训练方案{stats.trainingPlans}份 · 训练日志{stats.trainingLogs}条 · 热身设计{stats.warmupDesigns}套 · 力量设计{stats.gymDesigns}套 · 比赛{stats.matchRecords}场 · 体能档案{stats.fitnessProfiles}人
+              <br />
+              总计约 {stats.totalSizeKB} KB
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { exportAsJSON(); setMessage("JSON 备份已下载"); setTimeout(() => setMessage(""), 2000); }}
+              className="flex-1 py-2 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              导出全部数据 (JSON)
+            </button>
+            <button
+              onClick={() => { exportAsCSV(); setMessage("CSV 已下载"); setTimeout(() => setMessage(""), 2000); }}
+              className="flex-1 py-2 bg-[#1e1e1e] border border-[#333] text-gray-200 rounded-lg text-sm hover:bg-[#252525] transition flex items-center justify-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              导出训练日志 (CSV)
+            </button>
+          </div>
+        </section>
+
+        {/* Clear All Data */}
+        <section className="glass-card p-6 space-y-4">
+          <h2 className="text-white font-bold flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-400" />
+            数据管理
+          </h2>
+          <p className="text-xs text-gray-500">
+            清除所有本地存储的训练数据。建议先导出备份。
+          </p>
+
+          {!showClearConfirm ? (
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="w-full py-2 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/20 transition"
+            >
+              清除全部数据
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-red-400 bg-red-500/10 rounded p-2">
+                确认清除？此操作不可撤销，所有本地数据将被永久删除。
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    setMessage("已清除所有本地数据，即将刷新页面");
+                    setShowClearConfirm(false);
+                    setTimeout(() => window.location.reload(), 800);
+                  }}
+                  className="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition"
+                >
+                  确认清除
+                </button>
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 rounded-lg text-sm hover:bg-[#252525] transition"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Save */}

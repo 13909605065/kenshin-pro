@@ -28,6 +28,38 @@ const dateStr = (d: Date) => d.toISOString().slice(0, 10);
 const weekLabel = (d: Date, o: number) => fmt(d, o).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', weekday: 'short' });
 const dayDiff = (a: Date, b: Date) => Math.round((a.getTime() - b.getTime()) / 86400000);
 
+// ── today checklist helpers ──
+function getTodayWarmupInfo(): { found: boolean; name: string } {
+  try {
+    const todayStr = dateStr(new Date());
+    const calRaw = localStorage.getItem('kenshin_warmup_calendar');
+    if (!calRaw) return { found: false, name: '' };
+    const cal = JSON.parse(calRaw);
+    const todayNotes = cal[todayStr];
+    if (!todayNotes?.warmupId) return { found: false, name: '' };
+    const libRaw = localStorage.getItem('kenshin_warmup_library');
+    const lib = libRaw ? JSON.parse(libRaw) : [];
+    const w = lib.find((x: any) => x.id === todayNotes.warmupId);
+    return { found: true, name: w?.name || '未知热身' };
+  } catch { return { found: false, name: '' }; }
+}
+
+function getTodayGymInfo(): { found: boolean; name: string } {
+  try {
+    const todayStr = dateStr(new Date());
+    const calRaw = localStorage.getItem('kenshin_gym_calendar');
+    if (!calRaw) return { found: false, name: '' };
+    const cal = JSON.parse(calRaw);
+    if (!Array.isArray(cal)) return { found: false, name: '' };
+    const entry = cal.find((e: any) => e.date === todayStr);
+    if (!entry) return { found: false, name: '' };
+    const libRaw = localStorage.getItem('kenshin_gym_library');
+    const lib = libRaw ? JSON.parse(libRaw) : [];
+    const w = lib.find((x: any) => x.id === entry.comboId);
+    return { found: true, name: w?.name || '未知方案' };
+  } catch { return { found: false, name: '' }; }
+}
+
 // ═══════════════════════════════════════════════
 // Chinese weekday helper
 // ═══════════════════════════════════════════════
@@ -153,6 +185,7 @@ export default function CoachWorkbench() {
   });
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [todoCollapsed, setTodoCollapsed] = useState(false);
 
   // ── coach profile — persisted to localStorage ──
   const COACH_KEY = 'kenshin_coach_profile';
@@ -296,6 +329,53 @@ export default function CoachWorkbench() {
     };
     return calcRecoveryScore(input);
   }, [teamACWR]);
+
+  // ── today's checklist ──
+  const todoItems = useMemo(() => {
+    const items: {
+      label: string;
+      done: boolean;
+      detail: string;
+      action: { type: 'generate' | 'link' | 'none'; label: string; href?: string };
+    }[] = [];
+
+    // 1. 训练方案
+    const plan = getMicrocyclePlan(matchDate, mdDay);
+    items.push({
+      label: '训练方案',
+      done: !!plan,
+      detail: plan ? `已生成 "${GOAL_LABELS[plan.goal] || plan.goal} · ${plan.duration}min"` : '未生成',
+      action: { type: plan ? 'none' : 'generate', label: plan ? '' : '⚡ 一键生成' },
+    });
+
+    // 2. 球场热身
+    const warmupInfo = getTodayWarmupInfo();
+    items.push({
+      label: '球场热身',
+      done: warmupInfo.found,
+      detail: warmupInfo.found ? `已绑定 "${warmupInfo.name}"` : '未选择',
+      action: { type: 'link', label: warmupInfo.found ? '修改' : '去选择', href: '/warmup' },
+    });
+
+    // 3. 力量房
+    const gymInfo = getTodayGymInfo();
+    items.push({
+      label: '力量房',
+      done: gymInfo.found,
+      detail: gymInfo.found ? `已设计 "${gymInfo.name}"` : '未设计',
+      action: { type: 'link', label: gymInfo.found ? '修改' : '去设计', href: '/gym' },
+    });
+
+    // 4. 比赛数据
+    items.push({
+      label: '比赛数据',
+      done: mdDay === 0,
+      detail: mdDay === 0 ? '比赛日' : '无比赛',
+      action: { type: mdDay === 0 ? 'link' : 'none', label: mdDay === 0 ? '录入' : '—', href: mdDay === 0 ? '/match' : undefined },
+    });
+
+    return items;
+  }, [matchDate, mdDay, modules]);
 
   // ── load recommendation based on MD ──
   useEffect(() => {
@@ -531,6 +611,53 @@ export default function CoachWorkbench() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 pb-10">
+
+      {/* ═══════════════════════════════════════════════
+          TODAY'S CHECKLIST — collapsible daily status
+          ═══════════════════════════════════════════════ */}
+      {todoCollapsed ? (
+        <button onClick={() => setTodoCollapsed(false)}
+          className="w-full bg-[#0d0d0d] border border-[#222] rounded-xl p-2.5 flex items-center gap-2 hover:border-[#444] transition">
+          <span className="text-xs font-bold text-white">📋 今日待办</span>
+          <span className="text-[10px] text-gray-500 ml-auto">展开 ▼</span>
+        </button>
+      ) : (
+        <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 space-y-2">
+          <button onClick={() => setTodoCollapsed(true)}
+            className="w-full flex items-center justify-between">
+            <span className="text-xs font-bold text-white">📋 今日待办</span>
+            <span className="text-[10px] text-gray-500 hover:text-gray-300">收起 ▲</span>
+          </button>
+          <div className="space-y-1.5">
+            {todoItems.map((item, i) => (
+              <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[#111]">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className={`text-sm shrink-0 ${item.done ? 'text-green-400' : 'text-gray-600'}`}>
+                    {item.done ? '☑' : '☐'}
+                  </span>
+                  <span className="text-xs text-white font-medium shrink-0">{item.label}</span>
+                  <span className="text-[10px] text-gray-500 truncate">— {item.detail}</span>
+                </div>
+                {item.action.type === 'generate' && (
+                  <button onClick={handleGenerate}
+                    className="text-[10px] px-2 py-1 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded transition shrink-0">
+                    {item.action.label}
+                  </button>
+                )}
+                {item.action.type === 'link' && (
+                  <a href={item.action.href}
+                    className="text-[10px] px-2 py-1 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded text-gray-300 hover:text-white transition shrink-0 no-underline">
+                    {item.action.label}
+                  </a>
+                )}
+                {item.action.type === 'none' && (
+                  <span className="text-[10px] text-gray-600 shrink-0">{item.action.label}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════
           DASHBOARD HEADER — overview at a glance
