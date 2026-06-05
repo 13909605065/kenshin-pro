@@ -312,8 +312,8 @@ export default function SeasonCalendar() {
   const [showEventEditor, setShowEventEditor] = useState<{ date: string; event: SeasonEvent | null } | null>(null);
   const [showBatchPanel, setShowBatchPanel] = useState(false);
   const [batchPhase, setBatchPhase] = useState<PhaseType>('regular_season');
-  const [batchStartMonth, setBatchStartMonth] = useState<number>(8);
-  const [batchEndMonth, setBatchEndMonth] = useState<number>(10);
+  const [batchStartDate, setBatchStartDate] = useState<string>('');
+  const [batchEndDate, setBatchEndDate] = useState<string>('');
   const [batchNotes, setBatchNotes] = useState('');
   const [collapsed, setCollapsed] = useState(false);
 
@@ -416,30 +416,25 @@ export default function SeasonCalendar() {
 
   // ── Batch planning ──
   const handleBatchPlan = useCallback(() => {
+    if (!batchStartDate || !batchEndDate) return;
     updateData(prev => {
-      const yrStart = yearForMonth(batchStartMonth);
-      const yrEnd = yearForMonth(batchEndMonth);
-      const startDate = dateStr(new Date(yrStart, batchStartMonth - 1, 1));
-      const endDays = getDaysInMonth(yrEnd, batchEndMonth);
-      const endDate = dateStr(new Date(yrEnd, batchEndMonth - 1, endDays));
-
       const newRange: PhaseRange = {
         id: genId(),
-        startDate,
-        endDate,
+        startDate: batchStartDate,
+        endDate: batchEndDate,
         phase: batchPhase,
         notes: batchNotes || PHASE_CONFIG[batchPhase].label,
       };
 
       // Remove overlapping ranges of same phase
       const ranges = prev.phaseRanges.filter(
-        r => !(r.phase === batchPhase && r.startDate >= startDate && r.endDate <= endDate)
+        r => !(r.phase === batchPhase && r.startDate >= batchStartDate && r.endDate <= batchEndDate)
       );
 
       return { ...prev, phaseRanges: [...ranges, newRange] };
     });
     setShowBatchPanel(false);
-  }, [updateData, batchPhase, batchStartMonth, batchEndMonth, batchNotes, yearForMonth]);
+  }, [updateData, batchPhase, batchStartDate, batchEndDate, batchNotes]);
 
   // ── Export JSON ──
   const handleExport = useCallback(() => {
@@ -759,76 +754,91 @@ export default function SeasonCalendar() {
           {/* ══ BATCH PLANNING PANEL ══ */}
           {showBatchPanel && (
             <div className="px-4 py-3 border-b border-[#222] bg-[#0a0a0a] space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-medium">批量规划</span>
-                <span className="text-[9px] text-gray-600">选择月份区间 → 设置阶段类型 → 自动填充每周标记</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Month range */}
-                <div className="flex items-center gap-1">
-                  <select
-                    value={batchStartMonth}
-                    onChange={e => setBatchStartMonth(Number(e.target.value))}
-                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white"
-                  >
-                    {SEASON_MONTHS.map(m => (
-                      <option key={m} value={m}>{m}月</option>
-                    ))}
-                  </select>
+              <span className="text-[10px] text-gray-500 font-medium">批量规划 — 选择日期范围并指定阶段类型</span>
+              <div className="flex flex-wrap items-start gap-4">
+                {/* Date inputs */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={batchStartDate}
+                    onChange={e => setBatchStartDate(e.target.value)}
+                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#555]"
+                  />
                   <span className="text-[10px] text-gray-600">至</span>
-                  <select
-                    value={batchEndMonth}
-                    onChange={e => setBatchEndMonth(Number(e.target.value))}
-                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white"
-                  >
-                    {SEASON_MONTHS.filter(m => m >= batchStartMonth).map(m => (
-                      <option key={m} value={m}>{m}月</option>
-                    ))}
-                  </select>
+                  <input
+                    type="date"
+                    value={batchEndDate}
+                    onChange={e => setBatchEndDate(e.target.value)}
+                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#555]"
+                  />
                 </div>
 
-                {/* Phase preset buttons */}
-                <div className="flex gap-1">
+                {/* Phase buttons — vertical */}
+                <div className="flex flex-col gap-1">
                   {(Object.entries(PHASE_CONFIG) as [PhaseType, typeof PHASE_CONFIG[PhaseType]][]).map(([key, cfg]) => (
                     <button
                       key={key}
                       onClick={() => setBatchPhase(key)}
-                      className={`px-2.5 py-1 rounded text-[10px] font-medium transition ${
+                      className={`px-2.5 py-1 rounded text-[10px] text-left transition border ${
                         batchPhase === key
-                          ? 'bg-[#d92525] text-white'
-                          : 'bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white'
+                          ? 'text-white'
+                          : 'border-[#222] text-gray-500 hover:text-gray-300 hover:border-[#333]'
                       }`}
+                      style={batchPhase === key ? {
+                        backgroundColor: `${PHASE_COLORS[key]}40`,
+                        borderColor: `${PHASE_COLORS[key]}80`,
+                      } : { backgroundColor: '#111' }}
                     >
+                      <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: PHASE_COLORS[key] }} />
                       {cfg.icon} {cfg.label}
                     </button>
                   ))}
                 </div>
 
-                {/* Notes */}
-                <input
-                  type="text"
-                  value={batchNotes}
-                  onChange={e => setBatchNotes(e.target.value)}
-                  placeholder="备注（可选）"
-                  className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-gray-300 placeholder-gray-600 w-32 focus:outline-none focus:border-[#555]"
-                />
-
-                <button
-                  onClick={handleBatchPlan}
-                  className="px-3 py-1 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded text-[10px] font-bold transition"
-                >
-                  应用
-                </button>
+                {/* Notes + Apply */}
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    value={batchNotes}
+                    onChange={e => setBatchNotes(e.target.value)}
+                    placeholder="备注（可选）"
+                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-gray-300 placeholder-gray-600 w-40 focus:outline-none focus:border-[#555]"
+                  />
+                  <button
+                    onClick={handleBatchPlan}
+                    disabled={!batchStartDate || !batchEndDate}
+                    className="px-3 py-1 bg-[#d92525] hover:bg-[#b71d1d] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
+                  >
+                    应用
+                  </button>
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* ══ PHASE COLOR LEGEND (when ranges exist) ══ */}
+          {data.phaseRanges.length > 0 && (
+            <div className="px-4 py-2 border-b border-[#222] flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-[9px] text-gray-500 font-medium">阶段色标:</span>
+              {(Object.entries(PHASE_CONFIG) as [PhaseType, typeof PHASE_CONFIG[PhaseType]][]).map(([key, cfg]) => {
+                const active = data.phaseRanges.some(r => r.phase === key);
+                if (!active) return null;
+                return (
+                  <span key={key} className="flex items-center gap-1 text-[9px]" style={{ opacity: 0.85 }}>
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[key] }} />
+                    <span style={{ color: PHASE_COLORS[key] }}>{cfg.icon} {cfg.label}</span>
+                  </span>
+                );
+              })}
             </div>
           )}
 
           {/* ═══ SEASON VIEW ═══ */}
           {viewMode === 'season' && (
             <div className="p-3 overflow-x-auto">
-              <div className="flex gap-4" style={{ minWidth: '1100px' }}>
+              <div className="flex gap-3" style={{ minWidth: `${monthColumns.length * 100}px` }}>
                 {monthColumns.map(col => (
-                  <div key={col.month} className="flex-1 min-w-[95px]">
+                  <div key={col.month} className="flex-1 min-w-[90px] max-w-[140px]">
                     {/* Month header */}
                     <button
                       onClick={() => { setFocusedMonth(col.month); setViewMode('month'); }}
@@ -1030,29 +1040,24 @@ export default function SeasonCalendar() {
           )}
 
           {/* ═══ SUMMARY STATS BAR ═══ */}
-          <div className="px-4 py-3 border-t border-[#222] bg-[#0a0a0a]">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px]">
+          <div className="px-4 py-2 border-t border-[#222] bg-[#0a0a0a]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
               <span className="text-gray-500 font-medium">赛季概览</span>
-              {data.phaseRanges.map(range => {
-                const cfg = PHASE_CONFIG[range.phase];
-                return (
-                  <span key={range.id} className="text-gray-400 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[range.phase] }} />
-                    {cfg.icon} {cfg.label}: {range.startDate} → {range.endDate}
-                  </span>
-                );
-              })}
-              {data.phaseRanges.length === 0 && (
-                <>
-                  <span className="text-gray-400">季前{autoStats.preseasonWeeks}周</span>
-                  <span className="text-gray-500">·</span>
-                  <span className="text-gray-400">联赛{autoStats.leagueCount || '?'}轮</span>
-                  <span className="text-gray-500">·</span>
-                  <span className="text-gray-400">杯赛{autoStats.cupCount || '?'}场</span>
-                  <span className="text-gray-500">·</span>
-                  {autoStats.playoffCount > 0 && <><span className="text-gray-400">附加赛{autoStats.playoffCount}场</span><span className="text-gray-500">·</span></>}
-                  <span className="text-gray-400">总{autoStats.totalWeeks}周 {autoStats.totalMatches}场</span>
-                </>
+              {data.phaseRanges.length > 0 ? (
+                data.phaseRanges.map(range => {
+                  const cfg = PHASE_CONFIG[range.phase];
+                  const startM = range.startDate.slice(5); // MM-DD
+                  const endM = range.endDate.slice(5);
+                  return (
+                    <span key={range.id} className="text-gray-400 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[range.phase] }} />
+                      {cfg.icon} {cfg.label}
+                      <span className="text-gray-600 ml-0.5">{startM}→{endM}</span>
+                    </span>
+                  );
+                })
+              ) : (
+                <span className="text-gray-500">总{autoStats.totalWeeks}周 · {autoStats.totalMatches || 0}场比赛</span>
               )}
             </div>
           </div>

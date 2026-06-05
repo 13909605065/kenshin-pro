@@ -415,13 +415,7 @@ export default function CoachWorkbench() {
   const calendarPhaseKey = (calendarPhase?.phase || 'regular_season') as CalendarPhaseKey;
   const calendarPhaseMeta = CALENDAR_PHASE_META[calendarPhaseKey];
 
-  // ── auto-switch workbench mode based on calendar phase ──
-  useEffect(() => {
-    if (calendarPhaseMeta && workbenchMode !== calendarPhaseMeta.defaultMode) {
-      setWorkbenchMode(calendarPhaseMeta.defaultMode);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calendarPhaseKey]);
+  // ── STATUS CARD: display only, no auto-switch. Coach decides workbenchMode. ──
 
   // ── save weather to kenshin_daily_training_log on change ──
   useEffect(() => {
@@ -468,6 +462,7 @@ export default function CoachWorkbench() {
   const trainingStartRef = useRef(0);
   const [workoutTimerActive, setWorkoutTimerActive] = useState(true);
   const [selectedWarmup, setSelectedWarmup] = useState<{id: string; name: string} | null>(null);
+  const [restFeedback, setRestFeedback] = useState(false);
 
   // ── training attendees selector ──
   const [trainingAttendees, setTrainingAttendees] = useState<Set<string>>(new Set());
@@ -587,12 +582,7 @@ export default function CoachWorkbench() {
     return calcRecoveryScore(input);
   }, [teamACWR]);
 
-  // ── load recommendation based on MD ──
-  useEffect(() => {
-    const rec = getMDRecommendation(mdDay);
-    setScene(rec.scene);
-    setGoal(rec.goal);
-  }, [mdDay]);
+  // ── Coach manually selects scene/goal. No auto-recommendation. ──
 
   // ── build form data helper ──
   const buildFormData = useCallback((): PlayerFormData => {
@@ -891,15 +881,18 @@ export default function CoachWorkbench() {
         const tdo = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
         const tp = getMicrocyclePlan(matchDate, tdo);
         if (!tp) return (
-          <a href="/planning" className="bg-[#0d0d0d] border border-dashed border-[#444] hover:border-[#d92525]/50 rounded-xl p-4 no-underline block transition">
+          <div className="bg-[#0d0d0d] border border-dashed border-[#444] rounded-xl p-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">📅</span>
               <div className="flex-1">
                 <span className="text-sm font-bold text-gray-400">今日暂无预排方案</span>
-                <p className="text-[10px] text-gray-600 mt-0.5">去周期方案提前编排本周训练 →</p>
+                <p className="text-[10px] text-gray-600 mt-0.5">提前在周期方案中编排本周训练</p>
               </div>
+              <a href="/planning" className="px-4 py-2.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98] no-underline inline-block">
+                📝 提前编排本周训练
+              </a>
             </div>
-          </a>
+          </div>
         );
         return (
           <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-4" style={{ borderLeft: '3px solid #d92525' }}>
@@ -965,15 +958,17 @@ export default function CoachWorkbench() {
           const date = trainDate;
           try {
             const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-            const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
             const existing = logs.findIndex((l: any) => l.date === date);
-            const entry = { date, trainType, timeSlot: 'rest' as const, duration: 0, weather, savedAt: new Date().toISOString() };
+            const entry = { date, trainType: 'pitch', timeSlot: 'rest' as const, duration: 0, weather, savedAt: new Date().toISOString() };
             if (existing >= 0) logs[existing] = entry;
             else logs.unshift(entry);
             localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
+            setRestFeedback(true);
+            setTimeout(() => setRestFeedback(false), 2000);
+            window.dispatchEvent(new CustomEvent('training-log-updated'));
           } catch {}
         }}
-          className="text-[10px] px-3 py-1 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition ml-auto">😴 今天休息</button>
+          className={`text-[10px] px-3 py-1 rounded-lg transition ml-auto ${restFeedback ? 'bg-green-500/20 border border-green-500/50 text-green-400' : 'bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white'}`}>{restFeedback ? '✓ 已标记休息日' : '😴 今天休息'}</button>
         {(() => {
           const plan = getMicrocyclePlan(trainDate, dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00')));
           if (plan) return <span className="text-[10px] text-green-400 ml-auto">📋 已预排 · {plan.goal} · {plan.duration}min</span>;
@@ -1540,6 +1535,7 @@ export default function CoachWorkbench() {
               )}
               <button onClick={() => setPlanEditMode(!planEditMode)} className={`text-[10px] transition ${planEditMode ? 'text-[#d92525]' : 'text-gray-500 hover:text-white'}`} title="编辑方案参数">✏️</button>
               <button onClick={() => {
+                if (!confirm('确认删除当前训练方案？')) return;
                 const all = loadMicrocyclePlans();
                 const key = `${matchDate}_${activeDayOffset}`;
                 if (all[key]) {

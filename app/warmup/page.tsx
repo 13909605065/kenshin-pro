@@ -51,6 +51,8 @@ export default function WarmupDesignPage() {
   });
   const [showRampPanel, setShowRampPanel] = useState(false);
   const [warmupPresetText, setWarmupPresetText] = useState("");
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [libraryEntries, setLibraryEntries] = useState<{ id: string; name: string; createdAt: string; canvasJSON: string }[]>([]);
 
   // 加载热身预设说明
   useEffect(() => {
@@ -114,17 +116,62 @@ export default function WarmupDesignPage() {
   // ─── Save warmup to library ──────────────────────────────
   const hSaveToLibrary = () => {
     const c = boardRef.current; if (!c) return;
+    const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+    const defaultName = `热身方案 ${new Date().toLocaleDateString('zh-CN')}`;
+    const name = prompt('请输入方案名称：', defaultName);
+    if (!name || !name.trim()) return;
+    if (!confirm(`确认保存「${name.trim()}」到热身库？`)) return;
     try {
       const json = JSON.stringify(c.toJSON());
-      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
       lib.unshift({
         id: `warmup_${Date.now()}`,
-        name: `热身方案 ${new Date().toLocaleDateString('zh-CN')}`,
+        name: name.trim(),
         createdAt: new Date().toISOString(),
         canvasJSON: json,
       });
       localStorage.setItem('kenshin_warmup_library', JSON.stringify(lib.slice(0, 20)));
       alert('已保存到热身库');
+    } catch {}
+  };
+
+  // ─── Warmup library ──────────────────────────────
+  const hOpenLibrary = () => {
+    try {
+      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+      setLibraryEntries(lib);
+    } catch { setLibraryEntries([]); }
+    setShowLibrary(true);
+  };
+
+  const hLoadFromLibrary = (canvasJSON: string) => {
+    const c = boardRef.current; if (!c) return;
+    try {
+      c.loadFromJSON(JSON.parse(canvasJSON)).then(() => {
+        c.requestRenderAll();
+        autoSave();
+      });
+      setShowLibrary(false);
+    } catch { alert('加载失败，数据格式可能已损坏'); }
+  };
+
+  const hDeleteFromLibrary = (id: string) => {
+    if (!confirm('确认删除该热身方案？删除后不可恢复。')) return;
+    try {
+      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+      const updated = lib.filter((e: any) => e.id !== id);
+      localStorage.setItem('kenshin_warmup_library', JSON.stringify(updated));
+      setLibraryEntries(updated);
+    } catch {}
+  };
+
+  const hRenameInLibrary = (id: string, currentName: string) => {
+    const newName = prompt('请输入新名称：', currentName);
+    if (!newName || !newName.trim()) return;
+    try {
+      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+      const updated = lib.map((e: any) => e.id === id ? { ...e, name: newName.trim() } : e);
+      localStorage.setItem('kenshin_warmup_library', JSON.stringify(updated));
+      setLibraryEntries(updated);
     } catch {}
   };
 
@@ -338,6 +385,16 @@ export default function WarmupDesignPage() {
           💾 <span className="hidden sm:inline">保存到热身库</span>
         </button>
 
+        {/* 热身库 */}
+        <button onClick={hOpenLibrary}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: '#fff', backgroundColor: '#3B82F6' }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="热身库">
+          📦 <span className="hidden sm:inline">热身库</span>
+        </button>
+
         {/* 导出 PNG */}
         <button onClick={hExport}
           className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
@@ -463,6 +520,81 @@ export default function WarmupDesignPage() {
               onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; }}
             >x</button>
+          </div>
+        )}
+
+        {/* ─── Warmup Library Modal ─── */}
+        {showLibrary && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+            onClick={() => setShowLibrary(false)}
+          >
+            <div
+              className="bg-[#0d0d0d] border border-[#333] rounded-xl w-[400px] max-h-[70vh] flex flex-col m-4 shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-[#222]">
+                <h3 className="text-sm font-bold text-white">📦 热身库</h3>
+                <button onClick={() => setShowLibrary(false)} className="text-gray-500 hover:text-white transition">
+                  <span className="text-lg leading-none">&times;</span>
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {libraryEntries.length === 0 ? (
+                  <p className="text-xs text-gray-500 text-center py-8">暂无保存的热身方案</p>
+                ) : (
+                  libraryEntries.map(entry => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-[#222] bg-[#111] hover:border-[#444] transition"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs font-medium truncate">{entry.name}</p>
+                        <p className="text-[9px] text-gray-500 mt-0.5">
+                          {new Date(entry.createdAt).toLocaleDateString('zh-CN', {
+                            year: 'numeric', month: 'short', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => hLoadFromLibrary(entry.canvasJSON)}
+                        className="px-2.5 py-1 rounded text-[10px] font-bold text-white bg-[#22c55e] hover:opacity-85 transition"
+                      >
+                        加载
+                      </button>
+                      <button
+                        onClick={() => hRenameInLibrary(entry.id, entry.name)}
+                        className="px-2 py-1 rounded text-[10px] text-gray-400 hover:text-white hover:bg-[#333] transition"
+                        title="重命名"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => hDeleteFromLibrary(entry.id)}
+                        className="px-2 py-1 rounded text-[10px] text-red-400 hover:text-red-300 hover:bg-red-500/10 transition"
+                        title="删除"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end p-3 border-t border-[#222]">
+                <button
+                  onClick={() => setShowLibrary(false)}
+                  className="px-3 py-1.5 text-[10px] text-gray-400 hover:text-white rounded transition"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

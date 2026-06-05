@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
@@ -255,6 +255,31 @@ function TrainingNotes() {
 }
 
 // ═══════════════════════════════════════════════
+// Error boundary to prevent one component crash from white-screening the entire page
+class ErrBoundary extends React.Component<{ children: React.ReactNode; label?: string }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode; label?: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error(`[ErrBoundary] ${this.props.label || 'component'} crashed:`, error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-[#0d0d0d] border border-[#333] rounded-xl p-4 text-center">
+          <p className="text-xs text-gray-500">{this.props.label || '组件'}加载失败，请刷新页面重试</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ═══════════════════════════════════════════════
 export default function PlanningPage() {
   const router = useRouter();
   const [days, setDays] = useState<DayPlan[]>([]);
@@ -489,7 +514,9 @@ export default function PlanningPage() {
       {/* ═══ 赛季全景 ═══ */}
       <section className="mb-8">
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📅 赛季全景</h2>
-        <SeasonCalendar />
+        <ErrBoundary label="赛季全景">
+          <SeasonCalendar />
+        </ErrBoundary>
       </section>
 
       <MobileNav />

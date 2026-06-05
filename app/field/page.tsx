@@ -704,6 +704,11 @@ export default function FieldPage() {
         }
       } catch {}
 
+      // 通知负荷管理页刷新
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('training-log-updated'));
+      }
+
       return archived;
     });
   }, [sessionTotals, playerLoads]);
