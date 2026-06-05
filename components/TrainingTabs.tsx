@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle, PositionTraining, NutritionInfo } from "@/lib/types";
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
-import { writeDrillContext } from "@/lib/tactics-bridge";
+
 import { FieldDiagram } from "./FieldDiagram";
 import { WarmupTab } from "./tabs/WarmupTab";
 import { TechniqueTab } from "./tabs/TechniqueTab";
@@ -172,9 +172,8 @@ function CoachSessionView({ module: m }: { module: SessionPlan }) {
                 </div>
                 <div className="flex justify-end mt-2 pt-2 border-t border-[#222]/50">
                   <button
-                    onClick={() => { writeDrillContext(act); router.push("/tactics"); }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 hover:bg-[#d92525]/20 transition border border-[#d92525]/20 hover:border-[#d92525]/40"
-                    title="在战术板上打开此练习"
+                    className="hidden items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 border border-[#d92525]/20 opacity-50"
+                    title="战术板已移至TT项目"
                   >
                     📋 在战术板打开
                   </button>
@@ -405,9 +404,8 @@ function CoachTacticalView({ module: m }: { module: TacticalFocus }) {
               </div>
               <div className="flex justify-end mt-2 pt-2 border-t border-[#222]/50">
                 <button
-                  onClick={() => { writeDrillContext(drill); router.push("/tactics"); }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 hover:bg-[#d92525]/20 transition border border-[#d92525]/20 hover:border-[#d92525]/40"
-                  title="在战术板上打开此练习"
+                  className="hidden items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] text-[#d92525] bg-[#d92525]/10 border border-[#d92525]/20 opacity-50"
+                  title="战术板已移至TT项目"
                 >
                   📋 在战术板打开
                 </button>
@@ -635,7 +633,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
               <p className="text-sm text-gray-400 py-8 text-center">暂无训练教案内容</p>
             )}
             {activeTab === "tactical" && tacticalFocus && (
-              <CoachTacticalBriefing module={tacticalFocus} onOpenBoard={() => { writeDrillContext(tacticalFocus.drills[0] as any); router.push("/tactics"); }}/>
+              <CoachTacticalBriefing module={tacticalFocus} />
             )}
             {activeTab === "tactical" && !tacticalFocus && (
               <p className="text-sm text-gray-400 py-8 text-center">暂无战术专项内容</p>

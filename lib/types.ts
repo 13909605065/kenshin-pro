@@ -1,7 +1,151 @@
-// ---- Tactical Board Types ----
-export type EquipmentKind = "cone" | "ball" | "goal" | "marker_pole" | "player_home" | "player_away";
-export interface TacticalScene { items: any[]; arrows: any[]; }
-export type TacticalTool = "select" | "place_player" | "place_cone" | "place_ball" | "place_goal" | "place_marker_pole" | "draw_arrow" | "erase";
+// ═══════════════════════════════════════════
+// 体能科学化新增类型 (Phase 1)
+// ═══════════════════════════════════════════
+
+// 周期化
+export type PeriodizationModelType = 'linear' | 'dup' | 'block';
+
+// 力量分级
+export type StrengthLevel = 'novice' | 'intermediate' | 'advanced' | 'elite';
+
+// 训练冲量
+export interface DailyCheckin {
+  date: string;
+  athleteId: string;
+  sleepQuality: 1 | 2 | 3 | 4 | 5;
+  sleepHours: number;
+  muscleSoreness: 1 | 2 | 3 | 4 | 5;
+  generalFatigue: 1 | 2 | 3 | 4 | 5;
+  stressLevel: 1 | 2 | 3 | 4 | 5;
+  morningHR: number;
+  bodyWeight?: number;
+  readinessScore: number;
+  notes?: string;
+}
+
+// 训练日志
+export interface SetLog {
+  id: string;
+  exerciseName: string;
+  setNumber: number;
+  targetReps: number;
+  actualReps: number;
+  load: number;
+  rpe: number;
+  completed: boolean;
+  notes?: string;
+  timestamp: string;
+}
+
+export interface ExerciseLog {
+  exerciseName: string;
+  sets: SetLog[];
+  completedAt?: string;
+}
+
+export interface TrainingSessionLog {
+  id: string;
+  date: string;
+  athleteId: string;
+  exercises: ExerciseLog[];
+  totalSets: number;
+  completedSets: number;
+  averageRPE: number;
+  totalVolumeLoad: number;
+  durationMinutes: number;
+  status: 'in_progress' | 'completed' | 'abandoned';
+}
+
+// 个人纪录
+export interface PersonalRecord {
+  id: string;
+  exerciseName: string;
+  metricType: '1rm' | 'max_reps' | 'max_weight' | 'time' | 'distance' | 'height' | 'custom';
+  value: number;
+  unit: string;
+  date: string;
+  bodyweight?: number;
+  notes?: string;
+}
+
+// 恢复日志
+export interface RecoveryLog {
+  date: string;
+  trainingSessionId: string;
+  hoursPostTraining: number;
+  sorenessLevels: Record<string, number>;
+  painSites: Array<{ site: string; severity: 1 | 2 | 3 }>;
+  recoveryQuality: 1 | 2 | 3 | 4 | 5;
+  recoveryMethods: string[];
+  sleepQuality: 1 | 2 | 3 | 4 | 5;
+  notes?: string;
+}
+
+// 激励系统
+export interface Badge {
+  id: string;
+  name: string;
+  nameCn: string;
+  description: string;
+  icon: string;
+  earnedAt: string | null;
+  progress: number;
+  requirement: { type: string; threshold: number };
+}
+
+export interface MotivationStats {
+  currentStreak: number;
+  bestStreak: number;
+  totalSessions: number;
+  totalMinutes: number;
+  totalVolume: number;
+  prCount: number;
+  badges: Badge[];
+  weeklyTarget: number;
+  weeklyCompleted: number;
+}
+
+// 伤病自报
+export interface InjuryReport {
+  id: string;
+  athleteId: string;
+  date: string;
+  bodyPart: string;
+  side: 'left' | 'right' | 'bilateral' | 'central';
+  injuryType: 'strain' | 'sprain' | 'contusion' | 'fracture' | 'tendinopathy' | 'other';
+  severity: 1 | 2 | 3 | 4;
+  mechanism: 'acute_contact' | 'acute_non_contact' | 'overuse' | 'unknown';
+  occurredDuring: 'training' | 'match' | 'other';
+  canContinue: boolean;
+  notes: string;
+  coachNotified: boolean;
+}
+
+// 间歇计时器
+export interface TimerPreset {
+  id: string;
+  name: string;
+  nameCn: string;
+  workSeconds: number;
+  restSeconds: number;
+  rounds: number;
+  sets: number;
+  setRestSeconds: number;
+  warmupSeconds: number;
+  cooldownSeconds: number;
+}
+
+// 天气适配
+export interface WeatherAdaptation {
+  condition: 'rain' | 'heat' | 'cold' | 'storm' | 'poor_air';
+  severity: 'moderate' | 'severe';
+  venueChange?: string;
+  intensityReduction?: number;
+  warmupExtension?: number;
+  hydrationFrequency?: number;
+  bannedActivities: string[];
+  addedPrecautions: string[];
+}
 
 // ---- Form Input ----
 export type Position = "goalkeeper" | "defender" | "midfielder" | "forward" | "wingback";

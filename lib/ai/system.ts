@@ -23,7 +23,7 @@ const RAMP_WARMUP = `### RAMP热身系统（Ian Jeffreys）
 - 总时长15-20min，每节必含FIFA 11+核心（北欧弯举+平板+侧桥+单腿平衡）
 - 有球训练日选有球热身ID，无球训练日选无球热身ID`;
 
-const PERIODIZATION = `### 周期化参数速查（NSCA 2022）
+const PERIODIZATION = `### 周期化参数速查（NSCA 2022 — 详见 lib/periodization.ts）
 | 目标 | %1RM | 组×次 | 间歇 | 节奏(E:I:C) |
 |------|------|-------|------|------------|
 | 肌耐力 | <67% | 2-3×12-20 | 30-60s | 2:0:1 |
@@ -38,11 +38,11 @@ const PERIODIZATION = `### 周期化参数速查（NSCA 2022）
 
 ### 负荷决策——基于客观测试数据（非训练年限）
 负荷由以下客观数据共同决定，禁止使用训练年限作为负荷依据：
-- **1RM实测**：深蹲/卧推/硬拉/高翻 1RM → 直接映射 %1RM 负荷区间。每4-6周重测
-- **GPS外部负荷**：总跑动距离/高速跑距/冲刺次数/加速减速次数。连续2周>基线120%→减量周
+- **1RM实测**：深蹲/卧推/硬拉/高翻 1RM → 直接映射 %1RM 负荷区间。每4-6周重测。参考 lib/one-rep-max.ts
+- **GPS外部负荷**：总跑动距离/高速跑距/冲刺次数/加速减速次数。连续2周>基线120%→减量周。参考 lib/position-profiles.ts
 - **RPE内部负荷**：Session RPE = 时长(min) × 强度(1-10)。周总RPE>4000→主动恢复日
-- **神经肌肉疲劳**：CMJ反向跳高度变化/握力。下降>5%→降强度
-- **Yo-Yo/30-15 IFT**：有氧能力基准→设定MAS间歇跑配速`;
+- **神经肌肉疲劳**：CMJ反向跳高度变化/握力。下降>5%→降强度。参考 lib/force-velocity.ts
+- **Yo-Yo/30-15 IFT**：有氧能力基准→设定MAS间歇跑配速。参考 lib/fitness-benchmarks.ts`;
 
 const EXERCISE_ORDER = `### 训练动作排序（铁律——神经系统需求从高到低）
 
@@ -60,14 +60,7 @@ const EXERCISE_ORDER = `### 训练动作排序（铁律——神经系统需求�
 3. 自重基础力量（俯卧撑、引体、弹力带、单侧稳定）— CNS需求低于速度/爆发
 4. 专项间歇耐力(MAS) — 最后进行，疲劳状态下锻炼耐受能力`;
 
-const POSITION_DATA = `### 位置跑动数据（Di Salvo 2007, m/场）
-| 位置 | 总距离 | 高速>19km/h | 冲刺>23km/h |
-|------|--------|------------|------------|
-| 中后卫 | 7080 | 612 | 215 |
-| 边后卫 | 7012 | 1054 | 402 |
-| 中场中路 | 7061 | 875 | 248 |
-| 边前卫 | 6960 | 1184 | 446 |
-GK: ~4-5km, 爆发性冲刺扑救为主`;
+// POSITION_DATA 已结构化至 lib/position-profiles.ts — buildPositionDataTable() 可直接引用
 
 const INJURY_PREVENTION = `### 损伤预防（Soccer Anatomy + NSCA）
 - 四大伤病：腘绳肌拉伤≫踝扭伤≫膝扭伤≫腹股沟拉伤
@@ -146,13 +139,13 @@ export function buildAthleteSystemPrompt(): string {
 
 **体能房（力量房）热身 = 全无球，永不带球 warmup IDs。**
 仅可使用以下无球热身 ID：
-`warm-hip-open`, `warm-glute-activation`, `warm-dynamic-stretch`, `warm-plank-series`, `warm-side-plank-series`, `warm-single-leg-balance`, `warm-nordic-curl`
+\`warm-hip-open\`, \`warm-glute-activation\`, \`warm-dynamic-stretch\`, \`warm-plank-series\`, \`warm-side-plank-series\`, \`warm-single-leg-balance\`, \`warm-nordic-curl\`
 ❌ 禁止使用：warm-ball-touch, warm-ball-dribble, warm-rondo（带球 ID 永禁于体能房）
 ❌ 禁止使用：warm-mini-band-walk, warm-band-activation, warm-spider-man, warm-world-greatest（外场专用，非体能房）
 
 **外场热身 = 无球或有球二选一，不混杂。Binary choice only。**
-- 无球选项：`warm-light-jog`, `warm-agility-ladder`, `warm-skip-variations`, `warm-ankle-knee`, `warm-mini-band-walk`, `warm-band-activation`, `warm-glute-activation`, `warm-hip-open`, `warm-dynamic-stretch`, `warm-spider-man`, `warm-world-greatest`, `warm-neural`, `warm-plyo-primer`, `warm-accel-drill`, `warm-nordic-curl`, `warm-plank-series`, `warm-side-plank-series`, `warm-single-leg-balance`
-- 有球选项：`warm-ball-touch`, `warm-ball-dribble`, `warm-rondo`（仅外场可用）
+- 无球选项：\`warm-light-jog\`, \`warm-agility-ladder\`, \`warm-skip-variations\`, \`warm-ankle-knee\`, \`warm-mini-band-walk\`, \`warm-band-activation\`, \`warm-glute-activation\`, \`warm-hip-open\`, \`warm-dynamic-stretch\`, \`warm-spider-man\`, \`warm-world-greatest\`, \`warm-neural\`, \`warm-plyo-primer\`, \`warm-accel-drill\`, \`warm-nordic-curl\`, \`warm-plank-series\`, \`warm-side-plank-series\`, \`warm-single-leg-balance\`
+- 有球选项：\`warm-ball-touch\`, \`warm-ball-dribble\`, \`warm-rondo\`（仅外场可用）
 ❌ **"两者混合" IS FORBIDDEN。** 必须全部无球或全部有球，不得出现无球+有球 ID 混在同一 warmup_ids 数组中。
 
 ### 职业3段式训练结构（所有训练方案强制采用）
@@ -358,7 +351,14 @@ ${INJURY_PREVENTION}
 
 ${NUTRITION}
 
-${POSITION_DATA}
+### 位置跑动数据（Di Salvo 2007, m/场 — 详见 lib/position-profiles.ts）
+| 位置 | 总距离 | 高速>19km/h | 冲刺>23km/h |
+|------|--------|------------|------------|
+| 中后卫 | 7080 | 612 | 215 |
+| 边后卫 | 7012 | 1054 | 402 |
+| 中场中路 | 7061 | 875 | 248 |
+| 边前卫 | 6960 | 1184 | 446 |
+GK: ~4-5km, 爆发性冲刺扑救为主
 
 ### 守门员专项（NSCA GK Protocols）
 - 必练：肩推+药球旋转抛掷+跳箱+北欧弯举
