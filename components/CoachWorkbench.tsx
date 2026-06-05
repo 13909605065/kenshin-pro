@@ -14,6 +14,7 @@ import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
 import TrainingCalendar, { type DayNotes } from './TrainingCalendar';
+import SeasonCalendar from './SeasonCalendar';
 import { PHASE_LABELS } from '@/lib/constants';
 import { getPhaseParams, getGoalParams } from '@/lib/periodization';
 import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment } from '@/lib/fitness-store';
@@ -881,6 +882,11 @@ export default function CoachWorkbench() {
 
         </div>
       </details>
+
+      {/* ═══════════════════════════════════════════════
+          SEASON CALENDAR — full season timeline Aug→May
+          ═══════════════════════════════════════════════ */}
+      <SeasonCalendar />
 
       {/* ═══════════════════════════════════════════════
           TRAINING CALENDAR — daily notes + warmup linking
