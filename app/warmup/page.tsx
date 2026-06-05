@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Canvas, Rect, Circle, Line, Group, IText, Triangle,
+  Canvas, Rect, Circle, Line, Group, IText, Triangle, FabricImage,
   type FabricObject,
 } from "fabric";
 import {
@@ -1032,8 +1032,14 @@ export default function WarmupPage() {
 
     fabricRef.current = canvas;
 
-    // Draw pitch markings
-    drawPitch(canvas);
+    // Use user's pitch image as background
+    Image.fromURL('/equipment/场地.png', { crossOrigin: 'anonymous' }).then((img) => {
+      canvas.backgroundImage = img;
+      img.scaleToWidth(CANVAS_W);
+      img.scaleToHeight(CANVAS_H);
+      img.set({ selectable: false, evented: false });
+      canvas.renderAll();
+    });
 
     // Equipment count tracking
     const refreshEquipCount = () => {

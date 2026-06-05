@@ -27,6 +27,25 @@ export interface WarmupDesign {
   createdAt: string;
 }
 
+interface GymWorkout {
+  id: string;
+  name: string;
+  exerciseIds: string[];
+  phase: string;
+  goal: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface GymCalendarEntry {
+  id: string;
+  comboId: string;
+  date: string;
+  phase: string;
+  goal: string;
+  exerciseIds: string[];
+}
+
 interface Props {
   matchDate: string;  // ISO date string
   mdDay: number;      // days until match
@@ -41,6 +60,8 @@ interface Props {
 
 const CALENDAR_KEY = 'kenshin_warmup_calendar';
 const WARMUP_LIB_KEY = 'kenshin_warmup_library';
+const GYM_CALENDAR_KEY = 'kenshin_gym_calendar';
+const GYM_LIBRARY_KEY = 'kenshin_gym_library';
 
 const WEEKDAY_CN = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 
@@ -80,6 +101,20 @@ function loadWarmupLibrary(): WarmupDesign[] {
   } catch { return []; }
 }
 
+function loadGymCalendar(): GymCalendarEntry[] {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(GYM_CALENDAR_KEY) : null;
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function loadGymLibrary(): GymWorkout[] {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(GYM_LIBRARY_KEY) : null;
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
 function getMDLabel(dayDate: string, matchDate: string): string | null {
   if (!matchDate) return null;
   const day = new Date(dayDate + 'T00:00:00');
@@ -110,11 +145,15 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
   const [calendarData, setCalendarData] = useState<Record<string, DayNotes>>({});
   const [showWarmupModal, setShowWarmupModal] = useState<string | null>(null); // date string
   const [warmupLib, setWarmupLib] = useState<WarmupDesign[]>([]);
+  const [gymCalendarEntries, setGymCalendarEntries] = useState<GymCalendarEntry[]>([]);
+  const [gymLib, setGymLib] = useState<GymWorkout[]>([]);
 
   // ── load data on mount ──
   useEffect(() => {
     setCalendarData(loadCalendar());
     setWarmupLib(loadWarmupLibrary());
+    setGymCalendarEntries(loadGymCalendar());
+    setGymLib(loadGymLibrary());
   }, []);
 
   // ── sync warmup lib when modal opens ──
@@ -123,6 +162,20 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
       setWarmupLib(loadWarmupLibrary());
     }
   }, [showWarmupModal]);
+
+  // ── gym calendar lookup: date → { name, exerciseCount }[] ──
+  const gymByDate = useMemo(() => {
+    const map: Record<string, { name: string; exerciseCount: number }[]> = {};
+    for (const entry of gymCalendarEntries) {
+      const workout = gymLib.find(w => w.id === entry.comboId);
+      if (!map[entry.date]) map[entry.date] = [];
+      map[entry.date].push({
+        name: workout?.name || '力量训练',
+        exerciseCount: entry.exerciseIds.length,
+      });
+    }
+    return map;
+  }, [gymCalendarEntries, gymLib]);
 
   // ── compute week days (Mon-Sun) ──
   const weekDays = useMemo(() => {
@@ -251,7 +304,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
   const isCurrentWeek = weekOffset === 0;
 
   return (
-    <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 space-y-3">
+    <div className="bg-[#121212] border border-[#222] rounded-xl p-4 space-y-3">
       {/* ══ HEADER: title + week navigator + quick actions ══ */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -293,8 +346,8 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
         </div>
       </div>
 
-      {/* ══ WEEK GRID: 7 days Mon-Sun ══ */}
-      <div className="grid grid-cols-7 gap-1.5">
+      {/* ══ WEEK GRID: responsive — stacked on mobile, 7 cols on desktop ══ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 lg:gap-3">
         {weekDays.map(day => {
           const dayStr = dateStr(day);
           const notes = calendarData[dayStr];
@@ -306,34 +359,43 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
           const weekdayIdx = day.getDay();
           const weekdayCN = weekdayIdx === 0 ? '周日' : WEEKDAY_CN[weekdayIdx - 1];
           const selectedWarmup = getSelectedWarmup(notes?.warmupId);
+          const gymEntries = gymByDate[dayStr] || [];
 
-          // Determine border treatment
-          const borderClass = isMatchDay
-            ? 'border-[#d92525]/50 bg-[#d92525]/5'
-            : isToday
-              ? 'border-[#d92525]/30 bg-[#d92525]/3'
-              : 'border-[#222] bg-[#111]';
+          // ── Determine if this is a rest day (no warmup, no gym) ──
+          const hasWarmup = !!selectedWarmup || !!notes?.warmupId;
+          const hasGym = gymEntries.length > 0;
+          const isRestDay = !hasWarmup && !hasGym;
+
+          // ── Determine border treatment ──
+          let borderClass = 'border-[#222] bg-[#1a1a1a]';
+          if (isMatchDay) {
+            borderClass = 'border-[#d92525]/70 bg-[#d92525]/8';
+          } else if (isToday) {
+            borderClass = 'border-[#d92525]/50 bg-[#1a1a1a] shadow-[0_0_16px_rgba(217,37,37,0.12)]';
+          }
 
           return (
             <div
               key={dayStr}
-              className={`rounded-lg p-2 border transition flex flex-col ${borderClass}`}
+              className={`rounded-lg p-3 border transition flex flex-col min-w-0 lg:min-w-[140px] ${
+                isRestDay ? 'opacity-50' : ''
+              } ${borderClass}`}
             >
               {/* ── Row 1: Date + Weekday + MD badge ── */}
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-baseline gap-1">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-baseline gap-1.5">
                   <span
-                    className={`text-[9px] font-bold leading-none ${
-                      isToday ? 'text-[#d92525]' : 'text-gray-300'
+                    className={`text-xs font-bold leading-none ${
+                      isToday ? 'text-[#d92525]' : isMatchDay ? 'text-[#d92525]' : 'text-gray-200'
                     }`}
                   >
                     {dateFmt(day)}
                   </span>
-                  <span className="text-[7px] text-gray-600 leading-none">{weekdayCN}</span>
+                  <span className="text-[9px] text-gray-500 leading-none">{weekdayCN}</span>
                 </div>
                 {mdLabel && (
                   <span
-                    className={`text-[7px] font-bold px-1 py-0.5 rounded leading-none ${
+                    className={`text-[8px] font-bold px-1.5 py-0.5 rounded leading-none ${
                       isMatchDay
                         ? 'bg-[#d92525] text-white'
                         : isBeforeMatch
@@ -346,8 +408,38 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                 )}
               </div>
 
-              {/* ── Row 2: Weather quick-select ── */}
-              <div className="flex items-center gap-0.5 mb-1.5">
+              {/* ── Day purpose summary: gym / warmup / rest ── */}
+              <div className="mb-2 space-y-0.5">
+                {hasGym && gymEntries.map((gym, i) => (
+                  <div key={i} className="flex items-center gap-1 text-[9px] text-gray-300">
+                    <span className="shrink-0">🏋️</span>
+                    <span className="truncate">{gym.name}</span>
+                    <span className="text-gray-600 shrink-0">{gym.exerciseCount}动作</span>
+                  </div>
+                ))}
+                {hasWarmup && selectedWarmup && (
+                  <div className="flex items-center gap-1 text-[9px] text-gray-300">
+                    <span className="shrink-0">🔥</span>
+                    <span className="truncate">{selectedWarmup.name}</span>
+                    <span className="text-gray-600 shrink-0">{notes?.warmupDuration || selectedWarmup.duration}min</span>
+                  </div>
+                )}
+                {hasWarmup && !selectedWarmup && notes?.warmupId && (
+                  <div className="flex items-center gap-1 text-[9px] text-gray-300">
+                    <span className="shrink-0">🔥</span>
+                    <span className="truncate">已选热身</span>
+                    <span className="text-gray-600 shrink-0">{notes?.warmupDuration || 15}min</span>
+                  </div>
+                )}
+                {isRestDay && (
+                  <div className="flex items-center gap-1 text-[9px] text-gray-600">
+                    <span>— 休息</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Weather quick-select ── */}
+              <div className="flex items-center gap-1 mb-2">
                 {(['sun', 'cloud', 'rain'] as const).map(w => {
                   const isSelected = notes?.weather === w;
                   return (
@@ -356,40 +448,40 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                       onClick={() =>
                         updateDayNotes(dayStr, { weather: notes?.weather === w ? '' : w })
                       }
-                      className={`p-0.5 rounded transition ${
+                      className={`p-1 rounded transition ${
                         isSelected
-                          ? 'bg-[#1a1a1a] ring-1 ring-[#444]'
-                          : 'text-gray-600 hover:text-gray-400 hover:bg-[#0d0d0d]'
+                          ? 'bg-[#252525] ring-1 ring-[#555]'
+                          : 'text-gray-600 hover:text-gray-400 hover:bg-[#121212]'
                       }`}
                       title={w === 'sun' ? '晴' : w === 'cloud' ? '阴' : '雨'}
                     >
-                      <WeatherIcon type={w} size={11} />
+                      <WeatherIcon type={w} size={12} />
                     </button>
                   );
                 })}
               </div>
 
-              {/* ── Row 3: Training theme ── */}
+              {/* ── Training theme ── */}
               <input
                 type="text"
                 value={notes?.theme || ''}
                 onChange={e => updateDayNotes(dayStr, { theme: e.target.value })}
                 placeholder="主题"
-                className="w-full bg-[#0d0d0d] border border-[#222] rounded px-1.5 py-1 text-[8px] text-gray-300 placeholder-gray-600 mb-1 focus:outline-none focus:border-[#444]"
+                className="w-full bg-[#121212] border border-[#222] rounded px-2 py-1.5 text-[9px] text-gray-300 placeholder-gray-600 mb-1.5 focus:outline-none focus:border-[#444]"
               />
 
-              {/* ── Row 4: Ball option toggle ── */}
-              <div className="flex gap-0.5 mb-1">
+              {/* ── Ball option toggle ── */}
+              <div className="flex gap-1 mb-1.5">
                 <button
                   onClick={() =>
                     updateDayNotes(dayStr, {
                       ballOption: notes?.ballOption === 'ball' ? '' : 'ball',
                     })
                   }
-                  className={`flex-1 py-0.5 rounded text-[8px] font-medium transition ${
+                  className={`flex-1 py-1 rounded text-[9px] font-medium transition ${
                     notes?.ballOption === 'ball'
                       ? 'bg-[#d92525] text-white'
-                      : 'bg-[#0d0d0d] text-gray-600 hover:text-gray-400'
+                      : 'bg-[#121212] text-gray-600 hover:text-gray-400'
                   }`}
                 >
                   ⚽有球
@@ -400,32 +492,32 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                       ballOption: notes?.ballOption === 'no-ball' ? '' : 'no-ball',
                     })
                   }
-                  className={`flex-1 py-0.5 rounded text-[8px] font-medium transition ${
+                  className={`flex-1 py-1 rounded text-[9px] font-medium transition ${
                     notes?.ballOption === 'no-ball'
                       ? 'bg-[#d92525] text-white'
-                      : 'bg-[#0d0d0d] text-gray-600 hover:text-gray-400'
+                      : 'bg-[#121212] text-gray-600 hover:text-gray-400'
                   }`}
                 >
                   🏃无球
                 </button>
               </div>
 
-              {/* ── Row 5: Notes ── */}
+              {/* ── Notes ── */}
               <textarea
                 value={notes?.notes || ''}
                 onChange={e => updateDayNotes(dayStr, { notes: e.target.value })}
                 placeholder="备注..."
                 rows={2}
-                className="w-full bg-[#0d0d0d] border border-[#222] rounded px-1.5 py-0.5 text-[8px] text-gray-300 placeholder-gray-600 mb-1 resize-none focus:outline-none focus:border-[#444]"
+                className="w-full bg-[#121212] border border-[#222] rounded px-2 py-1 text-[9px] text-gray-300 placeholder-gray-600 mb-1.5 resize-none focus:outline-none focus:border-[#444]"
               />
 
-              {/* ── Row 6: Warmup section ── */}
-              <div className="mt-auto space-y-1">
+              {/* ── Warmup section ── */}
+              <div className="mt-auto space-y-1.5">
                 {/* Selected warmup preview */}
                 {selectedWarmup ? (
-                  <div className="bg-[#0d0d0d] rounded p-1.5 border border-[#1a1a1a]">
+                  <div className="bg-[#121212] rounded p-2 border border-[#1a1a1a]">
                     <div className="flex items-center justify-between">
-                      <span className="text-[7px] text-[#d92525] font-medium truncate max-w-[65px]">
+                      <span className="text-[8px] text-[#d92525] font-medium truncate max-w-[80px]">
                         {selectedWarmup.name}
                       </span>
                       <button
@@ -433,12 +525,12 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                         className="text-gray-600 hover:text-gray-400 shrink-0"
                         title="清除热身"
                       >
-                        <X className="w-2.5 h-2.5" />
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                     {/* Duration slider */}
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[7px] text-gray-600 shrink-0">
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-[8px] text-gray-600 shrink-0">
                         {selectedWarmup.duration}m
                       </span>
                       <input
@@ -451,21 +543,21 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                         }
                         className="flex-1 h-1 accent-[#d92525] cursor-pointer"
                       />
-                      <span className="text-[7px] text-gray-500 shrink-0 w-6 text-right">
+                      <span className="text-[8px] text-gray-500 shrink-0 w-7 text-right">
                         {notes?.warmupDuration || selectedWarmup.duration}m
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="py-1.5 px-2 rounded border border-dashed border-[#222] text-center">
-                    <span className="text-[8px] text-gray-600">未选择热身</span>
+                  <div className="py-2 px-3 rounded border border-dashed border-[#222] text-center">
+                    <span className="text-[9px] text-gray-600">未选择热身</span>
                   </div>
                 )}
 
                 {/* Select/change warmup button */}
                 <button
                   onClick={() => setShowWarmupModal(dayStr)}
-                  className="w-full py-0.5 rounded text-[8px] bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-400 hover:text-white transition"
+                  className="w-full py-1 rounded text-[9px] bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-400 hover:text-white transition"
                 >
                   {selectedWarmup ? '更换热身' : '选择热身'}
                 </button>
@@ -484,7 +576,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
           onClick={() => setShowWarmupModal(null)}
         >
           <div
-            className="bg-[#0d0d0d] border border-[#333] rounded-xl w-[480px] max-h-[80vh] flex flex-col m-4 shadow-2xl"
+            className="bg-[#121212] border border-[#333] rounded-xl w-[480px] max-h-[80vh] flex flex-col m-4 shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal header */}
@@ -521,7 +613,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                     <button
                       key={warmup.id}
                       onClick={() => handleWarmupSelect(warmup, showWarmupModal)}
-                      className="w-full p-3 bg-[#111] border border-[#222] hover:border-[#d92525]/40 rounded-lg text-left transition group"
+                      className="w-full p-3 bg-[#1a1a1a] border border-[#222] hover:border-[#d92525]/40 rounded-lg text-left transition group"
                     >
                       {/* Top row: name + type + duration */}
                       <div className="flex items-center justify-between">
@@ -552,7 +644,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                           {warmup.segments.slice(0, 5).map(seg => (
                             <span
                               key={seg.id}
-                              className="text-[7px] px-1.5 py-0.5 bg-[#0d0d0d] text-gray-500 rounded"
+                              className="text-[7px] px-1.5 py-0.5 bg-[#121212] text-gray-500 rounded"
                             >
                               {seg.name} {seg.duration}m
                             </span>

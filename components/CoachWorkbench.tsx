@@ -118,6 +118,7 @@ const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
 };
 
 const DURATIONS = [30, 45, 60, 75, 90];
+const ADDON_DURATIONS = [15, 20, 25, 30];
 
 // ── goal/scene label lookups ──
 const GOAL_LABELS: Record<string, string> = {
@@ -186,6 +187,8 @@ export default function CoachWorkbench() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [todoCollapsed, setTodoCollapsed] = useState(false);
+  const [addonTheme, setAddonTheme] = useState('');
+  const [addonScene, setAddonScene] = useState<'gym' | 'pitch'>('gym');
 
   // ── coach profile — persisted to localStorage ──
   const COACH_KEY = 'kenshin_coach_profile';
@@ -386,26 +389,36 @@ export default function CoachWorkbench() {
 
   // ── build form data helper ──
   const buildFormData = useCallback((): PlayerFormData => {
-    if (planMode === 'individual' && selectedPlayerId) {
+    if (planMode === 'individual' && selectedPlayers.size > 0) {
       const roster = loadRoster();
-      const player = roster.find(p => p.id === selectedPlayerId);
-      if (player) {
+      const selectedRosterPlayers = roster.filter(p => selectedPlayers.has(p.name));
+      if (selectedRosterPlayers.length > 0) {
+        const names = selectedRosterPlayers.map(p => p.name).join('、');
+        const positions = selectedRosterPlayers.map(p => p.position).join('、');
+        const injuredList = selectedRosterPlayers.filter(p => p.injuryStatus !== 'healthy');
+        const injuryDetail = injuredList.map(p => `${p.name}:${p.injuryNote || p.injuryStatus}`).join('、');
+        const allDisabled = Array.from(new Set(selectedRosterPlayers.flatMap(p => p.disabledExercises || [])));
+        const primaryPlayer = selectedRosterPlayers[0];
+        const sceneForAddon = addonScene;
+
         return {
-          role: 'coach', name: player.name, gender: 'male',
-          position: mapPosition(player.position),
-          age: player.age, height: player.height, weight: player.weight, years: null,
-          injuryHistory: player.injuryHistory || player.injuryNote || '',
+          role: 'coach', name: '', gender: 'male',
+          position: primaryPlayer ? mapPosition(primaryPlayer.position) : null,
+          age: null, height: null, weight: null, years: null,
+          injuryHistory: [
+            `【加练小组 · 短时补充训练】主题: ${addonTheme || '未指定'}`,
+            `球员: ${names} | 位置: ${positions} | 共${selectedRosterPlayers.length}人`,
+            injuryDetail ? `伤病限制: ${injuryDetail}` : '',
+            allDisabled.length > 0 ? `禁用动作: ${allDisabled.join(',')}` : '',
+            '模式: 此为短时加练(补充训练)，不是完整训练课。仅需2-4个针对性练习。不要输出combo_id完整套餐。不要三段式方案。',
+            '聚焦教练指定的加练主题，精简高效，控制训练量到指定时长内。',
+          ].filter(Boolean).join('\n'),
           goal: goal as TrainingGoal, phase,
           injurySites: [],
-          weakness: [
-            player.disabledExercises?.join(',') || '',
-            fitnessSummary(getFitnessProfile(selectedPlayerId)),
-            player.weight ? strengthAssessment(getFitnessProfile(selectedPlayerId), player.weight) : '',
-            speedAssessment(getFitnessProfile(selectedPlayerId)),
-          ].filter(Boolean).join(' | '),
+          weakness: addonTheme ? `加练主题: ${addonTheme} | 场景: ${SCENE_LABELS[sceneForAddon]}` : '',
           coachCert: coachCert as any, coachRole: coachRole as any, leagueTag: leagueTag as any,
           tacticalThemes: [], equipmentAvailable: [],
-          trainingDuration: duration, playerCount: 1,
+          trainingDuration: duration, playerCount: selectedRosterPlayers.length,
         };
       }
     }
@@ -428,7 +441,7 @@ export default function CoachWorkbench() {
       tacticalThemes: [], equipmentAvailable: [],
       trainingDuration: duration, playerCount,
     };
-  }, [players, goal, phase, coachCert, coachRole, leagueTag, duration, playerCount, selectedPlayers, planMode, selectedPlayerId]);
+  }, [players, goal, phase, coachCert, coachRole, leagueTag, duration, playerCount, selectedPlayers, planMode, addonTheme, addonScene]);
 
   // ── generate ──
   const handleGenerate = async () => {
@@ -463,7 +476,7 @@ export default function CoachWorkbench() {
       }
     } catch {}
 
-    try { await generate(fd, undefined, scene); }
+    try { await generate(fd, undefined, planMode === 'individual' ? addonScene : scene); }
     catch (e: any) {
       setGenError(e?.message || 'AI生成失败，请重试');
       console.error('Generate failed:', e);
@@ -756,61 +769,93 @@ export default function CoachWorkbench() {
           <button onClick={() => setPlanMode('individual')}
             className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
               planMode === 'individual' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white'
-            }`}>🧑 个体方案</button>
+            }`}>➕ 加练小组</button>
         </div>
 
-        {/* Individual player selector */}
+        {/* Add-on group controls */}
         {planMode === 'individual' && (() => {
           const roster = loadRoster();
+          const selectedRoster = roster.filter(p => selectedPlayers.has(p.name));
           return (
-            <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3">
-              <label className="text-[10px] text-gray-500 block mb-2">选择球员</label>
-              {roster.length === 0 ? (
-                <p className="text-[10px] text-gray-600">暂无花名册 · <a href="/roster" className="text-[#d92525] underline">去录入球员</a></p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
-                  {roster.map(p => (
-                    <button key={p.id} onClick={() => setSelectedPlayerId(p.id)}
-                      className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
-                        selectedPlayerId === p.id
-                          ? 'bg-[#d92525] text-white'
-                          : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
-                      }`}>
-                      {p.name} · {p.position || '?'}
-                      {p.injuryStatus !== 'healthy' && (p.injuryStatus === 'out' ? ' 🔴' : ' 🟡')}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {selectedPlayerId && (() => {
-                const p = roster.find(r => r.id === selectedPlayerId);
-                if (!p) return null;
-                const fit = getFitnessProfile(selectedPlayerId);
-                const hasFit = fit.squat1RM || fit.sprint30m || fit.yoYoIR1 || fit.verticalJump;
-                return (
-                  <div className="mt-2 p-2 bg-[#1a1a1a] rounded-lg text-[10px] text-gray-400 space-y-1">
-                    <div>
-                      {p.age && <span>{p.age}岁 · </span>}
-                      {p.height && <span>{p.height}cm · </span>}
-                      {p.weight && <span>{p.weight}kg · </span>}
-                      <span className={p.injuryStatus === 'healthy' ? 'text-green-400' : p.injuryStatus === 'minor' ? 'text-yellow-400' : 'text-red-400'}>
-                        {p.injuryStatus === 'healthy' ? '健康' : p.injuryStatus === 'minor' ? '轻伤' : '缺阵'}
-                      </span>
-                      {p.injuryNote && <span className="ml-1">— {p.injuryNote}</span>}
+            <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 space-y-3">
+              {/* Player selection */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] text-gray-400">选择加练球员 <span className="text-[#d92525]">{selectedRoster.length > 0 ? `已选${selectedRoster.length}人` : ''}</span></label>
+                  {roster.length > 0 && (
+                    <div className="flex gap-2">
+                      <button onClick={selectAllHealthy} className="text-[9px] text-gray-500 hover:text-white transition">全选健康</button>
+                      <button onClick={() => setSelectedPlayers(new Set())} className="text-[9px] text-gray-500 hover:text-white transition">清空</button>
                     </div>
-                    {p.injuryHistory && <div className="text-[9px] text-gray-600">📋 {p.injuryHistory}</div>}
-                    {(p.disabledExercises?.length ?? 0) > 0 && <div className="text-[9px] text-orange-500/70">🚫 禁用: {(p.disabledExercises || []).join('、')}</div>}
-                    {hasFit && (
-                      <div className="border-t border-[#333] pt-1.5 mt-1">
-                        <span className="text-green-400 font-medium">📊 体能数据</span>
-                        <span className="text-gray-500 ml-1">{fitnessSummary(fit)}</span>
-                        {p.weight && fit.squat1RM && <div className="text-[9px] text-gray-500 mt-0.5">{strengthAssessment(fit, p.weight)}</div>}
-                        {fit.sprint30m && <div className="text-[9px] text-gray-500">{speedAssessment(fit)}</div>}
-                      </div>
-                    )}
+                  )}
+                </div>
+                {roster.length === 0 ? (
+                  <p className="text-[10px] text-gray-600">暂无花名册 · <a href="/roster" className="text-[#d92525] underline">去录入球员</a></p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto">
+                    {roster.map(p => (
+                      <button key={p.id} onClick={() => togglePlayerSelect(p.name)}
+                        className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
+                          selectedPlayers.has(p.name)
+                            ? 'bg-[#d92525]/20 text-[#d92525] ring-1 ring-[#d92525]'
+                            : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
+                        }`}>
+                        {p.name} · {p.position || '?'}
+                        {p.injuryStatus !== 'healthy' && (p.injuryStatus === 'out' ? ' 🔴' : ' 🟡')}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected players injury summary */}
+              {selectedRoster.length > 0 && (() => {
+                const injuredList = selectedRoster.filter(p => p.injuryStatus !== 'healthy');
+                const allDisabled = Array.from(new Set(selectedRoster.flatMap(p => p.disabledExercises || [])));
+                return (
+                  <div className="p-2 bg-[#1a1a1a] rounded-lg text-[10px] text-gray-400 space-y-1">
+                    <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                      {selectedRoster.map(p => (
+                        <span key={p.id} className={p.injuryStatus === 'healthy' ? 'text-green-400' : p.injuryStatus === 'minor' ? 'text-yellow-400' : 'text-red-400'}>
+                          {p.name}{p.injuryStatus !== 'healthy' ? `(${p.injuryNote || p.injuryStatus})` : ''}
+                        </span>
+                      ))}
+                    </div>
+                    {injuredList.length > 0 && <div className="text-[9px] text-yellow-400/70">⚠ 伤病: {injuredList.map(p => `${p.name}:${p.injuryNote || p.injuryStatus}`).join('、')}</div>}
+                    {allDisabled.length > 0 && <div className="text-[9px] text-orange-500/70">🚫 禁用: {allDisabled.join('、')}</div>}
                   </div>
                 );
               })()}
+
+              {/* Add-on theme input */}
+              <div>
+                <label className="text-[10px] text-gray-400 block mb-1.5">加练主题</label>
+                <input type="text" value={addonTheme} onChange={e => setAddonTheme(e.target.value)}
+                  placeholder="例如：腘绳肌离心强化、冲刺加练、上肢补强..."
+                  className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#d92525] transition" />
+              </div>
+
+              {/* Scene + Duration for add-on */}
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-gray-500 shrink-0">场景</span>
+                <div className="flex gap-1">
+                  {SCENES.map(s => (
+                    <button key={s.id} onClick={() => setAddonScene(s.id)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-medium transition ${
+                        addonScene === s.id ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
+                      }`}>
+                      {s.icon} {s.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-gray-500 shrink-0 ml-3">时长</span>
+                <div className="flex gap-1">
+                  {ADDON_DURATIONS.map(d => (
+                    <button key={d} onClick={() => setDuration(d)}
+                      className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${duration === d ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{d}min</button>
+                  ))}
+                </div>
+              </div>
             </div>
           );
         })()}
@@ -820,7 +865,7 @@ export default function CoachWorkbench() {
           className="w-full py-4 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
           {isLoading ? <><span className="animate-spin">⏳</span> 生成中…</> :
            hasPlanForToday ? `📋 ${mdLabel}方案已存在 · 重新生成` :
-           planMode === 'individual' && selectedPlayerId ? `⚡ 生成${mdLabel}个体方案` :
+           planMode === 'individual' && selectedPlayers.size > 0 ? `⚡ 生成加练方案` :
            `⚡ 生成${mdLabel}训练方案`}
         </button>
 
@@ -926,7 +971,7 @@ export default function CoachWorkbench() {
               </div>
               <span className="text-[10px] text-gray-500 ml-3">时长</span>
               <div className="flex gap-1">
-                {DURATIONS.map(d => (
+                {(planMode === 'individual' ? ADDON_DURATIONS : DURATIONS).map(d => (
                   <button key={d} onClick={() => setDuration(d)}
                     className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${duration === d ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400'}`}>{d}min</button>
                 ))}
@@ -1042,8 +1087,11 @@ export default function CoachWorkbench() {
         <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-[#222]">
             <h3 className="text-sm font-bold text-white">
-              {planMode === 'individual' && selectedPlayerId ? `🧑 ${loadRoster().find(p => p.id === selectedPlayerId)?.name || '个体'} · ` : ''}
-              {scene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · {duration}min · {activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`} · 职业三段式
+              {planMode === 'individual' ? (() => {
+                const roster = loadRoster();
+                const names = roster.filter(p => selectedPlayers.has(p.name)).map(p => p.name).join('/');
+                return `➕ 加练小组 · ${names || '未选球员'} · ${addonScene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · ${duration}min${addonTheme ? ` · ${addonTheme}` : ''}`;
+              })() : `${scene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · ${duration}min · ${activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`} · 职业三段式`}
               {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">📡 离线模式</span>}
             </h3>
             <div className="flex items-center gap-2">
@@ -1118,7 +1166,7 @@ export default function CoachWorkbench() {
               goal={goal}
               duration={duration}
               matchDay={activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
-              playerName={planMode === 'individual' && selectedPlayerId ? loadRoster().find(p => p.id === selectedPlayerId)?.name : undefined}
+              playerName={planMode === 'individual' && selectedPlayers.size > 0 ? loadRoster().filter(p => selectedPlayers.has(p.name)).map(p => p.name).join('/') : undefined}
               onClose={() => setShowLog(false)}
             />
           )}
@@ -1175,7 +1223,7 @@ export default function CoachWorkbench() {
           goal={goal}
           duration={duration}
           matchDay={activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
-          playerName={planMode === 'individual' && selectedPlayerId ? loadRoster().find(p => p.id === selectedPlayerId)?.name : undefined}
+          playerName={planMode === 'individual' && selectedPlayers.size > 0 ? loadRoster().filter(p => selectedPlayers.has(p.name)).map(p => p.name).join('/') : undefined}
           onClose={() => setTrainingActive(false)}
         />
       )}
