@@ -70,7 +70,7 @@ const PHASE_CONFIG: Record<PhaseType, { label: string; icon: string; desc: strin
   offseason: { label: '休赛期', icon: '🧊', desc: '灰色恢复周 · 禁用全队MD · 仅加练小组 · 短板补强+身体重塑', defaultEvent: 'recovery_week' },
   preseason_build: { label: '季前备战期', icon: '🏋️', desc: '绿色季前 · 体能储备+战术磨合 · 末尾1周自动黄色减量', defaultEvent: 'preseason_friendly' },
   regular_season: { label: '常规赛季', icon: '⚽', desc: '红色联赛+橙色杯赛 · 以赛代练维持状态 · 关键战前可手动标记黄色减量周', defaultEvent: 'league_match' },
-  playoffs: { label: '附加赛', icon: '🏆', desc: '收官冲刺段 · 巅峰激活+生死备战 · 大量减量管控 · 黄色减量高频启用', defaultEvent: 'playoff_match' },
+  playoffs: { label: '附加赛', icon: '🏆', desc: '收官冲刺 · 赛程密集 · 默认小强度模板 · 避免透支伤病 · 减量高频', defaultEvent: 'playoff_match' },
 };
 
 const STORAGE_KEY = 'kenshin_season_calendar';

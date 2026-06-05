@@ -67,13 +67,13 @@ const PHASE_PRESETS: Record<PhaseType, PhasePreset> = {
     label: '附加赛',
     icon: '🏆',
     color: '#7f1d1d',
-    goal: '巅峰激活 · 生死备战',
-    stateDescription: '保级或冲甲关键战。全队最高强度备战，心理准备+身体巅峰。每场都是决赛。大量减量管控负荷，黄色减量高频启用。',
+    goal: '收官冲刺 · 避免透支',
+    stateDescription: '赛季收官冲刺段，赛程更密集。系统默认推荐更小强度训练模板，避免球员透支伤病。保级或冲甲关键战，每场都是决赛。',
     weeklyStrengthDays: 1,
-    weeklyPitchDays: 4,
-    avgDuration: 75,
-    intensityRange: '高（精准减量管控）',
-    weeklyLoadDesc: '力量1次/周（爆发力维持，赛前3天不做新动作）+ 外场4次/周（针对性战术+强度控制）。负荷波动不超过10%。黄色减量高频启用，避免过度训练。',
+    weeklyPitchDays: 3,
+    avgDuration: 60,
+    intensityRange: '中（小强度模板）',
+    weeklyLoadDesc: '力量1次/周（仅维持爆发力，不做新动作）+ 外场3次/周（战术精准+轻技术）。系统默认推荐更小强度，负荷波动不超过10%。黄色减量高频启用，避免透支。',
   },
 };
 
@@ -154,14 +154,14 @@ function daysFromPreset(preset: PhasePreset, weekIndex: number): DayPlan[] {
     pattern.push({ scene:'pitch', goal:'speed', focus:'MD-2: 小组配合', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'MD-1: 赛前激活', intensity:'低' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'⚽ 比赛日', intensity:'极高' });
-  } else { // playoffs
-    pattern.push({ scene:'gym', goal:'power', focus:'爆发力维持（轻量）', intensity:'中' });
-    pattern.push({ scene:'pitch', goal:'power', focus:'针对性战术训练', intensity:'高' });
-    pattern.push({ scene:'pitch', goal:'speed', focus:'强度控制+定位球', intensity:'中高' });
-    pattern.push({ scene:'pitch', goal:'power', focus:'战术磨合+心理准备', intensity:'中' });
-    pattern.push({ scene:'pitch', goal:'speed', focus:'赛前激活+轻技术', intensity:'低' });
+  } else { // playoffs — 小强度模板，避免透支
+    pattern.push({ scene:'gym', goal:'power', focus:'爆发力维持（轻量/不做新动作）', intensity:'低' });
+    pattern.push({ scene:'pitch', goal:'power', focus:'战术精准训练', intensity:'中' });
+    pattern.push({ scene:'pitch', goal:'speed', focus:'强度控制+定位球', intensity:'中' });
+    pattern.push({ scene:'pitch', goal:'power', focus:'赛前激活+轻技术', intensity:'低' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'⚽ 附加赛日', intensity:'极高' });
     pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'恢复再生', intensity:'低' });
+    pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'主动恢复/休息', intensity:'低' });
   }
 
   for (let i = 0; i < 7; i++) {
