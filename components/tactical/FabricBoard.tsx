@@ -641,14 +641,15 @@ export function drawVectorField(canvas: Canvas) {
   }));
 
   // Penalty spots — accent red (only red dots on field)
-  const penSpotX = margin + paW + fw * 0.08;
+  // Real field: penalty spot = 11m from goal line. Field ~100m → ~11% from edge
+  const penSpotDist = fw * 0.12;
   items.push(new Circle({
-    left: penSpotX - 2, top: cy - 2, radius: 2,
+    left: (margin + penSpotDist) - 3, top: cy - 3, radius: 3,
     fill: ACCENT, stroke: "",
     selectable: false, evented: false,
   }));
   items.push(new Circle({
-    left: (margin + fw - paW - fw * 0.08) - 2, top: cy - 2, radius: 2,
+    left: (margin + fw - penSpotDist) - 3, top: cy - 3, radius: 3,
     fill: ACCENT, stroke: "",
     selectable: false, evented: false,
   }));
