@@ -913,12 +913,6 @@ export default function CoachWorkbench() {
                 >
                   📥 加载方案
                 </button>
-                <button
-                  onClick={handleGenerate}
-                  className="px-4 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-300 hover:text-white rounded-lg text-xs transition"
-                >
-                  🔄 重新生成
-                </button>
               </div>
             </div>
           </div>
@@ -1195,26 +1189,6 @@ export default function CoachWorkbench() {
             </div>
           )}
         </div>
-
-        {/* ══ MAIN CTA — one-button generate ══ */}
-        <button onClick={handleGenerate} disabled={isLoading}
-          className="w-full py-4 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
-          {isLoading ? <><span className="animate-spin">⏳</span> 生成中…</> :
-           hasPlanForToday ? `📋 ${mdLabel}方案已存在 · 重新生成` :
-           `⚡ 生成${mdLabel}训练方案`}
-        </button>
-
-        {/* Error display */}
-        {genError && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
-            <span className="text-red-400 shrink-0 mt-0.5">⚠️</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-red-400 text-xs font-medium">{genError}</p>
-              <button onClick={() => { setGenError(null); handleGenerate(); }} className="text-[10px] text-red-400 underline hover:text-red-300 mt-1">点击重试</button>
-            </div>
-            <button onClick={() => setGenError(null)} className="text-gray-500 hover:text-white shrink-0 text-xs">✕</button>
-          </div>
-        )}
 
         {/* ══ QUICK ACTIONS ROW ══ */}
         <div className="flex items-center gap-2">
