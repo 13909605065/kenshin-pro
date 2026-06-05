@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, TrendingUp, Activity, AlertTriangle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import WeeklyLoadBar from "@/components/WeeklyLoadBar";
 
 const WEEKDAY = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
@@ -62,6 +63,12 @@ export default function LoadPage() {
         <h1 className="text-white font-bold text-lg">📊 负荷管理</h1>
         {phaseLabel && <span className="text-[10px] px-2 py-0.5 rounded bg-[#1a1a1a] text-gray-300">{phaseLabel}</span>}
       </div>
+
+      {/* ═══ WEEKLY LOAD BAR ═══ */}
+      <WeeklyLoadBar
+        matchDate={(() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})()}
+        mdDay={(() => { try { const saved = localStorage.getItem('kenshin_coach_matchDate'); const m = new Date((saved || new Date().toISOString().slice(0, 10)) + 'T00:00:00'); const n = new Date(); return Math.ceil((m.getTime() - n.getTime()) / 86400000); } catch { return 7; }})()}
+      />
 
       {/* ═══ THIS WEEK ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
