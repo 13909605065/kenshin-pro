@@ -882,11 +882,16 @@ export default function CoachWorkbench() {
       {(() => {
         const tdo = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
         const tp = getMicrocyclePlan(matchDate, tdo);
-        if (!tp) return (
+        // 只显示匹配当前模式的预排方案
+        const matchPlan = tp && (
+          (workbenchMode === 'football' && tp.scene === 'pitch') ||
+          (workbenchMode === 'gym' && tp.scene === 'gym')
+        ) ? tp : null;
+        if (!matchPlan) return (
           <div className="bg-[#0d0d0d] border border-dashed border-[#444] rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <span className="text-sm font-bold text-gray-400">今日暂无预排方案</span>
+                <span className="text-sm font-bold text-gray-400">暂无{workbenchMode === 'football' ? '外场' : '力量'}预排方案</span>
                 <p className="text-[10px] text-gray-600 mt-0.5">提前在周期方案中编排本周训练</p>
               </div>
               <a href="/planning" className="px-3 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98] no-underline inline-block">
@@ -900,10 +905,10 @@ export default function CoachWorkbench() {
             <div className="flex items-center gap-3 flex-wrap">
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-bold text-white">
-                  今日已预排 · {tp.duration}min {tp.scene === 'gym' ? '力量房' : '外场'}
+                  已预排 · {matchPlan.duration}min {matchPlan.scene === 'gym' ? '力量房' : '外场'}
                 </span>
                 <span className="text-[10px] text-gray-500 ml-2">
-                  {GOAL_LABELS[tp.goal] || tp.goal} · {PHASE_LABELS[tp.phase as SeasonPhase] || tp.phase}
+                  {GOAL_LABELS[matchPlan.goal] || matchPlan.goal} · {PHASE_LABELS[matchPlan.phase as SeasonPhase] || matchPlan.phase}
                 </span>
               </div>
               <div className="flex gap-2">
