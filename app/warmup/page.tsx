@@ -45,7 +45,15 @@ const CANVAS_H = 680;
 const LIBRARY_KEY = "kenshin_warmup_library";
 const CALENDAR_KEY = "kenshin_warmup_calendar";
 
-const EQUIPMENT_COLORS = {
+/** Cone PNG files — randomly picked on each add for color variety */
+const CONE_PNGS = ["橙色标志盘.png", "红色标志盘.png", "黄色标志盘.png", "蓝色标志盘.png"];
+
+/** Pitch background image path */
+const PITCH_PNG = "/equipment/场地.png";
+
+/** @deprecated — cone/pole/hoop/hurdle now use PNGs.
+ *  Remaining entries still used by shape factories (ladder, band, player, arrow). */
+const EQUIPMENT_COLORS: Record<string, string> = {
   cone: "#f97316",
   pole: "#d92525",
   ladder: "#fbbf24",
@@ -76,19 +84,30 @@ function countEquipmentFromJSON(canvasJSON: Record<string, unknown>): Record<str
     if (obj.selectable === false) continue;
 
     const objType = obj.type as string | undefined;
+    const src = obj.src as string | undefined;
+
+    // Image-based equipment (PNG) — NEW
+    if (objType === "image" && src) {
+      if (src.includes("标志盘")) { counts.cone++; continue; }
+      if (src.includes("角旗杆")) { counts.pole++; continue; }
+      if (src.includes("圆形环")) { counts.hoop++; continue; }
+      if (src.includes("栏架")) { counts.hurdle++; continue; }
+      continue;
+    }
+
     const fill = obj.fill as string | undefined;
     const stroke = obj.stroke as string | undefined;
     const width = obj.width as number | undefined;
 
-    // Cone: Circle with orange fill
+    // Cone: Circle with orange fill (legacy shape)
     if (objType === "circle" && fill === "#f97316") {
       counts.cone++; continue;
     }
-    // Pole: Rect with red fill, narrow
+    // Pole: Rect with red fill, narrow (legacy shape)
     if (objType === "rect" && fill === "#d92525" && width !== undefined && width < 15) {
       counts.pole++; continue;
     }
-    // Hoop: Circle with white stroke, transparent fill
+    // Hoop: Circle with white stroke, transparent fill (legacy shape)
     if (objType === "circle" && stroke === "#ffffff" && fill === "transparent") {
       counts.hoop++; continue;
     }
@@ -126,6 +145,46 @@ function transformCanvasToEquipmentFree(canvasJSON: Record<string, unknown>): Re
     }
 
     const objType = obj.type as string | undefined;
+    const src = obj.src as string | undefined;
+
+    // Image-based equipment → floor markers (NEW PNG handling)
+    if (objType === "image" && src) {
+      if (src.includes("标志盘")) {
+        newObjects.push({
+          ...obj, type: "circle", radius: 8, fill: "#ef4444", stroke: "", strokeWidth: 0, src: undefined,
+        });
+        continue;
+      }
+      if (src.includes("角旗杆")) {
+        newObjects.push({
+          ...obj,
+          type: "rect", width: 30, height: 3,
+          fill: "rgba(255,255,255,0.6)", stroke: "",
+          rx: 0, ry: 0, src: undefined,
+          top: (obj.top as number || 0) + 30,
+        });
+        continue;
+      }
+      if (src.includes("圆形环")) {
+        newObjects.push({
+          ...obj, type: "circle", radius: 18, fill: "transparent",
+          stroke: "#ffffff", strokeWidth: 2,
+          strokeDashArray: [6, 4], src: undefined,
+        });
+        continue;
+      }
+      if (src.includes("栏架")) {
+        newObjects.push({
+          ...obj,
+          type: "rect", width: 40, height: 3,
+          fill: "rgba(255,255,255,0.5)", stroke: "", src: undefined,
+          top: (obj.top as number || 0) + 15,
+        });
+        continue;
+      }
+      newObjects.push(obj); continue;
+    }
+
     const fill = obj.fill as string | undefined;
     const stroke = obj.stroke as string | undefined;
     const width = obj.width as number | undefined;
@@ -199,37 +258,33 @@ function transformCanvasToEquipmentFree(canvasJSON: Record<string, unknown>): Re
    Fabric object factories
    ─────────────────────────────────────────── */
 
-function createCone(): Circle {
-  return new Circle({
-    left: CANVAS_W / 2 - 12 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 12 + (Math.random() - 0.5) * 80,
-    radius: 14,
-    fill: EQUIPMENT_COLORS.cone,
-    stroke: "#c2410c",
-    strokeWidth: 1.5,
+async function createCone(): Promise<FabricImage> {
+  const file = CONE_PNGS[Math.floor(Math.random() * CONE_PNGS.length)];
+  const img = await FabricImage.fromURL(`/equipment/${file}`);
+  img.set({
+    left: CANVAS_W / 2 - 20 + (Math.random() - 0.5) * 100,
+    top: CANVAS_H / 2 - 20 + (Math.random() - 0.5) * 80,
     selectable: true,
     evented: true,
     hasControls: true,
     hasBorders: true,
   });
+  img.scaleToWidth(40);
+  return img;
 }
 
-function createPole(): Rect {
-  return new Rect({
-    left: CANVAS_W / 2 - 4 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 30 + (Math.random() - 0.5) * 80,
-    width: 8,
-    height: 60,
-    fill: EQUIPMENT_COLORS.pole,
-    stroke: "#b91c1c",
-    strokeWidth: 1,
-    rx: 2,
-    ry: 2,
+async function createPole(): Promise<FabricImage> {
+  const img = await FabricImage.fromURL("/equipment/角旗杆.png");
+  img.set({
+    left: CANVAS_W / 2 - 5 + (Math.random() - 0.5) * 100,
+    top: CANVAS_H / 2 - 35 + (Math.random() - 0.5) * 80,
     selectable: true,
     evented: true,
     hasControls: true,
     hasBorders: true,
   });
+  img.scaleToWidth(30);
+  return img;
 }
 
 function createLadder(): Group {
@@ -259,47 +314,33 @@ function createLadder(): Group {
   return g;
 }
 
-function createHoop(): Circle {
-  return new Circle({
-    left: CANVAS_W / 2 - 18 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 18 + (Math.random() - 0.5) * 80,
-    radius: 18,
-    fill: "transparent",
-    stroke: EQUIPMENT_COLORS.hoop,
-    strokeWidth: 3,
+async function createHoop(): Promise<FabricImage> {
+  const img = await FabricImage.fromURL("/equipment/圆形环.png");
+  img.set({
+    left: CANVAS_W / 2 - 25 + (Math.random() - 0.5) * 100,
+    top: CANVAS_H / 2 - 25 + (Math.random() - 0.5) * 80,
     selectable: true,
     evented: true,
     hasControls: true,
     hasBorders: true,
   });
+  img.scaleToWidth(50);
+  return img;
 }
 
-function createHurdle(): Group {
-  const base = new Rect({
-    left: -20, top: 18, width: 40, height: 4,
-    fill: EQUIPMENT_COLORS.hurdle, stroke: "#ca8a04", strokeWidth: 0.5,
-  });
-  const postL = new Rect({
-    left: -16, top: -12, width: 3, height: 30,
-    fill: EQUIPMENT_COLORS.hurdle, stroke: "#ca8a04", strokeWidth: 0.5,
-  });
-  const postR = new Rect({
-    left: 13, top: -12, width: 3, height: 30,
-    fill: EQUIPMENT_COLORS.hurdle, stroke: "#ca8a04", strokeWidth: 0.5,
-  });
-  const bar = new Rect({
-    left: -16, top: -12, width: 32, height: 3,
-    fill: EQUIPMENT_COLORS.hurdle, stroke: "#ca8a04", strokeWidth: 0.5,
-  });
-  const g = new Group([base, postL, postR, bar], {
-    left: CANVAS_W / 2 - 20 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 12 + (Math.random() - 0.5) * 80,
+async function createHurdle(): Promise<FabricImage> {
+  const file = Math.random() > 0.5 ? "小栏架.png" : "高栏架.png";
+  const img = await FabricImage.fromURL(`/equipment/${file}`);
+  img.set({
+    left: CANVAS_W / 2 - 40 + (Math.random() - 0.5) * 100,
+    top: CANVAS_H / 2 - 30 + (Math.random() - 0.5) * 80,
     selectable: true,
     evented: true,
     hasControls: true,
     hasBorders: true,
   });
-  return g;
+  img.scaleToWidth(80);
+  return img;
 }
 
 function createBand(): Group {
@@ -381,179 +422,26 @@ function createArrow(): Group {
   return g;
 }
 
-/* ───────────────────────────────────────────
-   Pitch background drawing
-   ─────────────────────────────────────────── */
-
-function drawPitch(canvas: Canvas): void {
-  const bg = new Rect({
-    left: 0, top: 0,
-    width: CANVAS_W, height: CANVAS_H,
-    fill: "#1a8b3a",
-    selectable: false,
-    evented: false,
-  });
-  canvas.add(bg);
-
-  // Helper to add non-interactive white line
-  const addLine = (coords: [number, number, number, number], opts: Record<string, unknown> = {}) => {
-    const line = new Line(coords, {
-      stroke: "#ffffff",
-      strokeWidth: 2,
+/** Set the pitch background image on a Fabric canvas.
+ *  Replaces the old drawPitch() which drew all lines/arcs with Fabric shapes. */
+async function setPitchBackground(canvas: Canvas): Promise<void> {
+  try {
+    const img = await FabricImage.fromURL(PITCH_PNG);
+    img.set({
+      left: 0,
+      top: 0,
       selectable: false,
       evented: false,
-      ...opts,
+      hasControls: false,
+      hasBorders: false,
     });
-    canvas.add(line);
-    return line;
-  };
-
-  const addRect = (l: number, t: number, w: number, h: number) => {
-    const r = new Rect({
-      left: l, top: t, width: w, height: h,
-      fill: "transparent",
-      stroke: "#ffffff",
-      strokeWidth: 2,
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(r);
-  };
-
-  const addCircle = (cx: number, cy: number, r: number, dashed = false) => {
-    const c = new Circle({
-      left: cx - r, top: cy - r, radius: r,
-      fill: "transparent",
-      stroke: "#ffffff",
-      strokeWidth: 2,
-      ...(dashed ? { strokeDashArray: [6, 4] } : {}),
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(c);
-  };
-
-  // Pitch boundary
-  const marginX = 40;
-  const marginY = 30;
-  const pitchW = CANVAS_W - marginX * 2;
-  const pitchH = CANVAS_H - marginY * 2;
-
-  addRect(marginX, marginY, pitchW, pitchH);
-
-  // Center line
-  addLine([CANVAS_W / 2, marginY, CANVAS_W / 2, marginY + pitchH]);
-
-  // Center circle
-  addCircle(CANVAS_W / 2, CANVAS_H / 2, 92);
-
-  // Center dot
-  const centerDot = new Circle({
-    left: CANVAS_W / 2 - 3, top: CANVAS_H / 2 - 3, radius: 3,
-    fill: "#ffffff", stroke: "", strokeWidth: 0,
-    selectable: false, evented: false,
-  });
-  canvas.add(centerDot);
-
-  // Left penalty area
-  const paW = 160;
-  const paH = 320;
-  const paTop = (CANVAS_H - paH) / 2;
-  addRect(marginX, paTop, paW, paH);
-
-  // Right penalty area
-  addRect(marginX + pitchW - paW, paTop, paW, paH);
-
-  // Left goal area
-  const gaW = 60;
-  const gaH = 150;
-  const gaTop = (CANVAS_H - gaH) / 2;
-  addRect(marginX, gaTop, gaW, gaH);
-
-  // Right goal area
-  addRect(marginX + pitchW - gaW, gaTop, gaW, gaH);
-
-  // Penalty spots
-  const penSpotX_left = marginX + 110;
-  const penSpotX_right = marginX + pitchW - 110;
-  [penSpotX_left, penSpotX_right].forEach((x) => {
-    const dot = new Circle({
-      left: x - 3, top: CANVAS_H / 2 - 3, radius: 3,
-      fill: "#ffffff", stroke: "", strokeWidth: 0,
-      selectable: false, evented: false,
-    });
-    canvas.add(dot);
-    // Penalty arc
-    const arc = new Circle({
-      left: x - 92, top: CANVAS_H / 2 - 92, radius: 92,
-      fill: "transparent",
-      stroke: "#ffffff",
-      strokeWidth: 2,
-      strokeDashArray: [5, 4],
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(arc);
-  });
-
-  // Corner arcs (simplified as small circles at each corner)
-  const corners = [
-    [marginX, marginY],
-    [marginX + pitchW, marginY],
-    [marginX, marginY + pitchH],
-    [marginX + pitchW, marginY + pitchH],
-  ];
-  corners.forEach(([cx, cy]) => {
-    const arc = new Circle({
-      left: cx - 10, top: cy - 10, radius: 10,
-      fill: "transparent",
-      stroke: "#ffffff",
-      strokeWidth: 1.5,
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(arc);
-  });
-
-  // Goals (small rectangles at center of each end)
-  const goalW = 30;
-  const goalH = 80;
-  const goalTop = (CANVAS_H - goalH) / 2;
-  // Left goal
-  const leftGoal = new Rect({
-    left: marginX - 12, top: goalTop, width: 12, height: goalH,
-    fill: "rgba(255,255,255,0.15)",
-    stroke: "#ffffff",
-    strokeWidth: 2,
-    selectable: false,
-    evented: false,
-  });
-  canvas.add(leftGoal);
-  // Right goal
-  const rightGoal = new Rect({
-    left: marginX + pitchW, top: goalTop, width: 12, height: goalH,
-    fill: "rgba(255,255,255,0.15)",
-    stroke: "#ffffff",
-    strokeWidth: 2,
-    selectable: false,
-    evented: false,
-  });
-  canvas.add(rightGoal);
-
-  // Grass texture pattern (subtle stripes)
-  const stripeCount = 9;
-  for (let i = 0; i < stripeCount; i++) {
-    const sx = marginX + (i / stripeCount) * pitchW;
-    const stripe = new Rect({
-      left: sx, top: marginY,
-      width: pitchW / stripeCount / 2,
-      height: pitchH,
-      fill: "rgba(255,255,255,0.03)",
-      stroke: "",
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(stripe);
+    img.scaleToWidth(CANVAS_W);
+    img.scaleToHeight(CANVAS_H);
+    canvas.backgroundImage = img;
+    canvas.renderAll();
+  } catch (e) {
+    console.error("Failed to load pitch background:", e);
+    // Fallback: the green backgroundColor from canvas init stays visible
   }
 }
 
@@ -592,7 +480,7 @@ function generateId(): string {
 function Toolbar({
   onAddObject,
 }: {
-  onAddObject: (factory: () => FabricObject) => void;
+  onAddObject: (factory: () => FabricObject | Promise<FabricObject>) => void;
 }) {
   const tools = [
     { label: "标志盘", emoji: "🟤", factory: createCone },
@@ -1032,14 +920,8 @@ export default function WarmupPage() {
 
     fabricRef.current = canvas;
 
-    // Use user's pitch image as background
-    Image.fromURL('/equipment/场地.png', { crossOrigin: 'anonymous' }).then((img) => {
-      canvas.backgroundImage = img;
-      img.scaleToWidth(CANVAS_W);
-      img.scaleToHeight(CANVAS_H);
-      img.set({ selectable: false, evented: false });
-      canvas.renderAll();
-    });
+    // Set pitch background image (replaces old drawPitch())
+    setPitchBackground(canvas);
 
     // Equipment count tracking
     const refreshEquipCount = () => {
@@ -1139,13 +1021,17 @@ export default function WarmupPage() {
     canvas.renderAll();
   }, [injuryEnabled, injuryNotesText]);
 
-  // Add object to canvas
-  const handleAddObject = useCallback((factory: () => FabricObject) => {
+  // Add object to canvas (supports both sync and async factories)
+  const handleAddObject = useCallback(async (factory: () => FabricObject | Promise<FabricObject>) => {
     if (!fabricRef.current) return;
-    const obj = factory();
-    fabricRef.current.add(obj);
-    fabricRef.current.setActiveObject(obj);
-    fabricRef.current.renderAll();
+    try {
+      const obj = await factory();
+      fabricRef.current.add(obj);
+      fabricRef.current.setActiveObject(obj);
+      fabricRef.current.renderAll();
+    } catch (e) {
+      console.error("Failed to create equipment object:", e);
+    }
   }, []);
 
   // Save to localStorage
@@ -1280,15 +1166,17 @@ export default function WarmupPage() {
     // Load canvas state
     const canvas = fabricRef.current;
     canvas.loadFromJSON(design.canvasJSON).then(() => {
-      // Re-draw pitch background (loadFromJSON clears everything)
-      // Instead, we trust the saved JSON which includes all objects
-      canvas.renderAll();
+      // For old designs without a pitch background image, add one
+      if (!canvas.backgroundImage) {
+        setPitchBackground(canvas);
+      } else {
+        canvas.renderAll();
+      }
     }).catch((err) => {
       console.error("Failed to load canvas JSON:", err);
-      // Clear canvas and redraw pitch as fallback
+      // Clear canvas and set pitch background as fallback
       canvas.clear();
-      drawPitch(canvas);
-      canvas.renderAll();
+      setPitchBackground(canvas);
     });
   }, []);
 
@@ -1309,8 +1197,8 @@ export default function WarmupPage() {
 
     const canvas = fabricRef.current;
     canvas.clear();
-    drawPitch(canvas);
-    canvas.renderAll();
+    // Restore pitch background after clear
+    setPitchBackground(canvas);
   }, []);
 
   // Keyboard shortcut: Ctrl+S to save

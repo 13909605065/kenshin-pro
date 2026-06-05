@@ -572,7 +572,7 @@ export default function SeasonCalendar() {
         key={d}
         onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
         className={`relative flex flex-col items-center justify-center rounded transition cursor-pointer group
-          w-7 h-8 text-[9px]
+          w-9 h-9 text-[10px]
           ${isToday ? 'ring-1 ring-[#d92525] bg-[#d92525]/10' : ''}
           ${matchDay ? 'bg-[#d92525]/10' : 'hover:bg-[#1a1a1a]'}
           ${isWeekend ? 'opacity-70' : ''}
@@ -585,7 +585,7 @@ export default function SeasonCalendar() {
         {events.length > 0 && (
           <div className="flex gap-0.5 absolute -bottom-0.5">
             {events.slice(0, 2).map((e, i) => (
-              <span key={i} className="w-1 h-1 rounded-full" style={{ backgroundColor: EVENT_CONFIG[e.type].color }} />
+              <span key={i} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: EVENT_CONFIG[e.type].color }} />
             ))}
             {events.length > 2 && <span className="text-[7px] text-gray-500 leading-none">+</span>}
           </div>
@@ -646,7 +646,7 @@ export default function SeasonCalendar() {
   // ── Render a week strip in the season view ──
   const renderWeekStrip = useCallback((week: typeof seasonTimeline[0]) => {
     return (
-      <div key={week.weekStart} className="flex gap-0.5 items-center">
+      <div key={week.weekStart} className="flex gap-1 items-center">
         {week.days.map(d => renderMiniDay(d, d === today))}
       </div>
     );
@@ -810,9 +810,9 @@ export default function SeasonCalendar() {
           {/* ═══ SEASON VIEW ═══ */}
           {viewMode === 'season' && (
             <div className="p-3 overflow-x-auto">
-              <div className="flex gap-3" style={{ minWidth: '900px' }}>
+              <div className="flex gap-4" style={{ minWidth: '1100px' }}>
                 {monthColumns.map(col => (
-                  <div key={col.month} className="flex-1 min-w-[80px]">
+                  <div key={col.month} className="flex-1 min-w-[95px]">
                     {/* Month header */}
                     <button
                       onClick={() => { setFocusedMonth(col.month); setViewMode('month'); }}
@@ -825,9 +825,9 @@ export default function SeasonCalendar() {
                     </button>
 
                     {/* Weekday headers */}
-                    <div className="flex gap-0.5 mb-1 px-0.5">
+                    <div className="flex gap-1 mb-1 px-0.5">
                       {['一','二','三','四','五','六','日'].map((w, i) => (
-                        <span key={i} className="w-7 text-center text-[7px] text-gray-600 leading-none">
+                        <span key={i} className="w-8 text-center text-[8px] text-gray-500 leading-none">
                           {w}
                         </span>
                       ))}
@@ -853,7 +853,7 @@ export default function SeasonCalendar() {
                         return (Object.entries(typeCount) as [EventType, number][]).map(([type, count]) => {
                           const cfg = EVENT_CONFIG[type];
                           return (
-                            <div key={type} className="text-[7px] px-1 py-0.5 rounded flex items-center gap-1" style={{ backgroundColor: `${cfg.color}15` }}>
+                            <div key={type} className="text-[8px] px-1.5 py-0.5 rounded flex items-center gap-1" style={{ backgroundColor: `${cfg.color}15` }}>
                               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.color }} />
                               <span className="text-gray-400">{cfg.label} ×{count}</span>
                             </div>
