@@ -53,8 +53,8 @@ export type ViewMode = 'season' | 'month' | 'week';
 // Constants
 // ═══════════════════════════════════════════════
 
-const SEASON_MONTHS = [8, 9, 10, 11, 12, 1, 2, 3, 4, 5]; // Aug → May
-const MONTH_LABELS = ['8月', '9月', '10月', '11月', '12月', '1月', '2月', '3月', '4月', '5月'];
+const SEASON_MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // Fixed 1-12 order
+const MONTH_LABELS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
 const EVENT_CONFIG: Record<EventType, { label: string; emoji: string; color: string; bg: string; border: string }> = {
   league_match: { label: '联赛日', emoji: '🔴', color: '#ef4444', bg: '#ef4444/15', border: '#ef4444/40' },
@@ -301,8 +301,8 @@ export default function SeasonCalendar() {
     if (saved) return saved;
 
     const year = getDefaultSeasonYear();
-    const seasonStart = `${year}-08-01`;
-    const seasonEnd = `${year + 1}-05-31`;
+    const seasonStart = `${year}-01-01`;
+    const seasonEnd = `${year}-12-31`;
     return { events: [], phaseRanges: [], matchDates: [], seasonStart, seasonEnd };
   });
 
@@ -320,10 +320,8 @@ export default function SeasonCalendar() {
   const today = todayStr();
   const seasonYear = useMemo(() => getDefaultSeasonYear(), []);
 
-  // ── Build season year mapping (month 8-12 → seasonYear, month 1-5 → seasonYear+1) ──
-  const yearForMonth = useCallback((month: number): number => {
-    return month >= 8 ? seasonYear : seasonYear + 1;
-  }, [seasonYear]);
+  // ── Year mapping: season year for all months ──
+  const yearForMonth = useCallback((_month: number): number => seasonYear, [seasonYear]);
 
   // ── persist on change ──
   const updateData = useCallback((updater: (prev: SeasonCalendarData) => SeasonCalendarData) => {
@@ -497,11 +495,9 @@ export default function SeasonCalendar() {
   const navigateMonth = useCallback((dir: -1 | 1) => {
     setFocusedMonth(prev => {
       let next = prev + dir;
-      if (next > 5 && dir > 0 && prev <= 5) next = 8; // wrap May -> Aug
-      if (next < 8 && dir < 0) next = 5; // wrap Aug -> May
-      if (next > 5 && prev > 5) next = 5; // May is max
-      if (next < 8) next = 8; // Aug is min
-      return Math.max(8, Math.min(12, next));
+      if (next > 12) next = 1;
+      if (next < 1) next = 12;
+      return next;
     });
   }, []);
 
