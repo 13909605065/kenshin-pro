@@ -1114,12 +1114,10 @@ export default function CoachWorkbench() {
           </div>
         </div>
 
-        {/* Row 3: Recommendation */}
+        {/* Row 3: Training type indicator */}
         <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg">
-          <span className="text-[10px] text-gray-500">推荐:</span>
-          <span className="text-xs font-bold text-white">
-            {SCENE_LABELS[mdRecommendation.scene]} · {GOAL_LABELS[mdRecommendation.goal] || mdRecommendation.goal} · {duration}min
-          </span>
+          <span className="text-[10px] text-gray-500">训练:</span>
+          <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '外场训练' : '力量房'} · {duration}min</span>
           {recoveryScore.adjustments.length > 0 && (
             <span className="text-[9px] text-yellow-400/80 truncate max-w-[240px]">
               ⚠ {recoveryScore.adjustments[0]}
