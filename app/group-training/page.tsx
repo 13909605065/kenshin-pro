@@ -5,7 +5,7 @@ import { STRENGTH_LIBRARY, ExerciseRef } from "@/lib/training-library";
 import { getPhaseParams, getGoalParams } from "@/lib/periodization";
 import { getPlayers, PlayerRecord } from "@/lib/roster-utils";
 import { X, Trash2, Users, FileDown, Printer, AlertTriangle, CheckCircle2, RefreshCw, Upload, Search } from "lucide-react";
-import { GymDesigner } from "@/components/GymDesigner";
+
 
 // ═══════════════════════════════════════════════
 // Types
@@ -1376,16 +1376,6 @@ export default function GroupTrainingPage() {
         }
       `}</style>
 
-      {/* ═══════════════════════════════════════════════
-          力量房训练设计器
-          ═══════════════════════════════════════════════ */}
-      <section className="mt-10 border-t border-[#222] pt-8">
-        <h2 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
-          🏋️ 力量房训练设计
-        </h2>
-        <p className="text-xs text-gray-500 mb-4">从动作库挑选力量训练动作，AI 自动校验方案合理性</p>
-        <GymDesigner />
-      </section>
     </div>
   );
 }

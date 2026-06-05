@@ -103,6 +103,7 @@ export default function Home() {
               <a href="/warmup" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">热身设计</a>
               <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
               <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">花名册</a>
+              <a href="/load" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">负荷管理</a>
               <a href="/planning" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">周期方案</a>
               <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">设置</a>
             </nav>
