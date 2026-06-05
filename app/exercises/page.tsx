@@ -323,15 +323,12 @@ export default function ExercisesPage() {
     return allExercises.filter((ex) => {
       // Library mode separation
       if (libraryMode === "football") {
-        // Football mode: only show exercises with football_component
-        if (!ex.football_component) return false;
-        // Filter by 5-component
+        // Football mode: show all exercises, football_component is an optional filter
         if (footballComponent !== "all" && ex.football_component !== footballComponent) return false;
         // Scene filter
         if (sceneFilter !== "all" && ex.scene && ex.scene !== sceneFilter) return false;
       } else {
-        // Fitness mode: show exercises without football_component (pure fitness)
-        // plus any exercise as general reference
+        // Fitness mode: show all exercises, no football filter applied
       }
 
       // Shared filters

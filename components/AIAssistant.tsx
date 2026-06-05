@@ -112,24 +112,37 @@ export default function AIAssistant() {
   useEffect(() => {
     // Start at bottom-right
     setPos({ x: window.innerWidth - 60, y: window.innerHeight - 180 });
+    // Global pointerup to reset drag state
+    const resetDrag = () => { dragging.current = false; };
+    window.addEventListener('pointerup', resetDrag);
+    return () => window.removeEventListener('pointerup', resetDrag);
   }, []);
 
+  const MOVE_THRESHOLD = 3; // pixels — ignore tiny moves as drag
+  const hasMoved = useRef(false);
+
   const onPointerDown = (e: React.PointerEvent) => {
-    dragging.current = true;
+    hasMoved.current = false;
+    dragging.current = false;
     dragStart.current = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging.current) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
+    if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+      dragging.current = true;
+      hasMoved.current = true;
+    }
+    if (!dragging.current) return;
     setPos({
       x: Math.max(0, Math.min(window.innerWidth - 48, dragStart.current.px + dx)),
       y: Math.max(0, Math.min(window.innerHeight - 48, dragStart.current.py + dy)),
     });
   };
   const onPointerUp = () => {
-    dragging.current = false;
+    // Reset after a short delay so onClick can check hasMoved
+    setTimeout(() => { dragging.current = false; }, 50);
   };
 
   useEffect(() => {
@@ -166,7 +179,7 @@ export default function AIAssistant() {
       {/* Draggable floating button — just the butterfly, no background */}
       <button
         ref={btnRef}
-        onClick={() => { if (!dragging.current) setOpen(!open); }}
+        onClick={() => { if (!hasMoved.current) setOpen(!open); }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -195,8 +208,8 @@ export default function AIAssistant() {
           {/* Header */}
           <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-3 border-b border-[#222]">
             <span className="text-sm font-bold text-white">🦋 AI 训练助手</span>
-            <button
-              onClick={() => setOpen(false)}
+            <button type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
               className="text-gray-400 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
