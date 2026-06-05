@@ -832,7 +832,12 @@ export default function CoachWorkbench() {
           } catch {}
         }}
           className="text-[10px] px-3 py-1 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition ml-auto">😴 今天休息</button>
-        <span className="text-[10px] text-gray-600">生成方案时自动记录</span>
+        {(() => {
+          const plan = getMicrocyclePlan(trainDate, dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00')));
+          if (plan) return <span className="text-[10px] text-green-400 ml-auto">📋 已预排 · {plan.goal} · {plan.duration}min</span>;
+          if (trainDate > new Date().toISOString().slice(0, 10)) return <span className="text-[10px] text-gray-500 ml-auto">提前规划 · 方案将保存到训练日</span>;
+          return <span className="text-[10px] text-gray-600 ml-auto">生成方案时自动记录</span>;
+        })()}
       </div>
 
       {/* ═══════════════════════════════════════════════
