@@ -13,6 +13,7 @@ import VoiceNotes from './VoiceNotes';
 import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
+import TrainingCalendar, { type DayNotes } from './TrainingCalendar';
 import { PHASE_LABELS } from '@/lib/constants';
 import { getPhaseParams, getGoalParams } from '@/lib/periodization';
 import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment } from '@/lib/fitness-store';
@@ -356,6 +357,30 @@ export default function CoachWorkbench() {
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
+
+    // Read today's calendar notes and pass warmup/ball/notes context to AI
+    try {
+      const todayStr = dateStr(new Date());
+      const calRaw = localStorage.getItem('kenshin_warmup_calendar');
+      if (calRaw) {
+        const cal = JSON.parse(calRaw);
+        const todayNotes = cal[todayStr];
+        if (todayNotes) {
+          const parts: string[] = [];
+          if (todayNotes.warmupId) parts.push(`热身方案ID:${todayNotes.warmupId},时长${todayNotes.warmupDuration}min`);
+          if (todayNotes.ballOption) parts.push(`热身方式:${todayNotes.ballOption === 'ball' ? '有球' : '无球'}`);
+          if (todayNotes.notes) parts.push(`教练备注:${todayNotes.notes}`);
+          if (todayNotes.theme) parts.push(`训练主题:${todayNotes.theme}`);
+          if (todayNotes.weather) {
+            const weatherMap: Record<string, string> = { sun: '晴', cloud: '阴', rain: '雨' };
+            parts.push(`天气:${weatherMap[todayNotes.weather] || todayNotes.weather}`);
+          }
+          if (parts.length > 0) {
+            fd.weakness = fd.weakness ? `${fd.weakness} | 训练日历: ${parts.join('; ')}` : `训练日历: ${parts.join('; ')}`;
+          }
+        }
+      }
+    } catch {}
 
     try { await generate(fd, undefined, scene); }
     catch (e: any) {
@@ -856,6 +881,26 @@ export default function CoachWorkbench() {
 
         </div>
       </details>
+
+      {/* ═══════════════════════════════════════════════
+          TRAINING CALENDAR — daily notes + warmup linking
+          ═══════════════════════════════════════════════ */}
+      <TrainingCalendar
+        matchDate={matchDate}
+        mdDay={mdDay}
+        onSelectDay={(date, notes) => {
+          // Calendar day selected — coach can review/edit
+          console.log('Calendar day selected:', date, notes);
+        }}
+        onWarmupSelect={(date, warmupId) => {
+          // Warmup linked to day — ready for AI generation
+          console.log('Warmup linked:', date, warmupId);
+        }}
+        onDurationChange={(date, duration) => {
+          // Duration adjusted per day
+          console.log('Duration changed:', date, duration);
+        }}
+      />
 
       {/* ═══════════════════════════════════════════════
           PLAN OUTPUT AREA
