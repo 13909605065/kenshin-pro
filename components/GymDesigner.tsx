@@ -761,7 +761,7 @@ function WorkoutPanel({
 
                   {/* Exercise info */}
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium text-white truncate block">
+                    <span className="text-xs font-medium text-white block leading-snug">
                       {ex?.name || id}
                     </span>
                     {ex && (

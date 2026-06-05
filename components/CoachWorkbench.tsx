@@ -132,6 +132,89 @@ interface EditState {
   exercise: any;
 }
 
+function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  // Read warmup
+  const warmupInfo = (() => {
+    try {
+      const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
+      const today = cal[todayStr];
+      if (!today?.warmupId) return null;
+      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+      const w = lib.find((x: any) => x.id === today.warmupId);
+      return { name: w?.name || '未知', duration: today.warmupDuration, ball: today.ballOption, notes: today.notes };
+    } catch { return null; }
+  })();
+
+  // Read gym
+  const gymInfo = (() => {
+    try {
+      const cal = JSON.parse(localStorage.getItem('kenshin_gym_calendar') || '[]');
+      if (!Array.isArray(cal)) return null;
+      const entry = cal.find((e: any) => e.date === todayStr);
+      if (!entry) return null;
+      const lib = JSON.parse(localStorage.getItem('kenshin_gym_library') || '[]');
+      const w = lib.find((x: any) => x.id === entry.comboId);
+      return { name: w?.name || '未知方案', exerciseIds: w?.exerciseIds || entry.exerciseIds || [] };
+    } catch { return null; }
+  })();
+
+  // Read today's training log
+  const todayLog = (() => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('kenshin_training_logs') || '[]');
+      return logs.find((l: any) => l.date === todayStr) || null;
+    } catch { return null; }
+  })();
+
+  // Read microcycle plan
+  const microPlan = (() => {
+    try {
+      const all = JSON.parse(localStorage.getItem('kenshin_microcycle') || '{}');
+      const match = new Date(matchDate + 'T00:00:00');
+      const now = new Date();
+      const mdDay = Math.ceil((match.getTime() - now.getTime()) / 86400000);
+      return all[`${matchDate}_${mdDay}`] || null;
+    } catch { return null; }
+  })();
+
+  const hasData = warmupInfo || gymInfo || todayLog || microPlan;
+  if (!hasData) return null;
+
+  return (
+    <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
+      <h3 className="text-xs font-semibold text-gray-400 mb-3">📝 今日训练笔记</h3>
+      <div className="space-y-2 text-xs">
+        {warmupInfo && (
+          <div className="flex gap-2">
+            <span className="text-gray-500 shrink-0">热身:</span>
+            <span className="text-white">{warmupInfo.name} · {warmupInfo.duration}min{warmupInfo.ball === 'ball' ? ' · 有球' : warmupInfo.ball === 'no-ball' ? ' · 无球' : ''}{warmupInfo.notes ? ` · ${warmupInfo.notes}` : ''}</span>
+          </div>
+        )}
+        {microPlan && (
+          <div className="flex gap-2">
+            <span className="text-gray-500 shrink-0">主训:</span>
+            <span className="text-white">{(microPlan as any).goal || '训练方案'} · {(microPlan as any).duration || '?'}min</span>
+          </div>
+        )}
+        {gymInfo && (
+          <div className="flex gap-2">
+            <span className="text-gray-500 shrink-0">力量:</span>
+            <span className="text-white">{gymInfo.name} · {gymInfo.exerciseIds.length}个动作</span>
+          </div>
+        )}
+        {todayLog && (
+          <div className="flex gap-2">
+            <span className="text-gray-500 shrink-0">完成:</span>
+            <span className="text-green-400">{(todayLog as any).summary?.completedExercises || 0}/{(todayLog as any).summary?.totalExercises || 0}项 · RPE {(todayLog as any).summary?.averageRPE || '—'}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
   const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
@@ -1092,6 +1175,11 @@ export default function CoachWorkbench() {
       )}
 
       {/* ══ EXERCISE EDITOR MODAL ══ */}
+      {/* ═══════════════════════════════════════════════
+          今日训练笔记 — auto-generated from saved data
+          ═══════════════════════════════════════════════ */}
+      <DailyTrainingNotes matchDate={matchDate} />
+
       {editState && (
         <ExerciseEditor
           exercise={{
