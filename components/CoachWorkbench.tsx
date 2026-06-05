@@ -592,11 +592,11 @@ export default function CoachWorkbench() {
                     <button onClick={() => setSelectedPlayers(new Set())} className="text-[9px] text-gray-500 hover:text-white">清空</button>
                   </div>
                 </div>
-                {players.length === 0 ? (
+                {(() => { const roster = loadRoster(); return roster.length === 0 ? (
                   <p className="text-[10px] text-gray-600">暂无花名册 · <a href="/roster" className="text-[#d92525] underline">去录入球员</a></p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
-                    {players.map(p => (
+                    {roster.map(p => (
                       <button key={p.id} onClick={() => togglePlayerSelect(p.name)}
                         className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
                           selectedPlayers.has(p.name) ? 'bg-[#d92525]/20 text-[#d92525] ring-1 ring-[#d92525]' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
@@ -605,7 +605,7 @@ export default function CoachWorkbench() {
                       </button>
                     ))}
                   </div>
-                )}
+                )})()}
               </div>
               <input type="text" value={addonTheme} onChange={e => setAddonTheme(e.target.value)}
                 placeholder="加练主题，如：腘绳肌离心强化..."
