@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
@@ -95,6 +95,19 @@ interface RosterPlayer {
 export default function LoadPage() {
   const router = useRouter();
 
+  // Auto-refresh when training/match data changes
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setRefreshKey(k => k + 1);
+    window.addEventListener('training-log-updated', handler);
+    window.addEventListener('storage', handler); // cross-tab
+    return () => {
+      window.removeEventListener('training-log-updated', handler);
+      window.removeEventListener('storage', handler);
+    };
+  }, []);
+
   // Read season phase
   const info = useMemo(() => {
     try {
@@ -106,7 +119,7 @@ export default function LoadPage() {
       if (p && PHASE_INFO[p.phase as PhaseKey]) return PHASE_INFO[p.phase as PhaseKey];
     } catch {}
     return null;
-  }, []);
+  }, [refreshKey]);
 
   // MD calc
   const matchDate = (() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})();
@@ -121,7 +134,7 @@ export default function LoadPage() {
   const logs = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]"); }
     catch { return []; }
-  }, []);
+  }, [refreshKey]);
 
   // This week
   const { weekDays, usedTRIMP, remainingTRIMP, pct } = useMemo(() => {
@@ -165,12 +178,12 @@ export default function LoadPage() {
   // Read all player TRIMP data
   const allPlayerTRIMP = useMemo<PlayerTRIMPEntry[]>(() => {
     return readLS<PlayerTRIMPEntry[]>('kenshin_player_trimp', []);
-  }, []);
+  }, [refreshKey]);
 
   // Read roster
   const roster = useMemo<RosterPlayer[]>(() => {
     return readLS<RosterPlayer[]>('roster_players', []);
-  }, []);
+  }, [refreshKey]);
 
   // Build player list from roster + TRIMP data
   const playerList = useMemo(() => {
@@ -361,7 +374,7 @@ export default function LoadPage() {
     const totalWithDeficit = hasDeficit.length;
 
     return { rows, hasDeficit, totalWithDeficit };
-  }, [completedSupplements]);
+  }, [completedSupplements, refreshKey]);
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">

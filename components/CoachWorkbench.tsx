@@ -506,6 +506,10 @@ export default function CoachWorkbench() {
         localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
       } catch {}
     }
+
+    // Notify load management page to refresh
+    window.dispatchEvent(new CustomEvent('training-log-updated'));
+
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
@@ -1378,6 +1382,9 @@ export default function CoachWorkbench() {
                   localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
                 } catch {}
               }
+
+              // Notify load management page to refresh
+              window.dispatchEvent(new CustomEvent('training-log-updated'));
             }
           }}
         />

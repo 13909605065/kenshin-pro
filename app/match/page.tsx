@@ -585,6 +585,11 @@ export default function MatchPage() {
         setSavedMessage("比赛数据已保存");
       } catch {}
 
+      // Notify load management page to refresh
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('training-log-updated'));
+      }
+
       return {
         ...prev,
         phase: "full_time" as MatchPhase,
