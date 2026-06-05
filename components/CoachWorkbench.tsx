@@ -26,10 +26,10 @@ const SCENES = [
 const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
   gym: [
     { id: 'strength', label: '基础抗阻力量' }, { id: 'power', label: 'SSC爆发力' },
-    { id: 'agility', label: '神经协调灵敏' }, { id: 'muscle_endurance', label: '局部肌肉耐力' },
+    { id: 'agility', label: '神经协调灵敏' }, { id: 'mas_endurance', label: '局部肌肉耐力' },
   ],
   pitch: [
-    { id: 'bodyweight_strength', label: '自重基础力量' }, { id: 'field_power', label: '场地爆发力' },
+    { id: 'strength', label: '自重基础力量' }, { id: 'power', label: '场地爆发力' },
     { id: 'speed', label: '直线加速速度' }, { id: 'mas_endurance', label: '专项间歇耐力' },
   ],
 };
