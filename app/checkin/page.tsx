@@ -210,7 +210,7 @@ function CheckinContent() {
     return (
       <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center p-4">
         <div className="bg-[#0d0d0d] border border-[#222] rounded-2xl p-8 max-w-sm w-full text-center space-y-4">
-          <div className="text-4xl">✅</div>
+          <div className="text-[#22c55e] text-lg font-bold">&#10003;</div>
           <h1 className="text-xl font-bold text-white">确认已提交</h1>
           <p className="text-sm text-gray-400">
             {playerNameInput || playerName || '球员'}，你的训练完成情况已记录
@@ -237,7 +237,7 @@ function CheckinContent() {
       <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center p-4">
         <div className="bg-[#0d0d0d] border border-[#222] rounded-2xl p-6 max-w-sm w-full space-y-4">
           <div className="text-center">
-            <div className="text-3xl mb-2">📋</div>
+            <div className="text-3xl mb-2 text-gray-500 font-bold">#</div>
             <h1 className="text-lg font-bold text-white">训练确认</h1>
             <p className="text-xs text-gray-500 mt-1">输入教练给你的6位确认码</p>
           </div>
@@ -264,7 +264,7 @@ function CheckinContent() {
 
           <button onClick={handleCodeLookup} disabled={loading || code.length !== 6}
             className="w-full py-3 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
-            {loading ? <span className="animate-spin">⏳</span> : '🔍'} 查找训练方案
+            {loading ? <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full inline-block" /> : ''} 查找训练方案
           </button>
 
           {/* History */}

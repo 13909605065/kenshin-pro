@@ -319,7 +319,7 @@ export default function WarmupDesignPage() {
       {autoSaveTs && (
         <div className="flex-shrink-0 px-3 py-2 flex items-center gap-3 text-xs"
           style={{ backgroundColor: TAC_THEME.accent, color: "#fff" }}>
-          <span className="flex-1">检测到上次未保存的热身设计（{new Date(autoSaveTs).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}），是否继续？</span>
+          <span className="flex-1">检测到未保存的热身设计（{new Date(autoSaveTs).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}），是否恢复？</span>
           <button onClick={restoreAutoSave} className="px-3 py-1 rounded font-bold text-xs" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>继续</button>
           <button onClick={dismissAutoSave} className="px-3 py-1 rounded text-xs" style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>忽略</button>
         </div>
@@ -340,17 +340,18 @@ export default function WarmupDesignPage() {
 
         {/* Back */}
         <button onClick={() => router.push("/")}
-          className="flex items-center justify-center w-8 h-8 rounded transition-colors touch-target"
+          className="flex items-center gap-1 px-2 py-1 rounded transition-colors touch-target text-xs"
           style={{ color: TAC_THEME.textDim }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
-          title="返回首页">
-          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; }}
+          title="返回">
+          <ArrowLeft className="w-3.5 h-3.5" strokeWidth={1.5} />
+          <span className="hidden sm:inline">返回</span>
         </button>
 
         {/* Title */}
         <h1 className="font-semibold text-sm tracking-wide hidden sm:block" style={{ color: TAC_THEME.textMain }}>
-          🏃 热身活动设计
+          热身设计
         </h1>
 
         <div className="flex-1" />
@@ -361,7 +362,7 @@ export default function WarmupDesignPage() {
           className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
           style={{ color: showRampPanel ? "#fff" : TAC_THEME.textDim, backgroundColor: showRampPanel ? TAC_THEME.accent : "transparent" }}
           title="RAMP 参考">
-          📖 <span className="hidden sm:inline">RAMP参考</span>
+          <span className="hidden sm:inline">RAMP</span>
         </button>
 
         {/* 快速模板 */}
@@ -372,7 +373,7 @@ export default function WarmupDesignPage() {
           onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
           title="快速热身模板">
-          ⚡ <span className="hidden sm:inline">快速模板</span>
+          <span className="hidden sm:inline">快速模板</span>
         </button>
 
         {/* 保存到热身库 */}
@@ -382,7 +383,7 @@ export default function WarmupDesignPage() {
           onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           title="保存到热身库">
-          💾 <span className="hidden sm:inline">保存到热身库</span>
+          <span className="hidden sm:inline">保存</span>
         </button>
 
         {/* 热身库 */}
@@ -392,7 +393,7 @@ export default function WarmupDesignPage() {
           onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           title="热身库">
-          📦 <span className="hidden sm:inline">热身库</span>
+          <span className="hidden sm:inline">热身库</span>
         </button>
 
         {/* 导出 PNG */}
@@ -535,7 +536,7 @@ export default function WarmupDesignPage() {
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-[#222]">
-                <h3 className="text-sm font-bold text-white">📦 热身库</h3>
+                <h3 className="text-sm font-bold text-white">热身库</h3>
                 <button onClick={() => setShowLibrary(false)} className="text-gray-500 hover:text-white transition">
                   <span className="text-lg leading-none">&times;</span>
                 </button>

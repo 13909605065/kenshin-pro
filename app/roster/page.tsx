@@ -213,7 +213,7 @@ export default function RosterPage() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
-        <h1 className="text-white font-bold text-lg">📋 球队花名册</h1>
+        <h1 className="text-white font-bold text-lg">球队花名册</h1>
         <span className="text-xs text-gray-400">{players.length}名球员</span>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
@@ -226,7 +226,7 @@ export default function RosterPage() {
           URL.revokeObjectURL(url);
         }}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
-          📥 下载模板
+          下载模板
         </button>
         <button onClick={() => fileRef.current?.click()}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">

@@ -218,7 +218,7 @@ function TrainingNotes() {
   return (
     <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white">📝 训练笔记</h3>
+        <h3 className="text-sm font-bold text-white">训练笔记</h3>
         {!editing ? (
           <button onClick={() => { setText(notes[today] || ''); setEditing(true); }} className="text-[10px] text-gray-500 hover:text-white">编辑</button>
         ) : (
@@ -356,8 +356,8 @@ export default function PlanningPage() {
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
-        <h1 className="text-white font-bold text-lg">📅 训练周期编排</h1>
-        {currentPhase && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: PHASE_PRESETS[currentPhase.phase].color, color: '#fff' }}>当前: {PHASE_PRESETS[currentPhase.phase].icon} {PHASE_PRESETS[currentPhase.phase].label}</span>}
+        <h1 className="text-white font-bold text-lg">训练周期编排</h1>
+        {currentPhase && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: PHASE_PRESETS[currentPhase.phase].color, color: '#fff' }}>当前: {PHASE_PRESETS[currentPhase.phase].label}</span>}
       </div>
 
       {/* ═══ SEASON PHASE STATUS ═══ */}
@@ -379,18 +379,16 @@ export default function PlanningPage() {
                   borderColor: isActive ? preset.color : '#222',
                 }}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{preset.icon}</span>
-                  <span className="text-xs font-bold text-white">{preset.label}</span>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-sm font-bold text-white">{preset.label}</span>
                   {isActive && <span className="text-[9px] px-1.5 py-0.5 rounded text-white ml-auto" style={{ backgroundColor: preset.color }}>当前</span>}
                 </div>
-                <p className="text-[10px] text-gray-500 leading-relaxed mb-2">{preset.goal}</p>
-                <div className="flex gap-2 text-[9px]">
-                  <span className="text-gray-500">🏋️ ×{preset.weeklyStrengthDays}</span>
-                  <span className="text-gray-500">⚽ ×{preset.weeklyPitchDays}</span>
-                  <span className="text-gray-500">{preset.intensityRange}</span>
+                <div className="flex gap-2 text-[9px] text-gray-400 mb-1">
+                  <span>力量 {preset.weeklyStrengthDays}次</span>
+                  <span>外场 {preset.weeklyPitchDays}次</span>
+                  <span>{preset.intensityRange}</span>
                 </div>
-                {range && <p className="text-[8px] text-gray-600 mt-1.5">{range.startDate} → {range.endDate}</p>}
+                {range && <p className="text-[8px] text-gray-600">{range.startDate} - {range.endDate}</p>}
               </button>
             );
           })}
@@ -404,14 +402,12 @@ export default function PlanningPage() {
           {Object.values(PHASE_PRESETS).map(preset => (
             <button key={preset.phaseType} onClick={() => handleGenerateFromPreset(preset)} disabled={generating}
               className="p-3 rounded-xl border border-[#222] bg-[#0d0d0d] hover:border-[#d92525]/50 text-left transition">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{preset.icon}</span>
+              <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xs font-bold text-white">{preset.label}</span>
               </div>
-              <p className="text-[10px] text-gray-500 mb-2">{preset.goal}</p>
-              <div className="flex gap-2 text-[9px] text-gray-500">
-                <span>🏋️×{preset.weeklyStrengthDays}</span>
-                <span>⚽×{preset.weeklyPitchDays}</span>
+              <div className="flex gap-2 text-[9px] text-gray-400">
+                <span>力量 {preset.weeklyStrengthDays}次</span>
+                <span>外场 {preset.weeklyPitchDays}次</span>
               </div>
             </button>
           ))}
@@ -420,20 +416,13 @@ export default function PlanningPage() {
 
       {/* ═══ Phase detail + microcycle editor ═══ */}
       {activePreset && (
-        <div className="mb-4 bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
-          <div className="flex items-start gap-3 mb-3">
-            <span className="text-2xl">{activePreset.icon}</span>
-            <div className="flex-1">
-              <h2 className="text-sm font-bold text-white">{activePreset.label} · {activePreset.goal}</h2>
-              <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">{activePreset.stateDescription}</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px]">
-                <span className="text-gray-500">🏋️ 力量 <span className="text-white">{activePreset.weeklyStrengthDays}次/周</span></span>
-                <span className="text-gray-500">⚽ 外场 <span className="text-white">{activePreset.weeklyPitchDays}次/周</span></span>
-                <span className="text-gray-500">⏱ <span className="text-white">{activePreset.avgDuration}min/次</span></span>
-                <span className="text-gray-500">📊 <span className="text-white">{activePreset.intensityRange}</span></span>
-              </div>
-              <p className="text-[10px] text-gray-600 mt-1.5 italic">{activePreset.weeklyLoadDesc}</p>
-            </div>
+        <div className="mb-4 bg-[#0d0d0d] border border-[#222] rounded-xl p-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px]">
+            <span className="text-white font-bold">{activePreset.label}</span>
+            <span className="text-gray-500">力量 <span className="text-white">{activePreset.weeklyStrengthDays}次/周</span></span>
+            <span className="text-gray-500">外场 <span className="text-white">{activePreset.weeklyPitchDays}次/周</span></span>
+            <span className="text-gray-500">{activePreset.avgDuration}min/次</span>
+            <span className="text-gray-500">{activePreset.intensityRange}</span>
           </div>
         </div>
       )}
@@ -462,10 +451,10 @@ export default function PlanningPage() {
                   className={`rounded-lg border transition ${isMatchDay ? 'border-[#d92525]/40 bg-[#d92525]/5' : isEditing ? 'border-[#d92525] bg-[#0d0d0d]' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'}`}>
                   <div className="flex items-center gap-3 p-3">
                     <GripVertical className="w-3.5 h-3.5 text-gray-600 cursor-grab shrink-0" />
-                    <span className={`text-xs font-bold w-10 shrink-0 ${isMatchDay ? 'text-[#d92525]' : 'text-white'}`}>{isMatchDay ? '⚽MD' : day.day}</span>
+                    <span className={`text-xs font-bold w-10 shrink-0 ${isMatchDay ? 'text-[#d92525]' : 'text-white'}`}>{isMatchDay ? 'MD' : day.day}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-medium truncate">{day.focus}</p>
-                      <p className="text-[9px] text-gray-500">{day.scene === 'gym' ? '🏋️力量房' : '⚽外场'} · {day.goal} · {day.duration}min</p>
+                      <p className="text-[9px] text-gray-500">{day.scene === 'gym' ? '力量房' : '外场'} · {day.goal} · {day.duration}min</p>
                     </div>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${day.intensity === '极高' || day.intensity === '高' ? 'bg-[#d92525]/20 text-[#d92525]' : day.intensity === '中' || day.intensity === '中高' || day.intensity === '中低' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-400'}`}>{day.intensity}</span>
                     <button onClick={() => setEditingDayId(isEditing ? null : day.id)} className="p-1 text-gray-600 hover:text-white transition text-[10px]">{isEditing ? '收起' : '编辑'}</button>
@@ -478,7 +467,7 @@ export default function PlanningPage() {
                         <div><label className="text-[9px] text-gray-500 block mb-1">训练焦点</label><input value={day.focus} onChange={e => updateDay(day.id, 'focus', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">强度</label><select value={day.intensity} onChange={e => updateDay(day.id, 'intensity', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">{INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}</select></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">时长(min)</label><input type="number" value={day.duration} onChange={e => updateDay(day.id, 'duration', Number(e.target.value))} min={15} max={120} step={5} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
-                        <div><label className="text-[9px] text-gray-500 block mb-1">场景</label><select value={day.scene} onChange={e => updateDay(day.id, 'scene', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white"><option value="gym">🏋️力量房</option><option value="pitch">⚽外场</option></select></div>
+                        <div><label className="text-[9px] text-gray-500 block mb-1">场景</label><select value={day.scene} onChange={e => updateDay(day.id, 'scene', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white"><option value="gym">力量房</option><option value="pitch">外场</option></select></div>
                         <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">训练目标</label><div className="flex gap-1">{['strength','power','speed','mas_endurance','agility'].map(g => <button key={g} onClick={() => updateDay(day.id, 'goal', g)} className={`px-2 py-1 rounded text-[9px] transition ${day.goal === g ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{g}</button>)}</div></div>
                         <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">备注</label><input value={day.notes} onChange={e => updateDay(day.id, 'notes', e.target.value)} placeholder="补充说明..." className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                       </div>
@@ -513,7 +502,7 @@ export default function PlanningPage() {
 
       {/* ═══ 赛季全景 ═══ */}
       <section className="mb-8">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📅 赛季全景</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">赛季全景</h2>
         <ErrBoundary label="赛季全景">
           <SeasonCalendar />
         </ErrBoundary>

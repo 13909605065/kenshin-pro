@@ -289,7 +289,7 @@ function DailyTrainingNotes({ matchDate, modules, setTrainingActive, trainingSta
 
   return (
     <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
-      <h3 className="text-xs font-semibold text-gray-400 mb-3">📝 今日训练笔记</h3>
+      <h3 className="text-xs font-semibold text-gray-400 mb-3">今日训练笔记</h3>
 
       <div className="space-y-3 text-xs">
         {/* ── warmup: auto-read ── */}
@@ -855,22 +855,22 @@ export default function CoachWorkbench() {
     <div className="max-w-4xl mx-auto space-y-4 pb-10">
 
       {/* ═══════════════════════════════════════════════
-          STATUS CARD — 当前阶段 + MD (simplified)
+          STATUS CARD — 当前阶段 + MD
           ═══════════════════════════════════════════════ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${calendarPhaseMeta?.color || '#444'}` }}>
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{calendarPhaseMeta?.icon || '📅'}</span>
+          <span className="text-xl">{calendarPhaseMeta?.icon || ''}</span>
           <div className="flex-1">
             <span className="text-sm font-bold text-white">{calendarPhaseMeta?.label || '赛季阶段未设置'}</span>
             {!calendarPhase && (
-              <a href="/planning" className="text-[10px] text-[#d92525] ml-2 underline">去周期方案设置赛季全景</a>
+              <a href="/planning" className="text-[10px] text-[#d92525] ml-2 underline">设置赛季</a>
             )}
           </div>
           <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
             mdDay === 0 ? 'bg-[#d92525] text-white' :
             mdDay > 0 ? 'bg-[#d92525]/20 text-[#d92525]' :
             'bg-green-500/20 text-green-400'
-          }`}>{mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`}</span>
+          }`}>{mdDay === 0 ? '比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`}</span>
         </div>
       </div>
 
@@ -883,13 +883,12 @@ export default function CoachWorkbench() {
         if (!tp) return (
           <div className="bg-[#0d0d0d] border border-dashed border-[#444] rounded-xl p-4">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">📅</span>
               <div className="flex-1">
                 <span className="text-sm font-bold text-gray-400">今日暂无预排方案</span>
                 <p className="text-[10px] text-gray-600 mt-0.5">提前在周期方案中编排本周训练</p>
               </div>
-              <a href="/planning" className="px-4 py-2.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98] no-underline inline-block">
-                📝 提前编排本周训练
+              <a href="/planning" className="px-3 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98] no-underline inline-block">
+                编排本周训练
               </a>
             </div>
           </div>
@@ -897,10 +896,9 @@ export default function CoachWorkbench() {
         return (
           <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-4" style={{ borderLeft: '3px solid #d92525' }}>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm">📋</span>
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-bold text-white">
-                  今日已预排训练方案 · {tp.duration}min {tp.scene === 'gym' ? '🏋️力量房' : '⚽外场'}
+                  今日已预排 · {tp.duration}min {tp.scene === 'gym' ? '力量房' : '外场'}
                 </span>
                 <span className="text-[10px] text-gray-500 ml-2">
                   {GOAL_LABELS[tp.goal] || tp.goal} · {PHASE_LABELS[tp.phase as SeasonPhase] || tp.phase}
@@ -912,9 +910,9 @@ export default function CoachWorkbench() {
                     const tdo2 = dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00'));
                     loadPlanForDay(tdo2);
                   }}
-                  className="px-4 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98]"
+                  className="px-3 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98]"
                 >
-                  📥 加载方案
+                  加载方案
                 </button>
               </div>
             </div>
@@ -937,23 +935,20 @@ export default function CoachWorkbench() {
       </div>
 
       {/* ── 训练日期 + 类型 + 时段 ── */}
-      <div className="flex items-center gap-3 bg-[#0d0d0d] border border-[#222] rounded-xl p-3 flex-wrap">
-        <span className="text-[10px] text-gray-500 shrink-0">训练</span>
+      <div className="flex items-center gap-2 bg-[#0d0d0d] border border-[#222] rounded-xl p-2.5 flex-wrap">
         <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '⚽ 外场' : '🏋️ 力量房'}</span>
-        <span className="text-[10px] text-gray-600">·</span>
-        <span className="text-[10px] text-gray-500 shrink-0">时段</span>
+        <span className="text-gray-700">|</span>
         <button onClick={() => setTimeSlot('morning')}
-          className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌅 上午</button>
+          className={`px-2 py-1 rounded text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>上午</button>
         <button onClick={() => setTimeSlot('afternoon')}
-          className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'afternoon' ? 'bg-[#f97316] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌇 下午</button>
-        <span className="text-[10px] text-gray-600">·</span>
-        <span className="text-[10px] text-gray-500 shrink-0">天气</span>
+          className={`px-2 py-1 rounded text-[10px] font-medium transition ${timeSlot === 'afternoon' ? 'bg-[#f97316] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>下午</button>
+        <span className="text-gray-700">|</span>
         <button onClick={() => setWeather('sun')}
-          className={`px-2 py-1 rounded-lg text-[10px] font-medium transition ${weather === 'sun' ? 'bg-[#f59e0b] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>☀️ 晴</button>
+          className={`px-2 py-1 rounded text-[10px] font-medium transition ${weather === 'sun' ? 'bg-[#f59e0b] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>晴</button>
         <button onClick={() => setWeather('cloud')}
-          className={`px-2 py-1 rounded-lg text-[10px] font-medium transition ${weather === 'cloud' ? 'bg-[#6b7280] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>⛅ 阴</button>
+          className={`px-2 py-1 rounded text-[10px] font-medium transition ${weather === 'cloud' ? 'bg-[#6b7280] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>阴</button>
         <button onClick={() => setWeather('rain')}
-          className={`px-2 py-1 rounded-lg text-[10px] font-medium transition ${weather === 'rain' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌧️ 雨</button>
+          className={`px-2 py-1 rounded text-[10px] font-medium transition ${weather === 'rain' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>雨</button>
         <button onClick={() => {
           const date = trainDate;
           try {
@@ -968,12 +963,11 @@ export default function CoachWorkbench() {
             window.dispatchEvent(new CustomEvent('training-log-updated'));
           } catch {}
         }}
-          className={`text-[10px] px-3 py-1 rounded-lg transition ml-auto ${restFeedback ? 'bg-green-500/20 border border-green-500/50 text-green-400' : 'bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white'}`}>{restFeedback ? '✓ 已标记休息日' : '😴 今天休息'}</button>
+          className={`text-[10px] px-2 py-1 rounded transition ml-auto ${restFeedback ? 'bg-green-500/20 border border-green-500/50 text-green-400' : 'bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white'}`}>{restFeedback ? '已标记休息' : '休息'}</button>
         {(() => {
           const plan = getMicrocyclePlan(trainDate, dayDiff(new Date(trainDate + 'T00:00:00'), new Date(matchDate + 'T00:00:00')));
-          if (plan) return <span className="text-[10px] text-green-400 ml-auto">📋 已预排 · {plan.goal} · {plan.duration}min</span>;
-          if (trainDate > new Date().toISOString().slice(0, 10)) return <span className="text-[10px] text-gray-500 ml-auto">提前规划 · 方案将保存到训练日</span>;
-          return <span className="text-[10px] text-gray-600 ml-auto">生成方案时自动记录</span>;
+          if (plan) return <span className="text-[10px] text-green-400">已预排</span>;
+          return null;
         })()}
       </div>
 
@@ -1029,7 +1023,7 @@ export default function CoachWorkbench() {
           {/* GymDesigner */}
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-[#222]">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">🏋️ 力量房训练设计</h3>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">力量房训练设计</h3>
               <span className="text-[10px] text-gray-500">从动作库挑选 → AI校验 → 保存方案</span>
             </div>
             <GymDesigner />
@@ -1051,7 +1045,7 @@ export default function CoachWorkbench() {
           ═══════════════════════════════════════════════ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-5 space-y-4">
 
-        {/* Row 1: Date + MD + Scene recommendation */}
+        {/* Row 1: Date + MD + Scene */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2">
@@ -1064,9 +1058,6 @@ export default function CoachWorkbench() {
                 'bg-green-500/20 text-green-400'
               }`}>
                 {mdLabel}
-              </span>
-              <span className="text-xs text-gray-500">
-                · 外场训练
               </span>
             </div>
             <p className="text-[10px] text-gray-600 mt-0.5">{PHASE_LABELS[phase]} · 比赛日 {matchDate}</p>
@@ -1141,7 +1132,7 @@ export default function CoachWorkbench() {
             className="w-full flex items-center justify-between px-3 py-2.5 text-xs hover:bg-[#222] transition"
           >
             <span className="text-gray-300 font-medium">
-              👥 参训球员: <span className="text-[#d92525]">{trainingAttendees.size}人已选</span>
+              参训球员 <span className="text-[#d92525]">{trainingAttendees.size}人</span>
             </span>
             <span className="text-gray-500 text-[10px] transition-transform duration-200" style={{ transform: showAttendeeSelector ? 'rotate(180deg)' : 'rotate(0deg)' }}>
               ▼
@@ -1193,21 +1184,20 @@ export default function CoachWorkbench() {
 
         {/* ══ QUICK ACTIONS ROW ══ */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-gray-600">快速操作:</span>
           {hasLastWeekPlan ? (
             <button onClick={reuseLastWeek}
-              className="px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-lg text-[10px] text-gray-300 hover:text-white transition flex items-center gap-1">
-              📋 复用上周方案
+              className="px-2 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-lg text-[10px] text-gray-300 hover:text-white transition">
+              复用上周
             </button>
           ) : (
             <button disabled
-              className="px-3 py-1.5 bg-[#1a1a1a] border border-[#222] rounded-lg text-[10px] text-gray-600 cursor-not-allowed flex items-center gap-1">
-              📋 上周无方案
+              className="px-2 py-1.5 bg-[#1a1a1a] border border-[#222] rounded-lg text-[10px] text-gray-600 cursor-not-allowed">
+              上周无方案
             </button>
           )}
           <button onClick={loadFromPlanning}
-            className="px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-lg text-[10px] text-gray-300 hover:text-white transition flex items-center gap-1">
-            🗓 从周期方案加载
+            className="px-2 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-lg text-[10px] text-gray-300 hover:text-white transition">
+            从周期方案加载
           </button>
         </div>
       </div>
@@ -1218,8 +1208,8 @@ export default function CoachWorkbench() {
       {planMode === 'team' && atRiskReasons.length > 0 && (
         <div className="bg-[#0d0d0d] border border-yellow-500/20 rounded-xl p-3">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] text-yellow-400 font-semibold">⚠️ 关注球员</span>
-            <span className="text-[9px] text-gray-500">{atRiskReasons.length}人需要关注</span>
+            <span className="text-[10px] text-yellow-400 font-semibold">关注球员</span>
+            <span className="text-[9px] text-gray-500">{atRiskReasons.length}人</span>
           </div>
           <div className="space-y-1">
             {atRiskReasons.slice(0, 5).map(p => (
@@ -1303,7 +1293,7 @@ export default function CoachWorkbench() {
             return (
               <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 text-[10px]">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-gray-400">
-                  <span className="text-gray-500">📐 周期化参考</span>
+                  <span className="text-gray-500">周期化参考</span>
                   <span><b className="text-white">{pp.labelCn}</b>: {pp.intensityPercent[0]}-{pp.intensityPercent[1]}%1RM · {pp.repsRange[0]}-{pp.repsRange[1]}次 · {pp.setsRange[0]}-{pp.setsRange[1]}组 · 间歇{pp.restBetweenSets[0]}-{pp.restBetweenSets[1]}s</span>
                   {gp && (
                     <span className="text-[#d92525]">🎯 {gp.labelCn}: {gp.percent1RM[0]}-{gp.percent1RM[1]}%1RM · {gp.setsReps} · 间歇{gp.rest} · 节奏{gp.tempo}</span>
@@ -1365,26 +1355,24 @@ export default function CoachWorkbench() {
         </div>
       </details>
 
-      {/* ── 训练流程：① 热身 → ② 场地监控 ── */}
+      {/* ── 训练流程：热身 -> 场地监控 ── */}
       <div className="space-y-3">
         <a href="/warmup" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
           <div className="flex items-center gap-3">
-            <div className="text-2xl">🏃</div>
             <div className="flex-1">
-              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">① 热身设计</h3>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">热身设计</h3>
               <p className="text-[10px] text-gray-500 mt-0.5">RAMP系统 · FIFA 11+ · 有球/无球</p>
             </div>
-            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">&rarr;</span>
           </div>
         </a>
         <a href="/field" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
           <div className="flex items-center gap-3">
-            <div className="text-2xl">📊</div>
             <div className="flex-1">
-              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">② 场地训练监控</h3>
+              <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">场地训练监控</h3>
               <p className="text-[10px] text-gray-500 mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
             </div>
-            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+            <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">&rarr;</span>
           </div>
         </a>
       </div>
@@ -1392,7 +1380,7 @@ export default function CoachWorkbench() {
       {/* ── 热身方案库 ── */}
       <div id="warmup-library" className="bg-[#0d0d0d] border-2 border-orange-500/40 rounded-xl p-4">
         <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <span className="text-xl">📦</span> 热身方案库
+          热身方案库
         </h3>
         {(() => {
           const lib = (() => { try { return JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]'); } catch { return []; } })();
@@ -1422,7 +1410,6 @@ export default function CoachWorkbench() {
                           : 'bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50'
                       }`}>
                       🏃 {w.name}
-                      <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
                     </button>
                   );
                 })}
@@ -1451,7 +1438,7 @@ export default function CoachWorkbench() {
                     }}
                     className="text-[10px] px-3 py-1.5 rounded-lg bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold transition active:scale-[0.98]"
                   >
-                    ✅ 确认选用
+                  确认选用
                   </button>
                 </div>
               )}
@@ -1470,9 +1457,9 @@ export default function CoachWorkbench() {
               {planMode === 'individual' ? (() => {
                 const roster = loadRoster();
                 const names = roster.filter(p => selectedPlayers.has(p.name)).map(p => p.name).join('/');
-                return `➕ 加练小组 · ${names || '未选球员'} · ${addonScene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · ${duration}min${addonTheme ? ` · ${addonTheme}` : ''}`;
-              })() : `${scene === 'gym' ? '🏋️ 力量房' : '⚽ 外场'} · ${duration}min · ${activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`} · 职业三段式`}
-              {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">📡 离线模式</span>}
+                return `加练小组 · ${names || '未选球员'} · ${addonScene === 'gym' ? '力量房' : '外场'} · ${duration}min${addonTheme ? ` · ${addonTheme}` : ''}`;
+              })() : `${scene === 'gym' ? '力量房' : '外场'} · ${duration}min · ${activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}`}
+              {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">离线</span>}
             </h3>
             <div className="flex items-center gap-2">
               <button onClick={() => { trainingStartRef.current = Date.now(); setTrainingActive(true); }} className="px-3 py-1.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-[10px] font-bold transition active:scale-95">▶ 开始训练</button>
@@ -1624,14 +1611,14 @@ export default function CoachWorkbench() {
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
         {/* Top info line */}
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-gray-400">📅 比赛周微周期</h3>
+          <h3 className="text-xs font-semibold text-gray-400">比赛周微周期</h3>
           <div className="flex items-center gap-3 text-[10px]">
             <span className="text-gray-500">
-              当前：<span className="text-white font-medium">{calendarPhaseMeta?.label || '未设置'}</span>
+              {calendarPhaseMeta?.label || '未设置'}
             </span>
             <span className="text-gray-600">|</span>
             <span className="text-gray-500">
-              周力量限额：<span className="text-[#d92525] font-bold">{WEEKLY_STRENGTH_LIMIT[calendarPhaseKey]}节</span>
+              周力量<span className="text-[#d92525] font-bold">{WEEKLY_STRENGTH_LIMIT[calendarPhaseKey]}节</span>
             </span>
           </div>
         </div>
@@ -1671,12 +1658,13 @@ export default function CoachWorkbench() {
                   isPast ? 'text-gray-500' :
                   'text-gray-500'
                 }`}>
-                  {hasPlan ? '📋' : ''}{dayInfo.label}
+                  {hasPlan && <span className="text-[#d92525]">已排</span>}
+                  {!hasPlan && dayInfo.icon}
                 </div>
 
                 {/* Date hint */}
                 <div className="text-[7px] text-gray-600 mt-0.5">
-                  {isToday ? '←今天' : weekLabel(fmt(new Date(matchDate), dayOffset), 0).slice(-2)}
+                  {isToday ? '今天' : weekLabel(fmt(new Date(matchDate), dayOffset), 0).slice(-2)}
                 </div>
               </button>
             );
@@ -1769,10 +1757,10 @@ export default function CoachWorkbench() {
       {/* Floating trigger button */}
       <button
         onClick={() => setShowNotesDrawer(true)}
-        className="fixed left-0 top-1/3 w-12 h-12 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-r-full flex items-center justify-center shadow-lg z-40 transition active:scale-95"
+        className="fixed left-0 top-1/3 w-10 h-10 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-r-full flex items-center justify-center shadow-lg z-40 transition active:scale-95"
         title="训练笔记"
       >
-        <span className="text-xl">📝</span>
+        <span className="text-sm">笔记</span>
       </button>
 
       {/* Slide-out drawer + overlay */}
@@ -1788,7 +1776,7 @@ export default function CoachWorkbench() {
           <div className="fixed left-0 top-0 h-full w-[380px] max-w-[100vw] z-50 bg-[#0d0d0d] border-r border-[#222] shadow-2xl overflow-y-auto">
             {/* Drawer header */}
             <div className="sticky top-0 bg-[#0d0d0d] border-b border-[#222] p-4 flex items-center justify-between z-10">
-              <h3 className="text-sm font-bold text-white">📝 训练笔记</h3>
+              <h3 className="text-sm font-bold text-white">训练笔记</h3>
               <button
                 onClick={() => setShowNotesDrawer(false)}
                 className="w-8 h-8 rounded-full bg-[#1a1a1a] hover:bg-[#333] text-gray-400 hover:text-white flex items-center justify-center transition text-sm"

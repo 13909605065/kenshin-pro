@@ -527,16 +527,16 @@ export default function LoadPage() {
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-5 mb-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <span className="text-sm font-bold text-white">本周负荷容量</span>
-            <span className="text-[10px] text-gray-500 ml-2">{isMatchWeek ? '⚽ 比赛周' : '📅 非比赛周'}</span>
+            <span className="text-sm font-bold text-white">周负荷</span>
+            <span className="text-[10px] text-gray-500 ml-2">{isMatchWeek ? '比赛周' : '非比赛周'}</span>
             {weatherLabel && (
               <span className={`text-[10px] ml-2 ${todayWeather === 'rain' ? 'text-blue-400' : 'text-gray-400'}`}>
-                {weatherLabel}{todayWeather === 'rain' ? ' · 负荷上限-10%' : ''}
+                {weatherLabel}{todayWeather === 'rain' ? ' -10%' : ''}
               </span>
             )}
           </div>
           <span className={`text-lg font-bold ${pct >= 90 ? 'text-red-400' : pct >= 70 ? 'text-yellow-400' : 'text-green-400'}`}>
-            {statusEmoji} {statusText}
+            {statusText}
           </span>
         </div>
 
@@ -547,19 +547,19 @@ export default function LoadPage() {
         </div>
 
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-400">已用 <span className="text-white font-bold">{usedTRIMP}</span> TRIMP</span>
-          <span className="text-gray-400">剩余 <span className={`font-bold ${remainingTRIMP < weatherAdjustedDayCap * 1.5 ? 'text-red-400' : 'text-green-400'}`}>{remainingTRIMP}</span> TRIMP</span>
-          <span className="text-gray-500">上限 {weatherAdjustedWeekCap} TRIMP</span>
+          <span className="text-gray-400">已用 <span className="text-white font-bold">{usedTRIMP}</span></span>
+          <span className="text-gray-400">剩余 <span className={`font-bold ${remainingTRIMP < weatherAdjustedDayCap * 1.5 ? 'text-red-400' : 'text-green-400'}`}>{remainingTRIMP}</span></span>
+          <span className="text-gray-500">上限 {weatherAdjustedWeekCap}</span>
         </div>
 
         {remainingTRIMP < weatherAdjustedDayCap && remainingTRIMP > 0 && (
           <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-[10px] text-yellow-400 flex items-center gap-2">
-            <AlertTriangle className="w-3 h-3 shrink-0" /> 剩余负荷不足一日量（{remainingTRIMP}/{weatherAdjustedDayCap}），今日训练须控制强度
+            <AlertTriangle className="w-3 h-3 shrink-0" /> 剩余负荷不足一日量，控制训练强度
           </div>
         )}
         {remainingTRIMP <= 0 && (
           <div className="mt-3 p-2 bg-red-500/10 border border-red-500/30 rounded-lg text-[10px] text-red-400 flex items-center gap-2">
-            <AlertTriangle className="w-3 h-3 shrink-0" /> 本周负荷已达上限！建议改为恢复/低强度训练
+            <AlertTriangle className="w-3 h-3 shrink-0" /> 本周负荷已达上限，建议改为恢复训练
           </div>
         )}
       </div>
@@ -567,7 +567,7 @@ export default function LoadPage() {
       {/* ═══ TEAM OVERVIEW DASHBOARD ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-white">📋 球队总览</h3>
+          <h3 className="text-sm font-bold text-white">球队总览</h3>
           <span className="text-[10px] text-gray-500">{todayStr}</span>
         </div>
 
@@ -576,20 +576,20 @@ export default function LoadPage() {
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
             <div className="text-[10px] text-gray-500 mb-1.5">球员状态</div>
             <div className="flex items-center gap-2.5 text-xs">
-              <span className="text-white">🟢{rosterStats.healthy}</span>
-              <span className="text-white">🟡{rosterStats.minor}</span>
-              <span className="text-white">🔴{rosterStats.out}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" />{rosterStats.healthy}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" />{rosterStats.minor}</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" />{rosterStats.out}</span>
             </div>
             <div className="text-[9px] text-gray-600 mt-1">共 {rosterStats.total} 人</div>
           </div>
 
           {/* 周负荷进度 */}
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
-            <div className="text-[10px] text-gray-500 mb-1.5">周负荷进度</div>
+            <div className="text-[10px] text-gray-500 mb-1.5">周负荷</div>
             <div className="text-lg font-bold text-white font-mono">{pct}%</div>
             <div className="flex items-center gap-1 mt-0.5">
               <span className={`text-[9px] font-mono ${remainingTRIMP > 0 ? 'text-gray-500' : 'text-red-400'}`}>
-                剩余 {remainingTRIMP} / {weatherAdjustedWeekCap} TRIMP
+                {remainingTRIMP} / {weatherAdjustedWeekCap}
               </span>
             </div>
           </div>
@@ -598,10 +598,10 @@ export default function LoadPage() {
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
             <div className="text-[10px] text-gray-500 mb-1.5">当前阶段</div>
             <div className="text-sm font-bold text-white">
-              {info ? <>{info.icon} {info.label}</> : <span className="text-gray-600">未设置</span>}
+              {info ? info.label : <span className="text-gray-600">未设置</span>}
             </div>
             {currentPhaseRange ? (
-              <div className="text-[9px] text-gray-600 mt-1">{currentPhaseRange.startDate} → {currentPhaseRange.endDate}</div>
+              <div className="text-[9px] text-gray-600 mt-1">{currentPhaseRange.startDate} - {currentPhaseRange.endDate}</div>
             ) : (
               <div className="text-[9px] text-gray-700 mt-1">请在赛季日历中设置</div>
             )}
@@ -613,16 +613,16 @@ export default function LoadPage() {
             {todayTraining?.log && todayTraining.log.timeSlot !== 'rest' ? (
               <>
                 <div className="text-xs text-white font-medium">
-                  {todayTraining.log.trainType === 'pitch' ? '⚽ 外场训练' : '🏋️ 力量训练'}
+                  {todayTraining.log.trainType === 'pitch' ? '外场训练' : '力量训练'}
                 </div>
                 <div className="text-[9px] text-gray-500 mt-0.5">
-                  {todayTraining.log.duration}min · {todayTraining.log.timeSlot === 'morning' ? '🌅上午' : '🌇下午'}
+                  {todayTraining.log.duration}min · {todayTraining.log.timeSlot === 'morning' ? '上午' : '下午'}
                 </div>
               </>
             ) : todayTraining?.log?.timeSlot === 'rest' ? (
-              <div className="text-xs text-gray-500">😴 今日休息</div>
+              <div className="text-xs text-gray-500">今日休息</div>
             ) : (
-              <div className="text-xs text-gray-600">— 暂无记录</div>
+              <div className="text-xs text-gray-600">暂无记录</div>
             )}
           </div>
         </div>
@@ -721,11 +721,11 @@ export default function LoadPage() {
             <div key={d.date} className={`flex items-center gap-3 py-2 px-3 rounded-lg ${d.log ? 'bg-[#111]' : 'bg-[#0a0a0a] opacity-50'} ${d.isToday ? 'ring-1 ring-[#d92525]' : ''}`}>
               <span className="text-xs text-white font-medium w-16 shrink-0">{d.monthDay} {d.day}</span>
               {d.log ? (d.isRest ? (
-                <span className="text-xs text-gray-500">😴 休息日</span>
+                <span className="text-xs text-gray-500">休息日</span>
               ) : (
                 <>
-                  <span className="text-xs">{d.log.trainType === 'pitch' ? '⚽ 外场' : '🏋️ 力量房'}</span>
-                  <span className="text-xs text-gray-500">{d.log.timeSlot === 'morning' ? '🌅上午' : '🌇下午'}</span>
+                  <span className="text-xs">{d.log.trainType === 'pitch' ? '外场' : '力量房'}</span>
+                  <span className="text-xs text-gray-500">{d.log.timeSlot === 'morning' ? '上午' : '下午'}</span>
                   <div className="flex-1 mx-2">
                     <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{
@@ -739,7 +739,7 @@ export default function LoadPage() {
                   </span>
                 </>
               )) : (
-                <span className="text-[10px] text-gray-600">{d.isToday ? '— 今天未训练' : '— 休息'}</span>
+                <span className="text-[10px] text-gray-600">{d.isToday ? '未训练' : '休息'}</span>
               )}
             </div>
           ))}
@@ -752,14 +752,14 @@ export default function LoadPage() {
           <TrendingUp className="w-3.5 h-3.5 text-[#d92525]" /> 训练日志
         </h3>
         {logs.length === 0 ? (
-          <p className="text-xs text-gray-600 text-center py-6">暂无记录，在主页生成训练方案后自动同步</p>
+          <p className="text-xs text-gray-600 text-center py-6">暂无记录</p>
         ) : (
           <div className="space-y-1">
             {logs.slice(0, 14).map((log: any) => (
               <div key={log.date} className="flex items-center gap-3 py-1.5 px-2 text-xs">
                 <span className="text-gray-400 w-16 shrink-0">{log.date.slice(5)} {WEEKDAY[new Date(log.date + "T00:00:00").getDay()]}</span>
-                <span>{log.trainType === 'pitch' ? '⚽ 外场' : '🏋️ 力量房'}</span>
-                <span className="text-gray-500">{log.timeSlot === 'morning' ? '🌅上午' : '🌇下午'}</span>
+                <span>{log.trainType === 'pitch' ? '外场' : '力量房'}</span>
+                <span className="text-gray-500">{log.timeSlot === 'morning' ? '上午' : '下午'}</span>
                 <span className="text-gray-600 ml-auto">{log.duration}min</span>
               </div>
             ))}
