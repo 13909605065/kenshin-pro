@@ -1,1379 +1,836 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  Canvas, Rect, Circle, Line, Group, IText, Triangle, FabricImage,
-  type FabricObject,
-} from "fabric";
-import {
-  Save, Download, Trash2, Plus, ChevronDown, ChevronUp,
-  Zap, Clock, FileText, Loader2,
-} from "lucide-react";
+import { useRef, useState, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { Canvas, Circle, FabricText, Group, FabricImage, Path, Polygon } from "fabric";
+import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
+import { BoardToolbar, ROUTE_STYLES } from "@/components/tactical/BoardToolbar";
 
-/* ───────────────────────────────────────────
-   Types
-   ─────────────────────────────────────────── */
+import { GestureController } from "@/components/tactical/GestureController";
+import { ArrowLeft, Save, FolderOpen, X, Bookmark, Hand, Menu, Upload, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { readDrillContext, readDiagnosisContext, parseGroups, mapAreaToField, computePlayerPositions } from "@/lib/tactics-bridge";
+import type { BoardGenResult } from "@/lib/ai/tactical-board-generate";
+import { TAC_THEME } from "@/lib/tactical-theme";
 
-interface Segment {
-  id: string;
-  name: string;
-  duration: number; // minutes
-}
+// Canvas: 1050×680, attack left→right. center=(525,340)
+// Zones: GK x≈55 · DF x≈170-200 · DM x≈355-400 · MF x≈390-440 · AM x≈520-590 · FW x≈660-780
+// Y: flank≈80-100 · half≈160-260 · center≈340 · half≈420-520 · flank≈550-610
+// Canvas: 1050×680, attack left→right. x=15..1035, y=15..665, center=(525,340)
+// Player colors: GK=orange, outfield=red (own team)
+const OWN = TAC_THEME.playerOwn;
+const GK = TAC_THEME.playerGK;
 
-interface WarmupDesign {
-  id: string;
-  name: string;
-  duration: number;
-  /** Warmup description — free text, coach types whatever */
-  description: string;
-  hasEquipmentFreeVariant?: boolean;
-  segments: Segment[];
-  canvasJSON: object;
-  notes: string;
-  equipmentCount: Record<string, number>;
-  injuryNotes: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/* ───────────────────────────────────────────
-   Constants
-   ─────────────────────────────────────────── */
-
-const CANVAS_W = 1050;
-const CANVAS_H = 680;
-
-const LIBRARY_KEY = "kenshin_warmup_library";
-const CALENDAR_KEY = "kenshin_warmup_calendar";
-
-/** Cone PNG files — randomly picked on each add for color variety */
-const CONE_PNGS = ["橙色标志盘.png", "红色标志盘.png", "黄色标志盘.png", "蓝色标志盘.png"];
-
-/** Pitch background image path */
-const PITCH_PNG = "/equipment/场地.png";
-
-/** @deprecated — cone/pole/hoop/hurdle now use PNGs.
- *  Remaining entries still used by shape factories (ladder, band, player, arrow). */
-const EQUIPMENT_COLORS: Record<string, string> = {
-  cone: "#f97316",
-  pole: "#d92525",
-  ladder: "#fbbf24",
-  hoop: "#ffffff",
-  hurdle: "#facc15",
-  band: "#c084fc",
-  player: "#3b82f6",
-  arrow: "#d92525",
+const FORMATION_DATA: Record<string, { x: number; y: number; n: string; c: string }[]> = {
+  "4-3-3": [
+    // GK · Back 4 · Mid 3 · Front 3
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:420,y:190,n:"8",c:OWN},{x:440,y:340,n:"6",c:OWN},{x:420,y:490,n:"10",c:OWN},
+    {x:700,y:100,n:"7",c:OWN},{x:770,y:340,n:"9",c:OWN},{x:700,y:580,n:"11",c:OWN},
+  ],
+  "4-4-2": [
+    // GK · Back 4 · Mid 4 · Front 2
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:420,y:100,n:"7",c:OWN},{x:440,y:250,n:"8",c:OWN},{x:440,y:430,n:"6",c:OWN},{x:420,y:580,n:"11",c:OWN},
+    {x:730,y:230,n:"9",c:OWN},{x:730,y:450,n:"10",c:OWN},
+  ],
+  "3-5-2": [
+    // GK · 3 CBs · 5 MFs (WB+DM+DM+DM+WB) · 2 FWs
+    {x:55,y:340,n:"1",c:GK},
+    {x:170,y:160,n:"3",c:OWN},{x:160,y:340,n:"5",c:OWN},{x:170,y:520,n:"4",c:OWN},
+    {x:370,y:70,n:"7",c:OWN},{x:390,y:230,n:"8",c:OWN},{x:400,y:340,n:"6",c:OWN},{x:390,y:450,n:"10",c:OWN},{x:370,y:610,n:"2",c:OWN},
+    {x:720,y:220,n:"9",c:OWN},{x:720,y:460,n:"11",c:OWN},
+  ],
+  "4-2-3-1": [
+    // GK · Back 4 · 2 DMs · 3 AMs · 1 ST
+    {x:55,y:340,n:"1",c:GK},
+    {x:185,y:100,n:"2",c:OWN},{x:175,y:260,n:"4",c:OWN},{x:175,y:420,n:"5",c:OWN},{x:185,y:580,n:"3",c:OWN},
+    {x:355,y:250,n:"6",c:OWN},{x:355,y:430,n:"8",c:OWN},
+    {x:590,y:100,n:"7",c:OWN},{x:590,y:340,n:"10",c:OWN},{x:590,y:580,n:"11",c:OWN},
+    {x:780,y:340,n:"9",c:OWN},
+  ],
+  "3-4-3": [
+    // GK · 3 CBs · 4 MFs · 3 FWs
+    {x:55,y:340,n:"1",c:GK},
+    {x:170,y:160,n:"3",c:OWN},{x:160,y:340,n:"4",c:OWN},{x:170,y:520,n:"5",c:OWN},
+    {x:390,y:80,n:"7",c:OWN},{x:430,y:240,n:"8",c:OWN},{x:430,y:440,n:"6",c:OWN},{x:390,y:600,n:"11",c:OWN},
+    {x:660,y:130,n:"10",c:OWN},{x:740,y:340,n:"9",c:OWN},{x:660,y:550,n:"2",c:OWN},
+  ],
 };
 
-const EQUIPMENT_LABEL_CN: Record<string, string> = {
-  cone: "标志盘",
-  pole: "标志杆",
-  ladder: "绳梯",
-  hoop: "敏捷圈",
-  hurdle: "栏架",
-  band: "弹力带",
-  player: "球员站位",
-};
+const THEMES = ["控球","射门","传中","防守","压迫","反击","定位球","阵地进攻","热身","体能","个人技术"];
 
-/** Count equipment types from a fabric canvas JSON snapshot */
-function countEquipmentFromJSON(canvasJSON: Record<string, unknown>): Record<string, number> {
-  const counts: Record<string, number> = { cone: 0, pole: 0, ladder: 0, hoop: 0, hurdle: 0, band: 0, player: 0 };
-  const objects = (canvasJSON as { objects?: Array<Record<string, unknown>> }).objects;
-  if (!objects) return counts;
+interface SavedScene { id: string; name: string; theme: string; json: string; createdAt: string; }
 
-  for (const obj of objects) {
-    if (obj.selectable === false) continue;
+const AUTOSAVE_KEY = "tac_autosave";
 
-    const objType = obj.type as string | undefined;
-    const src = obj.src as string | undefined;
-
-    // Image-based equipment (PNG) — NEW
-    if (objType === "image" && src) {
-      if (src.includes("标志盘")) { counts.cone++; continue; }
-      if (src.includes("角旗杆")) { counts.pole++; continue; }
-      if (src.includes("圆形环")) { counts.hoop++; continue; }
-      if (src.includes("栏架")) { counts.hurdle++; continue; }
-      continue;
-    }
-
-    const fill = obj.fill as string | undefined;
-    const stroke = obj.stroke as string | undefined;
-    const width = obj.width as number | undefined;
-
-    // Cone: Circle with orange fill (legacy shape)
-    if (objType === "circle" && fill === "#f97316") {
-      counts.cone++; continue;
-    }
-    // Pole: Rect with red fill, narrow (legacy shape)
-    if (objType === "rect" && fill === "#d92525" && width !== undefined && width < 15) {
-      counts.pole++; continue;
-    }
-    // Hoop: Circle with white stroke, transparent fill (legacy shape)
-    if (objType === "circle" && stroke === "#ffffff" && fill === "transparent") {
-      counts.hoop++; continue;
-    }
-    // Groups — inspect sub-objects to identify type
-    if (objType === "group") {
-      const subObjects = (obj as { objects?: Array<Record<string, unknown>> }).objects;
-      if (!subObjects || subObjects.length === 0) continue;
-
-      const firstFillable = subObjects.find((o: Record<string, unknown>) => typeof o.fill === "string");
-      const firstLine = subObjects.find((o: Record<string, unknown>) => o.type === "line" || typeof o.stroke === "string");
-
-      const subFill = firstFillable?.fill as string | undefined;
-      const subStroke = firstLine?.stroke as string | undefined;
-
-      if (subFill === "#fbbf24") counts.ladder++;
-      else if (subFill === "#facc15") counts.hurdle++;
-      else if (subFill === "#3b82f6") counts.player++;
-      else if (subStroke === "#c084fc") counts.band++;
-    }
+const FabricBoardDynamic = dynamic(
+  () => import("@/components/tactical/FabricBoard").then(m => ({ default: m.FabricBoard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex-1 flex items-center justify-center bg-[#121212]">
+        <div className="w-8 h-8 border-2 border-[#d92525] border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
   }
-  return counts;
-}
+);
 
-/** Transform canvas JSON to equipment-free variant (body-weight markers) */
-function transformCanvasToEquipmentFree(canvasJSON: Record<string, unknown>): Record<string, unknown> {
-  const cloned = JSON.parse(JSON.stringify(canvasJSON)) as { objects?: Array<Record<string, unknown>> };
-  if (!cloned.objects) return cloned;
+export default function TacticsPage() {
+  const router = useRouter();
+  const boardRef = useRef<Canvas | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [activeTool, setActiveTool] = useState("select");
+  const [activeColor, setActiveColor] = useState<string>(TAC_THEME.accent);
+  const [canUndo, setCanUndo] = useState(false); const [canRedo, setCanRedo] = useState(false);
+  const [selObj, setSelObj] = useState<any>(null);
+  const [, setEditTick] = useState(0);
+  const [saveOpen, setSaveOpen] = useState(false); const [loadOpen, setLoadOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState(""); const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [sName, setSName] = useState(""); const [sTheme, setSTheme] = useState("控球");
+  const [scenes, setScenes] = useState<SavedScene[]>(() => { try { return JSON.parse(localStorage.getItem("tac_scenes")||"[]"); } catch { return []; }});
+  // Auto-save restore
+  const [autoSaveTs, setAutoSaveTs] = useState<string | null>(() => {
+    try { const d = localStorage.getItem(AUTOSAVE_KEY); return d ? JSON.parse(d).ts : null; } catch { return null; }
+  });
+  // Gesture control
+  const [gestureOn, setGestureOn] = useState(false);
+  // AI panel collapsed by default
+  const [aiOpen, setAiOpen] = useState(false);
+  // Equipment palette collapse (controlled at page level for TopNav hamburger)
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  const [toastMsg, setToastMsg] = useState("");
+  // Layer lock states
+  const [lockPlayers, setLockPlayers] = useState(false);
+  const [lockRoutes, setLockRoutes] = useState(false);
+  // Inline player number edit popup
+  const [editPop, setEditPop] = useState<{ obj: any; x: number; y: number; num: string } | null>(null);
 
-  const newObjects: Array<Record<string, unknown>> = [];
+  // ─── 统一互斥渲染：训练教案 / AI诊断 二选一，不重叠 ───
+  useEffect(() => {
+    // 同时读取两个 context，谁有数据就渲染谁（诊断优先）
+    const drillCtx = readDrillContext();
+    const diagCtx = readDiagnosisContext();
 
-  for (const obj of cloned.objects) {
-    // Keep pitch markings unchanged
-    if (obj.selectable === false) {
-      newObjects.push(obj); continue;
+    // 互斥：清除另一个，确保只有一个渲染流程
+    if (diagCtx && drillCtx) {
+      // 诊断优先，把 drill 的也清掉（already read, just proceed）
     }
 
-    const objType = obj.type as string | undefined;
-    const src = obj.src as string | undefined;
+    if (!drillCtx && !diagCtx) return;
 
-    // Image-based equipment → floor markers (NEW PNG handling)
-    if (objType === "image" && src) {
-      if (src.includes("标志盘")) {
-        newObjects.push({
-          ...obj, type: "circle", radius: 8, fill: "#ef4444", stroke: "", strokeWidth: 0, src: undefined,
-        });
-        continue;
+    let attempts = 0;
+    const tryRender = () => {
+      const canvas = boardRef.current;
+      if (!canvas) {
+        if (attempts++ < 80) requestAnimationFrame(tryRender);
+        return;
       }
-      if (src.includes("角旗杆")) {
-        newObjects.push({
-          ...obj,
-          type: "rect", width: 30, height: 3,
-          fill: "rgba(255,255,255,0.6)", stroke: "",
-          rx: 0, ry: 0, src: undefined,
-          top: (obj.top as number || 0) + 30,
-        });
-        continue;
-      }
-      if (src.includes("圆形环")) {
-        newObjects.push({
-          ...obj, type: "circle", radius: 18, fill: "transparent",
-          stroke: "#ffffff", strokeWidth: 2,
-          strokeDashArray: [6, 4], src: undefined,
-        });
-        continue;
-      }
-      if (src.includes("栏架")) {
-        newObjects.push({
-          ...obj,
-          type: "rect", width: 40, height: 3,
-          fill: "rgba(255,255,255,0.5)", stroke: "", src: undefined,
-          top: (obj.top as number || 0) + 15,
-        });
-        continue;
-      }
-      newObjects.push(obj); continue;
-    }
 
-    const fill = obj.fill as string | undefined;
-    const stroke = obj.stroke as string | undefined;
-    const width = obj.width as number | undefined;
+      // ─── 统一清空：无论哪种渲染，先把画布清干净 ───
+      // Reset to default bright field
+      if ((canvas as any)._setFieldImage) {
+        (canvas as any)._setFieldImage("default");
+      }
+      // Remove ALL user content
+      canvas.getObjects().filter((o: any) => !o._isFieldBg)
+        .forEach((o: any) => canvas.remove(o));
 
-    // Cone → small floor dot
-    if (objType === "circle" && fill === "#f97316") {
-      newObjects.push({ ...obj, radius: 8, fill: "#ef4444", stroke: "", strokeWidth: 0 });
-      continue;
-    }
-    // Pole → tape line on ground
-    if (objType === "rect" && fill === "#d92525" && width !== undefined && width < 15) {
-      newObjects.push({
-        ...obj,
-        width: 30, height: 3,
-        fill: "rgba(255,255,255,0.6)", stroke: "",
-        rx: 0, ry: 0,
-        top: (obj.top as number || 0) + 30,
+      // ─── 诊断渲染 ───
+      if (diagCtx) {
+        const titleText = new FabricText(`诊断: ${diagCtx.title}`, {
+          left: 12, top: 8, fontSize: 16, fontFamily: "Arial",
+          fontWeight: "bold", fill: TAC_THEME.accent,
+          backgroundColor: "rgba(0,0,0,0.6)", padding: 4,
+        });
+        (titleText as any)._isDrillAnnotation = true; canvas.add(titleText);
+        canvas.requestRenderAll();
+        return;
+      }
+
+      // ─── Drill 教案渲染 ───
+      if (drillCtx) {
+        const fieldFile = mapAreaToField(drillCtx.area);
+        const { red, blue, neutral } = parseGroups(drillCtx.groups);
+        const positions = computePlayerPositions(red, blue, neutral, drillCtx.area);
+
+        FabricImage.fromURL(`/equipment/${fieldFile}.png`).then((img) => {
+          // Clear old field bg
+          canvas.getObjects().filter((o:any)=>o._isFieldBg).forEach((o:any)=>canvas.remove(o));
+          const margin = 30;
+          const sw = (canvas.width! - margin * 2) / img.width!;
+          const sh = (canvas.height! - margin * 2) / img.height!;
+          const s = Math.min(sw, sh); // fit field in center with equal margins
+          const imgW = img.width! * s, imgH = img.height! * s;
+          img.set({left: (canvas.width!-imgW)/2, top: (canvas.height!-imgH)/2, scaleX:s, scaleY:s, selectable:false, evented:false});
+          (img as any)._isFieldBg = true;
+          // Remove ALL non-field content before placing new
+          canvas.getObjects().filter((o:any)=>!o._isFieldBg).forEach((o:any)=>canvas.remove(o));
+          canvas.add(img);
+
+          // Place players
+          const R = TAC_THEME.playerRadius;
+          positions.forEach((p) => {
+            const cx = p.x, cy = p.y;
+            const cr = new Circle({ left: cx-R, top: cy-R, radius: R, fill: "transparent", stroke: p.c, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
+            const tx = new FabricText(p.n, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R*0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
+            const g = new Group([cr, tx], { left: cx-R, top: cy-R, selectable: true, evented: true });
+            (g as any)._isPlayer = true; (g as any).number = p.n;
+            g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
+            g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
+            canvas.add(g);
+          });
+
+          // Annotations
+          const nameText = new FabricText(`练习: ${drillCtx.name}`, { left: 12, top: 8, fontSize: 16, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.6)", padding: 4 });
+          (nameText as any)._isDrillAnnotation = true; canvas.add(nameText);
+
+          const infoText = new FabricText(`${drillCtx.groups} | ${drillCtx.area} | ${drillCtx.duration}min`, { left: 12, top: 40, fontSize: 12, fontFamily: "Arial", fill: "#CCC", backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+          (infoText as any)._isDrillAnnotation = true; canvas.add(infoText);
+
+          if (drillCtx.coaching_points.length > 0) {
+            const cpHeader = new FabricText("指导要点:", { left: 860, top: 100, fontSize: 12, fontFamily: "Arial", fontWeight: "bold", fill: TAC_THEME.accent, backgroundColor: "rgba(0,0,0,0.5)", padding: 3 });
+            (cpHeader as any)._isDrillAnnotation = true; canvas.add(cpHeader);
+            drillCtx.coaching_points.slice(0, 8).forEach((cp, i) => {
+              const txt = new FabricText(`${i + 1}. ${cp}`, { left: 860, top: 128 + i * 28, fontSize: 11, fontFamily: "Arial", fill: "#DDD", backgroundColor: "rgba(0,0,0,0.4)", padding: 2 });
+              (txt as any)._isDrillAnnotation = true; canvas.add(txt);
+            });
+          }
+
+          canvas.requestRenderAll();
+        }).catch(() => {});
+      }
+    };
+
+    tryRender();
+  }, []);
+
+  // ─── Auto-save canvas to localStorage ───
+  const autoSave = useCallback(() => {
+    const c = boardRef.current; if (!c) return;
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        json: JSON.stringify(c.toJSON()),
+        ts: new Date().toISOString(),
+      }));
+    } catch {}
+  }, []);
+
+  const restoreAutoSave = () => {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      const c = boardRef.current; if (!c) return;
+      c.loadFromJSON(JSON.parse(data.json)).then(() => {
+        c.requestRenderAll();
+        setAutoSaveTs(null);
       });
-      continue;
+    } catch {}
+  };
+
+  const dismissAutoSave = () => {
+    localStorage.removeItem(AUTOSAVE_KEY);
+    setAutoSaveTs(null);
+  };
+
+  const uh = useCallback((u:boolean,r:boolean)=>{
+    setCanUndo(u); setCanRedo(r);
+    if (r || u) autoSave(); // save on any canvas change
+  },[autoSave]);
+  const hUndo = () => (boardRef.current as any)?._undo?.();
+  const hRedo = () => (boardRef.current as any)?._redo?.();
+  const hExport = () => {
+    const c = boardRef.current;
+    if (!c) return;
+    const a = document.createElement("a");
+    a.href = c.toDataURL({ format: "png", multiplier: 2 });
+    a.download = `tactical-${Date.now()}.png`;
+    a.click();
+  };
+
+  const hClear = () => {
+    const c=boardRef.current; if(!c)return;
+    c.getObjects().filter((o:any)=>!o._isFieldBg).forEach((o:any)=>c.remove(o));
+    c.requestRenderAll();
+    autoSave();
+  };
+
+  const hZoomIn = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() * 1.15; z = Math.min(z, 5);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const hZoomOut = () => {
+    const c = boardRef.current; if (!c) return;
+    let z = c.getZoom() / 1.15; z = Math.max(z, 0.3);
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
+    c.requestRenderAll();
+  };
+  const hZoomFit = () => {
+    const c = boardRef.current; if (!c) return;
+    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, 1);
+    c.requestRenderAll();
+  };
+
+  // Zoom controls moved to BoardToolbar
+  // ─── Safe navigation: disable gesture before leaving page ───
+  const navigateAway = useCallback((url: string) => {
+    if (gestureOn) setGestureOn(false);
+    setTimeout(() => router.push(url), 80);
+  }, [gestureOn, router]);
+  // ─── Click-to-place equipment (no drag needed) ───
+  const eqCountRef = useRef<Record<string, number>>({});
+  const hPlaceEquipment = useCallback((filename: string, name: string) => {
+    const c = boardRef.current; if (!c) return;
+    const cnt = (eqCountRef.current[filename] || 0) + 1;
+    eqCountRef.current[filename] = cnt;
+
+    // Place at center with slight offset per count to avoid stacking
+    const cx = 525 + ((cnt - 1) % 5) * 25;
+    const cy = 340 + Math.floor((cnt - 1) / 5) * 25;
+
+    // Handle agility ring as vector
+    if (name === "圆形环" || name === "敏捷环") {
+      const ring = new Circle({
+        left: cx - 20, top: cy - 20, radius: 20,
+        fill: "transparent", stroke: "#000", strokeWidth: 3,
+        selectable: true, evented: true, lockUniScaling: true,
+      });
+      (ring as any).name = name;
+      ring.setControlsVisibility({tl:true,tr:true,bl:true,br:true,ml:true,mr:true,mt:true,mb:true,mtr:true});
+      c.add(ring); c.setActiveObject(ring); c.requestRenderAll(); autoSave();
+      return;
     }
-    // Hoop → dashed ground circle
-    if (objType === "circle" && stroke === "#ffffff" && fill === "transparent") {
-      newObjects.push({ ...obj, strokeDashArray: [6, 4], strokeWidth: 2 });
-      continue;
-    }
-    // Groups
-    if (objType === "group") {
-      const subObjects = (obj as { objects?: Array<Record<string, unknown>> }).objects;
-      if (!subObjects || subObjects.length === 0) { newObjects.push(obj); continue; }
 
-      const firstFillable = subObjects.find((o: Record<string, unknown>) => typeof o.fill === "string");
-      const firstLine = subObjects.find((o: Record<string, unknown>) => o.type === "line" || typeof o.stroke === "string");
-      const subFill = firstFillable?.fill as string | undefined;
-      const subStroke = firstLine?.stroke as string | undefined;
-
-      // Ladder (yellow) → tape marks
-      if (subFill === "#fbbf24") {
-        const transSubs = subObjects.map((sub: Record<string, unknown>) => {
-          if (sub.type === "rect") {
-            return { ...sub, height: 3, fill: "rgba(255,255,255,0.5)", stroke: "", strokeWidth: 0 };
-          }
-          return sub;
-        });
-        newObjects.push({ ...obj, objects: transSubs });
-        continue;
-      }
-      // Hurdle (yellow) → flat floor lines
-      if (subFill === "#facc15") {
-        const transSubs = subObjects.map((sub: Record<string, unknown>) => {
-          if (sub.type === "rect") {
-            if ((sub.height as number) <= 4) return sub; // base plate stays
-            return { ...sub, height: 3, fill: "rgba(255,255,255,0.5)", stroke: "", strokeWidth: 0, top: (sub.top as number || 0) + 15 };
-          }
-          return sub;
-        });
-        newObjects.push({ ...obj, objects: transSubs });
-        continue;
-      }
-      // Band (purple lines) → remove
-      if (subStroke === "#c084fc") continue;
-    }
-    // Default: keep as-is (players, arrows, etc.)
-    newObjects.push(obj);
-  }
-
-  cloned.objects = newObjects;
-  return cloned;
-}
-
-/* ───────────────────────────────────────────
-   Fabric object factories
-   ─────────────────────────────────────────── */
-
-async function createCone(): Promise<FabricImage> {
-  const file = CONE_PNGS[Math.floor(Math.random() * CONE_PNGS.length)];
-  const img = await FabricImage.fromURL(`/equipment/${file}`);
-  img.set({
-    left: CANVAS_W / 2 - 20 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 20 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  img.scaleToWidth(40);
-  return img;
-}
-
-async function createPole(): Promise<FabricImage> {
-  const img = await FabricImage.fromURL("/equipment/角旗杆.png");
-  img.set({
-    left: CANVAS_W / 2 - 5 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 35 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  img.scaleToWidth(30);
-  return img;
-}
-
-function createLadder(): Group {
-  const railLeft = new Rect({
-    left: 0, top: 0, width: 4, height: 80,
-    fill: EQUIPMENT_COLORS.ladder, stroke: "#d97706", strokeWidth: 0.5,
-  });
-  const railRight = new Rect({
-    left: 40, top: 0, width: 4, height: 80,
-    fill: EQUIPMENT_COLORS.ladder, stroke: "#d97706", strokeWidth: 0.5,
-  });
-  const rungs: Rect[] = [];
-  for (let i = 0; i < 6; i++) {
-    rungs.push(new Rect({
-      left: 2, top: 6 + i * 14, width: 40, height: 3,
-      fill: EQUIPMENT_COLORS.ladder, stroke: "#d97706", strokeWidth: 0.5,
-    }));
-  }
-  const g = new Group([railLeft, railRight, ...rungs], {
-    left: CANVAS_W / 2 - 22 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 40 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  return g;
-}
-
-async function createHoop(): Promise<FabricImage> {
-  const img = await FabricImage.fromURL("/equipment/圆形环.png");
-  img.set({
-    left: CANVAS_W / 2 - 25 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 25 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  img.scaleToWidth(50);
-  return img;
-}
-
-async function createHurdle(): Promise<FabricImage> {
-  const file = Math.random() > 0.5 ? "小栏架.png" : "高栏架.png";
-  const img = await FabricImage.fromURL(`/equipment/${file}`);
-  img.set({
-    left: CANVAS_W / 2 - 40 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 30 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  img.scaleToWidth(80);
-  return img;
-}
-
-function createBand(): Group {
-  // Wavy resistance band using a series of line segments
-  const segments: Line[] = [];
-  const points = 7;
-  const segWidth = 80 / (points - 1);
-  const amp = 10;
-  for (let i = 0; i < points - 1; i++) {
-    const x1 = i * segWidth;
-    const y1 = Math.sin((i / (points - 1)) * Math.PI * 2.5) * amp;
-    const x2 = (i + 1) * segWidth;
-    const y2 = Math.sin(((i + 1) / (points - 1)) * Math.PI * 2.5) * amp;
-    segments.push(new Line([x1, y1, x2, y2], {
-      stroke: EQUIPMENT_COLORS.band,
-      strokeWidth: 4,
-      strokeLineCap: "round",
-      strokeLineJoin: "round",
-    }));
-  }
-  const g = new Group(segments, {
-    left: CANVAS_W / 2 - 40 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  return g;
-}
-
-let playerCounter = 1;
-function createPlayer(num?: number): Group {
-  const n = num ?? playerCounter++;
-  const circle = new Circle({
-    left: -14, top: -14, radius: 14,
-    fill: EQUIPMENT_COLORS.player,
-    stroke: "#1d4ed8",
-    strokeWidth: 1.5,
-  });
-  const text = new IText(String(n), {
-    left: -6, top: -8,
-    fontSize: 14,
-    fontWeight: "bold",
-    fill: "#ffffff",
-    fontFamily: "Inter, system-ui, sans-serif",
-  });
-  const g = new Group([circle, text], {
-    left: CANVAS_W / 2 - 14 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 14 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  return g;
-}
-
-function createArrow(): Group {
-  const shaft = new Line([0, 0, 50, 0], {
-    stroke: EQUIPMENT_COLORS.arrow,
-    strokeWidth: 3,
-    strokeLineCap: "round",
-  });
-  const head = new Triangle({
-    left: 44, top: -8,
-    width: 16, height: 16,
-    fill: EQUIPMENT_COLORS.arrow,
-    angle: 90,
-  });
-  const g = new Group([shaft, head], {
-    left: CANVAS_W / 2 - 28 + (Math.random() - 0.5) * 100,
-    top: CANVAS_H / 2 - 8 + (Math.random() - 0.5) * 80,
-    selectable: true,
-    evented: true,
-    hasControls: true,
-    hasBorders: true,
-  });
-  return g;
-}
-
-/** Set the pitch background image on a Fabric canvas.
- *  Replaces the old drawPitch() which drew all lines/arcs with Fabric shapes. */
-async function setPitchBackground(canvas: Canvas): Promise<void> {
-  try {
-    const img = await FabricImage.fromURL(PITCH_PNG);
-    img.set({
-      left: 0,
-      top: 0,
-      selectable: false,
-      evented: false,
-      hasControls: false,
-      hasBorders: false,
+    FabricImage.fromURL(`/equipment/${filename}.png`).then((img) => {
+      img.set({
+        left: cx - 35, top: cy - 35, scaleX: 0.3, scaleY: 0.3,
+        lockUniScaling: true, selectable: true, evented: true,
+      });
+      (img as any).name = name;
+      img.setControlsVisibility({tl:true,tr:true,bl:true,br:true,ml:true,mr:true,mt:true,mb:true,mtr:true});
+      c.add(img); c.setActiveObject(img); c.requestRenderAll(); autoSave();
     });
-    img.scaleToWidth(CANVAS_W);
-    img.scaleToHeight(CANVAS_H);
-    canvas.backgroundImage = img;
-    canvas.renderAll();
-  } catch (e) {
-    console.error("Failed to load pitch background:", e);
-    // Fallback: the green backgroundColor from canvas init stays visible
-  }
-}
+  }, [autoSave]);
 
-/* ───────────────────────────────────────────
-   LocalStorage helpers
-   ─────────────────────────────────────────── */
+  const hField = useCallback((fn: string) => {
+    const c = boardRef.current; if (!c) return;
+    if ((c as any)._setFieldImage) {
+      (c as any)._setFieldImage(fn);
+    }
+  }, []);
 
-function loadLibrary(): WarmupDesign[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LIBRARY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
+  const placePlayers = (pl: {x:number;y:number;n:string;c:string}[], color?: string) => {
+    const c=boardRef.current; if(!c)return;
+    const clr = color||activeColor;
+    const R = TAC_THEME.playerRadius;
+    pl.forEach((p) => {
+      const ringColor = p.c||clr;
+      const cx = p.x, cy = p.y;
+      const cr = new Circle({left:cx-R, top:cy-R, radius:R, fill:"transparent", stroke:ringColor, strokeWidth:TAC_THEME.playerRingWidth, selectable:false, evented:false});
+      const tx = new FabricText(p.n, {left:cx, top:cy, originX:"center", originY:"center", fontSize:R*0.8, fontFamily:"Arial", fontWeight:"bold", fill:"#FFF", selectable:false, evented:false});
+      const g = new Group([cr,tx], {left:cx-R, top:cy-R, selectable:true, evented:true});
+      (g as any)._isPlayer=true; (g as any).number=p.n;
+      g.setControlsVisibility({tl:true, tr:true, bl:true, br:true, ml:true, mr:true, mt:true, mb:true, mtr:true});
+      g.set({ cornerStyle:"circle", cornerSize:10, cornerColor:TAC_THEME.accent, cornerStrokeColor:"#FFF", transparentCorners:false, padding:0, lockUniScaling:true } as any);
+      c.add(g);
+    });
+    c.requestRenderAll();
+  };
 
-function saveLibrary(library: WarmupDesign[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(LIBRARY_KEY, JSON.stringify(library));
-  } catch (e) {
-    console.error("Failed to save warmup library:", e);
-  }
-}
+  const hFormation = (f: string) => {
+    const c = boardRef.current; if (!c) return;
+    // Clear everything except field background
+    c.getObjects().filter((o: any) => !o._isFieldBg).forEach((o: any) => c.remove(o));
+    // Switch to standard full field
+    if ((c as any)._setFieldImage) (c as any)._setFieldImage("default");
+    // Place formation players (ring style via placePlayers)
+    placePlayers(FORMATION_DATA[f] || FORMATION_DATA["4-3-3"]);
+    c.requestRenderAll();
+    autoSave();
+  };
 
-function generateId(): string {
-  return "warmup_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6);
-}
+  const hUpdatePlayerNum = (newNum: string) => {
+    if (!selObj || !(selObj as any)._isPlayer) return;
+    (selObj as any).number = newNum;
+    const objs = (selObj as any)._objects || [];
+    const textObj = objs.find((o: any) => o.type === "text" || o.type === "textbox");
+    if (textObj) { textObj.set({ text: newNum }); boardRef.current?.requestRenderAll(); }
+    setEditTick(t => t + 1);
+    setEditPop(null);
+  };
 
-/* ───────────────────────────────────────────
-   Sub-components
-   ─────────────────────────────────────────── */
+  // Inline popup: confirm number edit (uses popup's own ref to avoid selObj race)
+  const hConfirmPopNum = (newNum: string) => {
+    if (!editPop) return;
+    const obj = editPop.obj;
+    (obj as any).number = newNum;
+    const objs = (obj as any)._objects || [];
+    const textObj = objs.find((o: any) => o.type === "text" || o.type === "textbox");
+    if (textObj) { textObj.set({ text: newNum }); boardRef.current?.requestRenderAll(); }
+    setEditPop(null);
+  };
 
-/** Left toolbar — equipment buttons */
-function Toolbar({
-  onAddObject,
-}: {
-  onAddObject: (factory: () => FabricObject | Promise<FabricObject>) => void;
-}) {
-  const tools = [
-    { label: "标志盘", emoji: "🟤", factory: createCone },
-    { label: "标志杆", emoji: "🔴", factory: createPole },
-    { label: "绳梯", emoji: "🪜", factory: createLadder },
-    { label: "敏捷圈", emoji: "⭕", factory: createHoop },
-    { label: "栏架", emoji: "🚧", factory: createHurdle },
-    { label: "弹力带", emoji: "〰️", factory: createBand },
-    { label: "球员站位", emoji: "👤", factory: () => createPlayer() },
-    { label: "行进箭头", emoji: "➡️", factory: createArrow },
-  ];
+  // Player double-click → show inline popup
+  const hPlayerDoubleClick = useCallback((playerObj: any, screenX: number, screenY: number) => {
+    setSelObj(playerObj);
+    setEditPop({
+      obj: playerObj,
+      x: screenX,
+      y: screenY,
+      num: (playerObj as any).number || "",
+    });
+  }, []);
+
+  // ─── AI 自动生成战术板 ─────────────────────────────────
+  const renderBoardGen = useCallback((result: BoardGenResult) => {
+    const c = boardRef.current; if (!c) return;
+
+    // Clear all old content (keep field background)
+    c.getObjects().filter((o: any) => !o._isFieldBg)
+      .forEach((o: any) => c.remove(o));
+
+    // Always use standard 11-a-side field for auto-generated content
+    if ((c as any)._setFieldImage) {
+      (c as any)._setFieldImage(result.field || "default");
+    }
+
+    // Render players
+    if (result.players) {
+      const R = TAC_THEME.playerRadius;
+      result.players.forEach((p) => {
+        const cx = p.x, cy = p.y;
+        const cr = new Circle({ left: cx - R, top: cy - R, radius: R, fill: "transparent", stroke: p.color, strokeWidth: TAC_THEME.playerRingWidth, selectable: false, evented: false });
+        const tx = new FabricText(p.number, { left: cx, top: cy, originX: "center", originY: "center", fontSize: R * 0.8, fontFamily: "Arial", fontWeight: "bold", fill: "#FFF", selectable: false, evented: false });
+        const g = new Group([cr, tx], { left: cx - R, top: cy - R, selectable: true, evented: true });
+        (g as any)._isPlayer = true; (g as any)._isAIGenerated = true; (g as any).number = p.number;
+        if (p.label) (g as any).label = p.label;
+        g.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
+        g.set({ cornerStyle: "circle", cornerSize: 10, cornerColor: TAC_THEME.accent, cornerStrokeColor: "#FFF", transparentCorners: false, padding: 0, lockUniScaling: true } as any);
+        c.add(g);
+      });
+    }
+
+    // Render routes
+    if (result.routes) {
+      result.routes.forEach((r) => {
+        const style = ROUTE_STYLES[r.type] || ROUTE_STYLES.draw_curve;
+        const strokeColor = r.color || "#000";
+        let pathData: string;
+        let arrowAngle: number;
+
+        if (r.type === "draw_dribble") {
+          // Curved bezier for dribble
+          const mx = (r.x1 + r.x2) / 2, my = (r.y1 + r.y2) / 2;
+          const len = Math.sqrt((r.x2 - r.x1) ** 2 + (r.y2 - r.y1) ** 2);
+          const perpX = -(r.y2 - r.y1) / (len || 1), perpY = (r.x2 - r.x1) / (len || 1);
+          const arcOffset = Math.min(len * 0.5, 150);
+          pathData = `M ${r.x1} ${r.y1} Q ${mx + perpX * arcOffset} ${my + perpY * arcOffset} ${r.x2} ${r.y2}`;
+          arrowAngle = Math.atan2(r.y2 - (my + perpY * arcOffset), r.x2 - (mx + perpX * arcOffset));
+        } else {
+          // Straight line
+          pathData = `M ${r.x1} ${r.y1} L ${r.x2} ${r.y2}`;
+          arrowAngle = Math.atan2(r.y2 - r.y1, r.x2 - r.x1);
+        }
+
+        const path = new Path(pathData, {
+          stroke: strokeColor,
+          strokeWidth: style.width,
+          strokeDashArray: style.strokeDash || undefined,
+          fill: "transparent",
+          selectable: true,
+          evented: true,
+          strokeLineCap: "round" as CanvasLineCap,
+          strokeLineJoin: "round" as CanvasLineJoin,
+        });
+        (path as any)._isRoute = true; (path as any)._isAIGenerated = true; (path as any)._routeType = r.type;
+        c.add(path);
+
+        // Arrow head
+        const s = 10;
+        const tip = { x: r.x2, y: r.y2 };
+        const left = { x: r.x2 - s * Math.cos(arrowAngle - Math.PI / 6), y: r.y2 - s * Math.sin(arrowAngle - Math.PI / 6) };
+        const right = { x: r.x2 - s * Math.cos(arrowAngle + Math.PI / 6), y: r.y2 - s * Math.sin(arrowAngle + Math.PI / 6) };
+        const tri = new Polygon([tip, left, right], { fill: strokeColor, stroke: strokeColor, strokeWidth: 1, selectable: false, evented: false });
+        (tri as any)._isAIGenerated = true;
+        c.add(tri);
+      });
+    }
+
+    // Render texts
+    if (result.texts) {
+      result.texts.forEach((t) => {
+        const txt = new FabricText(t.content, {
+          left: t.x, top: t.y,
+          fontSize: t.fontSize || 18,
+          fontFamily: "Arial",
+          fontWeight: "bold",
+          fill: t.color || "#c82630",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: 4,
+        });
+        (txt as any)._isAIGenerated = true;
+        c.add(txt);
+      });
+    }
+
+    // Render equipment
+    if (result.equipment) {
+      result.equipment.forEach((eq) => {
+        FabricImage.fromURL(`/equipment/${eq.type}.png`).then((img) => {
+          img.set({
+            left: eq.x - 35, top: eq.y - 35,
+            scaleX: 0.3, scaleY: 0.3,
+            lockUniScaling: true,
+            selectable: true, evented: true,
+          });
+          (img as any)._isAIGenerated = true; (img as any).name = eq.type;
+          img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
+          c.add(img);
+          c.requestRenderAll();
+        });
+      });
+    }
+
+    c.requestRenderAll();
+    autoSave();
+  }, [autoSave]);
+
+  const hAIGenerate = useCallback(async () => {
+    if (!aiPrompt.trim() || aiLoading) return;
+    setAiLoading(true); setAiError("");
+
+    // ─── 先清空画布，再请求生成 ───
+    const c = boardRef.current;
+    if (c) {
+      c.getObjects().filter((o: any) => !o._isFieldBg)
+        .forEach((o: any) => c.remove(o));
+      if ((c as any)._setFieldImage) {
+        (c as any)._setFieldImage("default");
+      }
+      c.requestRenderAll();
+    }
+
+    try {
+      const res = await fetch("/api/tactical-board-generate/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: aiPrompt.trim() }),
+      });
+      const json = await res.json();
+
+      if (!res.ok || json.code !== "ok") {
+        setAiError(json.message || "AI 生成失败");
+        setAiLoading(false);
+        return;
+      }
+
+      const result: BoardGenResult = json.data;
+      renderBoardGen(result);
+
+      // Show a brief confirmation in the AI bar
+      setAiPrompt("");
+      setAiError("");
+      setAiLoading(false);
+      // auto-clear prompt on success
+    } catch (e: any) {
+      setAiError(e.message || "网络错误");
+      setAiLoading(false);
+    }
+  }, [aiPrompt, aiLoading, renderBoardGen]);
+
+  const hSave = () => {
+    const c=boardRef.current; if(!c||!sName.trim())return;
+    const json=JSON.stringify(c.toJSON());
+    const ns:SavedScene={id:Date.now().toString(),name:sName,theme:sTheme,json,createdAt:new Date().toISOString()};
+    const up=[ns,...scenes]; setScenes(up); localStorage.setItem("tac_scenes",JSON.stringify(up)); setSaveOpen(false); setSName("");
+  };
+  const hLoad = (s:SavedScene) => { const c=boardRef.current; if(!c)return; c.loadFromJSON(JSON.parse(s.json)).then(()=>c.requestRenderAll()); setLoadOpen(false); };
+  const hDel = (id:string) => { const up=scenes.filter((s)=>s.id!==id); setScenes(up); localStorage.setItem("tac_scenes",JSON.stringify(up)); };
+
+  // ─── JSON File Import ──────────────────────────────────
+  const handleFileImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const raw = evt.target?.result as string;
+        const parsed = JSON.parse(raw);
+        // Validate: either a saved scene wrapper or raw fabric JSON
+        let fabricJSON: any;
+        if (parsed.json && typeof parsed.json === "string") {
+          // Saved scene format: { id, name, theme, json, createdAt }
+          fabricJSON = JSON.parse(parsed.json);
+        } else if (parsed.objects || parsed.version) {
+          // Raw fabric JSON
+          fabricJSON = parsed;
+        } else {
+          setToastMsg("导入失败：文件格式不正确");
+          setTimeout(() => setToastMsg(""), 2500);
+          return;
+        }
+        const c = boardRef.current;
+        if (!c) return;
+        c.loadFromJSON(fabricJSON).then(() => {
+          c.requestRenderAll();
+          autoSave();
+          setToastMsg("战术导入成功");
+          setTimeout(() => setToastMsg(""), 2000);
+        }).catch(() => {
+          setToastMsg("导入失败：无法加载战术数据");
+          setTimeout(() => setToastMsg(""), 2500);
+        });
+      } catch {
+        setToastMsg("导入失败：JSON 解析错误");
+        setTimeout(() => setToastMsg(""), 2500);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so same file can be re-imported
+    e.target.value = "";
+  }, [autoSave]);
+
+  const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
-    <div className="flex flex-col gap-1 p-2 bg-[#1e1e1e] border border-[#222] rounded-xl">
-      <span className="text-[10px] text-gray-500 font-semibold px-2 pt-1 pb-1 text-center">
-        器材
-      </span>
-      {tools.map((tool) => (
-        <button
-          key={tool.label}
-          onClick={() => onAddObject(tool.factory)}
-          title={tool.label}
-          className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg text-gray-300 hover:bg-[#252525] hover:text-white transition active:scale-95"
-        >
-          <span className="text-xl leading-none">{tool.emoji}</span>
-          <span className="text-[9px] font-medium text-gray-400 leading-tight text-center">
-            {tool.label}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/** Config panel — right side */
-function ConfigPanel({
-  name, setName,
-  duration, setDuration,
-  description, setDescription,
-  notes, setNotes,
-  injuryEnabled, setInjuryEnabled,
-  injuryNotesText, setInjuryNotesText,
-}: {
-  name: string; setName: (v: string) => void;
-  duration: number; setDuration: (v: number) => void;
-  description: string; setDescription: (v: string) => void;
-  notes: string; setNotes: (v: string) => void;
-  injuryEnabled: boolean; setInjuryEnabled: (v: boolean) => void;
-  injuryNotesText: string; setInjuryNotesText: (v: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4 p-4 bg-[#1e1e1e] border border-[#222] rounded-xl">
-      <span className="text-xs text-gray-400 font-semibold">热身配置</span>
-
-      {/* Name */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] text-gray-500 font-medium">热身名称</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="例: MD-3 球场热身"
-          className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition"
-        />
-      </div>
-
-      {/* Duration slider */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] text-gray-500 font-medium">
-          总时长: <span className="text-[#d92525] font-bold">{duration} 分钟</span>
-        </label>
-        <input
-          type="range"
-          min={5}
-          max={25}
-          value={duration}
-          onChange={(e) => setDuration(Number(e.target.value))}
-          className="w-full accent-[#d92525] h-2"
-        />
-        <div className="flex justify-between text-[9px] text-gray-500">
-          <span>5min</span>
-          <span>15min</span>
-          <span>25min</span>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: TAC_THEME.bg }}>
+      {/* ─── Auto-save restore prompt ─── */}
+      {autoSaveTs && (
+        <div className="flex-shrink-0 px-3 py-2 flex items-center gap-3 text-xs"
+          style={{ backgroundColor: TAC_THEME.accent, color: "#fff" }}>
+          <span className="flex-1">检测到上次未保存的战术（{new Date(autoSaveTs).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})}），是否继续？</span>
+          <button onClick={restoreAutoSave} className="px-3 py-1 rounded font-bold text-xs" style={{backgroundColor:"rgba(255,255,255,0.2)"}}>继续</button>
+          <button onClick={dismissAutoSave} className="px-3 py-1 rounded text-xs" style={{backgroundColor:"rgba(0,0,0,0.2)"}}>忽略</button>
         </div>
-      </div>
+      )}
 
-      {/* Warmup description — free text */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] text-gray-500 font-medium">热身描述</label>
+      {/* ─── Top Navigation Bar ─── */}
+      <nav className="flex-shrink-0 flex items-center h-12 px-2 sm:px-3 gap-1 sm:gap-2"
+        style={{ backgroundColor: "#171717", borderBottom: `1px solid ${TAC_THEME.border}` }}>
+        {/* Left: hamburger toggle for EquipmentPalette */}
+        <button onClick={() => setPaletteCollapsed(!paletteCollapsed)}
+          className="flex items-center justify-center w-8 h-8 rounded transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title={paletteCollapsed ? "展开器材面板" : "收起器材面板"}>
+          <Menu className="w-4 h-4" />
+        </button>
+        {/* Back button */}
+        <button onClick={() => navigateAway("/")}
+          className="flex items-center justify-center w-8 h-8 rounded transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="返回首页">
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} />
+        </button>
+        {/* Title */}
+        <h1 className="font-semibold text-sm tracking-wide hidden sm:block" style={{ color: TAC_THEME.textMain }}>KenshinPro 战术板</h1>
+
+        <div className="flex-1" />
+
+        {/* Right section buttons */}
+        {/* Gesture toggle */}
+        <button onClick={() => setGestureOn(!gestureOn)}
+          className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: gestureOn ? "#fff" : TAC_THEME.textDim, backgroundColor: gestureOn ? TAC_THEME.accent : "transparent" }}
+          title="手势控制">
+          <Hand className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">{gestureOn ? "ON" : "手势"}</span>
+        </button>
+
+        {/* 战术库 */}
+        <button onClick={() => { setScenes(JSON.parse(localStorage.getItem("tac_scenes") || "[]")); setLoadOpen(true); }}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textMain }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="战术库">
+          <FolderOpen className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">战术库</span>
+          {scenes.length > 0 && <span className="ml-0.5 text-[10px]" style={{ color: TAC_THEME.accent }}>{scenes.length}</span>}
+        </button>
+
+        {/* AI 自动生成 */}
+        <button onClick={() => setAiOpen(!aiOpen)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: aiOpen ? "#fff" : TAC_THEME.textMain, backgroundColor: aiOpen ? TAC_THEME.accent : "transparent" }}
+          onMouseEnter={(e) => { if (!aiOpen) e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { if (!aiOpen) e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="AI 自动生成">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">AI自动生成</span>
+        </button>
+
+        {/* 导入战术 */}
+        <button onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="导入战术">
+          <Upload className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">导入战术</span>
+        </button>
         <input
-          type="text"
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          placeholder="如: 2min弹力带 5min动态拉伸 8min有球敏捷 3min北欧弯举"
-          className="w-full bg-[#121212] border border-[#333] rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-[#d92525]"
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileImport}
+          className="hidden"
         />
-      </div>
 
-      {/* Injury player notes */}
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-2 cursor-pointer">
+        {/* 保存 */}
+        <button onClick={() => setSaveOpen(true)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textMain }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="保存战术">
+          <Save className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">保存</span>
+        </button>
+      </nav>
+
+      {/* ─── Toast notification ─── */}
+      {toastMsg && (
+        <div className="flex-shrink-0 px-3 py-1.5 text-center text-xs font-medium"
+          style={{ backgroundColor: TAC_THEME.accent, color: "#fff" }}>
+          {toastMsg}
+        </div>
+      )}
+
+      {/* ─── Player number editor bar (legacy fallback) ─── */}
+      {selObj && (selObj as any)._isPlayer && !editPop && (
+        <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1" style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+          <span className="text-[10px]" style={{ color: TAC_THEME.textDim }}>球员号码:</span>
           <input
-            type="checkbox"
-            checked={injuryEnabled}
-            onChange={(e) => setInjuryEnabled(e.target.checked)}
-            className="w-4 h-4 accent-[#d92525] rounded"
+            defaultValue={(selObj as any).number || ""}
+            onBlur={(e) => hUpdatePlayerNum(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") hUpdatePlayerNum((e.target as HTMLInputElement).value); }}
+            className="w-10 h-6 border rounded text-white text-[11px] text-center"
+            style={{ backgroundColor: TAC_THEME.bgInput, borderColor: TAC_THEME.border }}
+            title="编辑球员号码"
           />
-          <span className="text-xs text-gray-300">标注伤病球员替代动作</span>
-        </label>
-        {injuryEnabled && (
-          <textarea
-            value={injuryNotesText}
-            onChange={(e) => setInjuryNotesText(e.target.value)}
-            placeholder="伤病球员替代说明（将标注在场地布置图上）..."
-            rows={3}
-            className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition resize-none"
-          />
+        </div>
+      )}
+
+      {/* ─── Selection indicator bar ─── */}
+      {selName && !(selObj as any)?._isPlayer && (
+        <div className="flex-shrink-0 flex items-center px-3 py-1" style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
+          <span className="text-[10px]" style={{ color: TAC_THEME.textDim }}>已选：{selName}</span>
+        </div>
+      )}
+
+      {saveOpen && (
+        <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-72 space-y-2 shadow-2xl">
+          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">保存战术</h3><button onClick={()=>setSaveOpen(false)} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
+          <input value={sName} onChange={(e)=>setSName(e.target.value)} placeholder="战术名称" className="input-field text-xs h-9" onKeyDown={(e)=>e.key==="Enter"&&hSave()}/>
+          <div className="flex flex-wrap gap-1">{THEMES.map((t)=><button key={t} onClick={()=>setSTheme(t)} className={`px-2 py-0.5 rounded text-[10px] transition`} style={{backgroundColor: sTheme===t ? TAC_THEME.accent : "#22252d", color: sTheme===t ? "#fff" : "#888"}}>{t}</button>)}</div>
+          <button onClick={hSave} disabled={!sName.trim()} className="w-full py-2 text-white font-bold rounded text-xs disabled:opacity-40" style={{backgroundColor:TAC_THEME.accent}}><Save className="w-3 h-3 inline mr-1"/>保存</button>
+        </div>
+      )}
+
+      {loadOpen && (
+        <div className="absolute top-12 right-3 z-50 glass-card p-3 w-[calc(100vw-2rem)] max-w-80 space-y-2 shadow-2xl max-h-80 overflow-y-auto">
+          <div className="flex items-center justify-between"><h3 className="text-white font-bold text-xs">战术库</h3><button onClick={()=>setLoadOpen(false)} className="text-gray-400 hover:text-white"><X className="w-3.5 h-3.5"/></button></div>
+          {scenes.length===0?<p className="text-gray-400 text-[11px] text-center py-6">暂无保存的战术</p>:scenes.map((s)=>(
+            <div key={s.id} className="flex items-center gap-2 p-2 rounded group" style={{backgroundColor:"#1a1d24"}}>
+              <Bookmark className="w-3.5 h-3.5 flex-shrink-0" style={{color: TAC_THEME.accent}}/>
+              <div className="flex-1 min-w-0"><p className="text-xs text-white truncate">{s.name}</p><p className="text-[10px] text-gray-400">{s.theme} · {new Date(s.createdAt).toLocaleDateString()}</p></div>
+              <button onClick={()=>hLoad(s)} className="text-[10px] hover:underline flex-shrink-0" style={{color:TAC_THEME.accent}}>加载</button>
+              <button onClick={()=>hDel(s.id)} className="text-gray-600 flex-shrink-0" style={{}}><X className="w-3 h-3"/></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ─── AI 自动生成 弹窗 ─── */}
+      {aiOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20" onClick={() => setAiOpen(false)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="relative z-10 w-full max-w-lg mx-4 rounded-xl shadow-2xl overflow-hidden"
+            style={{ backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.border}` }}
+            onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${TAC_THEME.border}` }}>
+              <h3 className="text-sm font-bold" style={{ color: TAC_THEME.textMain }}>🦋 AI 自动生成战术</h3>
+              <button onClick={() => setAiOpen(false)} className="p-1 rounded hover:bg-[#333] transition-colors" style={{ color: TAC_THEME.textDim }}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Body */}
+            <div className="p-4 space-y-3">
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => { setAiPrompt(e.target.value); setAiError(""); }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); hAIGenerate(); } }}
+                placeholder="描述战术场景，例如：对方防线收紧中路密集防守，双边7/11号拉开，倒三角传中，9号禁区包抄..."
+                disabled={aiLoading}
+                rows={4}
+                className="w-full px-3 py-2 text-sm text-white placeholder-gray-500 rounded-md resize-none focus:outline-none"
+                style={{ backgroundColor: TAC_THEME.bgInput, border: `1px solid ${aiError ? TAC_THEME.error : TAC_THEME.border}`, borderRadius: TAC_THEME.radius }}
+              />
+              {aiError && <p className="text-xs" style={{ color: TAC_THEME.error }}>{aiError}</p>}
+              <div className="flex gap-2">
+                <button onClick={hAIGenerate}
+                  disabled={aiLoading || !aiPrompt.trim()}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-md transition-all hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: TAC_THEME.accent, color: "#fff", borderRadius: TAC_THEME.radius }}>
+                  {aiLoading ? "生成中..." : "生成战术"}
+                </button>
+                <button onClick={() => setAiOpen(false)}
+                  className="px-4 py-2.5 text-sm rounded-md transition-colors"
+                  style={{ color: TAC_THEME.textDim, backgroundColor: TAC_THEME.bgInput, borderRadius: TAC_THEME.radius }}>
+                  取消
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <EquipmentPalette activeTool={activeTool} onFieldSelect={hField} onPlaceEquipment={hPlaceEquipment} collapsed={paletteCollapsed} onToggleCollapsed={() => setPaletteCollapsed(!paletteCollapsed)}/>
+        <FabricBoardDynamic activeTool={activeTool} activeColor={activeColor} onObjectSelected={setSelObj} onHistoryChange={uh} onCanvasChange={autoSave} boardRef={boardRef} onPlayerDoubleClick={hPlayerDoubleClick} lockPlayers={lockPlayers} lockRoutes={lockRoutes}/>
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          <BoardToolbar activeTool={activeTool} onToolChange={setActiveTool} activeColor={activeColor} onColorChange={setActiveColor} canUndo={canUndo} canRedo={canRedo} onUndo={hUndo} onRedo={hRedo} onExport={hExport} onFormation={hFormation} onClear={hClear} onZoomIn={hZoomIn} onZoomOut={hZoomOut} onZoomFit={hZoomFit} lockPlayers={lockPlayers} onLockPlayersChange={setLockPlayers} lockRoutes={lockRoutes} onLockRoutesChange={setLockRoutes}/>
+        </div>
+        {/* Inline player number edit popup */}
+        {editPop && (
+          <div className="fixed z-50 flex items-center gap-1 px-2 py-1 rounded-md shadow-xl"
+            style={{
+              left: editPop.x - 30, top: editPop.y - 32,
+              backgroundColor: TAC_THEME.bgCard, border: `1px solid ${TAC_THEME.accent}`,
+            }}>
+            <input
+              autoFocus
+              defaultValue={editPop.num}
+              onBlur={(e) => { hConfirmPopNum(e.target.value); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") hConfirmPopNum((e.target as HTMLInputElement).value);
+                if (e.key === "Escape") setEditPop(null);
+              }}
+              className="w-8 h-6 text-center text-xs font-bold rounded outline-none"
+              style={{ backgroundColor: TAC_THEME.bgInput, color: "#fff", border: `1px solid ${TAC_THEME.border}` }}
+            />
+            <button onClick={() => setEditPop(null)} className="text-[10px] px-1 rounded"
+              style={{ color: TAC_THEME.textDim }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; }}
+            >x</button>
+          </div>
         )}
       </div>
-
-      {/* Notes */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] text-gray-500 font-medium">备注</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="热身要点、注意事项..."
-          rows={3}
-          className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition resize-none"
-        />
-      </div>
-    </div>
-  );
-}
-
-/** Segment editor */
-function SegmentEditor({
-  segments, setSegments,
-  totalDuration, setTotalDuration,
-}: {
-  segments: Segment[];
-  setSegments: React.Dispatch<React.SetStateAction<Segment[]>>;
-  totalDuration: number;
-  setTotalDuration: (v: number) => void;
-}) {
-  const segmentTotal = segments.reduce((s, seg) => s + seg.duration, 0);
-
-  const addSegment = () => {
-    const remaining = Math.max(1, totalDuration - segmentTotal);
-    const newDuration = segments.length === 0
-      ? Math.round(totalDuration / 3)
-      : Math.min(remaining, Math.round(totalDuration / (segments.length + 1)));
-    setSegments((prev) => [
-      ...prev,
-      {
-        id: "seg_" + Date.now(),
-        name: `环节 ${prev.length + 1}`,
-        duration: Math.max(1, newDuration),
-      },
-    ]);
-  };
-
-  const removeSegment = (id: string) => {
-    setSegments((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  const updateSegmentName = (id: string, name: string) => {
-    setSegments((prev) => prev.map((s) => (s.id === id ? { ...s, name } : s)));
-  };
-
-  const updateSegmentDuration = (id: string, dur: number) => {
-    setSegments((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, duration: Math.max(1, dur) } : s))
-    );
-  };
-
-  // Auto-scale segments when total duration changes
-  const handleTotalChange = (newTotal: number) => {
-    setTotalDuration(newTotal);
-    if (segments.length > 0 && totalDuration > 0) {
-      const ratio = newTotal / totalDuration;
-      setSegments((prev) =>
-        prev.map((s) => ({
-          ...s,
-          duration: Math.max(1, Math.round(s.duration * ratio)),
-        }))
-      );
-    }
-  };
-
-  return (
-    <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-400 font-semibold flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5" />
-          时间轴分段
-        </span>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-bold ${
-            segmentTotal === totalDuration ? "text-green-400" : "text-[#d92525]"
-          }`}>
-            合计 {segmentTotal} / {totalDuration}分钟
-          </span>
-          <button
-            onClick={addSegment}
-            className="flex items-center gap-1 px-2 py-1 bg-[#d92525]/10 text-[#d92525] rounded-md text-xs font-medium hover:bg-[#d92525]/20 transition"
-          >
-            <Plus className="w-3 h-3" /> 添加环节
-          </button>
-        </div>
-      </div>
-
-      {segments.length === 0 && (
-        <p className="text-xs text-gray-500 py-4 text-center">
-          尚未添加热身环节，点击「添加环节」创建分段
-        </p>
-      )}
-
-      <div className="flex flex-col gap-2">
-        {segments.map((seg, idx) => (
-          <div
-            key={seg.id}
-            className="flex items-center gap-2 p-2 bg-[#121212] rounded-lg border border-[#222]"
-          >
-            <span className="text-[10px] text-gray-500 w-5 text-center font-mono">
-              {idx + 1}
-            </span>
-            <input
-              type="text"
-              value={seg.name}
-              onChange={(e) => updateSegmentName(seg.id, e.target.value)}
-              className="flex-1 px-2 py-1 bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none border-b border-transparent focus:border-[#d92525] transition"
-              placeholder="环节名称"
-            />
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                value={seg.duration}
-                min={1}
-                max={totalDuration}
-                onChange={(e) => updateSegmentDuration(seg.id, Number(e.target.value))}
-                className="w-12 px-1.5 py-1 bg-[#1e1e1e] border border-[#333] rounded text-center text-xs text-white focus:outline-none focus:border-[#d92525]"
-              />
-              <span className="text-[10px] text-gray-500">min</span>
-            </div>
-            <button
-              onClick={() => removeSegment(seg.id)}
-              className="p-1 text-gray-500 hover:text-[#d92525] transition"
-              title="删除环节"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** Warmup Library Panel */
-function WarmupLibrary({
-  onLoad,
-}: {
-  onLoad: (design: WarmupDesign) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [library, setLibrary] = useState<WarmupDesign[]>([]);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    setLibrary(loadLibrary());
-  }, [refreshKey]);
-
-  const handleDelete = (id: string) => {
-    const updated = library.filter((d) => d.id !== id);
-    setLibrary(updated);
-    saveLibrary(updated);
-  };
-
-  // Expose refresh via global event
-  useEffect(() => {
-    const handler = () => setRefreshKey((k) => k + 1);
-    window.addEventListener("warmup-library-refresh", handler);
-    return () => window.removeEventListener("warmup-library-refresh", handler);
-  }, []);
-
-  return (
-    <div className="mt-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2 bg-[#1e1e1e] border border-[#222] rounded-xl text-sm text-gray-300 hover:bg-[#252525] transition w-full lg:w-auto"
-      >
-        <FileText className="w-4 h-4" />
-        热身库 ({library.length})
-        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-      </button>
-
-      {open && (
-        <div className="mt-2 bg-[#1e1e1e] border border-[#222] rounded-xl p-4">
-          {library.length === 0 ? (
-            <p className="text-xs text-gray-500 py-4 text-center">
-              暂无保存的热身方案
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {library.map((design) => (
-                <div
-                  key={design.id}
-                  className="flex items-center justify-between p-3 bg-[#121212] rounded-lg border border-[#222] hover:border-[#444] transition group"
-                >
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm text-white font-medium truncate">
-                        {design.name || "未命名热身"}
-                      </span>
-                      {design.hasEquipmentFreeVariant && (
-                        <span className="text-[10px] shrink-0" title="无器材变体">🔧</span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-gray-500">
-                      {design.duration}min · {design.description.includes('') ? "" : ""}
-                      {" · "}{design.segments.length}环节
-                    </span>
-                    {design.equipmentCount && Object.values(design.equipmentCount).some((c) => c > 0) && (
-                      <span className="text-[9px] text-gray-500 truncate">
-                        {Object.entries(design.equipmentCount)
-                          .filter(([, c]) => c > 0)
-                          .map(([key, count]) => `${EQUIPMENT_LABEL_CN[key] || key}×${count}`)
-                          .join(" · ")}
-                      </span>
-                    )}
-                    <span className="text-[9px] text-gray-600">
-                      {design.updatedAt ? new Date(design.updatedAt).toLocaleDateString("zh-CN") : ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      onClick={() => onLoad(design)}
-                      className="p-1.5 text-gray-400 hover:text-white hover:bg-[#252525] rounded transition"
-                      title="加载"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(design.id)}
-                      className="p-1.5 text-gray-400 hover:text-[#d92525] hover:bg-[#252525] rounded transition"
-                      title="删除"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ───────────────────────────────────────────
-   Main page
-   ─────────────────────────────────────────── */
-
-export default function WarmupPage() {
-  // Canvas refs
-  const canvasElRef = useRef<HTMLCanvasElement>(null);
-  const fabricRef = useRef<Canvas | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Scale for responsiveness
-  const [scale, setScale] = useState(1);
-
-  // Warmup config state
-  const [name, setName] = useState("");
-  const [duration, setDuration] = useState(12);
-  const [description, setDescription] = useState("");
-  const [hasEquipmentFreeVariant, setHasEquipmentFreeVariant] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [segments, setSegments] = useState<Segment[]>([]);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [currentLoadedId, setCurrentLoadedId] = useState<string | null>(null);
-  const [injuryEnabled, setInjuryEnabled] = useState(false);
-  const [injuryNotesText, setInjuryNotesText] = useState("");
-  const [equipmentCount, setEquipmentCount] = useState<Record<string, number>>({});
-  const injuryLabelRef = useRef<Group | null>(null);
-
-  // Library refresh trigger
-  const triggerLibraryRefresh = () => {
-    window.dispatchEvent(new Event("warmup-library-refresh"));
-  };
-
-  // Update scale on resize
-  useEffect(() => {
-    const updateScale = () => {
-      if (containerRef.current) {
-        const maxW = containerRef.current.clientWidth - 24; // padding
-        const maxH = Math.max(400, window.innerHeight - 380);
-        const sx = maxW / CANVAS_W;
-        const sy = maxH / CANVAS_H;
-        setScale(Math.min(sx, sy, 1));
-      }
-    };
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
-
-  // Initialize Fabric canvas
-  useEffect(() => {
-    if (!canvasElRef.current || fabricRef.current) return;
-
-    const canvas = new Canvas(canvasElRef.current, {
-      width: CANVAS_W,
-      height: CANVAS_H,
-      backgroundColor: "#1a8b3a",
-      selection: true,
-      preserveObjectStacking: true,
-      renderOnAddRemove: true,
-    });
-
-    fabricRef.current = canvas;
-
-    // Set pitch background image (replaces old drawPitch())
-    setPitchBackground(canvas);
-
-    // Equipment count tracking
-    const refreshEquipCount = () => {
-      try {
-        const json = canvas.toJSON() as Record<string, unknown>;
-        setEquipmentCount(countEquipmentFromJSON(json));
-      } catch { /* ignore serialization errors */ }
-    };
-    canvas.on("object:added", refreshEquipCount);
-    canvas.on("object:removed", refreshEquipCount);
-    refreshEquipCount();
-
-    // Delete key handler
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === "Delete" || e.key === "Backspace") && fabricRef.current) {
-        // Don't delete if user is typing in an input
-        const tag = (e.target as HTMLElement)?.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-
-        const active = fabricRef.current.getActiveObject();
-        if (active) {
-          fabricRef.current.remove(active);
-          fabricRef.current.discardActiveObject();
-          fabricRef.current.renderAll();
-        }
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-
-    // Double-click to remove
-    canvas.on("mouse:dblclick", (opt) => {
-      const target = (opt as { target?: FabricObject }).target;
-      if (target) {
-        canvas.remove(target);
-        canvas.discardActiveObject();
-        canvas.renderAll();
-      }
-    });
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      canvas.dispose();
-      fabricRef.current = null;
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Injury label on canvas — add/remove based on toggle
-  useEffect(() => {
-    const canvas = fabricRef.current;
-    if (!canvas) return;
-
-    // Remove previous label if any
-    if (injuryLabelRef.current) {
-      try { canvas.remove(injuryLabelRef.current); } catch { /* already removed */ }
-      injuryLabelRef.current = null;
-    }
-
-    // Add new label if injury mode is on and notes exist
-    if (injuryEnabled && injuryNotesText.trim()) {
-      const labelW = 240;
-      const labelH = 30;
-      const padX = 6;
-      const padY = 4;
-
-      const bg = new Rect({
-        left: CANVAS_W - labelW - 10,
-        top: CANVAS_H - labelH - 8,
-        width: labelW,
-        height: labelH,
-        fill: "#dc2626",
-        rx: 4,
-        ry: 4,
-        selectable: true,
-        evented: true,
-      });
-      const text = new IText("\u{1F3A5} 伤病: " + injuryNotesText, {
-        left: CANVAS_W - labelW - 10 + padX,
-        top: CANVAS_H - labelH - 8 + padY,
-        fontSize: 11,
-        fill: "#ffffff",
-        fontFamily: "Inter, system-ui, sans-serif",
-        selectable: true,
-        evented: true,
-      });
-      const group = new Group([bg, text], {
-        left: 0,
-        top: 0,
-        selectable: true,
-        evented: true,
-        hasControls: true,
-        hasBorders: true,
-      });
-      canvas.add(group);
-      injuryLabelRef.current = group;
-    }
-
-    canvas.renderAll();
-  }, [injuryEnabled, injuryNotesText]);
-
-  // Add object to canvas (supports both sync and async factories)
-  const handleAddObject = useCallback(async (factory: () => FabricObject | Promise<FabricObject>) => {
-    if (!fabricRef.current) return;
-    try {
-      const obj = await factory();
-      fabricRef.current.add(obj);
-      fabricRef.current.setActiveObject(obj);
-      fabricRef.current.renderAll();
-    } catch (e) {
-      console.error("Failed to create equipment object:", e);
-    }
-  }, []);
-
-  // Save to localStorage
-  const handleSave = useCallback(() => {
-    if (!fabricRef.current) return;
-    setSaveStatus("saving");
-
-    try {
-      const canvasJSON = fabricRef.current.toJSON();
-      const now = new Date().toISOString();
-
-      const design: WarmupDesign = {
-        id: currentLoadedId || generateId(),
-        name,
-        duration,
-        description,
-        hasEquipmentFreeVariant,
-        segments,
-        canvasJSON: canvasJSON as object,
-        notes,
-        equipmentCount: countEquipmentFromJSON(canvasJSON as Record<string, unknown>),
-        injuryNotes: injuryEnabled ? injuryNotesText : "",
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      const library = loadLibrary();
-      const existingIdx = library.findIndex((d) => d.id === design.id);
-
-      if (existingIdx >= 0) {
-        design.createdAt = library[existingIdx].createdAt;
-        library[existingIdx] = design;
-      } else {
-        library.unshift(design);
-        setCurrentLoadedId(design.id);
-      }
-
-      saveLibrary(library);
-      setSaveStatus("saved");
-      triggerLibraryRefresh();
-
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch (e) {
-      console.error("Save failed:", e);
-      setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    }
-  }, [name, duration, description, hasEquipmentFreeVariant, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
-
-  // Export PNG
-  const handleExport = useCallback(() => {
-    if (!fabricRef.current) return;
-    const dataURL = fabricRef.current.toDataURL({
-      format: "png",
-      multiplier: 2,
-    });
-
-    const link = document.createElement("a");
-    link.download = `${name || "warmup"}_${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = dataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [name]);
-
-  // Create equipment-free variant
-  const handleCreateEquipmentFreeVariant = useCallback(() => {
-    if (!fabricRef.current) return;
-    setSaveStatus("saving");
-
-    try {
-      const canvasJSON = fabricRef.current.toJSON() as Record<string, unknown>;
-      const variantJSON = transformCanvasToEquipmentFree(canvasJSON);
-      const now = new Date().toISOString();
-
-      const variantName = name ? `${name} [无器材]` : `球场热身 [无器材]`;
-
-      const design: WarmupDesign = {
-        id: generateId(),
-        name: variantName,
-        duration,
-        description,
-        hasEquipmentFreeVariant: true,
-        segments,
-        canvasJSON: variantJSON as object,
-        notes: notes ? `${notes}\n\n[无器材变体 — 器材已替换为地面标记]` : "[无器材变体 — 器材已替换为地面标记]",
-        equipmentCount: countEquipmentFromJSON(variantJSON),
-        injuryNotes: injuryEnabled ? injuryNotesText : "",
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      const library = loadLibrary();
-      library.unshift(design);
-      saveLibrary(library);
-
-      // Also mark current design as having a variant
-      if (currentLoadedId) {
-        const mainIdx = library.findIndex((d) => d.id === currentLoadedId);
-        if (mainIdx >= 0) {
-          library[mainIdx] = { ...library[mainIdx], hasEquipmentFreeVariant: true };
-          saveLibrary(library);
-          setHasEquipmentFreeVariant(true);
-        }
-      }
-
-      setSaveStatus("saved");
-      triggerLibraryRefresh();
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch (e) {
-      console.error("Failed to create equipment-free variant:", e);
-      setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    }
-  }, [name, duration, description, segments, notes, currentLoadedId, injuryEnabled, injuryNotesText]);
-
-  // Load from library
-  const handleLoad = useCallback((design: WarmupDesign) => {
-    if (!fabricRef.current) return;
-
-    setName(design.name);
-    setDuration(design.duration);
-    setDescription(design.description);
-    setHasEquipmentFreeVariant(design.hasEquipmentFreeVariant || false);
-    setSegments(design.segments);
-    setNotes(design.notes);
-    setInjuryNotesText(design.injuryNotes || "");
-    setInjuryEnabled(!!design.injuryNotes);
-    setEquipmentCount(design.equipmentCount || {});
-    setCurrentLoadedId(design.id);
-
-    // Load canvas state
-    const canvas = fabricRef.current;
-    canvas.loadFromJSON(design.canvasJSON).then(() => {
-      // For old designs without a pitch background image, add one
-      if (!canvas.backgroundImage) {
-        setPitchBackground(canvas);
-      } else {
-        canvas.renderAll();
-      }
-    }).catch((err) => {
-      console.error("Failed to load canvas JSON:", err);
-      // Clear canvas and set pitch background as fallback
-      canvas.clear();
-      setPitchBackground(canvas);
-    });
-  }, []);
-
-  // New blank design
-  const handleNew = useCallback(() => {
-    if (!fabricRef.current) return;
-    setName("");
-    setDuration(12);
-    setDescription("ball");
-    setHasEquipmentFreeVariant(false);
-    setSegments([]);
-    setNotes("");
-    setInjuryEnabled(false);
-    setInjuryNotesText("");
-    setEquipmentCount({});
-    setCurrentLoadedId(null);
-    injuryLabelRef.current = null;
-
-    const canvas = fabricRef.current;
-    canvas.clear();
-    // Restore pitch background after clear
-    setPitchBackground(canvas);
-  }, []);
-
-  // Keyboard shortcut: Ctrl+S to save
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [handleSave]);
-
-  return (
-    <div className="min-h-screen bg-[#121212]">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
-        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a
-              href="/"
-              className="text-[#d92525] font-black text-sm"
-              style={{ letterSpacing: "-0.5px" }}
-            >
-              KENSHIN<span className="text-[#d1d1d1] font-light">PRO</span>
-            </a>
-            <span className="text-gray-400 text-xs hidden sm:inline">/</span>
-            <span className="text-white text-sm font-semibold flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-[#d92525]" />
-              热身设计
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleNew}
-              className="px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-[#1e1e1e] rounded-lg transition"
-            >
-              新建
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saveStatus === "saving"}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#d92525] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50"
-            >
-              {saveStatus === "saving" ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              {saveStatus === "saved" ? "已保存" : saveStatus === "error" ? "保存失败" : "保存"}
-            </button>
-            <button
-              onClick={handleCreateEquipmentFreeVariant}
-              disabled={saveStatus === "saving"}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#d92525]/50 transition disabled:opacity-50"
-              title="基于当前场地布置创建无器材版本（器材替换为地面标记）"
-            >
-              📦 创建无器材变体
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              导出PNG
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 pb-20 lg:pb-4">
-        {/* Desktop layout: toolbar | canvas | config */}
-        <div className="flex gap-3">
-          {/* Left: Toolbar (hidden on mobile, shown as horizontal bar below) */}
-          <div className="hidden lg:block flex-shrink-0">
-            <Toolbar onAddObject={handleAddObject} />
-          </div>
-
-          {/* Center: Canvas + segments */}
-          <div className="flex-1 min-w-0">
-            {/* Mobile toolbar (horizontal scroll) */}
-            <div className="lg:hidden mb-3 overflow-x-auto">
-              <div className="flex gap-1 min-w-max p-2 bg-[#1e1e1e] border border-[#222] rounded-xl">
-                {([
-                  { label: "标志盘", emoji: "🟤", factory: createCone },
-                  { label: "标志杆", emoji: "🔴", factory: createPole },
-                  { label: "绳梯", emoji: "🪜", factory: createLadder },
-                  { label: "敏捷圈", emoji: "⭕", factory: createHoop },
-                  { label: "栏架", emoji: "🚧", factory: createHurdle },
-                  { label: "弹力带", emoji: "〰️", factory: createBand },
-                  { label: "球员", emoji: "👤", factory: () => createPlayer() },
-                  { label: "箭头", emoji: "➡️", factory: createArrow },
-                ] as const).map((tool) => (
-                  <button
-                    key={tool.label}
-                    onClick={() => handleAddObject(tool.factory)}
-                    className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-gray-300 hover:bg-[#252525] hover:text-white transition active:scale-95 flex-shrink-0"
-                  >
-                    <span className="text-lg leading-none">{tool.emoji}</span>
-                    <span className="text-[9px] text-gray-400 leading-tight">
-                      {tool.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Canvas container */}
-            <div
-              ref={containerRef}
-              className="bg-[#1e1e1e] border border-[#222] rounded-xl overflow-hidden flex items-center justify-center p-2"
-              style={{ minHeight: 400 }}
-            >
-              <div
-                style={{
-                  transform: `scale(${scale})`,
-                  transformOrigin: "center center",
-                }}
-              >
-                <canvas ref={canvasElRef} />
-              </div>
-            </div>
-
-            {/* Segment editor */}
-            <div className="mt-3">
-              <SegmentEditor
-                segments={segments}
-                setSegments={setSegments}
-                totalDuration={duration}
-                setTotalDuration={setDuration}
-              />
-            </div>
-
-            {/* Equipment checklist */}
-            {Object.values(equipmentCount).some((c) => c > 0) && (
-              <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#1e1e1e] border border-[#222] rounded-lg">
-                <span className="text-xs text-gray-400 shrink-0">📋 器材清单:</span>
-                <span className="text-xs text-gray-300">
-                  {Object.entries(equipmentCount)
-                    .filter(([, c]) => c > 0)
-                    .map(([key, count]) => `${EQUIPMENT_LABEL_CN[key] || key}×${count}`)
-                    .join(" · ")}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Right: Config panel */}
-          <div className="hidden lg:block flex-shrink-0 w-64">
-            <ConfigPanel
-              name={name}
-              setName={setName}
-              duration={duration}
-              setDuration={setDuration}
-              description={description}
-              setDescription={setDescription}
-              notes={notes}
-              setNotes={setNotes}
-              injuryEnabled={injuryEnabled}
-              setInjuryEnabled={setInjuryEnabled}
-              injuryNotesText={injuryNotesText}
-              setInjuryNotesText={setInjuryNotesText}
-            />
-          </div>
-        </div>
-
-        {/* Mobile config panel (below canvas) */}
-        <div className="lg:hidden mt-3">
-          <ConfigPanel
-            name={name}
-            setName={setName}
-            duration={duration}
-            setDuration={setDuration}
-            description={description}
-            setDescription={setDescription}
-            notes={notes}
-            setNotes={setNotes}
-            injuryEnabled={injuryEnabled}
-            setInjuryEnabled={setInjuryEnabled}
-            injuryNotesText={injuryNotesText}
-            setInjuryNotesText={setInjuryNotesText}
-          />
-        </div>
-
-        {/* Warmup library */}
-        <WarmupLibrary onLoad={handleLoad} />
-      </main>
+      <GestureController fabricRef={boardRef} enabled={gestureOn} />
+      {/* No MobileNav on tactics page — TopNav + Toolbar provide all navigation */}
     </div>
   );
 }
