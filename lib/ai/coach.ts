@@ -3,6 +3,7 @@
  */
 import { PlayerFormData } from "../types";
 import { COACH_CERT_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS } from "../constants";
+import { getPhaseParams, getGoalParams } from "../periodization";
 import { LANG_INSTRUCTIONS } from "./athlete";
 
 export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weatherHint?: string, sceneHint?: string): string {
@@ -21,13 +22,13 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
   const hasInjuries = injuryHistory && injuryHistory.trim().length > 10 && !injuryHistory.startsWith('ACWR');
   const hasACWR = injuryHistory && injuryHistory.includes('ACWR预警');
 
-  // ── 周期阶段 → 负荷区间 ──
-  const phaseLoad: Record<string, string> = {
-    preseason: '65-75% 1RM，8-12次，3-4组，优先变式打磨技术',
-    competition: '75-85% 1RM，5-8次，3-4组，标准主项维持力量',
-    recovery: '50-65% 1RM，10-15次，2-3组，回归变式低强度恢复',
-    offseason: '80-95% 1RM，3-6次，4-5组，极限负重可冲PR',
-  };
+  // ── 周期阶段 → 负荷区间（来自 lib/periodization.ts） ──
+  const phaseParams = getPhaseParams(phase);
+  const goalParams = getGoalParams(goal);
+  const phaseLoadStr = `${phaseParams.intensityPercent[0]}-${phaseParams.intensityPercent[1]}% 1RM，${phaseParams.repsRange[0]}-${phaseParams.repsRange[1]}次，${phaseParams.setsRange[0]}-${phaseParams.setsRange[1]}组，间歇${phaseParams.restBetweenSets[0]}-${phaseParams.restBetweenSets[1]}s，${phaseParams.variationStrategy}`;
+  const goalLoadStr = goalParams
+    ? `${goalParams.labelCn}: ${goalParams.percent1RM[0]}-${goalParams.percent1RM[1]}%1RM, ${goalParams.setsReps}, 间歇${goalParams.rest}, 节奏${goalParams.tempo}`
+    : '';
 
   // ── 级别参数 ──
   let levelNote = '';
@@ -43,8 +44,8 @@ export function buildCoachPrompt(data: PlayerFormData, lang: string = "zh", weat
 - 训练人数: ${playerCount}人 | 时长: ${trainingDuration}min
 
 **训练设定:**
-- 训练目标: ${goal}
-- 周期阶段: ${phase} → 推荐负荷区间: ${phaseLoad[phase] || '75-85% 1RM'}
+- 训练目标: ${goal}${goalLoadStr ? ` (${goalLoadStr})` : ''}
+- 周期阶段: ${phase} → 推荐负荷区间: ${phaseLoadStr}
 - 级别: ${levelNote}
 
 ${hasInjuries ? `**⚠️ 伤病球员（必须处理）:**

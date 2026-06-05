@@ -12,6 +12,8 @@ export interface PlayerRecord {
   weight: number | null;
   injuryStatus: "healthy" | "minor" | "out";
   injuryNote: string;
+  injuryHistory: string;       // 伤病史（如"2024-03 ACL重建右膝"）
+  disabledExercises: string[]; // 禁用动作（如["深蹲","高翻"]）
   notes: string;
 }
 
@@ -23,6 +25,8 @@ const STORAGE_KEY = "roster_players";
 
 /** Map a Supabase row (snake_case) to a PlayerRecord (camelCase). */
 function mapRowToPlayer(row: Record<string, unknown>): PlayerRecord {
+  let disabled: string[] = [];
+  try { const d = row.disabled_exercises; disabled = Array.isArray(d) ? d : (typeof d === 'string' ? JSON.parse(d) : []); } catch { disabled = []; }
   return {
     id: String(row.id ?? ""),
     name: String(row.name ?? ""),
@@ -33,6 +37,8 @@ function mapRowToPlayer(row: Record<string, unknown>): PlayerRecord {
     weight: row.weight != null ? Number(row.weight) : null,
     injuryStatus: (row.injury_status as PlayerRecord["injuryStatus"]) || "healthy",
     injuryNote: String(row.injury_note ?? ""),
+    injuryHistory: String(row.injury_history ?? ""),
+    disabledExercises: disabled,
     notes: String(row.notes ?? ""),
   };
 }
@@ -48,6 +54,8 @@ function mapPlayerToRow(p: Partial<PlayerRecord>): Record<string, unknown> {
   if (p.weight !== undefined) row.weight = p.weight;
   if (p.injuryStatus !== undefined) row.injury_status = p.injuryStatus;
   if (p.injuryNote !== undefined) row.injury_note = p.injuryNote;
+  if (p.injuryHistory !== undefined) row.injury_history = p.injuryHistory;
+  if (p.disabledExercises !== undefined) row.disabled_exercises = p.disabledExercises;
   if (p.notes !== undefined) row.notes = p.notes;
   return row;
 }
@@ -187,6 +195,8 @@ export function parseExcelData(
       weight: row[weightIdx] ? Number(row[weightIdx]) || null : null,
       injuryStatus: "healthy" as const,
       injuryNote: String(row[injuryIdx] || "").trim(),
+      injuryHistory: "",
+      disabledExercises: [] as string[],
       notes: String(row[notesIdx] || "").trim(),
     }))
     .filter((p) => p.name);

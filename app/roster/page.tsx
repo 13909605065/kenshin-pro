@@ -145,7 +145,9 @@ export default function RosterPage() {
     addPlayer({
       name: editing?.name || "", position: editing?.position || "", number: editing?.number || "",
       age: editing?.age || null, height: editing?.height || null, weight: editing?.weight || null,
-      injuryStatus: editing?.injuryStatus || "healthy", injuryNote: editing?.injuryNote || "", notes: editing?.notes || "",
+      injuryStatus: editing?.injuryStatus || "healthy", injuryNote: editing?.injuryNote || "",
+      injuryHistory: editing?.injuryHistory || "", disabledExercises: editing?.disabledExercises || [],
+      notes: editing?.notes || "",
     });
     refreshPlayers();
     setEditing(null); setShowAdd(false);
@@ -237,7 +239,7 @@ export default function RosterPage() {
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
           <Upload className="w-3.5 h-3.5" />导入Excel
         </button>
-        <button onClick={() => { setEditing({ id: "", name: "", position: "", number: "", age: null, height: null, weight: null, injuryStatus: "healthy", injuryNote: "", notes: "" }); setShowAdd(true); }}
+        <button onClick={() => { setEditing({ id: "", name: "", position: "", number: "", age: null, height: null, weight: null, injuryStatus: "healthy", injuryNote: "", injuryHistory: "", disabledExercises: [], notes: "" }); setShowAdd(true); }}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-[#d92525] hover:bg-[#d92525]/90 rounded-lg transition font-bold">
           <Plus className="w-3.5 h-3.5" />添加球员
         </button>
@@ -281,6 +283,8 @@ export default function RosterPage() {
                   </select>
                 </div>
                 {p.injuryNote && <p className="text-[10px] text-yellow-500/70 mt-1 truncate">{p.injuryNote}</p>}
+                {p.injuryHistory && <p className="text-[9px] text-red-500/50 mt-0.5 truncate" title={p.injuryHistory}>📋 {p.injuryHistory.slice(0, 30)}{p.injuryHistory.length > 30 ? '…' : ''}</p>}
+                {p.disabledExercises?.length > 0 && <p className="text-[9px] text-orange-500/60 mt-0.5">🚫 {p.disabledExercises.slice(0, 3).join('、')}{p.disabledExercises.length > 3 ? ` +${p.disabledExercises.length - 3}` : ''}</p>}
               </div>
 
               {/* Action row: fitness profile + supplement load */}
@@ -405,6 +409,16 @@ export default function RosterPage() {
               </select>
             </div>
             <input value={editing?.injuryNote || ""} onChange={(e) => setEditing((p) => p ? { ...p, injuryNote: e.target.value } : null)} placeholder="伤病备注（如：右脚踝扭伤，预计2周恢复）" className="input-field text-sm" />
+            <input value={editing?.injuryHistory || ""} onChange={(e) => setEditing((p) => p ? { ...p, injuryHistory: e.target.value } : null)} placeholder="伤病史（如：2024-03 ACL重建右膝；2025-01 腹股沟拉伤）" className="input-field text-sm" />
+            <div>
+              <label className="text-[10px] text-gray-400 mb-1 block">禁用动作（逗号分隔，如：深蹲,硬拉,高翻）</label>
+              <input
+                value={editing?.disabledExercises?.join(',') || ""}
+                onChange={(e) => setEditing((p) => p ? { ...p, disabledExercises: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } : null)}
+                placeholder="深蹲,硬拉"
+                className="input-field text-sm"
+              />
+            </div>
             <input value={editing?.notes || ""} onChange={(e) => setEditing((p) => p ? { ...p, notes: e.target.value } : null)} placeholder="备注" className="input-field text-sm" />
             <button onClick={handleAdd}
               className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1">
