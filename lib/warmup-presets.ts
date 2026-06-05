@@ -41,14 +41,12 @@ const PITCH_NO_BALL_WARMUP_IDS = [
 ];
 
 // ═══════════════════════════════════════════════
-// PITCH SCENE (WITH BALL) — Ball-integrated warmup
+// PITCH SCENE (WITH BALL) — 仅在球场热身使用
 // ═══════════════════════════════════════════════
-// Start with ball familiarity → dynamic dribbling → game-like rondo
-// Source: RAMP system adapted for football-specific warmup
 const PITCH_BALL_WARMUP_IDS = [
-  "warm-ball-touch",          // Phase 1: Ball familiarity + light movement
-  "warm-ball-dribble",        // Phase 2: Dynamic dribbling + change of direction
-  "warm-rondo",               // Phase 3: Game-specific activation (possession game)
+  "warm-ball-touch",
+  "warm-ball-dribble",
+  "warm-rondo",
 ];
 
 // ═══════════════════════════════════════════════
@@ -70,15 +68,12 @@ export function getWarmupIds(
   ballOption?: "ball" | "no-ball"
 ): string[] {
   if (scene === "gym") {
-    return [...GYM_WARMUP_IDS];
+    return [...GYM_WARMUP_IDS]; // 力量房：永久无球
   }
-
-  // pitch scene
+  // 球场：可选有球热身
   if (ballOption === "ball") {
     return [...PITCH_BALL_WARMUP_IDS];
   }
-
-  // pitch + no-ball (default)
   return [...PITCH_NO_BALL_WARMUP_IDS];
 }
 
@@ -135,6 +130,6 @@ export function warmupPresetDescription(scene: string): string {
     "Phase 1 Raise (慢跑提体温) → Phase 2 Activate (臀肌/神经激活) → " +
     "Phase 3 Mobilize (动态拉伸, 《动态拉伸训练》Mark Kovacs) → " +
     "Phase 4 Potentiate (FIFA 11+ 核心: 北欧弯举+平板支撑)。 " +
-    "有球场景额外整合 Rondo 抢圈进行比赛专项激活。"
+    "球场可选择有球热身（仅限球场场景，力量房永禁有球）。"
   );
 }

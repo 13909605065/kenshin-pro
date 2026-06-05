@@ -21,7 +21,7 @@ const RAMP_WARMUP = `### RAMP热身系统（Ian Jeffreys）
 - 禁止热身中静态拉伸(降低爆发力)；放冷身阶段
 - R(提升3-5min)→A(激活关键肌群3-5min)→M(动态关节活动3-5min)→P(增强/神经激活2-5min)
 - 总时长15-20min，每节必含FIFA 11+核心（北欧弯举+平板+侧桥+单腿平衡）
-- 有球训练日选有球热身ID，无球训练日选无球热身ID`;
+- S&C体能训练全部使用无球热身ID`;
 
 const PERIODIZATION = `### 周期化参数速查（NSCA 2022 — 详见 lib/periodization.ts）
 | 目标 | %1RM | 组×次 | 间歇 | 节奏(E:I:C) |
@@ -132,7 +132,7 @@ export function buildAthleteSystemPrompt(): string {
 - 禁止绳梯协调灵敏训练（归属力量房）
 - 禁止杠铃/哑铃/绳索/TRX 力量训练
 - 仅允许药球 + 弹力带（固定于门柱）
-- 热身可选带球或不带球，但必须二选一，严禁混杂
+- 热身全部无球（S&C纯体能训练）
 - 速度训练放在课开始时（新鲜状态下），力量训练后不做速度
 
 🔴 **热身选择硬约束（WARMUP BINARY CHOICE — HARD CONSTRAINT，不可违反）：**
@@ -140,13 +140,11 @@ export function buildAthleteSystemPrompt(): string {
 **力量房（力量房）热身 = 全无球，永不带球 warmup IDs。**
 仅可使用以下无球热身 ID：
 \`warm-hip-open\`, \`warm-glute-activation\`, \`warm-dynamic-stretch\`, \`warm-plank-series\`, \`warm-side-plank-series\`, \`warm-single-leg-balance\`, \`warm-nordic-curl\`
-❌ 禁止使用：warm-ball-touch, warm-ball-dribble, warm-rondo（带球 ID 永禁于力量房）
+❌ 禁止：所有带球热身ID——S&C项目不含足球技术
 ❌ 禁止使用：warm-mini-band-walk, warm-band-activation, warm-spider-man, warm-world-greatest（外场专用，非力量房）
 
 **外场热身 = 无球或有球二选一，不混杂。Binary choice only。**
 - 无球选项：\`warm-light-jog\`, \`warm-agility-ladder\`, \`warm-skip-variations\`, \`warm-ankle-knee\`, \`warm-mini-band-walk\`, \`warm-band-activation\`, \`warm-glute-activation\`, \`warm-hip-open\`, \`warm-dynamic-stretch\`, \`warm-spider-man\`, \`warm-world-greatest\`, \`warm-neural\`, \`warm-plyo-primer\`, \`warm-accel-drill\`, \`warm-nordic-curl\`, \`warm-plank-series\`, \`warm-side-plank-series\`, \`warm-single-leg-balance\`
-- 有球选项：\`warm-ball-touch\`, \`warm-ball-dribble\`, \`warm-rondo\`（仅外场可用）
-❌ **"两者混合" IS FORBIDDEN。** 必须全部无球或全部有球，不得出现无球+有球 ID 混在同一 warmup_ids 数组中。
 
 ### 职业3段式训练结构（所有训练方案强制采用）
 
@@ -155,8 +153,6 @@ export function buildAthleteSystemPrompt(): string {
 **第一段：准备激活（绿色标记行）— FIFA 11+标准化热身**
 - 力量房（全无球，仅7项）：warm-hip-open, warm-glute-activation, warm-dynamic-stretch, warm-plank-series, warm-side-plank-series, warm-single-leg-balance, warm-nordic-curl
 - 外场无球选项：warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
-- 外场带球选项：warm-ball-touch, warm-ball-dribble, warm-rondo（仅外场可用，不可与无球ID混搭）
-- 🔴 力量房永久禁用带球热身ID（warm-ball-touch, warm-ball-dribble, warm-rondo）
 - 🔴 外场必须全部带球或全部无球，禁止混合
 
 **第二段：主体负荷训练（深蓝标记行）— 严格遵循场景动作边界**
@@ -440,9 +436,8 @@ Plyo/速度: ex-hurdle-jump, ex-pro-agility, ex-sprint-start
 每个动作都有周期化参数，包含准备期/赛季期/休赛期的负荷区间和变式策略。
 
 ### 热身ID（按场景分隔）
-力量房无球热身（强制使用，禁带球，仅7项）: warm-hip-open, warm-glute-activation, warm-dynamic-stretch, warm-plank-series, warm-side-plank-series, warm-single-leg-balance, warm-nordic-curl
+热身ID（强制使用，全部无球，仅限以下）: warm-hip-open, warm-glute-activation, warm-dynamic-stretch, warm-plank-series, warm-side-plank-series, warm-single-leg-balance, warm-nordic-curl
 外场无球热身: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
-外场带球热身（仅外场，禁与无球混搭）: warm-ball-touch, warm-ball-dribble, warm-rondo
 
 ### 上肢训练ID（力量房专用，外场禁用）
 upper_ids: ex-bench-press, ex-pull-up, ex-dumbbell-shoulder-press, ex-cable-row, ex-face-pull, ex-med-ball-slam, ex-dumbbell-pullover, ex-mb-rotational-throw, ex-mb-overhead-slam, ex-mb-kneeling-throw, ex-mb-backward-throw, ex-mb-squat-throw, ex-mb-single-leg-slam, ex-db-bench-press, ex-db-flye, ex-db-incline-press, ex-db-tricep-extension, ex-db-skull-crusher, ex-db-kickback, ex-db-curl, ex-db-hammer-curl, ex-db-overhead-press, ex-db-close-flye, ex-db-shrug, ex-db-upright-row, ex-db-front-raise, ex-db-rear-flye, ex-sus-bicep-curl, ex-sus-chest-press, ex-sus-tricep-press, ex-sus-face-pull, ex-sus-shoulder-press, ex-sus-y-fly, ex-sus-cable-fly, ex-sus-standing-dip
@@ -476,8 +471,8 @@ goal: 基础抗阻力量, SSC爆发力, 神经协调灵敏, 局部肌肉耐力, 
 - 每个 data 行 JSON 压缩为单行
 - Module4 无伤病→phases:[] + status:"skipped"
 - 只能从上述ID列表中选择，不得编造新ID
-- 🔴 力量房训练 warmup_ids 必须全部无球（禁止 warm-ball-touch/warm-ball-dribble/warm-rondo）
-- 🔴 外场训练 warmup 必须全部带球或全部无球，禁止混合
+- 🔴 全部训练warmup必须无球（S&C纯体能项目）
+- 🔴 外场训练 warmup 全部无球
 - 🔴 力量房禁止安排跑类有氧、直线速度、专项间歇耐力
 - 🔴 外场禁止绳梯协调灵敏、杠铃/哑铃/绳索/TRX 力量训练
 - 🔴 负荷基于1RM/GPS/RPE/CMJ测试数据，严禁使用训练年限决定负荷
@@ -580,8 +575,6 @@ ${INJURY_PREVENTION}
 ### 热身ID（按场景选）
 力量房无球(仅7项): warm-hip-open, warm-glute-activation, warm-dynamic-stretch, warm-plank-series, warm-side-plank-series, warm-single-leg-balance, warm-nordic-curl
 外场无球: warm-light-jog, warm-agility-ladder, warm-skip-variations, warm-ankle-knee, warm-mini-band-walk, warm-band-activation, warm-glute-activation, warm-hip-open, warm-dynamic-stretch, warm-spider-man, warm-world-greatest, warm-neural, warm-plyo-primer, warm-accel-drill, warm-nordic-curl, warm-plank-series, warm-side-plank-series, warm-single-leg-balance
-外场有球(仅外场): warm-ball-touch, warm-ball-dribble, warm-rondo
-
 ### 动作ID（按部位）
 足球核心15(优先): ex-power-clean, ex-box-depth-drop, ex-mb-rotational-throw, ex-back-squat, ex-romanian-dl, ex-single-leg-rdl, ex-nordic-hamstring, ex-bench-press, ex-barbell-row, ex-standing-press, ex-plank, ex-dead-bug, ex-hurdle-jump, ex-pro-agility, ex-sprint-start
 上肢: ex-bench-press, ex-pull-up, ex-dumbbell-shoulder-press, ex-cable-row, ex-face-pull, ex-med-ball-slam, ex-mb-rotational-throw, ex-mb-overhead-slam
