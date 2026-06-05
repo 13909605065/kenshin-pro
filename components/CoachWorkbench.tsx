@@ -648,6 +648,41 @@ export default function CoachWorkbench() {
     <div className="max-w-4xl mx-auto space-y-4 pb-10">
 
       {/* ═══════════════════════════════════════════════
+          STATUS CARD — 当前阶段 + MD
+          ═══════════════════════════════════════════════ */}
+      {((): any => {
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('kenshin_season_calendar') : null;
+        const data = raw ? JSON.parse(raw) : null;
+        const ranges = data?.phaseRanges || [];
+        const phase = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
+        if (!phase) return null;
+        const info: any = {
+          offseason: { label: '休赛期', icon: '🧊', color: '#374151' },
+          preseason_build: { label: '季前备战期', icon: '🏋️', color: '#166534' },
+          regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b' },
+          playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d' },
+        }[phase.phase];
+        const mdLabel = mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`;
+        return (
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${info.color}` }}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{info.icon}</span>
+              <div className="flex-1">
+                <span className="text-sm font-bold text-white">{info.label}</span>
+                <span className="text-[10px] text-gray-500 ml-2">{phase.startDate} → {phase.endDate}</span>
+              </div>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                mdDay === 0 ? 'bg-[#d92525] text-white' :
+                mdDay > 0 ? 'bg-[#d92525]/20 text-[#d92525]' :
+                'bg-green-500/20 text-green-400'
+              }`}>{mdLabel}</span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══════════════════════════════════════════════
           WORKBENCH MODE TOGGLE — 力量房 vs 足球训练
           ═══════════════════════════════════════════════ */}
       <div className="flex gap-2 bg-[#0d0d0d] border border-[#222] rounded-2xl p-1.5">

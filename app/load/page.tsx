@@ -38,37 +38,20 @@ export default function LoadPage() {
     return { days: weekLogs, totalMin, activeDays };
   }, [logs]);
 
-  // Read season phase
-  const currentPhase = useMemo(() => {
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      const raw = localStorage.getItem("kenshin_season_calendar");
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      const ranges = data.phaseRanges || [];
-      return ranges.find((r: any) => today >= r.startDate && today <= r.endDate) || null;
-    } catch { return null; }
-  }, []);
-
-  const phaseLabel = currentPhase ? ({
-    offseason: '🧊 休赛期', preseason_build: '🏋️ 季前备战', regular_season: '⚽ 常规赛季', playoffs: '🏆 附加赛'
-  } as any)[currentPhase.phase] || '' : '';
+  const matchDate = (() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})();
+  const mdDay = (() => { try { const m = new Date(matchDate + 'T00:00:00'); const n = new Date(); return Math.ceil((m.getTime() - n.getTime()) / 86400000); } catch { return 7; }})();
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-white font-bold text-lg">📊 负荷管理</h1>
-        {phaseLabel && <span className="text-[10px] px-2 py-0.5 rounded bg-[#1a1a1a] text-gray-300">{phaseLabel}</span>}
       </div>
 
       {/* ═══ WEEKLY LOAD BAR ═══ */}
-      <WeeklyLoadBar
-        matchDate={(() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})()}
-        mdDay={(() => { try { const saved = localStorage.getItem('kenshin_coach_matchDate'); const m = new Date((saved || new Date().toISOString().slice(0, 10)) + 'T00:00:00'); const n = new Date(); return Math.ceil((m.getTime() - n.getTime()) / 86400000); } catch { return 7; }})()}
-      />
+      <WeeklyLoadBar matchDate={matchDate} mdDay={mdDay} />
 
       {/* ═══ THIS WEEK ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
