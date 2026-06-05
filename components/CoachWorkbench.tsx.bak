@@ -123,79 +123,6 @@ function getMDRecommendation(mdDay: number): { scene: 'gym' | 'pitch'; goal: str
   return { scene: 'gym', goal: 'strength', label: '力量房·正常训练' };
 }
 
-// ── microcycle MD rules by season phase ──
-type CalendarPhaseKey = 'regular_season' | 'preseason_build' | 'offseason' | 'playoffs';
-
-const MICROCYCLE_DAYS = [-2, -1, 0, 1, 2, 3, 4] as const;
-
-interface MicrocycleDayInfo {
-  icon: string;
-  label: string;
-  scene: 'pitch' | 'gym' | 'match' | 'recovery';
-}
-
-const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInfo>> = {
-  regular_season: {
-    [-2]: { icon: '⚽', label: '外场·赛前激活', scene: 'pitch' },
-    [-1]: { icon: '⚽', label: '外场·微调', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '比赛日', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场常规', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '唯一力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场大课', scene: 'pitch' },
-  },
-  preseason_build: {
-    [-2]: { icon: '⚽', label: '外场磨合', scene: 'pitch' },
-    [-1]: { icon: '🔥', label: '激活', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '教学赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '🏋️', label: '力量①', scene: 'gym' },
-    [3]:  { icon: '⚽', label: '外场体能', scene: 'pitch' },
-    [4]:  { icon: '🏋️', label: '力量②', scene: 'gym' },
-  },
-  offseason: {
-    [-2]: { icon: '🏋️', label: '力量轻负荷', scene: 'gym' },
-    [-1]: { icon: '🏃', label: '活动', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '热身赛', scene: 'match' },
-    [1]:  { icon: '🏋️', label: '恢复力量', scene: 'gym' },
-    [2]:  { icon: '🏋️', label: '主力力量①', scene: 'gym' },
-    [3]:  { icon: '🏋️', label: '主力力量②', scene: 'gym' },
-    [4]:  { icon: '🏋️', label: '主力力量③', scene: 'gym' },
-  },
-  playoffs: {
-    [-2]: { icon: '⚽', label: '外场激活·压负荷', scene: 'pitch' },
-    [-1]: { icon: '🧘', label: '最低负荷', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '关键赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场纠错', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '轻量维持力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场对抗', scene: 'pitch' },
-  },
-};
-
-const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
-  regular_season: 1,
-  preseason_build: 2,
-  offseason: 3,
-  playoffs: 1,
-};
-
-const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
-  regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b', defaultMode: 'football' },
-  preseason_build: { label: '季前备战', icon: '🏋️', color: '#166534', defaultMode: 'football' },
-  offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
-  playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d', defaultMode: 'football' },
-};
-
-function getMicrocycleDay(phaseKey: CalendarPhaseKey, dayOffset: number): MicrocycleDayInfo {
-  const rules = MICROCYCLE_RULES[phaseKey];
-  if (rules[dayOffset]) return rules[dayOffset];
-  // fallback
-  if (dayOffset === 0) return { icon: '⚽', label: '比赛日', scene: 'match' };
-  if (dayOffset < 0) return { icon: '⚽', label: '外场训练', scene: 'pitch' };
-  return { icon: '🏋️', label: '训练', scene: 'gym' };
-}
-
 // ── edit modal state ──
 interface EditState {
   moduleType: string;
@@ -363,6 +290,7 @@ export default function CoachWorkbench() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [showPlan, setShowPlan] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [matchDate, setMatchDate] = useState<string>(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('kenshin_coach_matchDate') : null;
     if (saved) return saved;
@@ -400,42 +328,6 @@ export default function CoachWorkbench() {
   useEffect(() => { try { localStorage.setItem('kenshin_coach_phase', phase); } catch {} }, [phase]);
   useEffect(() => { try { localStorage.setItem('kenshin_coach_planMode', planMode); } catch {} }, [planMode]);
   useEffect(() => { try { localStorage.setItem('kenshin_coach_weather', weather); } catch {} }, [weather]);
-
-  // ── calendar phase from kenshin_season_calendar ──
-  const calendarPhase = useMemo(() => {
-    try {
-      const raw = typeof window !== 'undefined' ? localStorage.getItem('kenshin_season_calendar') : null;
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      const ranges = data?.phaseRanges || [];
-      const todayStr = new Date().toISOString().slice(0, 10);
-      return ranges.find((r: any) => todayStr >= r.startDate && todayStr <= r.endDate) || null;
-    } catch { return null; }
-  }, []);
-  const calendarPhaseKey = (calendarPhase?.phase || 'regular_season') as CalendarPhaseKey;
-  const calendarPhaseMeta = CALENDAR_PHASE_META[calendarPhaseKey];
-
-  // ── auto-switch workbench mode based on calendar phase ──
-  useEffect(() => {
-    if (calendarPhaseMeta && workbenchMode !== calendarPhaseMeta.defaultMode) {
-      setWorkbenchMode(calendarPhaseMeta.defaultMode);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calendarPhaseKey]);
-
-  // ── save weather to kenshin_daily_training_log on change ──
-  useEffect(() => {
-    try {
-      const logs = JSON.parse(localStorage.getItem('kenshin_daily_training_log') || '[]');
-      const date = trainDate;
-      const existing = logs.findIndex((l: any) => l.date === date);
-      if (existing >= 0) {
-        logs[existing].weather = weather;
-        logs[existing].savedAt = new Date().toISOString();
-      }
-      localStorage.setItem('kenshin_daily_training_log', JSON.stringify(logs.slice(0, 100)));
-    } catch {}
-  }, [weather, trainDate]);
 
   // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -865,24 +757,44 @@ export default function CoachWorkbench() {
     <div className="max-w-4xl mx-auto space-y-4 pb-10">
 
       {/* ═══════════════════════════════════════════════
-          STATUS CARD — 当前阶段 + MD (simplified)
+          STATUS CARD — 当前阶段 + MD
           ═══════════════════════════════════════════════ */}
-      <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${calendarPhaseMeta?.color || '#444'}` }}>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{calendarPhaseMeta?.icon || '📅'}</span>
-          <div className="flex-1">
-            <span className="text-sm font-bold text-white">{calendarPhaseMeta?.label || '赛季阶段未设置'}</span>
-            {!calendarPhase && (
-              <a href="/planning" className="text-[10px] text-[#d92525] ml-2 underline">去周期方案设置赛季全景</a>
-            )}
+      {((): any => {
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('kenshin_season_calendar') : null;
+        const data = raw ? JSON.parse(raw) : null;
+        const ranges = data?.phaseRanges || [];
+        const phase = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
+        const phaseMap: Record<string, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
+          offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
+          preseason_build: { label: '季前备战期', icon: '🏋️', color: '#166534', defaultMode: 'football' },
+          regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b', defaultMode: 'football' },
+          playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d', defaultMode: 'football' },
+        };
+        const info = phase ? phaseMap[phase.phase] : null;
+        if (info && workbenchMode !== info.defaultMode) {
+          setTimeout(() => setWorkbenchMode(info.defaultMode), 0);
+        }
+        const mdLabel = mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`;
+        return (
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${info?.color || '#444'}` }}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{info?.icon || '📅'}</span>
+              <div className="flex-1">
+                <span className="text-sm font-bold text-white">{info?.label || '赛季阶段未设置'}</span>
+                {!phase && (
+                  <a href="/planning" className="text-[10px] text-[#d92525] ml-2 underline">去周期方案设置赛季全景</a>
+                )}
+              </div>
+              <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
+                mdDay === 0 ? 'bg-[#d92525] text-white' :
+                mdDay > 0 ? 'bg-[#d92525]/20 text-[#d92525]' :
+                'bg-green-500/20 text-green-400'
+              }`}>{mdLabel}</span>
+            </div>
           </div>
-          <span className={`px-3 py-1.5 rounded-lg text-xs font-bold ${
-            mdDay === 0 ? 'bg-[#d92525] text-white' :
-            mdDay > 0 ? 'bg-[#d92525]/20 text-[#d92525]' :
-            'bg-green-500/20 text-green-400'
-          }`}>{mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`}</span>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════
           PRE-PLANNED TRAINING PROMPT — 今日预排方案提示
@@ -1279,8 +1191,8 @@ export default function CoachWorkbench() {
 
           {/* Scene + Goal selectors */}
           <div>
-            <div className="grid grid-cols-1 gap-3 mb-3">
-              {SCENES.filter(s => s.id === 'pitch').map(s => (
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              {SCENES.map(s => (
                 <button key={s.id} onClick={() => { setScene(s.id); setGoal(SCENE_GOALS[s.id][0].id); }}
                   className={`p-4 rounded-xl border text-left transition ${
                     scene === s.id ? 'border-[#d92525] bg-[#d92525]/5' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'
@@ -1415,75 +1327,62 @@ export default function CoachWorkbench() {
       </div>
 
       {/* ── 热身方案库 ── */}
-      <div id="warmup-library" className="bg-[#0d0d0d] border-2 border-orange-500/40 rounded-xl p-4">
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <span className="text-xl">📦</span> 热身方案库
-        </h3>
-        {(() => {
-          const lib = (() => { try { return JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]'); } catch { return []; } })();
-          if (lib.length === 0) {
-            return (
-              <div className="text-center py-4">
-                <p className="text-xs text-gray-500 mb-2">暂无热身方案</p>
-                <a href="/warmup" className="inline-block px-4 py-2 bg-orange-500/20 border border-orange-500/40 hover:bg-orange-500/30 text-orange-400 hover:text-orange-300 rounded-lg text-xs font-medium transition">
-                  去热身设计页创建方案 →
-                </a>
-              </div>
-            );
-          }
-          return (
-            <>
-              <div className="flex flex-wrap gap-2">
-                {lib.slice(0, 8).map((w: any) => {
-                  const isActive = selectedWarmup?.id === w.id;
-                  return (
-                    <button key={w.id} onClick={() => {
-                      if (isActive) { setSelectedWarmup(null); }
-                      else { setSelectedWarmup({ id: w.id, name: w.name }); }
-                    }}
-                      className={`text-[10px] px-3 py-1.5 rounded-lg transition text-left ${
-                        isActive
-                          ? 'border-[#d92525] bg-[#d92525]/10 text-white'
-                          : 'bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50'
-                      }`}>
-                      🏃 {w.name}
-                      <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {/* ── confirmation bar ── */}
-              {selectedWarmup && (
-                <div className="mt-3 flex items-center gap-3 border-t border-[#222] pt-3">
-                  <span className="text-xs text-gray-300 flex-1">
-                    已选：<span className="text-[#d92525] font-bold">{selectedWarmup.name}</span>
-                  </span>
-                  <button
-                    onClick={() => setSelectedWarmup(null)}
-                    className="text-[10px] px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition"
-                  >
-                    取消
+      {(() => {
+        const lib = (() => { try { return JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]'); } catch { return []; } })();
+        if (lib.length === 0) return null;
+        return (
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
+            <h3 className="text-xs font-semibold text-gray-400 mb-2">📦 热身方案库</h3>
+            <div className="flex flex-wrap gap-2">
+              {lib.slice(0, 8).map((w: any) => {
+                const isActive = selectedWarmup?.id === w.id;
+                return (
+                  <button key={w.id} onClick={() => {
+                    if (isActive) { setSelectedWarmup(null); }
+                    else { setSelectedWarmup({ id: w.id, name: w.name }); }
+                  }}
+                    className={`text-[10px] px-3 py-1.5 rounded-lg transition text-left ${
+                      isActive
+                        ? 'border-[#d92525] bg-[#d92525]/10 text-white'
+                        : 'bg-[#1a1a1a] border border-[#333] text-gray-300 hover:text-white hover:border-[#d92525]/50'
+                    }`}>
+                    🏃 {w.name}
+                    <span className="block text-gray-600">{new Date(w.createdAt).toLocaleDateString('zh-CN')}</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      const todayStr = new Date().toISOString().slice(0, 10);
-                      try {
-                        const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
-                        cal[todayStr] = { warmupId: selectedWarmup.id, warmupDuration: 15, ballOption: 'no-ball', notes: selectedWarmup.name };
-                        localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
-                        setSelectedWarmup(null);
-                      } catch {}
-                    }}
-                    className="text-[10px] px-3 py-1.5 rounded-lg bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold transition active:scale-[0.98]"
-                  >
-                    ✅ 确认选用
-                  </button>
-                </div>
-              )}
-            </>
-          );
-        })()}
-      </div>
+                );
+              })}
+            </div>
+            {/* ── confirmation bar ── */}
+            {selectedWarmup && (
+              <div className="mt-3 flex items-center gap-3 border-t border-[#222] pt-3">
+                <span className="text-xs text-gray-300 flex-1">
+                  已选：<span className="text-[#d92525] font-bold">{selectedWarmup.name}</span>
+                </span>
+                <button
+                  onClick={() => setSelectedWarmup(null)}
+                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    try {
+                      const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
+                      cal[todayStr] = { warmupId: selectedWarmup.id, warmupDuration: 15, ballOption: 'no-ball', notes: selectedWarmup.name };
+                      localStorage.setItem('kenshin_warmup_calendar', JSON.stringify(cal));
+                      setSelectedWarmup(null);
+                    } catch {}
+                  }}
+                  className="text-[10px] px-3 py-1.5 rounded-lg bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold transition active:scale-[0.98]"
+                >
+                  ✅ 确认选用
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════════
           PLAN OUTPUT AREA
@@ -1581,7 +1480,7 @@ export default function CoachWorkbench() {
 
                 {/* Scene */}
                 <div className="flex gap-1">
-                  {SCENES.filter(s => s.id === 'pitch').map(s => (
+                  {SCENES.map(s => (
                     <button key={s.id} onClick={() => { setScene(s.id); setGoal(SCENE_GOALS[s.id][0].id); }}
                       className={`px-2 py-1 rounded text-[10px] font-medium transition ${
                         scene === s.id ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
@@ -1643,64 +1542,37 @@ export default function CoachWorkbench() {
       )}
 
       {/* ═══════════════════════════════════════════════
-          MICROCYCLE — phase-based MD-2 → MD+4
+          MICROCYCLE — bottom
           ═══════════════════════════════════════════════ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
-        {/* Top info line */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-gray-400">📅 比赛周微周期</h3>
-          <div className="flex items-center gap-3 text-[10px]">
-            <span className="text-gray-500">
-              当前：<span className="text-white font-medium">{calendarPhaseMeta?.label || '未设置'}</span>
-            </span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-500">
-              周力量限额：<span className="text-[#d92525] font-bold">{WEEKLY_STRENGTH_LIMIT[calendarPhaseKey]}节</span>
-            </span>
-          </div>
-        </div>
-
-        {/* 7-day grid: MD-2 → MD-1 → MD → MD+1 → MD+2 → MD+3 → MD+4 */}
+        <h3 className="text-xs font-semibold text-gray-400 mb-3">📅 比赛周微周期</h3>
         <div className="grid grid-cols-7 gap-1.5">
-          {MICROCYCLE_DAYS.map((dayOffset) => {
-            const dayInfo = getMicrocycleDay(calendarPhaseKey, dayOffset);
+          {Array.from({ length: 7 }, (_, i) => {
+            const dayOffset = mdDay - 3 + i;
             const label = dayOffset === 0 ? 'MD' : dayOffset > 0 ? `MD-${dayOffset}` : `MD+${Math.abs(dayOffset)}`;
             const isToday = dayOffset === mdDay;
             const isMatch = dayOffset === 0;
             const isPast = dayOffset > mdDay;
             const hasPlan = !!getMicrocyclePlan(matchDate, dayOffset);
-
+            const isSelected = selectedDay === i;
+            const dayRecommendation = getMDRecommendation(dayOffset);
             return (
-              <button key={dayOffset} onClick={() => loadPlanForDay(dayOffset)}
-                className={`rounded-lg p-2 text-center border transition cursor-pointer ${
-                  isMatch ? 'border-[#d92525] bg-[#d92525] text-white' :
-                  isToday ? 'border-[#d92525]/60 bg-[#d92525]/10 ring-1 ring-[#d92525]/30' :
-                  isPast ? 'border-green-500/15 bg-green-500/5 opacity-60' :
+              <button key={i} onClick={() => {
+                setSelectedDay(isSelected ? null : i);
+                if (!isSelected) loadPlanForDay(dayOffset);
+              }}
+                className={`rounded-lg p-2 text-center border transition cursor-pointer relative ${
+                  isSelected ? 'ring-1 ring-[#d92525]' : ''
+                } ${
+                  isMatch ? 'border-[#d92525]/40 bg-[#d92525]/5' :
+                  isToday ? 'border-white/20 bg-white/5' :
+                  isPast ? 'border-green-500/20 bg-green-500/5 opacity-60' :
                   'border-[#222] bg-[#111] hover:border-[#444]'
                 }`}>
-                {/* MD label */}
-                <div className={`text-[9px] font-bold mb-0.5 ${
-                  isMatch ? 'text-white' :
-                  isToday ? 'text-[#d92525]' :
-                  'text-gray-400'
-                }`}>{label}</div>
-
-                {/* Scene icon */}
-                <div className="text-sm mb-0.5">{dayInfo.icon}</div>
-
-                {/* Short label */}
-                <div className={`text-[8px] leading-tight ${
-                  isMatch ? 'text-white/80' :
-                  isToday ? 'text-white' :
-                  isPast ? 'text-gray-500' :
-                  'text-gray-500'
-                }`}>
-                  {hasPlan ? '📋' : ''}{dayInfo.label}
-                </div>
-
-                {/* Date hint */}
-                <div className="text-[7px] text-gray-600 mt-0.5">
-                  {isToday ? '←今天' : weekLabel(fmt(new Date(matchDate), dayOffset), 0).slice(-2)}
+                <div className={`text-[9px] font-bold ${isMatch ? 'text-[#d92525]' : isToday ? 'text-white' : 'text-gray-500'}`}>{label}</div>
+                <div className="text-[8px] text-gray-600 mt-0.5">{isMatch ? '⚽比赛' : isPast ? '✓完成' : isToday ? '←今天' : weekLabel(fmt(new Date(matchDate), dayOffset), 0).slice(-2)}</div>
+                <div className="text-[7px] text-gray-500 mt-1 leading-tight">
+                  {hasPlan ? '📋 已有方案' : dayRecommendation.label}
                 </div>
               </button>
             );
@@ -1761,6 +1633,11 @@ export default function CoachWorkbench() {
       )}
 
       {/* ══ EXERCISE EDITOR MODAL ══ */}
+      {/* ═══════════════════════════════════════════════
+          今日训练笔记 — auto-generated from saved data
+          ═══════════════════════════════════════════════ */}
+      <DailyTrainingNotes matchDate={matchDate} modules={modules} setTrainingActive={setTrainingActive} trainingStartRef={trainingStartRef} />
+
       {editState && (
         <ExerciseEditor
           exercise={{

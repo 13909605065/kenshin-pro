@@ -399,7 +399,7 @@ export default function WarmupDesignPage() {
       )}
 
       {/* ─── Main canvas area ─── */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative pb-12">
         <EquipmentPalette
           activeTool={activeTool}
           onFieldSelect={hField}

@@ -143,6 +143,19 @@ export default function LoadPage() {
   const weekCap = info ? (isMatchWeek ? info.matchWeekCap : info.weekCap) : 1500;
   const dayCap = info ? info.dayCap : 300;
 
+  // Weather adjustment: rain reduces load cap by 10% (higher HR in hot/humid conditions)
+  const todayWeather = useMemo(() => {
+    try {
+      const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const todayLog = logs.find((l: any) => l.date === todayStr);
+      return todayLog?.weather || null;
+    } catch { return null; }
+  }, [refreshKey]);
+  const weatherLabel = todayWeather === 'rain' ? '🌧️ 雨天' : todayWeather === 'cloud' ? '⛅ 阴天' : todayWeather === 'sun' ? '☀️ 晴天' : '';
+  const weatherAdjustedDayCap = todayWeather === 'rain' ? Math.round(dayCap * 0.9) : dayCap;
+  const weatherAdjustedWeekCap = todayWeather === 'rain' ? Math.round(weekCap * 0.9) : weekCap;
+
   // Read logs
   const logs = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]"); }
@@ -175,10 +188,10 @@ export default function LoadPage() {
       used += dayTRIMP;
       days.push({ date: ds, day: WEEKDAY[d.getDay()], monthDay: `${d.getMonth()+1}/${d.getDate()}`, log, trimp: dayTRIMP, isRest, isToday: ds === new Date().toISOString().slice(0, 10) });
     }
-    const remaining = Math.max(0, weekCap - used);
-    const pctVal = Math.min(100, Math.round((used / weekCap) * 100));
+    const remaining = Math.max(0, weatherAdjustedWeekCap - used);
+    const pctVal = Math.min(100, Math.round((used / weatherAdjustedWeekCap) * 100));
     return { weekDays: days, usedTRIMP: used, remainingTRIMP: remaining, pct: pctVal };
-  }, [logs, weekCap]);
+  }, [logs, weatherAdjustedWeekCap]);
 
   // ═══════════════════════════════════════════
   // Muscle Group Load Heatmap
@@ -516,6 +529,11 @@ export default function LoadPage() {
           <div>
             <span className="text-sm font-bold text-white">本周负荷容量</span>
             <span className="text-[10px] text-gray-500 ml-2">{isMatchWeek ? '⚽ 比赛周' : '📅 非比赛周'}</span>
+            {weatherLabel && (
+              <span className={`text-[10px] ml-2 ${todayWeather === 'rain' ? 'text-blue-400' : 'text-gray-400'}`}>
+                {weatherLabel}{todayWeather === 'rain' ? ' · 负荷上限-10%' : ''}
+              </span>
+            )}
           </div>
           <span className={`text-lg font-bold ${pct >= 90 ? 'text-red-400' : pct >= 70 ? 'text-yellow-400' : 'text-green-400'}`}>
             {statusEmoji} {statusText}
@@ -530,13 +548,13 @@ export default function LoadPage() {
 
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-400">已用 <span className="text-white font-bold">{usedTRIMP}</span> TRIMP</span>
-          <span className="text-gray-400">剩余 <span className={`font-bold ${remainingTRIMP < dayCap * 1.5 ? 'text-red-400' : 'text-green-400'}`}>{remainingTRIMP}</span> TRIMP</span>
-          <span className="text-gray-500">上限 {weekCap} TRIMP</span>
+          <span className="text-gray-400">剩余 <span className={`font-bold ${remainingTRIMP < weatherAdjustedDayCap * 1.5 ? 'text-red-400' : 'text-green-400'}`}>{remainingTRIMP}</span> TRIMP</span>
+          <span className="text-gray-500">上限 {weatherAdjustedWeekCap} TRIMP</span>
         </div>
 
-        {remainingTRIMP < dayCap && remainingTRIMP > 0 && (
+        {remainingTRIMP < weatherAdjustedDayCap && remainingTRIMP > 0 && (
           <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-[10px] text-yellow-400 flex items-center gap-2">
-            <AlertTriangle className="w-3 h-3 shrink-0" /> 剩余负荷不足一日量（{remainingTRIMP}/{dayCap}），今日训练须控制强度
+            <AlertTriangle className="w-3 h-3 shrink-0" /> 剩余负荷不足一日量（{remainingTRIMP}/{weatherAdjustedDayCap}），今日训练须控制强度
           </div>
         )}
         {remainingTRIMP <= 0 && (
@@ -571,7 +589,7 @@ export default function LoadPage() {
             <div className="text-lg font-bold text-white font-mono">{pct}%</div>
             <div className="flex items-center gap-1 mt-0.5">
               <span className={`text-[9px] font-mono ${remainingTRIMP > 0 ? 'text-gray-500' : 'text-red-400'}`}>
-                剩余 {remainingTRIMP} / {weekCap} TRIMP
+                剩余 {remainingTRIMP} / {weatherAdjustedWeekCap} TRIMP
               </span>
             </div>
           </div>
