@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar, Zap, Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import SeasonCalendar from "@/components/SeasonCalendar";
+import TrainingCalendar from "@/components/TrainingCalendar";
 import { generateMesocycle, type MesocycleWeek } from "@/lib/periodization";
 import type { SeasonPhase } from "@/lib/types";
 
@@ -404,6 +406,35 @@ export default function PlanningPage() {
           )}
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════
+          SEASON CALENDAR — full season timeline Aug→May
+          ═══════════════════════════════════════════════ */}
+      <section className="mt-8">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📅 赛季全景</h2>
+        <SeasonCalendar />
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          TRAINING CALENDAR — daily notes + warmup linking
+          ═══════════════════════════════════════════════ */}
+      <section className="mt-8">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📋 训练日历</h2>
+        <TrainingCalendar
+          matchDate={(() => {
+            try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); }
+            catch { return new Date().toISOString().slice(0, 10); }
+          })()}
+          mdDay={(() => {
+            try {
+              const saved = localStorage.getItem('kenshin_coach_matchDate');
+              const match = new Date((saved || new Date().toISOString().slice(0, 10)) + 'T00:00:00');
+              const now = new Date();
+              return Math.ceil((match.getTime() - now.getTime()) / 86400000);
+            } catch { return 7; }
+          })()}
+        />
+      </section>
 
       <MobileNav />
     </div>

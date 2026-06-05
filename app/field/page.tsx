@@ -788,6 +788,7 @@ export default function FieldPage() {
       <header className="sticky top-0 z-30 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <a href="/" className="text-gray-400 hover:text-white transition-colors text-sm touch-target flex items-center gap-1">← 返回</a>
             <a href="/" className="text-[#d92525] font-black text-lg">KENSHIN</a>
             <span className="text-gray-500 text-sm">|</span>
             <h1 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -947,7 +948,6 @@ export default function FieldPage() {
                 type="text"
                 value={tacticalInput}
                 onChange={e => setTacticalInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") addPhase(); }}
                 placeholder='例如: "半场4v4高位压迫+就地反抢，无限制轮换"'
                 className="w-full px-4 py-3 bg-[#121212] border border-[#222] rounded-xl text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none transition text-sm"
               />

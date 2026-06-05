@@ -361,7 +361,7 @@ export default function TrainingTimer({
             </span>
             <h1 className="text-xl font-bold text-white truncate">{ex.name}</h1>
           </div>
-          <button onClick={onClose} className="text-gray-600 hover:text-white px-2 py-1 text-sm">
+          <button type="button" onClick={onClose} className="text-gray-600 hover:text-white px-2 py-1 text-sm">
             ✕
           </button>
         </div>

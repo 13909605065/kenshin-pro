@@ -14,8 +14,7 @@ import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
 import WeeklyLoadBar from './WeeklyLoadBar';
-import TrainingCalendar, { type DayNotes } from './TrainingCalendar';
-import SeasonCalendar from './SeasonCalendar';
+import { GymDesigner } from './GymDesigner';
 import { PHASE_LABELS } from '@/lib/constants';
 import { getPhaseParams, getGoalParams } from '@/lib/periodization';
 import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment } from '@/lib/fitness-store';
@@ -29,37 +28,7 @@ const dateStr = (d: Date) => d.toISOString().slice(0, 10);
 const weekLabel = (d: Date, o: number) => fmt(d, o).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', weekday: 'short' });
 const dayDiff = (a: Date, b: Date) => Math.round((a.getTime() - b.getTime()) / 86400000);
 
-// ── today checklist helpers ──
-function getTodayWarmupInfo(): { found: boolean; name: string } {
-  try {
-    const todayStr = dateStr(new Date());
-    const calRaw = localStorage.getItem('kenshin_warmup_calendar');
-    if (!calRaw) return { found: false, name: '' };
-    const cal = JSON.parse(calRaw);
-    const todayNotes = cal[todayStr];
-    if (!todayNotes?.warmupId) return { found: false, name: '' };
-    const libRaw = localStorage.getItem('kenshin_warmup_library');
-    const lib = libRaw ? JSON.parse(libRaw) : [];
-    const w = lib.find((x: any) => x.id === todayNotes.warmupId);
-    return { found: true, name: w?.name || '未知热身' };
-  } catch { return { found: false, name: '' }; }
-}
 
-function getTodayGymInfo(): { found: boolean; name: string } {
-  try {
-    const todayStr = dateStr(new Date());
-    const calRaw = localStorage.getItem('kenshin_gym_calendar');
-    if (!calRaw) return { found: false, name: '' };
-    const cal = JSON.parse(calRaw);
-    if (!Array.isArray(cal)) return { found: false, name: '' };
-    const entry = cal.find((e: any) => e.date === todayStr);
-    if (!entry) return { found: false, name: '' };
-    const libRaw = localStorage.getItem('kenshin_gym_library');
-    const lib = libRaw ? JSON.parse(libRaw) : [];
-    const w = lib.find((x: any) => x.id === entry.comboId);
-    return { found: true, name: w?.name || '未知方案' };
-  } catch { return { found: false, name: '' }; }
-}
 
 // ═══════════════════════════════════════════════
 // Chinese weekday helper
@@ -165,6 +134,7 @@ interface EditState {
 
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
+  const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
   const [duration, setDuration] = useState(60);
@@ -187,7 +157,6 @@ export default function CoachWorkbench() {
   });
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [todoCollapsed, setTodoCollapsed] = useState(false);
   const [addonTheme, setAddonTheme] = useState('');
   const [addonScene, setAddonScene] = useState<'gym' | 'pitch'>('gym');
 
@@ -236,6 +205,7 @@ export default function CoachWorkbench() {
     return () => clearInterval(interval);
   }, []);
   const [trainingActive, setTrainingActive] = useState(false);
+  const [workoutTimerActive, setWorkoutTimerActive] = useState(true);
 
   // ── MD calculation from match date ──
   const mdDay = useMemo(() => {
@@ -334,53 +304,6 @@ export default function CoachWorkbench() {
     return calcRecoveryScore(input);
   }, [teamACWR]);
 
-  // ── today's checklist ──
-  const todoItems = useMemo(() => {
-    const items: {
-      label: string;
-      done: boolean;
-      detail: string;
-      action: { type: 'generate' | 'link' | 'none'; label: string; href?: string };
-    }[] = [];
-
-    // 1. 训练方案
-    const plan = getMicrocyclePlan(matchDate, mdDay);
-    items.push({
-      label: '训练方案',
-      done: !!plan,
-      detail: plan ? `已生成 "${GOAL_LABELS[plan.goal] || plan.goal} · ${plan.duration}min"` : '未生成',
-      action: { type: plan ? 'none' : 'generate', label: plan ? '' : '⚡ 一键生成' },
-    });
-
-    // 2. 球场热身
-    const warmupInfo = getTodayWarmupInfo();
-    items.push({
-      label: '球场热身',
-      done: warmupInfo.found,
-      detail: warmupInfo.found ? `已绑定 "${warmupInfo.name}"` : '未选择',
-      action: { type: 'link', label: warmupInfo.found ? '修改' : '去选择', href: '/warmup' },
-    });
-
-    // 3. 力量房
-    const gymInfo = getTodayGymInfo();
-    items.push({
-      label: '力量房',
-      done: gymInfo.found,
-      detail: gymInfo.found ? `已设计 "${gymInfo.name}"` : '未设计',
-      action: { type: 'link', label: gymInfo.found ? '修改' : '去设计', href: '/gym' },
-    });
-
-    // 4. 比赛数据
-    items.push({
-      label: '比赛数据',
-      done: mdDay === 0,
-      detail: mdDay === 0 ? '比赛日' : '无比赛',
-      action: { type: mdDay === 0 ? 'link' : 'none', label: mdDay === 0 ? '录入' : '—', href: mdDay === 0 ? '/match' : undefined },
-    });
-
-    return items;
-  }, [matchDate, mdDay, modules]);
-
   // ── load recommendation based on MD ──
   useEffect(() => {
     const rec = getMDRecommendation(mdDay);
@@ -449,6 +372,7 @@ export default function CoachWorkbench() {
     setGenerating(true);
     setGenError(null);
     setShowPlan(true);
+    setWorkoutTimerActive(true);
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
@@ -627,51 +551,61 @@ export default function CoachWorkbench() {
     <div className="max-w-4xl mx-auto space-y-4 pb-10">
 
       {/* ═══════════════════════════════════════════════
-          TODAY'S CHECKLIST — collapsible daily status
+          WORKBENCH MODE TOGGLE — 力量房 vs 足球训练
           ═══════════════════════════════════════════════ */}
-      {todoCollapsed ? (
-        <button onClick={() => setTodoCollapsed(false)}
-          className="w-full bg-[#0d0d0d] border border-[#222] rounded-xl p-2.5 flex items-center gap-2 hover:border-[#444] transition">
-          <span className="text-xs font-bold text-white">📋 今日待办</span>
-          <span className="text-[10px] text-gray-500 ml-auto">展开 ▼</span>
-        </button>
-      ) : (
-        <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 space-y-2">
-          <button onClick={() => setTodoCollapsed(true)}
-            className="w-full flex items-center justify-between">
-            <span className="text-xs font-bold text-white">📋 今日待办</span>
-            <span className="text-[10px] text-gray-500 hover:text-gray-300">收起 ▲</span>
-          </button>
-          <div className="space-y-1.5">
-            {todoItems.map((item, i) => (
-              <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[#111]">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className={`text-sm shrink-0 ${item.done ? 'text-green-400' : 'text-gray-600'}`}>
-                    {item.done ? '☑' : '☐'}
-                  </span>
-                  <span className="text-xs text-white font-medium shrink-0">{item.label}</span>
-                  <span className="text-[10px] text-gray-500 truncate">— {item.detail}</span>
-                </div>
-                {item.action.type === 'generate' && (
-                  <button onClick={handleGenerate}
-                    className="text-[10px] px-2 py-1 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded transition shrink-0">
-                    {item.action.label}
-                  </button>
-                )}
-                {item.action.type === 'link' && (
-                  <a href={item.action.href}
-                    className="text-[10px] px-2 py-1 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded text-gray-300 hover:text-white transition shrink-0 no-underline">
-                    {item.action.label}
-                  </a>
-                )}
-                {item.action.type === 'none' && (
-                  <span className="text-[10px] text-gray-600 shrink-0">{item.action.label}</span>
-                )}
-              </div>
-            ))}
+      <div className="flex gap-2 bg-[#0d0d0d] border border-[#222] rounded-2xl p-1.5">
+        <button onClick={() => setWorkbenchMode('football')}
+          className={`flex-1 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${
+            workbenchMode === 'football' ? 'bg-[#d92525] text-white shadow-lg' : 'text-gray-500 hover:text-white'
+          }`}>⚽ 足球训练</button>
+        <button onClick={() => setWorkbenchMode('gym')}
+          className={`flex-1 py-3 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 ${
+            workbenchMode === 'gym' ? 'bg-[#d92525] text-white shadow-lg' : 'text-gray-500 hover:text-white'
+          }`}>🏋️ 力量房</button>
+      </div>
+
+      {/* ═══════════════════════════════════════════════
+          GYM MODE — 力量房设计器
+          ═══════════════════════════════════════════════ */}
+      {workbenchMode === 'gym' && (
+        <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-[#222]">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">🏋️ 力量房训练设计</h3>
+            <span className="text-[10px] text-gray-500">从动作库挑选 → AI校验 → 保存方案</span>
           </div>
+          <GymDesigner />
         </div>
       )}
+
+      {/* ═══════════════════════════════════════════════
+          FOOTBALL MODE
+          ═══════════════════════════════════════════════ */}
+      {workbenchMode === 'football' && (
+      <>
+
+      {/* ── ① 热身设计 ── */}
+      <a href="/warmup" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
+        <div className="flex items-center gap-3">
+          <div className="text-2xl">🏃</div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">热身设计</h3>
+            <p className="text-[10px] text-gray-500 mt-0.5">RAMP系统 · FIFA 11+ · 有球/无球</p>
+          </div>
+          <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+        </div>
+      </a>
+
+      {/* ── ② 场地训练监控 ── */}
+      <a href="/field" className="bg-[#0d0d0d] border border-[#222] hover:border-[#d92525]/50 rounded-xl p-4 group transition no-underline block">
+        <div className="flex items-center gap-3">
+          <div className="text-2xl">📊</div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-white group-hover:text-[#d92525] transition">场地训练监控</h3>
+            <p className="text-[10px] text-gray-500 mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
+          </div>
+          <span className="text-gray-600 group-hover:text-[#d92525] text-lg transition">→</span>
+        </div>
+      </a>
 
       {/* ═══════════════════════════════════════════════
           WEEKLY LOAD BAR — automatic load tracking
@@ -1062,31 +996,6 @@ export default function CoachWorkbench() {
       </details>
 
       {/* ═══════════════════════════════════════════════
-          SEASON CALENDAR — full season timeline Aug→May
-          ═══════════════════════════════════════════════ */}
-      <SeasonCalendar />
-
-      {/* ═══════════════════════════════════════════════
-          TRAINING CALENDAR — daily notes + warmup linking
-          ═══════════════════════════════════════════════ */}
-      <TrainingCalendar
-        matchDate={matchDate}
-        mdDay={mdDay}
-        onSelectDay={(date, notes) => {
-          // Calendar day selected — coach can review/edit
-          console.log('Calendar day selected:', date, notes);
-        }}
-        onWarmupSelect={(date, warmupId) => {
-          // Warmup linked to day — ready for AI generation
-          console.log('Warmup linked:', date, warmupId);
-        }}
-        onDurationChange={(date, duration) => {
-          // Duration adjusted per day
-          console.log('Duration changed:', date, duration);
-        }}
-      />
-
-      {/* ═══════════════════════════════════════════════
           PLAN OUTPUT AREA
           ═══════════════════════════════════════════════ */}
       {showPlan && modules.length > 0 && (
@@ -1104,7 +1013,9 @@ export default function CoachWorkbench() {
               <button onClick={() => setTrainingActive(true)} className="px-3 py-1.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-[10px] font-bold transition active:scale-95">▶ 开始训练</button>
               <button onClick={() => setShowLog(!showLog)} className={`text-[10px] transition ${showLog ? 'text-[#d92525]' : 'text-gray-500 hover:text-white'}`}>📝 日志</button>
               <ExportTable modules={modules} formData={buildFormData()} />
-              <WorkoutTimer modules={modules} planId={planId ?? undefined} onClose={() => {}} />
+              {workoutTimerActive && (
+                <WorkoutTimer modules={modules} planId={planId ?? undefined} onClose={() => setWorkoutTimerActive(false)} />
+              )}
               {/* Share check-in link */}
               <button
                 onClick={() => {
@@ -1248,6 +1159,10 @@ export default function CoachWorkbench() {
           onSave={handleSaveExercise}
           onCancel={() => setEditState(null)}
         />
+      )}
+
+      {/* ══ Close football mode fragment ══ */}
+      </>
       )}
 
       {/* ══ SHARE TOAST ══ */}

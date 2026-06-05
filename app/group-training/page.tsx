@@ -5,6 +5,7 @@ import { STRENGTH_LIBRARY, ExerciseRef } from "@/lib/training-library";
 import { getPhaseParams, getGoalParams } from "@/lib/periodization";
 import { getPlayers, PlayerRecord } from "@/lib/roster-utils";
 import { X, Trash2, Users, FileDown, Printer, AlertTriangle, CheckCircle2, RefreshCw, Upload, Search } from "lucide-react";
+import { GymDesigner } from "@/components/GymDesigner";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -777,6 +778,11 @@ export default function GroupTrainingPage() {
       {/* ===== Top Bar ===== */}
       <div className="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur border-b border-[#222]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 space-y-3">
+          {/* Back + Title */}
+          <div className="flex items-center gap-3 mb-2">
+            <a href="/" className="text-gray-400 hover:text-white transition-colors text-sm touch-target min-w-[44px] min-h-[44px] flex items-center">← 返回</a>
+            <h1 className="text-sm font-bold text-white">小组训练</h1>
+          </div>
           {/* Row 1: Basic Info */}
           <div className="flex flex-wrap items-center gap-3">
             {/* Date */}
@@ -1369,6 +1375,17 @@ export default function GroupTrainingPage() {
           table { font-size: 9px; }
         }
       `}</style>
+
+      {/* ═══════════════════════════════════════════════
+          力量房训练设计器
+          ═══════════════════════════════════════════════ */}
+      <section className="mt-10 border-t border-[#222] pt-8">
+        <h2 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+          🏋️ 力量房训练设计
+        </h2>
+        <p className="text-xs text-gray-500 mb-4">从动作库挑选力量训练动作，AI 自动校验方案合理性</p>
+        <GymDesigner />
+      </section>
     </div>
   );
 }

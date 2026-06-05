@@ -710,6 +710,7 @@ export default function MatchPage() {
         <div className="sticky top-0 z-10 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div>
+              <a href="/" className="text-gray-400 hover:text-white text-xs transition-colors">← 返回</a>
               <h1 className="text-sm font-bold text-white">比赛模式</h1>
               <p className="text-[10px] text-gray-500">赛前准备</p>
             </div>
@@ -933,6 +934,7 @@ export default function MatchPage() {
         <div className="sticky top-0 z-10 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div>
+              <a href="/" className="text-gray-400 hover:text-white text-xs transition-colors">← 返回</a>
               <h1 className="text-sm font-bold text-white">比赛结束</h1>
               <p className="text-[10px] text-gray-500">
                 {state.matchName} · {formatTime(state.totalTime)}
@@ -1188,6 +1190,7 @@ export default function MatchPage() {
           {/* Row 1: Clock + Phase */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
+              <a href="/" className="text-gray-400 hover:text-white text-[10px] transition-colors mr-1">←</a>
               <span className="text-[10px] text-gray-500 px-1.5 py-0.5 bg-[#1a1a1a] rounded">
                 {phaseLabel[state.phase]}
               </span>
