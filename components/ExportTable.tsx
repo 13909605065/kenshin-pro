@@ -216,6 +216,82 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
   const safeAbility = Array.isArray(abilityModule?.exercises) ? abilityModule.exercises : [];
 
   const date = new Date().toLocaleDateString("zh-CN");
+
+  // Helpers for pro format
+  const isBodyweight = (ex: any): boolean => {
+    const name: string = (ex.name || "").toLowerCase();
+    const load = ex.load;
+    if (load && String(load).trim() !== "" && String(load) !== "BW") return false;
+    const bwPatterns = [
+      "plank", "push-up", "pull-up", "chin-up", "bodyweight", "box-jump",
+      "depth-jump", "lateral-hurdle", "bound-landing", "box-drop-jump",
+      "sprint", "t-drill", "z-slide", "pro-agility", "bird-dog",
+      "dead-bug", "v-up", "mountain-climber", "hollow-body",
+      "side-plank", "adductor-raise", "saw-plank", "contralateral",
+      "hamstring-bridge", "hanging-leg-raise", "nordic",
+      "single-leg-balance", "single-leg-box-jump", "skip",
+      "agility-ladder", "light-jog", "rondo", "ball-touch", "ball-dribble",
+      "spider-man", "world-greatest", "neural", "plyo-primer", "accel-drill",
+      "ankle-knee", "glute-activation", "hip-open", "dynamic-stretch",
+      "band-activation", "mini-band-walk", "static-stretch", "foam-roll",
+      "breathing", "pallof", "cable-woodchop", "face-pull",
+    ];
+    return bwPatterns.some((p) => name.includes(p));
+  };
+
+  const formatLoad = (ex: any): string => {
+    if (isBodyweight(ex)) return "BW";
+    if (ex.rpe) return `RPE ${ex.rpe}`;
+    if (ex.load) return String(ex.load);
+    return "-";
+  };
+
+  const formatReps = (ex: any): string => {
+    if (ex.duration) return `${ex.duration}min`;
+    if (ex.reps) return String(ex.reps);
+    return "-";
+  };
+
+  const formatRest = (ex: any): string => {
+    if (ex.rest) return `${ex.rest}s`;
+    return "-";
+  };
+
+  const autoNotes = (ex: any, section: string): string => {
+    const parts: string[] = [];
+    const name: string = (ex.name || "").toLowerCase();
+    // Injury prevention
+    if (name.includes("nordic") || name.includes("plank") || name.includes("side-plank") || name.includes("single-leg-balance") || name.includes("bird-dog") || name.includes("dead-bug")) {
+      parts.push("损伤预防");
+    }
+    // Muscle group target
+    if (name.includes("squat") || name.includes("deadlift") || name.includes("lunge") || name.includes("rdl") || name.includes("hip-thrust") || name.includes("leg-press")) {
+      parts.push("下肢力量");
+    } else if (name.includes("bench") || name.includes("press") || name.includes("pull-up") || name.includes("row") || name.includes("curl") || name.includes("flye")) {
+      parts.push("上肢力量");
+    } else if (name.includes("plank") || name.includes("dead-bug") || name.includes("pallof") || name.includes("chop") || name.includes("russian")) {
+      parts.push("核心稳定");
+    } else if (name.includes("clean") || name.includes("snatch") || name.includes("jerk") || name.includes("box-jump") || name.includes("depth")) {
+      parts.push("爆发力");
+    } else if (name.includes("sprint") || name.includes("agility") || name.includes("t-drill") || name.includes("sled")) {
+      parts.push("速度/敏捷");
+    }
+    // Position adaptation
+    if (formData.position) {
+      const posLabel = POSITION_LABELS[formData.position] || "";
+      if (posLabel) parts.push(`${posLabel}适配`);
+    }
+    if (section === "cooldown") parts.push("恢复再生");
+    return parts.join("；") || "-";
+  };
+
+  // Merge all main exercises
+  const mainExercises: { group: string; ex: any }[] = [];
+  safeUpper.forEach((ex: any) => mainExercises.push({ group: "上肢", ex }));
+  safeLower.forEach((ex: any) => mainExercises.push({ group: "下肢", ex }));
+  safeCore.forEach((ex: any) => mainExercises.push({ group: "核心", ex }));
+  safeAbility.forEach((ex: any) => mainExercises.push({ group: "专项能力", ex }));
+
   const totalMin = [...safeWarmup, ...safeCooldown]
     .reduce((s: number, w: any) => s + (w.duration || 0), 0);
 
@@ -238,95 +314,96 @@ function AthleteTable({ modules, formData }: { modules: TrainingModule[]; formDa
         </div>
       )}
 
-      {/* Warmup */}
-      <h2 className="text-base font-bold mb-2">一、热身 ({safeWarmup.reduce((s: number, w: any) => s + (w.duration||0), 0)}min)</h2>
-      <table className="w-full border-collapse mb-4 text-sm">
+      {/* Pro 3-Section Unified Table */}
+      <table className="w-full border-collapse text-sm" style={{ tableLayout: "fixed" }}>
+        <colgroup>
+          <col style={{ width: "11%" }} />
+          <col style={{ width: "24%" }} />
+          <col style={{ width: "14%" }} />
+          <col style={{ width: "9%" }} />
+          <col style={{ width: "12%" }} />
+          <col style={{ width: "9%" }} />
+          <col style={{ width: "21%" }} />
+        </colgroup>
         <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-400 px-2 py-1">序号</th>
-            <th className="border border-gray-400 px-2 py-1 text-left">名称</th>
-            <th className="border border-gray-400 px-2 py-1">时长</th>
-            <th className="border border-gray-400 px-2 py-1 text-left">说明</th>
+          <tr className="bg-gray-200" style={{ backgroundColor: "#e5e7eb" }}>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-center font-bold text-[11px]">阶段分类</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-left font-bold text-[11px]">训练内容</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-center font-bold text-[11px]">负重(kg/BW)</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-center font-bold text-[11px]">组数</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-center font-bold text-[11px]">次数/时长</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-center font-bold text-[11px]">间歇</th>
+            <th className="border border-gray-400 px-1.5 py-1.5 text-left font-bold text-[11px]">执教备注</th>
           </tr>
         </thead>
         <tbody>
-          {safeWarmup.map((w: any, i: number) => (
-            <tr key={i}>
-              <td className="border border-gray-300 px-2 py-1 text-center">{i + 1}</td>
-              <td className="border border-gray-300 px-2 py-1">{w.name}</td>
-              <td className="border border-gray-300 px-2 py-1 text-center">{w.duration}min</td>
-              <td className="border border-gray-300 px-2 py-1 text-xs text-gray-600">{w.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Strength Exercises */}
-      <h2 className="text-base font-bold mb-2">二、力量训练</h2>
-      {([
-        ["upper_limb", safeUpper, "上肢"],
-        ["lower_limb", safeLower, "下肢"],
-        ["core", safeCore, "核心"],
-        ["ability", safeAbility, "专项能力"],
-      ] as const).map(([key, exs, label]) => {
-        if (!exs || !Array.isArray(exs) || exs.length === 0) return null;
-        return (
-          <div key={key} className="mb-3">
-            <h3 className="text-sm font-bold mb-1">{label}</h3>
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-400 px-2 py-1">序号</th>
-                  <th className="border border-gray-400 px-2 py-1 text-left">动作</th>
-                  <th className="border border-gray-400 px-2 py-1">组数</th>
-                  <th className="border border-gray-400 px-2 py-1">次数</th>
-                  <th className="border border-gray-400 px-2 py-1">间歇</th>
-                  <th className="border border-gray-400 px-2 py-1">负荷</th>
-                  <th className="border border-gray-400 px-2 py-1 text-left">要点</th>
-                </tr>
-              </thead>
-              <tbody>
-                {exs.map((ex: any, i: number) => (
-                  <tr key={i}>
-                    <td className="border border-gray-300 px-2 py-1 text-center">{i + 1}</td>
-                    <td className="border border-gray-300 px-2 py-1 font-medium">{ex.name}</td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">{ex.sets}</td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">{ex.reps}</td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">{ex.rest}s</td>
-                    <td className="border border-gray-300 px-2 py-1 text-center text-xs">{ex.load || ex.rpe ? `RPE ${ex.rpe}` : "-"}</td>
-                    <td className="border border-gray-300 px-2 py-1 text-xs">{ex.cue_points?.join("；")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
-      })}
-
-      {/* Cooldown */}
-      {safeCooldown.length > 0 && (
-        <>
-          <h2 className="text-base font-bold mb-2">三、冷身 ({safeCooldown.reduce((s: number, c: any) => s + (c.duration||0), 0)}min)</h2>
-          <table className="w-full border-collapse mb-4 text-sm">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-400 px-2 py-1 text-left">名称</th>
-                <th className="border border-gray-400 px-2 py-1">时长</th>
-                <th className="border border-gray-400 px-2 py-1 text-left">说明</th>
+          {/* Section 1: 准备激活 (Green) */}
+          {safeWarmup.length > 0 && (
+            <>
+              <tr style={{ backgroundColor: "#d4edda" }}>
+                <td colSpan={7} className="border border-gray-400 px-2 py-1 font-bold text-xs text-center">
+                  准备激活（热身 · FIFA 11+ · {safeWarmup.reduce((s: number, w: any) => s + (w.duration || 0), 0)}min）
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {safeCooldown.map((c: any, i: number) => (
-                <tr key={i}>
-                  <td className="border border-gray-300 px-2 py-1">{c.name}</td>
-                  <td className="border border-gray-300 px-2 py-1 text-center">{c.duration}min</td>
-                  <td className="border border-gray-300 px-2 py-1 text-xs text-gray-600">{c.description}</td>
+              {safeWarmup.map((w: any, i: number) => (
+                <tr key={`warm-${i}`} style={{ backgroundColor: "#e8f5e9" }}>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">准备激活</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px]">{w.name}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">BW</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">-</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{w.duration || "-"}min</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">-</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px]">{autoNotes(w, "warmup")}</td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </>
-      )}
+            </>
+          )}
+
+          {/* Section 2: 主体负荷 (Deep Blue) */}
+          {mainExercises.length > 0 && (
+            <>
+              <tr style={{ backgroundColor: "#1a3a5c", color: "#ffffff" }}>
+                <td colSpan={7} className="border border-gray-400 px-2 py-1 font-bold text-xs text-center">
+                  主体负荷（力量训练 · {mainExercises.length}个动作）
+                </td>
+              </tr>
+              {mainExercises.map(({ group, ex }, i) => (
+                <tr key={`main-${i}`} style={{ backgroundColor: "#dce8f5" }}>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{group}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px] font-medium">{ex.name}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{formatLoad(ex)}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{ex.sets || "-"}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{formatReps(ex)}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{formatRest(ex)}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px]">{autoNotes(ex, "main")}</td>
+                </tr>
+              ))}
+            </>
+          )}
+
+          {/* Section 3: 整理放松 (Yellow) */}
+          {safeCooldown.length > 0 && (
+            <>
+              <tr style={{ backgroundColor: "#fff3cd" }}>
+                <td colSpan={7} className="border border-gray-400 px-2 py-1 font-bold text-xs text-center">
+                  整理放松（冷身 · 静态拉伸+筋膜放松 · {safeCooldown.reduce((s: number, c: any) => s + (c.duration || 0), 0)}min）
+                </td>
+              </tr>
+              {safeCooldown.map((c: any, i: number) => (
+                <tr key={`cool-${i}`} style={{ backgroundColor: "#fff8e1" }}>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">整理放松</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px]">{c.name}</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">BW</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">-</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">{c.duration || "-"}min</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-center text-[10px]">-</td>
+                  <td className="border border-gray-300 px-1.5 py-1 text-[10px]">{autoNotes(c, "cooldown")}</td>
+                </tr>
+              ))}
+            </>
+          )}
+        </tbody>
+      </table>
 
       <p className="text-xs text-gray-400 text-center mt-6 border-t pt-2">
         总训练时长约 {totalMin}min · Kenshinpro · {date}
@@ -377,6 +454,10 @@ export function ExportTable({ modules, formData }: ExportTableProps) {
           .export-table, .export-table * { visibility: visible; }
           .export-table { position: absolute; left: 0; top: 0; width: 100%; }
           @page { size: A4; margin: 12mm; }
+          /* Force color backgrounds to print */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          thead { display: table-header-group; }
+          tr { page-break-inside: avoid; }
         }
       `}</style>
     </>

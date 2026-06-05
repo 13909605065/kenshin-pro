@@ -13,20 +13,15 @@ import { TrainingHistory } from "./TrainingHistory";
 import { TemplateLibrary } from "./TemplateLibrary";
 import { GenerationStatus } from "@/lib/types";
 import { TACTICAL_THEME_LABELS, COACH_ROLE_LABELS, LEAGUE_TAG_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
-import { getPlayers, PlayerRecord } from "@/lib/roster-utils";
-import { getNextMatch } from "@/lib/match-store";
-import { daysUntilNextMatch, matchDayTrainingHint, opponentHint } from "@/lib/match-types";
+import { getPlayers } from "@/lib/roster-utils";
 import { useLang } from "@/components/providers/LanguageProvider";
 import { useScene } from "@/components/providers/SceneProvider";
-import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell, Minus, Plus, GitCompare, Users, Heart, Activity, AlertTriangle, TrendingUp } from "lucide-react";
+import { Zap, Edit3, X, Target, Clock, Save, History, Trash2, ChevronDown, Timer, ClipboardList, MapPin, Dumbbell, Minus, Plus, GitCompare, Users } from "lucide-react";
 import { OnboardingGuide } from "./OnboardingGuide";
 import { PlanCompareModal } from "./PlanCompareModal";
 import { useEquipmentInventory } from "@/hooks/useEquipmentInventory";
 import { useRouter } from "next/navigation";
 import { syncFormDataToSupabase, SupabaseProfile } from "@/hooks/useSupabaseSync";
-import { getAtRiskPlayers } from "@/lib/acwr";
-import { LoadDashboard } from "./LoadDashboard";
-import { FitnessProfile } from "./FitnessProfile";
 
 const GOALS = ["strength","power","speed","agility","mas_endurance","combat"] as const;
 const FITNESS_GOALS = [
@@ -337,188 +332,6 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
     </div>
   );
 }
-// ---- Helper: map roster injury note to injury sites ----
-function mapRosterInjuryToSites(note: string): string[] {
-  const siteMap: [RegExp, string][] = [
-    [/踝|ankle/i, "ankle"], [/膝|knee/i, "knee"],
-    [/髋|hip|groin|腹股沟/i, "hip"], [/肩|shoulder/i, "shoulder"],
-    [/腰|背|waist|back|lumbar/i, "waist"], [/肘|elbow/i, "elbow"],
-    [/腕|wrist/i, "wrist"], [/腿|腘绳|hamstring|thigh|quad/i, "thigh"],
-    [/小腿|calf|shin/i, "calf"], [/跟腱|achilles/i, "achilles"],
-    [/脚|足|foot/i, "foot"],
-  ];
-  const found = siteMap.find(([re]) => re.test(note));
-  return found ? [found[1]] : [];
-}
-
-// ---- PlayerPickerModal: coach selects players from roster ----
-function PlayerPickerModal({
-  players, selectedIds, onToggle, onSelectAll, onDeselectAll, onClose,
-}: {
-  players: PlayerRecord[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  onClose: () => void;
-}) {
-  const injuredPlayers = players.filter(p => selectedIds.includes(p.id) && p.injuryStatus !== "healthy");
-  const allInjuryLines = injuredPlayers.map(p => {
-    const label = p.injuryStatus === "out" ? "重伤" : "轻伤";
-    return `${p.name}: ${label}${p.injuryNote ? ` (${p.injuryNote})` : ""}`;
-  });
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="glass-card p-5 w-full max-w-md max-h-[85vh] overflow-y-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-white font-bold text-sm">选择球员</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={onSelectAll} className="text-xs text-[#d92525] hover:text-white transition px-2 py-1 rounded border border-[#d92525]/20">全选</button>
-          <button onClick={onDeselectAll} className="text-xs text-gray-400 hover:text-white transition px-2 py-1 rounded border border-[#333]">取消全选</button>
-          <span className="text-xs text-gray-400 ml-auto">已选 {selectedIds.length}/{players.length} 人</span>
-        </div>
-        <div className="space-y-1 max-h-64 overflow-y-auto">
-          {players.map((p) => {
-            const isSelected = selectedIds.includes(p.id);
-            const isInjured = p.injuryStatus !== "healthy";
-            return (
-              <label key={p.id} className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition border ${
-                isSelected ? "bg-[#d92525]/10 border-[#d92525]/20" : "bg-[#121212] border-transparent hover:border-[#333]"
-              }`}>
-                <input type="checkbox" checked={isSelected} onChange={() => onToggle(p.id)}
-                  className="w-4 h-4 accent-[#d92525] flex-shrink-0" />
-                <span className="text-sm text-white flex-1 truncate">{p.name}</span>
-                <span className="text-[10px] text-gray-400">{p.position}</span>
-                {isInjured && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded flex-shrink-0 ${p.injuryStatus === "out" ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"}`}>
-                    {p.injuryStatus === "out" ? "重伤" : "轻伤"}
-                  </span>
-                )}
-              </label>
-            );
-          })}
-        </div>
-        {injuredPlayers.length > 0 && (
-          <div className="bg-[#d92525]/5 border border-[#d92525]/15 rounded-lg p-3 space-y-1.5">
-            <p className="text-xs font-bold text-[#d92525]">伤病球员 ({injuredPlayers.length}人)</p>
-            {allInjuryLines.map((s, i) => (
-              <p key={i} className="text-[10px] text-gray-300">{s}</p>
-            ))}
-          </div>
-        )}
-        {selectedIds.length > 0 && (
-          <p className="text-[10px] text-gray-500 text-center">AI自动屏蔽全员禁忌动作，生成一份适合所有选中球员的训练方案</p>
-        )}
-        <button onClick={onClose}
-          className="w-full py-2.5 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
-          确认选择 ({selectedIds.length}人)
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ---- EquipmentModal: coach equipment selector in modal ----
-function EquipmentModal({
-  formData, updateField, equipmentInv, onClose,
-}: {
-  formData: any;
-  updateField: (k: any, v: any) => void;
-  equipmentInv: any;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="glass-card p-5 w-full max-w-md max-h-[85vh] overflow-y-auto space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-white font-bold text-sm">器材选择</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
-        </div>
-        <p className="text-xs text-gray-400">
-          可选器材（不选则AI自动推荐）
-          {formData.equipmentAvailable?.length > 0 && (
-            <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
-          )}
-        </p>
-        <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
-          {[
-            { n:"标志盘",  color:"#e8780a" },
-            { n:"标志桶",  color:"#e8780a" },
-            { n:"标志杆",  color:"#e8c800" },
-            { n:"号坎",    color:"#4a90d9" },
-            { n:"足球",    color:"#ffffff" },
-            { n:"小球门",  color:"#ffffff" },
-            { n:"标准门",  color:"#ffffff" },
-            { n:"小栏架",  color:"#e8780a" },
-            { n:"高栏架",  color:"#e8780a" },
-            { n:"绳梯",    color:"#c8960c" },
-            { n:"敏捷圈",  color:"#4a90d9" },
-            { n:"弹力带",  color:"#e8780a" },
-            { n:"药球",    color:"#d92525" },
-            { n:"瑜伽球",  color:"#4a90d9" },
-            { n:"泡沫轴",  color:"#888888" },
-          ].map(({ n, color }) => {
-            const act = formData.equipmentAvailable?.includes(n);
-            const iconColor = act ? "#d92525" : color;
-            const count = equipmentInv.getCount(n);
-            return (
-              <div key={n} className={`flex flex-col items-center justify-center rounded-lg transition-all duration-150 border py-1.5 relative ${
-                act ? "bg-[#261818] border-[#d92525]/30" : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
-              }`}>
-                <button
-                  onClick={() => {
-                    const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
-                    updateField("equipmentAvailable", next);
-                    if (!act) { equipmentInv.ensureDefault(n); } else { equipmentInv.remove(n); }
-                  }}
-                  className="flex flex-col items-center justify-center gap-1 w-full"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                    {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                    {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                    {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                    {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
-                    {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                    {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                    {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                    {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                    {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
-                    {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
-                    {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
-                    {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                    {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
-                    {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                  </svg>
-                  <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
-                </button>
-                {act && (
-                  <div className="flex items-center gap-0.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); if (c > 1) equipmentInv.setCount(n, c - 1); }}
-                      className="p-0.5 text-[#d92525] hover:text-white transition-colors" aria-label={`减少${n}数量`}>
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="text-[10px] text-white font-bold min-w-[14px] text-center">{count || equipmentInv.getCount(n) || "?"}</span>
-                    <button onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); equipmentInv.setCount(n, (c || 0) + 1); }}
-                      className="p-0.5 text-[#d92525] hover:text-white transition-colors" aria-label={`增加${n}数量`}>
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <button onClick={onClose}
-          className="w-full py-2.5 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
-          完成
-        </button>
-      </div>
-    </div>
-  );
-}
 
 const DRAFT_KEY = "kenshin_dashboard_draft";
 
@@ -546,9 +359,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
       setAthleteGoals(prev => prev.filter(g => g !== "combat"));
     } else if (scene === "gym") {
       setAthleteGoals(prev => prev.filter(g => g !== "speed" && g !== "mas_endurance"));
-    } else if (scene === "rehab") {
-      // In rehab, clear all normal goals — rehab has its own goal system
-      setAthleteGoals([]);
     }
   }, [scene, isCoach, isFitness]);
   const [status, setStatus] = useState<GenerationStatus>("idle");
@@ -592,32 +402,15 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
   const [templateName, setTemplateName] = useState("");
   const [showTemplateSave, setShowTemplateSave] = useState(false);
   const [injOpen, setInjOpen] = useState<Record<string,boolean>>({});
-  const [loadDashOpen, setLoadDashOpen] = useState(false);
-  const [fitnessProfileOpen, setFitnessProfileOpen] = useState(false);
   const [planHistoryOpen, setPlanHistoryOpen] = useState(false);
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
   const [showManualSave, setShowManualSave] = useState(false);
   const [manualSaveName, setManualSaveName] = useState("");
   const [fitnessGoals, setFitnessGoals] = useState<string[]>([]);
   const [athleteGoals, setAthleteGoals] = useState<string[]>([]);
-  // --- Coach multi-player selection ---
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
-  const [showPlayerPicker, setShowPlayerPicker] = useState(false);
-  const [showEquipmentModal, setShowEquipmentModal] = useState(false);
-  const [editablePlayerPlans, setEditablePlayerPlans] = useState<Record<string, any>>({});
-  const [adjustingPlayerId, setAdjustingPlayerId] = useState<string | null>(null);
   const { t } = useLang();
   const router = useRouter();
   const toggleInjury = (g: string) => setInjOpen((p) => ({...p, [g]: !p[g]}));
-
-  // Coach multi-player: memoized roster and selected players
-  const rosterPlayers = useMemo(() => {
-    try { return getPlayers(); } catch { return []; }
-  }, []);
-  const selectedPlayers = useMemo(
-    () => rosterPlayers.filter(p => selectedPlayerIds.includes(p.id)),
-    [rosterPlayers, selectedPlayerIds]
-  );
 
   // Onboarding guide
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -626,12 +419,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
       setShowOnboarding(true);
     }
   }, []);
-
-  // ACWR injury risk — coach only
-  const [acwrAtRisk, setAcwrAtRisk] = useState<ReturnType<typeof getAtRiskPlayers>>([]);
-  useEffect(() => {
-    if (isCoach) setAcwrAtRisk(getAtRiskPlayers());
-  }, [isCoach]);
 
   // Equipment inventory
   const equipmentInv = useEquipmentInventory();
@@ -754,34 +541,9 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
     if (eqSummary) {
       (formData as any).equipmentInventorySummary = eqSummary;
     }
-    // Inject batch player data for coach multi-player mode
-    if (isCoach && selectedPlayers.length > 1) {
-      const batchPlayers = selectedPlayers.map(p => ({
-        name: p.name,
-        position: p.position,
-        injuryStatus: p.injuryStatus,
-        injuryNote: p.injuryNote,
-        injurySites: mapRosterInjuryToSites(p.injuryNote),
-        age: p.age,
-      }));
-      (formData as any).batchPlayers = batchPlayers;
-      (formData as any).batchMode = true;
-    } else {
-      (formData as any).batchPlayers = undefined;
-      (formData as any).batchMode = undefined;
-    }
     setStatus("generating"); setErrorCode(null); setShowDone(false); setSavedPlanId(null);
 
-    // Build match context for AI
-    const nextMatch = getNextMatch();
-    let matchContext = "";
-    if (nextMatch) {
-      const days = daysUntilNextMatch([nextMatch]);
-      matchContext = `## 比赛情报\n距下一场比赛: ${days !== null ? days + "天" : "未知"}\n${matchDayTrainingHint(days)}\n${opponentHint(nextMatch)}`;
-      (formData as any).matchContext = matchContext;
-    } else {
-      (formData as any).matchContext = undefined;
-    }
+    // Match context — moved to Tactical project
 
     const timeout = setTimeout(() => { training.reset(); setStatus("error"); setErrorCode("timeout"); }, 80000);
     try {
@@ -805,7 +567,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
         setErrorCode("empty-response");
       }
     } catch (err: any) { clearTimeout(timeout); setStatus("error"); setErrorCode(err.code || "api-error"); }
-  }, [formData, training, isStepValid, planHistory, isCoach, selectedPlayers]);
+  }, [formData, training, isStepValid, planHistory, isCoach]);
 
   const handleRetry = useCallback(async () => {
     setStatus("generating"); setErrorCode(null);
@@ -888,19 +650,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     </button>
                   </div>
                 )}
-                {/* Scene switch — fitness only */}
-                {isFitness && (
-                  <div className="flex bg-[#111] rounded-lg p-0.5">
-                    <button onClick={() => setScene("workout")}
-                      className={"px-1.5 sm:px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition flex items-center gap-0.5 " + (scene==="workout"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
-                      <Dumbbell className="w-3 h-3" /><span className="hidden sm:inline">训练</span>
-                    </button>
-                    <button onClick={() => setScene("nutrition")}
-                      className={"px-1.5 sm:px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition flex items-center gap-0.5 " + (scene==="nutrition"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
-                      🥗<span className="hidden sm:inline">营养</span>
-                    </button>
-                  </div>
-                )}
                 <button onClick={() => setEditOpen(true)}
                   className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg border border-[#333] text-gray-400 hover:text-white hover:border-[#555] transition text-[10px] sm:text-xs font-medium">
                   <Edit3 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />编辑
@@ -908,36 +657,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               </div>
             </div>
           </div>
-
-          {/* ACWR Injury Risk Alert — coach only */}
-          {isCoach && acwrAtRisk.length > 0 && (
-            <div className="bg-[#1e1e1e] border rounded-2xl px-3 sm:px-4 py-3 animate-in fade-in" style={{ borderColor: acwrAtRisk.some(p => p.result.status === "danger") ? "rgba(239,68,68,0.4)" : "rgba(245,158,11,0.3)" }}>
-              <div className="flex items-start gap-3">
-                <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${acwrAtRisk.some(p => p.result.status === "danger") ? "text-red-400" : "text-[#f59e0b]"}`} />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-bold ${acwrAtRisk.some(p => p.result.status === "danger") ? "text-red-400" : "text-[#f59e0b]"}`}>
-                    ACWR 负荷预警
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {acwrAtRisk.length} 名球员负荷异常 · 建议检查训练安排
-                  </p>
-                  <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
-                    {acwrAtRisk.slice(0, 8).map((p) => (
-                      <div key={p.name} className="flex items-center justify-between text-xs py-0.5">
-                        <span className="text-gray-300 truncate">{p.name}</span>
-                        <span className={`font-mono font-bold ml-2 flex-shrink-0 ${p.result.status === "danger" ? "text-red-400" : "text-[#f59e0b]"}`}>
-                          ACWR {p.result.acwr.toFixed(1)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] text-gray-500 mt-2 leading-relaxed">
-                    安全区间: 0.8-1.3 · 警告: 1.3-1.5 · 危险: &gt;1.5 或 &lt;0.8
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Goal — for athlete or fitness */}
           {!isCoach && (
@@ -981,99 +700,88 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 </div>
               )}
 
-              {/* ★ Scene Selector — FIRST and most prominent decision (四大板块) */}
+              {/* Scene selector — athlete picks scene FIRST before goals */}
               {!isCoach && !isFitness && (
-                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400" />
-                    <p className="text-xs font-bold text-white uppercase tracking-wide">训练场景 · 四大板块</p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* ⚽ 场地训练 — green accent */}
-                    <button onClick={() => setScene("pitch")}
-                      className={`rounded-xl p-3 transition-all duration-150 border-2 text-center ${
-                        scene === "pitch"
-                          ? "bg-[#22c55e]/10 border-[#22c55e] shadow-lg shadow-[#22c55e]/10"
-                          : "bg-[#121212] border-[#222] hover:border-[#22c55e]/30"
-                      }`}>
-                      <span className="text-2xl block mb-1">⚽</span>
-                      <span className={`block text-xs font-bold ${scene === "pitch" ? "text-[#22c55e]" : "text-[#777]"}`}>场地训练</span>
-                      <span className={`block text-[10px] mt-0.5 ${scene === "pitch" ? "text-[#22c55e]/70" : "text-[#555]"}`}>板块二</span>
-                    </button>
-                    {/* 🏋️ 体能房 — red accent (brand) */}
-                    <button onClick={() => setScene("gym")}
-                      className={`rounded-xl p-3 transition-all duration-150 border-2 text-center ${
-                        scene === "gym"
-                          ? "bg-[#d92525]/10 border-[#d92525] shadow-lg shadow-[#d92525]/10"
-                          : "bg-[#121212] border-[#222] hover:border-[#d92525]/30"
-                      }`}>
-                      <span className="text-2xl block mb-1">🏋️</span>
-                      <span className={`block text-xs font-bold ${scene === "gym" ? "text-[#d92525]" : "text-[#777]"}`}>体能房</span>
-                      <span className={`block text-[10px] mt-0.5 ${scene === "gym" ? "text-[#d92525]/70" : "text-[#555]"}`}>板块三</span>
-                    </button>
-                    {/* 🩺 伤病防控 — amber accent */}
-                    <button onClick={() => setScene("rehab")}
-                      className={`rounded-xl p-3 transition-all duration-150 border-2 text-center ${
-                        scene === "rehab"
-                          ? "bg-[#f59e0b]/10 border-[#f59e0b] shadow-lg shadow-[#f59e0b]/10"
-                          : "bg-[#121212] border-[#222] hover:border-[#f59e0b]/30"
-                      }`}>
-                      <span className="text-2xl block mb-1">🩺</span>
-                      <span className={`block text-xs font-bold ${scene === "rehab" ? "text-[#f59e0b]" : "text-[#777]"}`}>伤病防控</span>
-                      <span className={`block text-[10px] mt-0.5 ${scene === "rehab" ? "text-[#f59e0b]/70" : "text-[#555]"}`}>板块四</span>
-                    </button>
-                  </div>
-                  {/* Scene description */}
-                  <div className={`rounded-lg px-3 py-2 text-[10px] leading-relaxed ${
-                    scene === "pitch" ? "bg-[#22c55e]/5 border border-[#22c55e]/10 text-[#22c55e]/80" :
-                    scene === "gym" ? "bg-[#d92525]/5 border border-[#d92525]/10 text-[#d92525]/80" :
-                    "bg-[#f59e0b]/5 border border-[#f59e0b]/10 text-[#f59e0b]/80"
-                  }`}>
-                    {scene === "pitch" ? "⚽ 场地训练：有球热身+FIFA 11++速度/灵敏/耐力+SSG | 可用目标：爆发力/速度/灵敏/耐力" :
-                     scene === "gym" ? "🏋️ 体能房：最大力量+基础爆发+核心对抗 | 可用目标：力量/爆发力/灵敏/对抗" :
-                     "🩺 伤病防控：康复筛查+渐进恢复+弱侧强化 | 负荷≤50%1RM · 无爆发力/冲刺"}
-                  </div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] text-gray-500 mr-1">训练场景：</span>
+                  <button onClick={() => setScene("pitch")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "pitch" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    <MapPin className="w-3.5 h-3.5" /> 球场
+                  </button>
+                  <button onClick={() => setScene("gym")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    <Dumbbell className="w-3.5 h-3.5" /> 体能房
+                  </button>
+                  <span className="text-[10px] text-gray-600 ml-2">
+                    {scene === "pitch" ? "有球训练 · 速度/灵敏" : "体能训练 · 力量/对抗"}
+                  </span>
+                </div>
+              )}
 
-                  {/* Scene-specific info panel */}
-                  {scene === "gym" && (
-                    <div className="bg-[#121212] rounded-lg p-4 space-y-3">
-                      {(() => {
-                        const age = formData.age || 25;
-                        const weight = formData.weight || 70;
-                        const height = formData.height || 175;
-                        const bmi = weight / ((height / 100) ** 2);
-                        const years = formData.years || 1;
-                        const isU18 = age < 18;
-                        const isO35 = age > 35;
-                        const hasInjury = (formData.injurySites || []).length > 0;
-                        return (
-                          <>
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="text-center bg-[#1e1e1e] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
-                              <div className="text-center bg-[#1e1e1e] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
-                              <div className="text-center bg-[#1e1e1e] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
-                            </div>
-                            {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(&gt;85%1RM)，专注动作质量</p>}
-                            {isO35 && <p className="text-xs text-amber-400">热身延长至20min，关节保护优先</p>}
-                            {hasInjury && <p className="text-xs text-red-400">检测到伤病部位，训练时避开直接负重</p>}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
+              {/* Gym scene — show gym-specific panel instead of goals */}
+              {!isCoach && !isFitness && scene === "gym" ? (
+                <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-2xl p-5 space-y-4">
+                  <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">🏋️ 体能房训练</p>
+                  {(() => {
+                    const age = formData.age || 25;
+                    const weight = formData.weight || 70;
+                    const height = formData.height || 175;
+                    const bmi = weight / ((height / 100) ** 2);
+                    const years = formData.years || 1;
+                    const isU18 = age < 18;
+                    const isO35 = age > 35;
+                    const hasInjury = (formData.injurySites || []).length > 0;
+                    return (
+                      <>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
+                        </div>
+                        {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(&gt;85%1RM)，专注动作质量</p>}
+                        {isO35 && <p className="text-xs text-amber-400">热身延长至20min，关节保护优先</p>}
+                        {hasInjury && <p className="text-xs text-red-400">检测到伤病部位，训练时避开直接负重</p>}
+                      </>
+                    );
+                  })()}
+                  <div className="text-xs text-gray-400">
+                    选择下方训练目标后生成健身房方案。可用目标：力量、爆发力、灵敏、对抗。
+                  </div>
+                </div>
+              ) : null}
 
-                  {scene === "rehab" && (
-                    <div className="bg-[#121212] rounded-lg p-4 space-y-2">
-                      <p className="text-xs text-[#f59e0b] font-bold">🩺 康复模式注意事项</p>
-                      <ul className="text-[10px] text-gray-400 space-y-1">
-                        <li>· 所有负荷≤50%1RM，伤病部位零负重</li>
-                        <li>· 优先闭链练习、本体感觉训练、ROM恢复</li>
-                        <li>· 心率限制：(220-年龄)×60-70%</li>
-                        <li>· 康复阶段：急性期→增殖期→重塑期→功能期</li>
-                        <li>· 腘绳肌离心康复是关键(再伤率最高)</li>
-                      </ul>
-                    </div>
-                  )}
+              {/* Position Quick-Select — athlete only, not fitness */}
+              {!isFitness && (
+                <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="w-4 h-4 text-[#d92525]" />
+                    <p className="text-xs font-bold text-white">{t("player.position")}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([
+                      { label: "门将", value: "goalkeeper" },
+                      { label: "边后卫", value: "wingback" },
+                      { label: "中后卫", value: "defender" },
+                      { label: "中场", value: "midfielder" },
+                      { label: "边锋", value: "forward" },
+                      { label: "中锋", value: "forward" },
+                    ] as const).map(({ label, value }) => {
+                      const isSelected = formData.position === value;
+                      return (
+                        <button
+                          key={label}
+                          onClick={() => updateField("position", value)}
+                          className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all duration-150 border ${
+                            isSelected
+                              ? "bg-[#d92525] text-white border-[#d92525]"
+                              : "bg-[#1e1e1e] text-[#777] border-[#222] hover:border-[#d92525]/30"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -1103,11 +811,10 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                         })}
                       </div>
                     ) : GOALS.filter(g => {
-                        // Scene-aware goal filtering (四大板块)
+                        // Scene-aware goal filtering
                         if (!isCoach && !isFitness) {
                           if (scene === "pitch" && g === "combat") return false; // 对抗需要搭档，球场单人不可练
-                          if (scene === "gym" && (g === "speed" || g === "mas_endurance")) return false; // 速度/耐力→场地
-                          if (scene === "rehab") return false; // 康复模式不用常规目标
+                          if (scene === "gym" && (g === "speed" || g === "mas_endurance")) return false; // 速度需要跑道 耐力不符合足球专项
                         }
                         return true;
                       }).map((g) => {
@@ -1243,50 +950,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
             </div>
           )}
 
-          {/* Coach: Player Selection — multi-player batch mode */}
-          {isCoach && (
-            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-4 h-4 text-[#d92525]" />
-                <p className="text-xs font-bold text-white">球员选择</p>
-              </div>
-              {selectedPlayerIds.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {selectedPlayers.map(p => (
-                      <span key={p.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
-                        {p.name}
-                        {p.injuryStatus !== "healthy" && (
-                          <span className={p.injuryStatus === "out" ? "text-red-400" : "text-amber-400"}>
-                            {p.injuryStatus === "out" ? "重伤" : "轻伤"}
-                          </span>
-                        )}
-                        <button onClick={() => setSelectedPlayerIds(prev => prev.filter(id => id !== p.id))}
-                          className="ml-0.5 hover:text-white"><X className="w-3 h-3" /></button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400">已选 {selectedPlayerIds.length}/{rosterPlayers.length} 人</span>
-                    <button onClick={() => setShowPlayerPicker(true)}
-                      className="text-[10px] text-[#d92525] hover:text-white transition">修改选择</button>
-                  </div>
-                  {selectedPlayers.some(p => p.injuryStatus !== "healthy") && (
-                    <p className="text-[10px] text-gray-500">AI自动屏蔽全员禁忌动作，生成一份适合所有选中球员的训练方案</p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-[10px] text-gray-400">选择多名球员，AI将生成一份适合所有人的训练方案</p>
-                  <button onClick={() => setShowPlayerPicker(true)}
-                    className="px-4 py-2 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded-lg text-xs font-medium hover:bg-[#d92525]/20 transition">
-                    选择球员
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Coach: Tactical Themes — tag pills */}
           {isCoach && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-3">
@@ -1307,75 +970,97 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
             </div>
           )}
 
-          {/* Load Dashboard — coach only, collapsible */}
+          {/* Equipment selector — coach only */}
           {isCoach && (
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <div
-                className="flex items-center justify-between cursor-pointer select-none"
-                onClick={() => setLoadDashOpen(!loadDashOpen)}
-              >
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[#d92525]" />
-                  <p className="text-xs font-bold text-white">训练负荷仪表盘</p>
-                </div>
-                <span
-                  className="text-[10px] text-gray-400 transition-transform duration-200"
-                  style={{ transform: loadDashOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                >
-                  ▼
-                </span>
+              <p className="text-xs text-gray-400 mb-3">
+                {"可选器材（不选则AI自动推荐）"}
+                {formData.equipmentAvailable?.length > 0 && (
+                  <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
+                )}
+              </p>
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                {[
+                  { n:"标志盘",  color:"#e8780a" },
+                  { n:"标志桶",  color:"#e8780a" },
+                  { n:"标志杆",  color:"#e8c800" },
+                  { n:"号坎",    color:"#4a90d9" },
+                  { n:"足球",    color:"#ffffff" },
+                  { n:"小球门",  color:"#ffffff" },
+                  { n:"标准门",  color:"#ffffff" },
+                  { n:"小栏架",  color:"#e8780a" },
+                  { n:"高栏架",  color:"#e8780a" },
+                  { n:"绳梯",    color:"#c8960c" },
+                  { n:"敏捷圈",  color:"#4a90d9" },
+                  { n:"弹力带",  color:"#e8780a" },
+                  { n:"药球",    color:"#d92525" },
+                  { n:"瑜伽球",  color:"#4a90d9" },
+                  { n:"泡沫轴",  color:"#888888" },
+                ].map(({ n, color }) => {
+                  const act = formData.equipmentAvailable?.includes(n);
+                  const iconColor = act ? "#d92525" : color;
+                  const count = equipmentInv.getCount(n);
+                  return (
+                    <div key={n} className={`flex flex-col items-center justify-center rounded-lg transition-all duration-150 border py-1.5 relative ${
+                      act
+                        ? "bg-[#261818] border-[#d92525]/30"
+                        : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
+                    }`}>
+                      <button
+                        onClick={() => {
+                          const next = act ? formData.equipmentAvailable.filter((x: string) => x !== n) : [...(formData.equipmentAvailable || []), n];
+                          updateField("equipmentAvailable", next);
+                          if (!act) {
+                            equipmentInv.ensureDefault(n);
+                          } else {
+                            equipmentInv.remove(n);
+                          }
+                        }}
+                        className="flex flex-col items-center justify-center gap-1 w-full"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
+                          {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
+                          {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
+                          {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
+                          {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
+                          {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                          {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
+                          {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
+                        </svg>
+                        <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
+                      </button>
+                      {/* Count controls — only shown when selected */}
+                      {act && (
+                        <div className="flex items-center gap-0.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); if (c > 1) equipmentInv.setCount(n, c - 1); }}
+                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            aria-label={`减少${n}数量`}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-[10px] text-white font-bold min-w-[14px] text-center">{count || equipmentInv.getCount(n) || "?"}</span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); equipmentInv.setCount(n, (c || 0) + 1); }}
+                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            aria-label={`增加${n}数量`}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              {loadDashOpen && (
-                <div className="mt-3">
-                  <LoadDashboard />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Fitness Profile — coach & athlete, collapsible */}
-          {!isFitness && (
-            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <div
-                className="flex items-center justify-between cursor-pointer select-none"
-                onClick={() => setFitnessProfileOpen(!fitnessProfileOpen)}
-              >
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-[#d92525]" />
-                  <p className="text-xs font-bold text-white">体能档案</p>
-                </div>
-                <span
-                  className="text-[10px] text-gray-400 transition-transform duration-200"
-                  style={{ transform: fitnessProfileOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                >
-                  ▼
-                </span>
-              </div>
-              {fitnessProfileOpen && (
-                <div className="mt-3">
-                  <FitnessProfile />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Equipment selector — coach only (modal trigger) */}
-          {isCoach && (
-            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-              <button
-                onClick={() => setShowEquipmentModal(true)}
-                className="w-full flex items-center justify-between px-3 py-2.5 bg-[#121212] border border-[#333] rounded-lg hover:border-[#d92525]/50 transition group"
-              >
-                <span className="flex items-center gap-2 text-xs text-gray-300 group-hover:text-white transition">
-                  <span className="text-base">📦</span>
-                  器材选择
-                </span>
-                <span className="text-[10px] text-gray-400 group-hover:text-[#d92525] transition">
-                  {formData.equipmentAvailable?.length > 0
-                    ? `器材 (${formData.equipmentAvailable.length}项)`
-                    : "不选则AI自动推荐"}
-                </span>
-              </button>
             </div>
           )}
 
@@ -1464,34 +1149,9 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                   className="w-16 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#d92525] focus:outline-none" />
               </div>
             </div>
-            {/* Player load tracking — 补负荷 */}
-            <div className="bg-[#121212] border border-[#f59e0b]/20 rounded-lg p-3 space-y-2">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#f59e0b]" />
-                <span className="text-xs font-bold text-[#f59e0b]">补负荷追踪</span>
-                <span className="text-[10px] text-gray-400">板块二·场地训练</span>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-gray-400">{`上场<45min人数`}</span>
-                  <input type="number" min={0} max={50} defaultValue={formData.underloadCount || 0}
-                    onChange={(e) => updateField("underloadCount", parseInt(e.target.value) || 0)}
-                    className="w-14 px-2 py-1.5 bg-[#1e1e1e] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#f59e0b] focus:outline-none" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-gray-400">Min上场时间</span>
-                  <input type="number" min={0} max={90} defaultValue={formData.minPlayMinutes || 0}
-                    onChange={(e) => updateField("minPlayMinutes", parseInt(e.target.value) || 0)}
-                    className="w-14 px-2 py-1.5 bg-[#1e1e1e] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#f59e0b] focus:outline-none" />
-                </div>
-              </div>
-              <p className="text-[10px] text-gray-500">
-                未出场或上场不足的球员将在训练末端自动补负荷（额外SSG或间歇跑）
-              </p>
-            </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
-              placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…\n可注明球员上场时间：张三 30min, 李四 0min(未出场)"}
+              placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
               rows={3}
               className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-y min-h-[80px]"
             />
@@ -1780,90 +1440,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
           )}
 
           <TrainingTabs modules={training.modules} formData={formData} planId={training.planId} onSaveTemplate={() => setShowTemplateSave(true)} launchTimer={launchTimer} onLaunchTimer={() => setLaunchTimer(false)} />
-
-          {/* Post-generation: player chips for batch mode individual adjustment */}
-          {isCoach && selectedPlayers.length > 1 && status === "complete" && (
-            <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#d92525]" />
-                <p className="text-xs font-bold text-white">球员个人调整</p>
-                <span className="text-[10px] text-gray-400">点击球员卡片进行个人化微调</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {selectedPlayers.map((p) => {
-                  const hasAdjustment = editablePlayerPlans[p.id];
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => setAdjustingPlayerId(p.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition ${
-                        adjustingPlayerId === p.id
-                          ? "bg-[#d92525]/15 border-[#d92525]/30 text-[#d92525]"
-                          : hasAdjustment
-                            ? "bg-[#d92525]/5 border-[#d92525]/20 text-gray-200"
-                            : "bg-[#121212] border-[#333] text-gray-400 hover:border-[#555] hover:text-white"
-                      }`}
-                    >
-                      <span className="font-medium truncate max-w-[80px]">{p.name}</span>
-                      {p.injuryStatus !== "healthy" && (
-                        <span className={`text-[10px] ${p.injuryStatus === "out" ? "text-red-400" : "text-amber-400"}`}>
-                          {p.injuryStatus === "out" ? "重伤" : "轻伤"}
-                        </span>
-                      )}
-                      {hasAdjustment && <Edit3 className="w-3 h-3 text-[#d92525]" />}
-                    </button>
-                  );
-                })}
-              </div>
-              {adjustingPlayerId && (() => {
-                const player = selectedPlayers.find(p => p.id === adjustingPlayerId);
-                if (!player) return null;
-                const currentAdjustment = editablePlayerPlans[player.id] || { notes: "" };
-                return (
-                  <div className="bg-[#121212] border border-[#d92525]/20 rounded-lg p-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-white">{player.name} 的个人调整</p>
-                      <button onClick={() => setAdjustingPlayerId(null)}
-                        className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] text-gray-400 block">个人备注/调整说明</label>
-                      <textarea
-                        value={currentAdjustment.notes}
-                        onChange={(e) => setEditablePlayerPlans(prev => ({
-                          ...prev,
-                          [player.id]: { ...prev[player.id], notes: e.target.value }
-                        }))}
-                        placeholder={`为 ${player.name} 添加个人化调整…\n如：降低负荷、替换动作、额外休息等`}
-                        rows={3}
-                        className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-y"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          const updated = { ...editablePlayerPlans };
-                          delete updated[player.id];
-                          setEditablePlayerPlans(updated);
-                          setAdjustingPlayerId(null);
-                        }}
-                        className="px-3 py-1.5 text-[10px] text-gray-400 border border-[#333] rounded hover:text-white transition"
-                      >
-                        清除调整
-                      </button>
-                      <button
-                        onClick={() => setAdjustingPlayerId(null)}
-                        className="px-3 py-1.5 text-[10px] bg-[#d92525] text-white font-bold rounded hover:bg-opacity-90 transition"
-                      >
-                        保存
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
-
           <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); setSavedPlanId(null); }} className="w-full py-2 bg-[#1e1e1e] text-gray-400 rounded-lg text-sm hover:bg-[#222] transition">← {t("dashboard.newPlan")}</button>
           {!isCoach && <TrainingHistory />}
         </div>
@@ -1934,30 +1510,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
           />
         );
       })()}
-
-      {/* Player Picker Modal — coach multi-player selection */}
-      {showPlayerPicker && (
-        <PlayerPickerModal
-          players={rosterPlayers}
-          selectedIds={selectedPlayerIds}
-          onToggle={(id) => setSelectedPlayerIds(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-          )}
-          onSelectAll={() => setSelectedPlayerIds(rosterPlayers.map(p => p.id))}
-          onDeselectAll={() => setSelectedPlayerIds([])}
-          onClose={() => setShowPlayerPicker(false)}
-        />
-      )}
-
-      {/* Equipment Modal — coach equipment selector */}
-      {showEquipmentModal && (
-        <EquipmentModal
-          formData={formData}
-          updateField={updateField}
-          equipmentInv={equipmentInv}
-          onClose={() => setShowEquipmentModal(false)}
-        />
-      )}
     </div>
   );
 }

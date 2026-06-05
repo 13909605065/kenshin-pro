@@ -31,9 +31,9 @@ interface TableRow {
 }
 
 const PHASE_COLORS: Record<string, { bg: string; border: string; text: string; label: string }> = {
-  warmup: { bg: "rgba(34,197,94,0.12)", border: "#22c55e", text: "#22c55e", label: "热身激活" },
-  main:   { bg: "rgba(37,99,235,0.15)", border: "#2563eb", text: "#60a5fa", label: "主训练" },
-  cooldown: { bg: "rgba(234,179,8,0.12)", border: "#eab308", text: "#eab308", label: "收尾放松" },
+  warmup: { bg: "rgba(34,197,94,0.12)", border: "#22c55e", text: "#22c55e", label: "准备激活" },
+  main:   { bg: "rgba(37,99,235,0.15)", border: "#2563eb", text: "#60a5fa", label: "主体负荷" },
+  cooldown: { bg: "rgba(234,179,8,0.12)", border: "#eab308", text: "#eab308", label: "整理放松" },
 };
 
 function formatLoad(ex: any): string {
@@ -63,11 +63,25 @@ function formatRest(ex: any): string {
   return `${s}s`;
 }
 
-function formatNotes(ex: any, phase: string): string {
+function formatNotes(ex: any, phase: string, position?: string | null): string {
   if (ex?.cue_points?.length) return (ex.cue_points as string[]).slice(0, 2).join("；");
-  if (phase === "warmup") return "心肺动员";
-  if (phase === "main") return "动作激活";
-  return "";
+  const notes: string[] = [];
+  if (phase === "warmup") {
+    notes.push("损伤预防：动态激活+关节ROM");
+    notes.push("FIFA 11+ 必练");
+  } else if (phase === "main") {
+    notes.push("肌群目标：核心稳定+下肢爆发");
+    notes.push("控制离心3s，向心爆发");
+  } else {
+    notes.push("静态拉伸30s/组，PNF优先");
+  }
+  // Position-specific note
+  if (position === "goalkeeper") {
+    notes.push("守门员：落地缓冲优先");
+  } else if (position === "midfielder") {
+    notes.push("中场：变向稳定性");
+  }
+  return notes.slice(0, 2).join("；");
 }
 
 export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
@@ -82,10 +96,10 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
   const warmups = posModule?.module === "position_training" ? (posModule.warmup || []) : [];
   warmups.forEach((w: any) => {
     rows.push({
-      phase: "warmup", phaseLabel: "热身激活",
+      phase: "warmup", phaseLabel: "准备激活",
       name: w.name || "热身",
       load: "BW", sets: `${w.duration || "—"}`, reps: `${w.duration || "—"}min`,
-      rest: "30s", notes: w.description || w.cue || "心肺动员",
+      rest: "30s", notes: w.description || w.cue || formatNotes(w, "warmup", position),
     });
   });
 
@@ -111,10 +125,10 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
       const r = ex.rest || 90;
       totalMainTime += (s * (r + 30)) / 60;
       rows.push({
-        phase: "main", phaseLabel: "主训练",
+        phase: "main", phaseLabel: "主体负荷",
         name: ex.name || "—",
         load: formatLoad(ex), sets: formatSets(ex), reps: formatReps(ex),
-        rest: formatRest(ex), notes: formatNotes(ex, "main"),
+        rest: formatRest(ex), notes: formatNotes(ex, "main", position),
         moduleType: mod, category: cat, index: i, exercise: ex,
       });
     });
@@ -124,10 +138,10 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
   const cooldowns = posModule?.module === "position_training" ? (posModule.cooldown || []) : [];
   cooldowns.forEach((c: any) => {
     rows.push({
-      phase: "cooldown", phaseLabel: "收尾放松",
+      phase: "cooldown", phaseLabel: "整理放松",
       name: c.name || "整理",
       load: "BW", sets: "1", reps: `${c.duration || "5"}min`,
-      rest: "—", notes: c.description || "静态拉伸",
+      rest: "—", notes: c.description || formatNotes(c, "cooldown", position),
     });
   });
 
@@ -175,13 +189,13 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
           {/* Column headers */}
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#1a1a1a] border-b border-[#333]">
-              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[72px] shrink-0">阶段</th>
-              <th className="text-left py-1.5 px-2 text-gray-500 font-medium min-w-[120px]">练习内容</th>
-              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[60px]">负重</th>
+              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[72px] shrink-0">阶段分类</th>
+              <th className="text-left py-1.5 px-2 text-gray-500 font-medium min-w-[120px]">训练内容</th>
+              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[72px]">负重(kg/BW)</th>
               <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[40px]">组数</th>
-              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[60px]">次数</th>
+              <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[72px]">次数/时长</th>
               <th className="text-left py-1.5 px-2 text-gray-500 font-medium w-[52px]">间歇</th>
-              <th className="text-left py-1.5 px-2 text-gray-500 font-medium min-w-[100px]">备注</th>
+              <th className="text-left py-1.5 px-2 text-gray-500 font-medium min-w-[120px]">执教备注</th>
             </tr>
           </thead>
           <tbody>
@@ -237,9 +251,9 @@ export function PhysicalTab({ modules, position, onUpdateExercise }: Props) {
 
       {/* ── Key Metrics Summary ── */}
       <div className="flex flex-wrap gap-3 text-[10px] text-gray-600">
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#22c55e"}}/> 热身</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#2563eb"}}/> 主训练 {totalAllTime}min</span>
-        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#eab308"}}/> 放松</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#22c55e"}}/> 准备激活</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#2563eb"}}/> 主体负荷 {totalAllTime}min</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{backgroundColor:"#eab308"}}/> 整理放松</span>
         {isGoalkeeper && <span className="text-gray-500 ml-4">· 守门员仅展示无球训练内容</span>}
       </div>
     </div>
