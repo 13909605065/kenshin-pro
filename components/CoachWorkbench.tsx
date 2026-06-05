@@ -8,7 +8,7 @@ import { ExportTable } from './ExportTable';
 import AIAssistant from './AIAssistant';
 import { ExerciseEditor } from './ExerciseEditor';
 import type { EditableExercise } from './ExerciseEditor';
-import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule } from '@/lib/types';
+import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
 import { PHASE_LABELS } from '@/lib/constants';
 import { getPhaseParams, getGoalParams } from '@/lib/periodization';
 import { getAtRiskPlayers } from '@/lib/acwr';
@@ -78,6 +78,18 @@ interface RosterPlayer { id: string; name: string; position: string; number: str
 type PlayerStatus = { name: string; status: 'green' | 'yellow' | 'red'; reason: string; disabledExercises?: string[] };
 function loadRoster(): RosterPlayer[] { try { const raw = localStorage.getItem('roster_players'); return raw ? JSON.parse(raw) : []; } catch { return []; } }
 
+/** Map Chinese position name from roster to Position enum */
+function mapPosition(cn: string): Position {
+  const map: Record<string, Position> = {
+    '门将': 'goalkeeper',
+    '中后卫': 'defender', '左后卫': 'wingback', '右后卫': 'wingback',
+    '后腰': 'midfielder', '中前卫': 'midfielder', '前腰': 'midfielder',
+    '中锋': 'center_forward', '影锋': 'forward', '边锋': 'winger',
+    '左边翼卫': 'wingback', '右边翼卫': 'wingback',
+  };
+  return map[cn] || 'midfielder';
+}
+
 // ── edit modal state ──
 interface EditState {
   moduleType: string;
@@ -93,6 +105,7 @@ export default function CoachWorkbench() {
   const [duration, setDuration] = useState(60);
   const [phase, setPhase] = useState<SeasonPhase>('competition');
   const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
   const [showPlan, setShowPlan] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [matchDate, setMatchDate] = useState<string>(() => { const d = new Date(); d.setDate(d.getDate() + (7 - d.getDay())); return dateStr(d); });
@@ -175,12 +188,14 @@ export default function CoachWorkbench() {
 
   // ── load recommendation based on MD ──
   useEffect(() => {
-    if (mdDay > 2) { setScene('gym'); setGoal('strength'); }
-    else if (mdDay === 2) { setScene('gym'); setGoal('power'); }
-    else if (mdDay === 1) { setScene('pitch'); setGoal('speed'); }
-    else if (mdDay === 0) { setScene('pitch'); setGoal('speed'); } // match day - light activation
-    else if (mdDay === -1) { setScene('pitch'); setGoal('mas_endurance'); } // MD+1 recovery
-    else { setScene('pitch'); setGoal('mas_endurance'); }
+    if (mdDay >= 4) { setScene('gym'); setGoal('strength'); }          // MD-4+: heavy strength
+    else if (mdDay === 3) { setScene('gym'); setGoal('strength'); }    // MD-3: strength+power
+    else if (mdDay === 2) { setScene('gym'); setGoal('power'); }       // MD-2: power+speed维持
+    else if (mdDay === 1) { setScene('pitch'); setGoal('speed'); }     // MD-1: 赛前激活
+    else if (mdDay === 0) { setScene('pitch'); setGoal('speed'); }     // MD: light activation
+    else if (mdDay === -1) { setScene('gym'); setGoal('mas_endurance'); } // MD+1: active recovery gym
+    else if (mdDay === -2) { setScene('gym'); setGoal('strength'); }   // MD+2: 弱链纠正
+    else { setScene('gym'); setGoal('strength'); }                      // MD+3+: normal training
   }, [mdDay]);
 
   // ── build form data helper ──
@@ -192,7 +207,7 @@ export default function CoachWorkbench() {
       if (player) {
         return {
           role: 'coach', name: player.name, gender: 'male',
-          position: player.position as any,
+          position: mapPosition(player.position),
           age: player.age, height: player.height, weight: player.weight, years: null,
           injuryHistory: player.injuryHistory || player.injuryNote || '',
           goal: goal as TrainingGoal, phase,
@@ -229,13 +244,17 @@ export default function CoachWorkbench() {
   // ── generate ──
   const handleGenerate = async () => {
     setGenerating(true);
+    setGenError(null);
     setShowPlan(true);
     setActiveDayOffset(mdDay);
 
     const fd = buildFormData();
 
     try { await generate(fd, undefined, scene); }
-    catch (e) { console.error('Generate failed:', e); }
+    catch (e: any) {
+      setGenError(e?.message || 'AI生成失败，请重试');
+      console.error('Generate failed:', e);
+    }
     setGenerating(false);
   };
 
@@ -273,12 +292,14 @@ export default function CoachWorkbench() {
       setActiveDayOffset(dayOffset);
     } else {
       // No saved plan — set scene/goal recommendation for this day
-      if (dayOffset > 2) { setScene('gym'); setGoal('strength'); }
+      if (dayOffset >= 4) { setScene('gym'); setGoal('strength'); }
+      else if (dayOffset === 3) { setScene('gym'); setGoal('strength'); }
       else if (dayOffset === 2) { setScene('gym'); setGoal('power'); }
       else if (dayOffset === 1) { setScene('pitch'); setGoal('speed'); }
       else if (dayOffset === 0) { setScene('pitch'); setGoal('speed'); }
-      else if (dayOffset === -1) { setScene('pitch'); setGoal('mas_endurance'); }
-      else { setScene('pitch'); setGoal('mas_endurance'); }
+      else if (dayOffset === -1) { setScene('gym'); setGoal('mas_endurance'); }
+      else if (dayOffset === -2) { setScene('gym'); setGoal('strength'); }
+      else { setScene('gym'); setGoal('strength'); }
       setActiveDayOffset(dayOffset);
       setShowPlan(false);
     }
@@ -576,6 +597,18 @@ export default function CoachWorkbench() {
         {isLoading ? <><span className="animate-spin">⏳</span> 生成中…</> : hasPlanForToday ? '📋 已有方案 · 重新生成' : planMode === 'individual' && selectedPlayerId ? `⚡ 生成${mdLabel}个体方案` : `⚡ 生成${mdLabel}训练方案`}
       </button>
 
+      {/* Error display */}
+      {genError && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
+          <span className="text-red-400 shrink-0 mt-0.5">⚠️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-red-400 text-xs font-medium">{genError}</p>
+            <button onClick={() => { setGenError(null); handleGenerate(); }} className="text-[10px] text-red-400 underline hover:text-red-300 mt-1">点击重试</button>
+          </div>
+          <button onClick={() => setGenError(null)} className="text-gray-500 hover:text-white shrink-0 text-xs">✕</button>
+        </div>
+      )}
+
       {/* ═══ PLAN OUTPUT ═══ */}
       {showPlan && modules.length > 0 && (
         <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
@@ -624,7 +657,7 @@ export default function CoachWorkbench() {
                 <div className={`text-[9px] font-bold ${isMatch ? 'text-[#d92525]' : isToday ? 'text-white' : 'text-gray-500'}`}>{label}</div>
                 <div className="text-[8px] text-gray-600 mt-0.5">{isMatch ? '⚽比赛' : isPast ? '✓完成' : isToday ? '←今天' : weekLabel(fmt(new Date(matchDate), dayOffset), 0).slice(-2)}</div>
                 <div className="text-[7px] text-gray-500 mt-1 leading-tight">
-                  {hasPlan ? '📋 已有方案' : isMatch ? '极高强度' : dayOffset >= 2 ? '力量房' : dayOffset === 1 ? '外场激活' : '恢复再生'}
+                  {hasPlan ? '📋 已有方案' : isMatch ? '⚽比赛日' : dayOffset >= 4 ? '🏋️力量' : dayOffset === 3 ? '🏋️力量+爆发' : dayOffset === 2 ? '🏋️爆发力' : dayOffset === 1 ? '⚡赛前激活' : dayOffset === -1 ? '🧊主动恢复' : dayOffset === -2 ? '🔧弱链纠正' : '🏋️正常训练'}
                 </div>
               </button>
             );

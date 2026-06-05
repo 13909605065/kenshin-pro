@@ -105,9 +105,10 @@ export async function POST(request: NextRequest) {
     matchContext = body.matchContext;
     const isCoach = formData.role === "coach";
     if (isCoach) {
-      if (!formData.coachCert || !formData.coachRole || !formData.leagueTag || !formData.tacticalThemes?.length) {
+      // S&C coach only needs cert + role + league. tacticalThemes removed (tactical era leftover).
+      if (!formData.coachCert || !formData.coachRole || !formData.leagueTag) {
         return Response.json(
-          { code: "invalid-form", message: "请填写教练必填项（证书、身份、联赛、战术主题）" },
+          { code: "invalid-form", message: "请填写教练必填项（证书、身份、联赛）" },
           { status: 400 }
         );
       }
