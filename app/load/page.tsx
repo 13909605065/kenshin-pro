@@ -60,10 +60,21 @@ export default function LoadPage() {
       d.setDate(monday.getDate() + i);
       const ds = d.toISOString().slice(0, 10);
       const log = logs.find((l: any) => l.date === ds);
-      // Estimate TRIMP: duration × 2.5 (field) or 2.0 (gym)
-      const estTRIMP = log ? Math.round(log.duration * (log.trainType === 'pitch' ? 2.5 : 2.0)) : 0;
-      used += estTRIMP;
-      days.push({ date: ds, day: WEEKDAY[d.getDay()], monthDay: `${d.getMonth()+1}/${d.getDate()}`, log, trimp: estTRIMP, isToday: ds === new Date().toISOString().slice(0, 10) });
+      // Estimate TRIMP: duration × 2.5 (field) or 2.0 (gym) or 0 (rest)
+      const isRest = log?.timeSlot === 'rest';
+      const estTRIMP = log && !isRest ? Math.round(log.duration * (log.trainType === 'pitch' ? 2.5 : 2.0)) : 0;
+      // Add match TRIMP if match day
+      const matchTRIMP = (() => {
+        if (mdDay !== 0) return 0;
+        try {
+          const matchState = JSON.parse(localStorage.getItem('kenshin_match_state') || 'null');
+          if (matchState?.totalTime) return Math.round(matchState.totalTime * 5); // ~5 TRIMP/min for match
+        } catch {}
+        return 0;
+      })();
+      const dayTRIMP = estTRIMP + matchTRIMP;
+      used += dayTRIMP;
+      days.push({ date: ds, day: WEEKDAY[d.getDay()], monthDay: `${d.getMonth()+1}/${d.getDate()}`, log, trimp: dayTRIMP, isRest, isToday: ds === new Date().toISOString().slice(0, 10) });
     }
     const remaining = Math.max(0, weekCap - used);
     const pctVal = Math.min(100, Math.round((used / weekCap) * 100));
@@ -129,7 +140,9 @@ export default function LoadPage() {
           {weekDays.map((d: any) => (
             <div key={d.date} className={`flex items-center gap-3 py-2 px-3 rounded-lg ${d.log ? 'bg-[#111]' : 'bg-[#0a0a0a] opacity-50'} ${d.isToday ? 'ring-1 ring-[#d92525]' : ''}`}>
               <span className="text-xs text-white font-medium w-16 shrink-0">{d.monthDay} {d.day}</span>
-              {d.log ? (
+              {d.log ? (d.isRest ? (
+                <span className="text-xs text-gray-500">😴 休息日</span>
+              ) : (
                 <>
                   <span className="text-xs">{d.log.trainType === 'pitch' ? '⚽ 外场' : '🏋️ 力量房'}</span>
                   <span className="text-xs text-gray-500">{d.log.timeSlot === 'morning' ? '🌅上午' : '🌇下午'}</span>
@@ -145,7 +158,7 @@ export default function LoadPage() {
                     {d.trimp} / {dayCap}
                   </span>
                 </>
-              ) : (
+              )) : (
                 <span className="text-[10px] text-gray-600">{d.isToday ? '— 今天未训练' : '— 休息'}</span>
               )}
             </div>

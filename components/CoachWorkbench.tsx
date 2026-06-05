@@ -716,7 +716,20 @@ export default function CoachWorkbench() {
           className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#3b82f6] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌅 上午</button>
         <button onClick={() => setTimeSlot('afternoon')}
           className={`px-3 py-1 rounded-lg text-[10px] font-medium transition ${timeSlot === 'afternoon' ? 'bg-[#f97316] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>🌇 下午</button>
-        <span className="text-[10px] text-gray-600 ml-auto">生成方案时自动记录</span>
+        <button onClick={() => {
+          const date = trainDate;
+          try {
+            const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+            const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
+            const existing = logs.findIndex((l: any) => l.date === date);
+            const entry = { date, trainType, timeSlot: 'rest' as const, duration: 0, savedAt: new Date().toISOString() };
+            if (existing >= 0) logs[existing] = entry;
+            else logs.unshift(entry);
+            localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
+          } catch {}
+        }}
+          className="text-[10px] px-3 py-1 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white transition ml-auto">😴 今天休息</button>
+        <span className="text-[10px] text-gray-600">生成方案时自动记录</span>
       </div>
 
       {/* ═══════════════════════════════════════════════
