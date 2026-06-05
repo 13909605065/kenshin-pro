@@ -473,34 +473,27 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
             {openSections.players && (
               <div className="px-2 pb-2" style={{ backgroundColor: CARD_BG, borderRadius: `0 0 ${TAC_THEME.radius} ${TAC_THEME.radius}` }}>
                 <div className="flex gap-2">
-                  {[
-                    { color: TAC_THEME.playerOwn, label: "己方", hint: "己方球员" },
-                    { color: TAC_THEME.playerOpponent, label: "对方", hint: "对方球员" },
-                    { color: TAC_THEME.playerGK, label: "门将", hint: "守门员" },
-                  ].map((p) => (
-                    <button
-                      key={p.hint}
-                      className="flex-1 flex items-center justify-center py-1.5 rounded-md cursor-pointer transition-all duration-150 hover:scale-105"
-                      style={{
-                        border: `2px solid ${p.color}`,
-                        backgroundColor: "transparent",
-                        borderRadius: TAC_THEME.radius,
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = `${p.color}1a`;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                      title={p.hint}
-                      onClick={() => {
-                        const toolbarColorBtn = document.querySelector(`[title="${p.color}"]`) as HTMLButtonElement;
-                        if (toolbarColorBtn) toolbarColorBtn.click();
-                      }}
-                    >
-                      <span className="text-[10px] font-bold" style={{ color: p.color }}>{p.label}</span>
-                    </button>
-                  ))}
+                  <button
+                    className="flex-1 flex items-center justify-center py-1.5 rounded-md cursor-pointer transition-all duration-150 hover:scale-105"
+                    style={{
+                      border: `2px solid ${TAC_THEME.accent}`,
+                      backgroundColor: "transparent",
+                      borderRadius: TAC_THEME.radius,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = `${TAC_THEME.accent}1a`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    title={TAC_THEME.accent}
+                    onClick={() => {
+                      const toolbarColorBtn = document.querySelector(`[title="${TAC_THEME.accent}"]`) as HTMLButtonElement;
+                      if (toolbarColorBtn) toolbarColorBtn.click();
+                    }}
+                  >
+                    <span className="text-[10px] font-bold" style={{ color: TAC_THEME.accent }}>球员</span>
+                  </button>
                 </div>
               </div>
             )}

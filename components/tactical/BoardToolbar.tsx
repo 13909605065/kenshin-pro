@@ -83,7 +83,7 @@ interface Props {
   activeColor: string; onColorChange: (c: string) => void;
   canUndo: boolean; canRedo: boolean;
   onUndo: () => void; onRedo: () => void;
-  onExport: () => void; onFormation: (f: string) => void; onClear: () => void;
+  onExport: () => void; onFormation?: (f: string) => void; onClear: () => void;
   onZoomIn?: () => void; onZoomOut?: () => void; onZoomFit?: () => void;
   lockPlayers?: boolean; onLockPlayersChange?: (v: boolean) => void;
   lockRoutes?: boolean; onLockRoutesChange?: (v: boolean) => void;
@@ -259,36 +259,40 @@ export function BoardToolbar(p: Props) {
         {/* Divider */}
         <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
 
-        {/* ── Formation pills ── */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {QUICK_FORMATIONS.map((f) => (
-            <button
-              key={f}
-              onClick={() => p.onFormation(f)}
-              title={`阵型 ${f}`}
-              className="px-2 py-1.5 rounded-full text-[11px] font-bold tracking-wide flex-shrink-0"
-              style={{
-                backgroundColor: "#1a1d24",
-                color: TEXT_MAIN,
-                border: `1px solid ${BORDER}`,
-                transition: "all 150ms",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#22252d";
-                e.currentTarget.style.borderColor = ACCENT;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#1a1d24";
-                e.currentTarget.style.borderColor = BORDER;
-              }}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+        {/* ── Formation pills (only when onFormation provided) ── */}
+        {p.onFormation && (
+          <>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {QUICK_FORMATIONS.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => p.onFormation!(f)}
+                  title={`阵型 ${f}`}
+                  className="px-2 py-1.5 rounded-full text-[11px] font-bold tracking-wide flex-shrink-0"
+                  style={{
+                    backgroundColor: "#1a1d24",
+                    color: TEXT_MAIN,
+                    border: `1px solid ${BORDER}`,
+                    transition: "all 150ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#22252d";
+                    e.currentTarget.style.borderColor = ACCENT;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#1a1d24";
+                    e.currentTarget.style.borderColor = BORDER;
+                  }}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
 
-        {/* Divider */}
-        <div className="w-px h-5 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+            {/* Divider */}
+            <div className="w-px h-5 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
+          </>
+        )}
 
         {/* ── Colors ── */}
         <div className="flex items-center gap-1 flex-shrink-0">
