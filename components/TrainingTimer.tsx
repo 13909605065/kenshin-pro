@@ -64,12 +64,14 @@ function extractTimerExercises(modules: any[], scene: string): TimerExercise[] {
     if (m.module !== 'position_training') continue;
     // Pitch: only warmup, drills, cooldown (no strength exercises)
     // Gym: warmup, upper/lower/core, cooldown
+    // Strict separation: pitch=no gym, gym=no pitch drills
     const allEx = [
       ...(m.warmup || []).map((e: any) => ({ ...e, phase: 'warmup' })),
-      ...(!isPitch ? [...(m.upper_limb || []).map((e: any) => ({ ...e, phase: 'upper' })),
-                      ...(m.lower_limb || []).map((e: any) => ({ ...e, phase: 'lower' })),
-                      ...(m.core || []).map((e: any) => ({ ...e, phase: 'core' }))] : []),
-      ...(m.drills || []).map((e: any) => ({ ...e, phase: 'drill' })),
+      ...(isPitch
+          ? [...(m.drills || []).map((e: any) => ({ ...e, phase: 'drill' }))]
+          : [...(m.upper_limb || []).map((e: any) => ({ ...e, phase: 'upper' })),
+             ...(m.lower_limb || []).map((e: any) => ({ ...e, phase: 'lower' })),
+             ...(m.core || []).map((e: any) => ({ ...e, phase: 'core' }))]),
       ...(m.cooldown || []).map((e: any) => ({ ...e, phase: 'cooldown' })),
     ];
     for (const ex of allEx) {
