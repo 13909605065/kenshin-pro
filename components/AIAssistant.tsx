@@ -128,6 +128,7 @@ export default function AIAssistant() {
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragStart.current) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
@@ -140,9 +141,9 @@ export default function AIAssistant() {
       y: Math.max(0, Math.min(window.innerHeight - 48, dragStart.current.py + dy)),
     });
   };
-  const onPointerUp = () => {
-    // Reset after a short delay so onClick can check hasMoved
-    setTimeout(() => { dragging.current = false; }, 50);
+  const onPointerUp = (e: React.PointerEvent) => {
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    setTimeout(() => { dragging.current = false; hasMoved.current = false; }, 50);
   };
 
   useEffect(() => {
