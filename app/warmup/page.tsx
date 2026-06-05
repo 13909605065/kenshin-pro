@@ -111,15 +111,21 @@ export default function WarmupDesignPage() {
     autoSave();
   };
 
-  // ─── Confirm warmup design ──────────────────────────────
-  const hConfirmWarmup = () => {
+  // ─── Save warmup to library ──────────────────────────────
+  const hSaveToLibrary = () => {
+    const c = boardRef.current; if (!c) return;
     try {
-      localStorage.setItem('kenshin_warmup_confirmed', JSON.stringify({
-        confirmedAt: new Date().toISOString(),
-        diagramExportReady: true,
-      }));
+      const json = JSON.stringify(c.toJSON());
+      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+      lib.unshift({
+        id: `warmup_${Date.now()}`,
+        name: `热身方案 ${new Date().toLocaleDateString('zh-CN')}`,
+        createdAt: new Date().toISOString(),
+        canvasJSON: json,
+      });
+      localStorage.setItem('kenshin_warmup_library', JSON.stringify(lib.slice(0, 20)));
+      alert('已保存到热身库');
     } catch {}
-    router.push('/');
   };
 
   const hZoomIn = () => {
@@ -322,14 +328,14 @@ export default function WarmupDesignPage() {
           ⚡ <span className="hidden sm:inline">快速模板</span>
         </button>
 
-        {/* 确认热身方案 */}
-        <button onClick={hConfirmWarmup}
+        {/* 保存到热身库 */}
+        <button onClick={hSaveToLibrary}
           className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
           style={{ color: '#fff', backgroundColor: '#22c55e' }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-          title="确认热身方案">
-          ✅ <span className="hidden sm:inline">确认热身方案</span>
+          title="保存到热身库">
+          💾 <span className="hidden sm:inline">保存到热身库</span>
         </button>
 
         {/* 导出 PNG */}
