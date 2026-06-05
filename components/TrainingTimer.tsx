@@ -48,7 +48,7 @@ interface PhaseGroup {
 
 const PHASE_GROUPS: PhaseGroup[] = [
   { key: 'warmup', label: '热身', icon: '🏃', storageField: 'warmup', exercisePhases: ['warmup'] },
-  { key: 'main', label: '主训', icon: '⚽', storageField: 'tactical', exercisePhases: ['upper', 'lower', 'core'] },
+  { key: 'main', label: '主训', icon: '⚽', storageField: 'tactical', exercisePhases: ['upper', 'lower', 'core', 'drill'] },
   { key: 'cooldown', label: '放松', icon: '🧊', storageField: 'cooldown', exercisePhases: ['cooldown'] },
 ];
 
@@ -57,15 +57,19 @@ interface PhaseGroupWithExercises extends PhaseGroup {
 }
 
 // ── Extract exercises from position_training modules with full fields ──
-function extractTimerExercises(modules: any[]): TimerExercise[] {
+function extractTimerExercises(modules: any[], scene: string): TimerExercise[] {
   const exercises: TimerExercise[] = [];
+  const isPitch = scene === 'pitch';
   for (const m of modules) {
     if (m.module !== 'position_training') continue;
+    // Pitch: only warmup, drills, cooldown (no strength exercises)
+    // Gym: warmup, upper/lower/core, cooldown
     const allEx = [
       ...(m.warmup || []).map((e: any) => ({ ...e, phase: 'warmup' })),
-      ...(m.upper_limb || []).map((e: any) => ({ ...e, phase: 'upper' })),
-      ...(m.lower_limb || []).map((e: any) => ({ ...e, phase: 'lower' })),
-      ...(m.core || []).map((e: any) => ({ ...e, phase: 'core' })),
+      ...(!isPitch ? [...(m.upper_limb || []).map((e: any) => ({ ...e, phase: 'upper' })),
+                      ...(m.lower_limb || []).map((e: any) => ({ ...e, phase: 'lower' })),
+                      ...(m.core || []).map((e: any) => ({ ...e, phase: 'core' }))] : []),
+      ...(m.drills || []).map((e: any) => ({ ...e, phase: 'drill' })),
       ...(m.cooldown || []).map((e: any) => ({ ...e, phase: 'cooldown' })),
     ];
     for (const ex of allEx) {
@@ -88,6 +92,7 @@ const PHASE_LABELS: Record<string, string> = {
   upper: '上肢',
   lower: '下肢',
   core: '核心',
+  drill: '场地训练',
   cooldown: '冷身',
 };
 
@@ -96,6 +101,7 @@ const PHASE_COLORS: Record<string, string> = {
   upper: 'text-[#d92525]',
   lower: 'text-[#d92525]',
   core: 'text-[#d92525]',
+  drill: 'text-blue-400',
   cooldown: 'text-green-400',
 };
 
@@ -117,7 +123,7 @@ export default function TrainingTimer({
   onClose,
 }: Props) {
   // ── Extracted exercises ──
-  const allExercises = useMemo(() => extractTimerExercises(modules), [modules]);
+  const allExercises = useMemo(() => extractTimerExercises(modules, scene), [modules, scene]);
 
   // ── Group exercises into phases ──
   const phaseGroups: PhaseGroupWithExercises[] = useMemo(() => {
