@@ -657,14 +657,18 @@ export default function CoachWorkbench() {
         const ranges = data?.phaseRanges || [];
         const phase = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
         if (!phase) return null;
-        const phaseMap: Record<string, { label: string; icon: string; color: string }> = {
-          offseason: { label: '休赛期', icon: '🧊', color: '#374151' },
-          preseason_build: { label: '季前备战期', icon: '🏋️', color: '#166534' },
-          regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b' },
-          playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d' },
+        const phaseMap: Record<string, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
+          offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
+          preseason_build: { label: '季前备战期', icon: '🏋️', color: '#166534', defaultMode: 'football' },
+          regular_season: { label: '常规赛季', icon: '⚽', color: '#991b1b', defaultMode: 'football' },
+          playoffs: { label: '附加赛', icon: '🏆', color: '#7f1d1d', defaultMode: 'football' },
         };
         const info = phaseMap[phase.phase];
         if (!info) return null;
+        // Auto-switch workbench mode to match phase
+        if (workbenchMode !== info.defaultMode && typeof window !== 'undefined') {
+          setTimeout(() => setWorkbenchMode(info.defaultMode), 0);
+        }
         const mdLabel = mdDay === 0 ? '⚽ 比赛日' : mdDay > 0 ? `MD-${mdDay}` : `MD+${Math.abs(mdDay)}`;
         return (
           <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3" style={{ borderLeft: `3px solid ${info.color}` }}>
