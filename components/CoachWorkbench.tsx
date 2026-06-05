@@ -134,81 +134,137 @@ interface EditState {
 function DailyTrainingNotes({ matchDate }: { matchDate: string }) {
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  // Read warmup
-  const warmupInfo = (() => {
+  // ── manual input state ──
+  const [tactical, setTactical] = useState('');
+  const [coachNotes, setCoachNotes] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  // ── load existing notes on mount ──
+  useEffect(() => {
+    try {
+      const all = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
+      const today = all[todayStr];
+      if (today) {
+        setTactical(today.tactical || '');
+        setCoachNotes(today.notes || '');
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── auto-read: warmup name from kenshin_warmup_calendar + kenshin_warmup_library ──
+  const warmupName = (() => {
     try {
       const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
       const today = cal[todayStr];
-      if (!today?.warmupId) return null;
+      if (!today?.warmupId) return '';
       const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
       const w = lib.find((x: any) => x.id === today.warmupId);
-      return { name: w?.name || '未知', duration: today.warmupDuration, ball: today.ballOption, notes: today.notes };
-    } catch { return null; }
+      return w?.name || '';
+    } catch { return ''; }
   })();
 
-  // Read gym
-  const gymInfo = (() => {
+  // ── auto-read: strength plan name from kenshin_gym_calendar + kenshin_gym_library ──
+  const strengthName = (() => {
     try {
       const cal = JSON.parse(localStorage.getItem('kenshin_gym_calendar') || '[]');
-      if (!Array.isArray(cal)) return null;
+      if (!Array.isArray(cal)) return '';
       const entry = cal.find((e: any) => e.date === todayStr);
-      if (!entry) return null;
+      if (!entry?.comboId) return '';
       const lib = JSON.parse(localStorage.getItem('kenshin_gym_library') || '[]');
       const w = lib.find((x: any) => x.id === entry.comboId);
-      return { name: w?.name || '未知方案', exerciseIds: w?.exerciseIds || entry.exerciseIds || [] };
-    } catch { return null; }
+      return w?.name || '';
+    } catch { return ''; }
   })();
 
-  // Read today's training log
-  const todayLog = (() => {
+  // ── auto-read: match state if today is match day ──
+  const matchInfo = (() => {
     try {
-      const logs = JSON.parse(localStorage.getItem('kenshin_training_logs') || '[]');
-      return logs.find((l: any) => l.date === todayStr) || null;
-    } catch { return null; }
+      const state = JSON.parse(localStorage.getItem('kenshin_match_state') || 'null');
+      if (!state || !state.startedAt) return '';
+      const stateDate = state.startedAt.slice(0, 10);
+      if (stateDate !== todayStr) return '';
+      const parts: string[] = [];
+      if (state.matchType) parts.push(state.matchType);
+      if (state.matchName) parts.push(state.matchName);
+      if (state.players?.length) parts.push(`${state.players.length}人`);
+      return parts.join(' · ');
+    } catch { return ''; }
   })();
 
-  // Read microcycle plan
-  const microPlan = (() => {
+  // ── save to kenshin_structured_notes ──
+  const handleSave = () => {
     try {
-      const all = JSON.parse(localStorage.getItem('kenshin_microcycle') || '{}');
-      const match = new Date(matchDate + 'T00:00:00');
-      const now = new Date();
-      const mdDay = Math.ceil((match.getTime() - now.getTime()) / 86400000);
-      return all[`${matchDate}_${mdDay}`] || null;
-    } catch { return null; }
-  })();
-
-  const hasData = warmupInfo || gymInfo || todayLog || microPlan;
-  if (!hasData) return null;
+      const all = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
+      all[todayStr] = {
+        warmup: warmupName,
+        tactical,
+        strength: strengthName,
+        match: matchInfo,
+        notes: coachNotes,
+      };
+      localStorage.setItem('kenshin_structured_notes', JSON.stringify(all));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
+  };
 
   return (
     <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4">
       <h3 className="text-xs font-semibold text-gray-400 mb-3">📝 今日训练笔记</h3>
-      <div className="space-y-2 text-xs">
-        {warmupInfo && (
-          <div className="flex gap-2">
-            <span className="text-gray-500 shrink-0">热身:</span>
-            <span className="text-white">{warmupInfo.name} · {warmupInfo.duration}min{warmupInfo.ball === 'ball' ? ' · 有球' : warmupInfo.ball === 'no-ball' ? ' · 无球' : ''}{warmupInfo.notes ? ` · ${warmupInfo.notes}` : ''}</span>
-          </div>
-        )}
-        {microPlan && (
-          <div className="flex gap-2">
-            <span className="text-gray-500 shrink-0">主训:</span>
-            <span className="text-white">{(microPlan as any).goal || '训练方案'} · {(microPlan as any).duration || '?'}min</span>
-          </div>
-        )}
-        {gymInfo && (
-          <div className="flex gap-2">
-            <span className="text-gray-500 shrink-0">力量:</span>
-            <span className="text-white">{gymInfo.name} · {gymInfo.exerciseIds.length}个动作</span>
-          </div>
-        )}
-        {todayLog && (
-          <div className="flex gap-2">
-            <span className="text-gray-500 shrink-0">完成:</span>
-            <span className="text-green-400">{(todayLog as any).summary?.completedExercises || 0}/{(todayLog as any).summary?.totalExercises || 0}项 · RPE {(todayLog as any).summary?.averageRPE || '—'}</span>
-          </div>
-        )}
+
+      <div className="space-y-3 text-xs">
+        {/* ── warmup: auto-read ── */}
+        <div className="flex gap-2 items-start">
+          <span className="text-gray-500 shrink-0 w-[72px]">热身内容:</span>
+          <span className={warmupName ? 'text-white' : 'text-gray-600'}>{warmupName || '（未绑定热身方案）'}</span>
+        </div>
+
+        {/* ── tactical: manual input ── */}
+        <div className="flex gap-2 items-start">
+          <span className="text-gray-500 shrink-0 w-[72px] pt-2">战术内容:</span>
+          <textarea
+            value={tactical}
+            onChange={e => setTactical(e.target.value)}
+            placeholder="今天练了什么战术/SSG/定位球"
+            className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#d92525] resize-none min-h-[56px]"
+            rows={2}
+          />
+        </div>
+
+        {/* ── strength: auto-read ── */}
+        <div className="flex gap-2 items-start">
+          <span className="text-gray-500 shrink-0 w-[72px]">力量内容:</span>
+          <span className={strengthName ? 'text-white' : 'text-gray-600'}>{strengthName || '（今日无力量房排课）'}</span>
+        </div>
+
+        {/* ── match: auto-read if match day ── */}
+        <div className="flex gap-2 items-start">
+          <span className="text-gray-500 shrink-0 w-[72px]">比赛数据:</span>
+          <span className={matchInfo ? 'text-[#d92525]' : 'text-gray-600'}>{matchInfo || '（非比赛日）'}</span>
+        </div>
+
+        {/* ── coach notes: manual input ── */}
+        <div className="flex gap-2 items-start">
+          <span className="text-gray-500 shrink-0 w-[72px] pt-2">教练备注:</span>
+          <textarea
+            value={coachNotes}
+            onChange={e => setCoachNotes(e.target.value)}
+            placeholder="其他补充说明..."
+            className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#d92525] resize-none min-h-[48px]"
+            rows={2}
+          />
+        </div>
+
+        {/* ── divider + save button ── */}
+        <div className="border-t border-[#222] pt-3 flex items-center gap-2">
+          <button
+            onClick={handleSave}
+            className="flex-1 py-2.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-bold transition active:scale-[0.98]"
+          >
+            {saved ? '✓ 已保存' : '保存笔记'}
+          </button>
+        </div>
       </div>
     </div>
   );

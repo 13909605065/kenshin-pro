@@ -121,6 +121,19 @@ export default function LoadPage() {
     return null;
   }, [refreshKey]);
 
+  // Current phase date range (separate from info to capture dates)
+  const currentPhaseRange = useMemo(() => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const raw = localStorage.getItem("kenshin_season_calendar");
+      if (!raw) return null;
+      const ranges = JSON.parse(raw).phaseRanges || [];
+      const p = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
+      if (p) return { startDate: p.startDate, endDate: p.endDate, phase: p.phase as PhaseKey };
+    } catch {}
+    return null;
+  }, [refreshKey]);
+
   // MD calc
   const matchDate = (() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})();
   const mdDay = (() => { try { const m = new Date(matchDate + 'T00:00:00'); const n = new Date(); return Math.ceil((m.getTime() - n.getTime()) / 86400000); } catch { return 7; }})();
@@ -167,6 +180,14 @@ export default function LoadPage() {
     return { weekDays: days, usedTRIMP: used, remainingTRIMP: remaining, pct: pctVal };
   }, [logs, weekCap]);
 
+  // Today's date string and training info for team overview
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${WEEKDAY[d.getDay()]}`;
+  }, []);
+
+  const todayTraining = useMemo(() => weekDays.find((d: any) => d.isToday) || null, [weekDays]);
+
   const statusEmoji = pct >= 90 ? '🔴' : pct >= 70 ? '🟡' : '🟢';
   const statusText = pct >= 90 ? '超负荷' : pct >= 70 ? '关注' : '安全';
 
@@ -184,6 +205,14 @@ export default function LoadPage() {
   const roster = useMemo<RosterPlayer[]>(() => {
     return readLS<RosterPlayer[]>('roster_players', []);
   }, [refreshKey]);
+
+  // Roster injury stats for team overview
+  const rosterStats = useMemo(() => {
+    const healthy = roster.filter(p => p.injuryStatus === 'healthy').length;
+    const minor = roster.filter(p => p.injuryStatus === 'minor').length;
+    const out = roster.filter(p => p.injuryStatus === 'out').length;
+    return { healthy, minor, out, total: roster.length };
+  }, [roster]);
 
   // Build player list from roster + TRIMP data
   const playerList = useMemo(() => {
@@ -418,6 +447,70 @@ export default function LoadPage() {
             <AlertTriangle className="w-3 h-3 shrink-0" /> 本周负荷已达上限！建议改为恢复/低强度训练
           </div>
         )}
+      </div>
+
+      {/* ═══ TEAM OVERVIEW DASHBOARD ═══ */}
+      <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white">📋 球队总览</h3>
+          <span className="text-[10px] text-gray-500">{todayStr}</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {/* 球员状态 */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
+            <div className="text-[10px] text-gray-500 mb-1.5">球员状态</div>
+            <div className="flex items-center gap-2.5 text-xs">
+              <span className="text-white">🟢{rosterStats.healthy}</span>
+              <span className="text-white">🟡{rosterStats.minor}</span>
+              <span className="text-white">🔴{rosterStats.out}</span>
+            </div>
+            <div className="text-[9px] text-gray-600 mt-1">共 {rosterStats.total} 人</div>
+          </div>
+
+          {/* 周负荷进度 */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
+            <div className="text-[10px] text-gray-500 mb-1.5">周负荷进度</div>
+            <div className="text-lg font-bold text-white font-mono">{pct}%</div>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className={`text-[9px] font-mono ${remainingTRIMP > 0 ? 'text-gray-500' : 'text-red-400'}`}>
+                剩余 {remainingTRIMP} / {weekCap} TRIMP
+              </span>
+            </div>
+          </div>
+
+          {/* 当前阶段 */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
+            <div className="text-[10px] text-gray-500 mb-1.5">当前阶段</div>
+            <div className="text-sm font-bold text-white">
+              {info ? <>{info.icon} {info.label}</> : <span className="text-gray-600">未设置</span>}
+            </div>
+            {currentPhaseRange ? (
+              <div className="text-[9px] text-gray-600 mt-1">{currentPhaseRange.startDate} → {currentPhaseRange.endDate}</div>
+            ) : (
+              <div className="text-[9px] text-gray-700 mt-1">请在赛季日历中设置</div>
+            )}
+          </div>
+
+          {/* 今日训练 */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 hover:border-[#444] transition-colors">
+            <div className="text-[10px] text-gray-500 mb-1.5">今日训练</div>
+            {todayTraining?.log && todayTraining.log.timeSlot !== 'rest' ? (
+              <>
+                <div className="text-xs text-white font-medium">
+                  {todayTraining.log.trainType === 'pitch' ? '⚽ 外场训练' : '🏋️ 力量训练'}
+                </div>
+                <div className="text-[9px] text-gray-500 mt-0.5">
+                  {todayTraining.log.duration}min · {todayTraining.log.timeSlot === 'morning' ? '🌅上午' : '🌇下午'}
+                </div>
+              </>
+            ) : todayTraining?.log?.timeSlot === 'rest' ? (
+              <div className="text-xs text-gray-500">😴 今日休息</div>
+            ) : (
+              <div className="text-xs text-gray-600">— 暂无记录</div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ═══ WEEKLY LOAD BAR ═══ */}
