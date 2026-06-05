@@ -22,8 +22,8 @@ const withPWA = require("next-pwa")({
     { urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i, handler: "CacheFirst", options: { cacheName: "images", expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 60 } } },
     // Fonts — Cache First
     { urlPattern: /\.(?:woff|woff2|ttf|otf|eot)$/i, handler: "CacheFirst", options: { cacheName: "fonts", expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
-    // Root page (Dashboard) — Network First
-    { urlPattern: /\/$/i, handler: "NetworkFirst", options: { cacheName: "pages", networkTimeoutSeconds: 5, expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 } } },
+    // Root page (Dashboard) — Network First, short cache for fast updates
+    { urlPattern: /\/$/i, handler: "NetworkFirst", options: { cacheName: "pages", networkTimeoutSeconds: 3, expiration: { maxEntries: 30, maxAgeSeconds: 60 * 1 } } },
     // Google Fonts stylesheets — Stale While Revalidate
     { urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i, handler: "StaleWhileRevalidate", options: { cacheName: "google-fonts-css", expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } } },
     // Google Fonts webfonts — Cache First

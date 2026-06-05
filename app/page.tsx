@@ -92,7 +92,7 @@ export default function Home() {
             <a href="/" className="select-none" title="KenshinPro 体能教练工作台">
               <span className="text-[#d92525] font-black text-lg" style={{letterSpacing:"-0.5px"}}>KENSHIN</span>
               <span className="text-[#d1d1d1] font-light text-lg ml-0.5">PRO S&C</span>
-              <span className="text-[#888] text-[10px] ml-2 font-medium">体能教练工作台</span>
+              <span className="text-[#888] text-[10px] ml-2 font-medium">体能教练工作台 v2</span>
             </a>
             <nav className="flex items-center gap-1">
               <a href="/" className="px-3 py-1.5 text-sm text-[#d92525] font-semibold relative transition">
