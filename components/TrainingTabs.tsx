@@ -6,10 +6,7 @@ import { TrainingModule, PlayerFormData, SessionPlan, TacticalFocus, Microcycle,
 import { POSITION_LABELS, GOAL_LABELS, PHASE_LABELS } from "@/lib/constants";
 
 import { FieldDiagram } from "./FieldDiagram";
-import { WarmupTab } from "./tabs/WarmupTab";
-import { TechniqueTab } from "./tabs/TechniqueTab";
 import { PhysicalTab } from "./tabs/PhysicalTab";
-import { TacticalTab } from "./tabs/TacticalTab";
 import { ActionBar } from "./ActionBar";
 import { WorkoutTimer } from "./WorkoutTimer";
 import { CoachSessionTable } from "./CoachSessionTable";
@@ -30,11 +27,8 @@ interface Props {
 }
 
 const ATHLETE_TABS = [
-  { id: "warmup" as const, label: "热身", short: "热身" },
-  { id: "technique" as const, label: "技术训练", short: "技术" },
   { id: "physical" as const, label: "体能训练", short: "体能" },
-  { id: "tactical" as const, label: "战术要点", short: "战术" },
-  { id: "nutrition" as const, label: "饮食与恢复", short: "饮食" },
+  { id: "nutrition" as const, label: "营养与恢复", short: "营养" },
 ];
 
 const COACH_TABS = [
@@ -667,12 +661,6 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
           </>
         ) : (
           <>
-            {activeTab === "warmup" && (
-              <WarmupTab modules={editableModules} position={formData.position} />
-            )}
-            {activeTab === "technique" && (
-              <TechniqueTab modules={editableModules} />
-            )}
             {activeTab === "physical" && (
               <PhysicalTab
                 modules={editableModules}
@@ -680,11 +668,8 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
                 onUpdateExercise={handleOpenExerciseEditor}
               />
             )}
-            {activeTab === "tactical" && (
-              <TacticalTab modules={editableModules} />
-            )}
             {activeTab === "nutrition" && (
-              <NutritionTabContent modules={editableModules} role="athlete" />
+              <NutritionTabContent modules={editableModules} role="coach" />
             )}
           </>
         )}

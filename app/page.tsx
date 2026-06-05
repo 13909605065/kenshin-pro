@@ -1,8 +1,7 @@
 "use client";
 
-import { Dashboard } from "@/components/Dashboard";
+import CoachWorkbench from "@/components/CoachWorkbench";
 import { MobileNav } from "@/components/MobileNav";
-import { HistoryDrawer } from "@/components/HistoryDrawer";
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useLang } from "@/components/providers/LanguageProvider";
@@ -40,7 +39,6 @@ class ErrorBoundary extends Component<
 }
 
 export default function Home() {
-  const [historyOpen, setHistoryOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -131,15 +129,9 @@ export default function Home() {
           </div>
         )}
         <ErrorBoundary>
-          <Dashboard supabaseProfile={supabaseProfile} userId={userId} />
+          <CoachWorkbench />
         </ErrorBoundary>
       </main>
-
-      {/* History Drawer */}
-      <HistoryDrawer
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-      />
 
     </div>
   );

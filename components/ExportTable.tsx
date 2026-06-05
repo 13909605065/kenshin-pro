@@ -448,7 +448,7 @@ export function ExportTable({ modules, formData }: ExportTableProps) {
       </div>
 
       {/* Print styles */}
-      <style jsx global>{`
+      <style global>{`
         @media print {
           body * { visibility: hidden; }
           .export-table, .export-table * { visibility: visible; }

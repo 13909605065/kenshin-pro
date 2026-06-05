@@ -8,13 +8,13 @@ export type Role = "coach" | "athlete" | "fitness";
 export const COACH_SCENES = [
   { id: "planning" as const, label: "备战", icon: "🎯" },
   { id: "pitch" as const, label: "训练场", icon: "🏟️" },
-  { id: "gym" as const, label: "体能房", icon: "🏋️" },
+  { id: "gym" as const, label: "力量房", icon: "🏋️" },
 ];
 
 // 运动员3场景 — 对应四大板块中的板块二/三/四
 export const ATHLETE_SCENES = [
   { id: "pitch" as const, label: "场地训练", icon: "⚽" },
-  { id: "gym" as const, label: "体能房", icon: "🏋️" },
+  { id: "gym" as const, label: "力量房", icon: "🏋️" },
   { id: "rehab" as const, label: "伤病防控", icon: "🩺" },
 ];
 

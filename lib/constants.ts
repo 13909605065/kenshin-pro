@@ -4,17 +4,19 @@ import { Position, SeasonPhase, InjurySite, CoachCert, CoachRole, LeagueTag, Tac
 
 export const POSITION_LABELS: Record<Position, string> = {
   goalkeeper: "守门员",
-  defender: "后卫",
+  defender: "中后卫",
   midfielder: "中场",
+  center_forward: "中锋",
+  winger: "边锋",
   forward: "前锋",
-  wingback: "翼卫",
+  wingback: "边后卫",
 };
 
 export const GOAL_LABELS: Record<string, string> = {
   strength: "纯力量",
   power: "爆发力",
   speed: "速度",
-  agility: "灵敏",
+  agility: "协调灵敏",
   mas_endurance: "耐力",
   combat: "对抗能力",
   hypertrophy: "肌肥大",

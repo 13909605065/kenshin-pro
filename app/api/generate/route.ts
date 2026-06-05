@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
 器材：杠铃、哑铃、卧推凳、TRX悬吊带、弹力带、泡沫轴`;
   } else if (scene === "pitch") {
     sceneHint = `## ⚠️ 场景限制：场地训练（板块二·球场实战——最重要规则！）
-今天在球场训练，禁止输出任何健身房内容：
+今天在外场训练，禁止输出任何健身房内容：
 ✅ 只能输出：有球技术训练(传球/射门/盘带/控球)、场地热身、战术跑位、SSG对抗赛
 ❌ 绝对禁止：杠铃、哑铃、TRX、卧推凳、器械、弹力带等任何健身房器材动作
 ❌ 禁止输出力量训练模块(upper_limb/lower_limb/core)，改为自重训练或SSG

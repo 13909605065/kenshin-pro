@@ -9,7 +9,7 @@ const GOALS: { value: TrainingGoal; label: string; icon: React.ReactNode; desc: 
   { value: "strength", label: "纯力量", icon: <Dumbbell className="w-6 h-6" />, desc: "最大力量发展，侧重神经肌肉适应" },
   { value: "power", label: "爆发力", icon: <Zap className="w-6 h-6" />, desc: "力-速度曲线优化，弹跳与冲刺" },
   { value: "speed", label: "速度", icon: <Gauge className="w-6 h-6" />, desc: "最大速度与加速度发展" },
-  { value: "agility", label: "灵敏", icon: <Timer className="w-6 h-6" />, desc: "变向能力与反应速度" },
+  { value: "agility", label: "协调灵敏", icon: <Timer className="w-6 h-6" />, desc: "变向能力与反应速度" },
   { value: "mas_endurance", label: "耐力", icon: <Heart className="w-6 h-6" />, desc: "最大有氧速度与反复冲刺能力" },
   { value: "combat", label: "对抗能力", icon: <Swords className="w-6 h-6" />, desc: "身体对抗中的力量与稳定性" },
 ];

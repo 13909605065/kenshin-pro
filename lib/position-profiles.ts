@@ -128,6 +128,26 @@ export const POSITION_PROFILES: Record<Position, PositionMetabolicProfile> = {
     gpsThresholds: { highSpeed: 19.8, sprint: 25.2 },
     trainingFocus: '高速反复冲刺+上下往返耐力+传中爆发力。现代足球对体能要求最高的位置。',
   },
+  center_forward: {
+    position: 'center_forward' as Position, labelCn: '中锋',
+    totalDistance: 6800, highSpeedDistance: 980, sprintDistance: 380,
+    accelerations: 55, decelerations: 50, maxSpeed: 32, metabolicPower: 10.8,
+    primaryEnergySystem: 'glycolytic' as const,
+    energyContribution: { atpPc: 30, glycolytic: 40, oxidative: 30 },
+    keyPhysicalQualities: ['power', 'strength', 'speed'],
+    gpsThresholds: { highSpeed: 19.8, sprint: 25.2 },
+    trainingFocus: '对抗力量+背身护球+头球弹跳+禁区终结爆发。',
+  },
+  winger: {
+    position: 'winger' as Position, labelCn: '边锋',
+    totalDistance: 7100, highSpeedDistance: 1250, sprintDistance: 480,
+    accelerations: 78, decelerations: 82, maxSpeed: 34, metabolicPower: 11.8,
+    primaryEnergySystem: 'glycolytic' as const,
+    energyContribution: { atpPc: 28, glycolytic: 42, oxidative: 30 },
+    keyPhysicalQualities: ['speed', 'power', 'mas_endurance'],
+    gpsThresholds: { highSpeed: 19.8, sprint: 25.2 },
+    trainingFocus: '边路反复冲刺+高速变向+内切射门爆发。最高冲刺频次和最高极速。',
+  },
 };
 
 // ═══════════════════════════════════════════
@@ -250,6 +270,8 @@ export function recommendWeeklyFrequency(position: Position, phase: string): num
     defender: 3,
     midfielder: 2, // 比赛跑量大，体能房频率相对低
     forward: 3,
+    center_forward: 3,
+    winger: 2,
     wingback: 2, // 比赛跑量极大会，体能房频率相对低
   };
 
