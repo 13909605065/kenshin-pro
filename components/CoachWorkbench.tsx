@@ -568,12 +568,59 @@ export default function CoachWorkbench() {
           GYM MODE — 力量房设计器
           ═══════════════════════════════════════════════ */}
       {workbenchMode === 'gym' && (
-        <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b border-[#222]">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">🏋️ 力量房训练设计</h3>
-            <span className="text-[10px] text-gray-500">从动作库挑选 → AI校验 → 保存方案</span>
+        <div className="space-y-4">
+          {/* Plan mode toggle */}
+          <div className="flex gap-1 bg-[#0d0d0d] border border-[#222] rounded-xl p-1">
+            <button onClick={() => setPlanMode('team')}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+                planMode === 'team' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white'
+              }`}>👥 全队方案</button>
+            <button onClick={() => setPlanMode('individual')}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+                planMode === 'individual' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white'
+              }`}>➕ 加练小组</button>
           </div>
-          <GymDesigner />
+
+          {/* Individual mode: player picker */}
+          {planMode === 'individual' && (
+            <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 space-y-3">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] text-gray-400">选择加练球员</label>
+                  <div className="flex gap-2">
+                    <button onClick={selectAllHealthy} className="text-[9px] text-gray-500 hover:text-white">全选健康</button>
+                    <button onClick={() => setSelectedPlayers(new Set())} className="text-[9px] text-gray-500 hover:text-white">清空</button>
+                  </div>
+                </div>
+                {players.length === 0 ? (
+                  <p className="text-[10px] text-gray-600">暂无花名册 · <a href="/roster" className="text-[#d92525] underline">去录入球员</a></p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto">
+                    {players.map(p => (
+                      <button key={p.id} onClick={() => togglePlayerSelect(p.name)}
+                        className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
+                          selectedPlayers.has(p.name) ? 'bg-[#d92525]/20 text-[#d92525] ring-1 ring-[#d92525]' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
+                        }`}>{p.name} · {p.position || '?'}
+                        {p.injuryStatus !== 'healthy' && (p.injuryStatus === 'out' ? ' 🔴' : ' 🟡')}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <input type="text" value={addonTheme} onChange={e => setAddonTheme(e.target.value)}
+                placeholder="加练主题，如：腘绳肌离心强化..."
+                className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#d92525]" />
+            </div>
+          )}
+
+          {/* GymDesigner */}
+          <div className="bg-[#0d0d0d] border border-[#222] rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-[#222]">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">🏋️ 力量房训练设计</h3>
+              <span className="text-[10px] text-gray-500">从动作库挑选 → AI校验 → 保存方案</span>
+            </div>
+            <GymDesigner />
+          </div>
         </div>
       )}
 
