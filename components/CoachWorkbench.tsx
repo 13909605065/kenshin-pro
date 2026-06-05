@@ -8,6 +8,9 @@ import { ExportTable } from './ExportTable';
 import AIAssistant from './AIAssistant';
 import { ExerciseEditor } from './ExerciseEditor';
 import { TrainingLogPanel } from './TrainingLogPanel';
+import TrainingTimer from './TrainingTimer';
+import VoiceNotes from './VoiceNotes';
+import { Share2 } from 'lucide-react';
 import type { EditableExercise } from './ExerciseEditor';
 import type { PlayerFormData, SeasonPhase, TrainingGoal, TrainingModule, Position } from '@/lib/types';
 import { PHASE_LABELS } from '@/lib/constants';
@@ -148,6 +151,29 @@ export default function CoachWorkbench() {
   // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
   const [showLog, setShowLog] = useState(false);
+
+  // ── share toast ──
+  const [shareToast, setShareToast] = useState<string | null>(null);
+
+  // ── player check-in notifications ──
+  const [checkinCount, setCheckinCount] = useState(0);
+  useEffect(() => {
+    const check = () => {
+      try {
+        const raw = localStorage.getItem('kenshin_player_checkins');
+        if (!raw) { setCheckinCount(0); return; }
+        const checkins = JSON.parse(raw);
+        // Count unread check-ins from today
+        const today = new Date().toISOString().slice(0, 10);
+        const todayCheckins = checkins.filter((c: any) => c.date === today);
+        setCheckinCount(todayCheckins.length);
+      } catch { setCheckinCount(0); }
+    };
+    check();
+    const interval = setInterval(check, 10000); // poll every 10s
+    return () => clearInterval(interval);
+  }, []);
+  const [trainingActive, setTrainingActive] = useState(false);
 
   // ── MD calculation from match date ──
   const mdDay = useMemo(() => {
@@ -820,9 +846,62 @@ export default function CoachWorkbench() {
               {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">📡 离线模式</span>}
             </h3>
             <div className="flex items-center gap-2">
+              <button onClick={() => setTrainingActive(true)} className="px-3 py-1.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-[10px] font-bold transition active:scale-95">▶ 开始训练</button>
               <button onClick={() => setShowLog(!showLog)} className={`text-[10px] transition ${showLog ? 'text-[#d92525]' : 'text-gray-500 hover:text-white'}`}>📝 日志</button>
               <ExportTable modules={modules} formData={buildFormData()} />
               <WorkoutTimer modules={modules} planId={planId ?? undefined} onClose={() => {}} />
+              {/* Share check-in link */}
+              <button
+                onClick={() => {
+                  const planKey = planId || `${matchDate}_${activeDayOffset}`;
+                  const url = `${window.location.origin}/checkin?plan=${encodeURIComponent(planKey)}`;
+                  try {
+                    navigator.clipboard.writeText(url).then(() => {
+                      setShareToast('链接已复制，发送给球员');
+                      setTimeout(() => setShareToast(null), 2500);
+                    });
+                  } catch {
+                    // fallback
+                    const ta = document.createElement('textarea');
+                    ta.value = url;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    setShareToast('链接已复制，发送给球员');
+                    setTimeout(() => setShareToast(null), 2500);
+                  }
+                }}
+                className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#555] rounded-lg text-[10px] text-gray-300 hover:text-white transition"
+                title="复制球员确认链接"
+              >
+                <Share2 className="w-3 h-3" />
+                分享给球员
+              </button>
+              {/* Check-in notification badge */}
+              {checkinCount > 0 && (
+                <button
+                  onClick={() => {
+                    try {
+                      const raw = localStorage.getItem('kenshin_player_checkins');
+                      if (!raw) return;
+                      const checkins = JSON.parse(raw);
+                      const today = new Date().toISOString().slice(0, 10);
+                      const todayCheckins = checkins.filter((c: any) => c.date === today);
+                      if (todayCheckins.length === 0) return;
+                      const names = todayCheckins.map((c: any) => c.playerName).filter(Boolean).join('、');
+                      setShareToast(`${names} 已确认训练完成`);
+                      setTimeout(() => setShareToast(null), 3000);
+                    } catch {}
+                  }}
+                  className="relative px-3 py-1.5 bg-green-500/10 border border-green-500/30 hover:border-green-500/50 rounded-lg text-[10px] text-green-400 hover:text-green-300 transition"
+                  title="查看球员确认"
+                >
+                  ✅ {checkinCount}人已确认
+                </button>
+              )}
               <button onClick={() => setShowPlan(false)} className="text-[10px] text-gray-500 hover:text-white">收起</button>
             </div>
           </div>
@@ -886,6 +965,20 @@ export default function CoachWorkbench() {
 
       <AIAssistant />
 
+      {/* ══ TRAINING TIMER — full-screen overlay ══ */}
+      {trainingActive && (
+        <TrainingTimer
+          modules={modules}
+          planId={planId}
+          scene={scene}
+          goal={goal}
+          duration={duration}
+          matchDay={activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
+          playerName={planMode === 'individual' && selectedPlayerId ? loadRoster().find(p => p.id === selectedPlayerId)?.name : undefined}
+          onClose={() => setTrainingActive(false)}
+        />
+      )}
+
       {/* ══ EXERCISE EDITOR MODAL ══ */}
       {editState && (
         <ExerciseEditor
@@ -901,6 +994,20 @@ export default function CoachWorkbench() {
           onCancel={() => setEditState(null)}
         />
       )}
+
+      {/* ══ SHARE TOAST ══ */}
+      {shareToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-[#d92525] text-white text-xs px-4 py-2 rounded-xl shadow-xl animate-in slide-in-from-top-2">
+          {shareToast}
+        </div>
+      )}
+
+      {/* ══ VOICE NOTES FLOATING BUTTON ══ */}
+      <VoiceNotes
+        players={players.map(p => ({ name: p.name }))}
+        activeModules={showPlan ? modules : undefined}
+        planId={planId}
+      />
     </div>
   );
 }

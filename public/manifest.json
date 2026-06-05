@@ -1,12 +1,12 @@
 {
   "name": "KenshinPro S&C",
-  "short_name": "KenshinPro",
-  "description": "职业足球体能训练系统",
+  "short_name": "Kenshin体能",
+  "description": "职业足球体能教练工作台",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#111217",
-  "theme_color": "#C4242E",
+  "background_color": "#121212",
+  "theme_color": "#d92525",
   "icons": [
     {
       "src": "/icons/icon-192.png",

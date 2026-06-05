@@ -29,9 +29,10 @@ export async function middleware(request: NextRequest) {
   const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
   const isSharePage = request.nextUrl.pathname.startsWith("/share");
   const isOfflinePage = request.nextUrl.pathname.startsWith("/offline");
+  const isCheckinPage = request.nextUrl.pathname.startsWith("/checkin");
 
-  // Allow auth callback, API routes, share pages, and offline page to proceed (they handle auth themselves)
-  if (isAuthCallback || isApiRoute || isSharePage || isOfflinePage) return response;
+  // Allow auth callback, API routes, share pages, checkin, and offline page to proceed (they handle auth themselves)
+  if (isAuthCallback || isApiRoute || isSharePage || isOfflinePage || isCheckinPage) return response;
 
   // Redirect to login if not authenticated (301 to preserve current page for after-login redirect)
   if (!user && !isLoginPage) {
