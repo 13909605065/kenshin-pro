@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   extractExercisesFromModules,
   calcSummary,
@@ -141,6 +142,38 @@ export default function TrainingTimer({
   // ── Refs ──
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wakeLockRef = useRef<any>(null);
+  const phaseStartElapsedRef = useRef(0); // elapsed time at phase start, for per-phase timing
+  const router = useRouter();
+
+  // ═══ LOAD MONITORING: real-time TRIMP vs daily cap ═══
+  const { currentTRIMP, dayCap, loadPct, loadWarning } = useMemo(() => {
+    const rate = scene === 'gym' ? 2.0 : 2.5;
+    const nowTRIMP = Math.round((elapsed / 60) * rate);
+    // Read today's already-used TRIMP from load page logic
+    let usedToday = 0;
+    try {
+      const logs = JSON.parse(localStorage.getItem('kenshin_daily_training_log') || '[]');
+      const today = new Date().toISOString().slice(0, 10);
+      const todayLogs = logs.filter((l: any) => l.date === today && l.timeSlot !== 'rest');
+      usedToday = todayLogs.reduce((s: number, l: any) => s + Math.round((l.duration || 0) * (l.trainType === 'pitch' ? 2.5 : 2.0)), 0);
+    } catch {}
+    const total = usedToday + nowTRIMP;
+    // Phase-aware daily cap
+    let cap = 300;
+    try {
+      const raw = localStorage.getItem('kenshin_season_calendar');
+      if (raw) {
+        const ranges = JSON.parse(raw).phaseRanges || [];
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const phase = ranges.find((r: any) => todayStr >= r.startDate && todayStr <= r.endDate);
+        const caps: Record<string, number> = { offseason: 180, preseason_build: 300, regular_season: 280, playoffs: 220 };
+        if (phase) cap = caps[phase.phase] || 300;
+      }
+    } catch {}
+    const pct = Math.min(100, Math.round((total / cap) * 100));
+    const warning = pct >= 100 ? 'danger' : pct >= 80 ? 'warn' : null;
+    return { currentTRIMP: nowTRIMP, dayCap: cap, loadPct: pct, loadWarning: warning };
+  }, [elapsed, scene]);
 
   const currentPhase = phaseGroups[currentPhaseIdx] as PhaseGroupWithExercises | undefined;
   const ex = currentPhase?.exercises[exerciseIdx] as TimerExercise | undefined;
@@ -170,6 +203,12 @@ export default function TrainingTimer({
       wakeLockRef.current?.release?.();
     };
   }, []);
+
+  // ═══ TRACK PHASE START TIME ═══
+  useEffect(() => {
+    phaseStartElapsedRef.current = elapsed;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPhaseIdx]);
 
   // ═══ MAIN TICK — elapsed counter ═══
   useEffect(() => {
@@ -328,6 +367,23 @@ export default function TrainingTimer({
   /** Add 30s to current rest */
   const addThirty = useCallback(() => adjustRest(30), [adjustRest]);
 
+  /** Record hydration time to structured notes */
+  const handleHydration = useCallback(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const timestamp = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+    try {
+      const all = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
+      const today = all[todayStr] || {};
+      today.notes = (today.notes || '') + `\n💧 补水 ${timestamp}`;
+      // Also write to match field for hydration tracking
+      today.match = (today.match || '') + `\n💧 补水 ${timestamp}`;
+      all[todayStr] = today;
+      localStorage.setItem('kenshin_structured_notes', JSON.stringify(all));
+    } catch {}
+  }, []);
+
   // ═══ SAVE SESSION LOG ═══
   const handleSaveLog = useCallback(() => {
     const entries: ExerciseLogEntry[] = extractExercisesFromModules(modules);
@@ -388,6 +444,21 @@ export default function TrainingTimer({
   const exerciseInPhaseProgress = currentPhase
     ? `${exerciseIdx + 1}/${currentPhase.exercises.length}`
     : '—';
+
+  // Per-phase elapsed time
+  const phaseElapsed = useMemo(() => {
+    return fmtTime(elapsed - phaseStartElapsedRef.current);
+  }, [elapsed, currentPhaseIdx]);
+
+  // Remaining exercises in current phase
+  const remainingInPhase = currentPhase
+    ? currentPhase.exercises.length - exerciseIdx - 1
+    : 0;
+
+  // Next exercise preview
+  const nextExercise = currentPhase && exerciseIdx + 1 < currentPhase.exercises.length
+    ? currentPhase.exercises[exerciseIdx + 1].name
+    : null;
 
   // Phase progress indicator
   const phaseProgressText = phaseGroups.map((pg, i) => {
@@ -482,6 +553,14 @@ export default function TrainingTimer({
           保存训练日志
         </button>
 
+        {/* Load management link */}
+        <button type="button"
+          onClick={() => { handleSaveLog(); router.push('/load'); }}
+          className="w-full max-w-xs py-4 bg-[#222] border-2 border-[#555] text-white font-bold rounded-xl text-base active:scale-95 active:bg-[#444] transition mb-3"
+        >
+          📊 查看负荷
+        </button>
+
         <button type="button"
           onClick={onClose}
           className="w-full max-w-xs py-3 bg-[#1a1a1a] border border-[#333] text-gray-300 font-medium rounded-xl text-sm active:scale-95 transition"
@@ -533,6 +612,27 @@ export default function TrainingTimer({
               style={{ width: `${globalProgress}%` }}
             />
           </div>
+          {/* ═══ LOAD MONITORING BAR ═══ */}
+          {loadWarning && (
+            <div className={`mb-2 p-2 rounded-lg text-[10px] font-bold flex items-center gap-2 ${
+              loadWarning === 'danger' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
+            }`}>
+              {loadWarning === 'danger' ? '🔴' : '🟡'} 负荷已达 {loadPct}%（{currentTRIMP}/{dayCap} TRIMP）
+              {loadWarning === 'danger' ? ' — 必须休息！不能再练！' : ' — 注意控制强度'}
+            </div>
+          )}
+          {/* Load progress bar */}
+          <div className="flex items-center gap-2 mb-1">
+            <div className="flex-1 h-1 bg-[#222] rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all duration-1000 ${
+                loadPct >= 100 ? 'bg-red-500' : loadPct >= 80 ? 'bg-yellow-500' : 'bg-green-500'
+              }`} style={{ width: `${loadPct}%` }} />
+            </div>
+            <span className={`text-[9px] font-mono ${loadPct >= 80 ? 'text-yellow-400' : 'text-gray-500'}`}>
+              {currentTRIMP}/{dayCap}
+            </span>
+          </div>
+
           <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap">
             {exerciseIdx + 1}/{currentPhase.exercises.length}
           </span>
@@ -583,21 +683,35 @@ export default function TrainingTimer({
               </div>
             </div>
 
-            {/* Rest adjust buttons */}
+            {/* Rest adjust buttons — prominent for quick coach adjustment */}
             <div className="flex items-center gap-3 mb-4">
               <button type="button"
                 onClick={() => adjustRest(-15)}
-                className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-gray-300 rounded-xl text-sm font-bold active:bg-[#333] transition"
+                className="px-6 py-3 bg-[#222] border-2 border-[#555] text-white rounded-xl text-base font-bold active:bg-[#444] active:border-[#888] transition"
               >
                 −15s
               </button>
               <button type="button"
+                onClick={() => adjustRest(15)}
+                className="px-6 py-3 bg-[#222] border-2 border-[#555] text-white rounded-xl text-base font-bold active:bg-[#444] active:border-[#888] transition"
+              >
+                +15s
+              </button>
+              <button type="button"
                 onClick={addThirty}
-                className="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-gray-300 rounded-xl text-sm font-bold active:bg-[#333] transition"
+                className="px-6 py-3 bg-[#222] border-2 border-[#555] text-white rounded-xl text-base font-bold active:bg-[#444] active:border-[#888] transition"
               >
                 +30s
               </button>
             </div>
+
+            {/* Hydration button */}
+            <button type="button"
+              onClick={handleHydration}
+              className="px-5 py-3 bg-[#1a3a5c]/40 border border-[#3a6fa0]/50 text-[#7cb9e8] rounded-xl text-sm font-bold active:bg-[#1a3a5c]/70 transition mb-3"
+            >
+              💧 补水
+            </button>
 
             {/* Skip rest button */}
             <button type="button"
@@ -653,14 +767,29 @@ export default function TrainingTimer({
             </div>
 
             {/* Set progress */}
-            <p className="text-gray-400 text-sm mb-8">
+            <p className="text-gray-400 text-sm mb-6">
               第 {currentSet}/{ex.sets} 组
             </p>
 
-            {/* Progress text */}
-            <p className="text-[11px] text-gray-600">
-              {ex.name} {setProgress}组 · 第{exerciseInPhaseProgress}个动作
-            </p>
+            {/* ── Monitoring info ── */}
+            <div className="w-full max-w-xs space-y-2 text-xs">
+              <div className="flex justify-between text-gray-500">
+                <span>当前阶段已用</span>
+                <span className="text-white font-mono">{phaseElapsed}</span>
+              </div>
+              {remainingInPhase > 0 && (
+                <div className="flex justify-between text-gray-500">
+                  <span>本阶段剩余动作</span>
+                  <span className="text-white font-mono">{remainingInPhase}</span>
+                </div>
+              )}
+              {nextExercise && (
+                <div className="flex justify-between text-gray-500">
+                  <span className="truncate max-w-[60%]">下一个动作</span>
+                  <span className="text-gray-300 truncate max-w-[55%] text-right">{nextExercise}</span>
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
