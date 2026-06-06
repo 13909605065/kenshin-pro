@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
 import type { SeasonPhase } from "@/lib/types";
 import { saveTrainingPlan, loadTrainingPlans, deleteTrainingPlan } from "@/lib/training-log";
+import { getPlayers } from "@/lib/roster-utils";
 
 // ── Phase prescriptions: auto-generated from season calendar ──
 interface PhasePreset {
@@ -464,6 +465,39 @@ export default function PlanningPage() {
               <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-[10px] bg-[#992828] hover:bg-[#7a1e1e] text-white rounded font-bold transition"><Save className="w-3 h-3" />保存</button>
             </div>
           </div>
+
+          {/* ── 训练建议条 ── */}
+          {(() => {
+            const roster = getPlayers();
+            const injured = roster.filter(p => p.injuryStatus !== 'healthy');
+            const active = roster.filter(p => p.injuryStatus === 'healthy');
+            const needRotation = active.length > 22;
+            const readinessRaw = typeof window !== 'undefined' ? sessionStorage.getItem('kenshin_today_readiness') : null;
+            const readiness = readinessRaw ? JSON.parse(readinessRaw) : null;
+            if (!needRotation && injured.length === 0 && !readiness) return null;
+            return (
+              <div className="flex items-center gap-3 px-3 py-2 bg-[#0d0d0d] border-b border-[#222] text-[10px] flex-wrap">
+                {needRotation && (
+                  <span className="text-yellow-400">
+                    ⚠️ {active.length}名健康球员 &gt; 22人 → 建议3站轮换（A组SSG | B组技术 | C组战术/录像）每8min轮换
+                  </span>
+                )}
+                {injured.length > 0 && (
+                  <span className="text-[#992828]">
+                    🏥 {injured.length}人伤病：{injured.slice(0,3).map(p => p.name).join('、')}{injured.length>3?`等`:' '}— 已自动匹配替代训练
+                  </span>
+                )}
+                {readiness && readiness.score < 55 && (
+                  <span className="text-orange-400">
+                    📉 今日准备度 {readiness.score} — 建议降强度至恢复模式
+                  </span>
+                )}
+                {active.some(p => { const pos = p.position; return pos === 'midfielder' || pos === 'wingback'; }) && (
+                  <span className="text-gray-500 ml-auto">TRIMP×位置系数已启用</span>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="p-3 space-y-2">
             {days.map((day, idx) => {

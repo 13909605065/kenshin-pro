@@ -115,13 +115,29 @@ const INTENSITY_AU: Record<string, number> = {
   '极高': 12, '高': 9, '中高': 7.5, '中': 6, '中低': 4.5, '低': 3,
 };
 
+/** 位置负荷系数 — 中场/翼卫跑动 > 后卫/前锋 > 门将 */
+export const POS_LOAD_COEF: Record<string, number> = {
+  midfielder: 1.15, wingback: 1.10, forward: 1.05, defender: 1.00, goalkeeper: 0.70,
+};
+
+export function getPositionCoef(position: string): number {
+  return POS_LOAD_COEF[position] || 1.0;
+}
+
+/** 双赛周保护：杯赛主力出场时间上限（分钟） */
+export const CUP_MATCH_MAX_MINUTES = 60;
+/** 杯赛后禁止大重量下肢训练的时长（小时） */
+export const CUP_POST_RESTRICT_HOURS = 48;
+
 /**
  * Estimate training load in AU for a single session.
+ * Now includes position coefficient.
  */
-export function calcTrainingLoadAU(entry: TrainingLoadEntry): number {
+export function calcTrainingLoadAU(entry: TrainingLoadEntry, position?: string): number {
   const auPerMin = INTENSITY_AU[entry.intensity] || 6;
   const sceneFactor = entry.type === 'pitch' ? 1.0 : 0.8;
-  return Math.round(entry.duration * auPerMin * sceneFactor);
+  const posCoef = position ? getPositionCoef(position) : 1.0;
+  return Math.round(entry.duration * auPerMin * sceneFactor * posCoef);
 }
 
 /**
@@ -133,7 +149,8 @@ export function calcMatchLoadAU(minutes: number, position: string): number {
     midfielder: 8.5, defender: 8.0, wingback: 9.0, forward: 7.5, goalkeeper: 5.0,
   };
   const auPerMin = posCost[position] || 7.5;
-  return Math.round(minutes * auPerMin);
+  const posCoef = getPositionCoef(position);
+  return Math.round(minutes * auPerMin * posCoef);
 }
 
 /**
@@ -333,4 +350,131 @@ export function generateSquadOverview(
     acwrWarnings: warnings,
     supplementNeeded: suppCount,
   };
+}
+
+// ═══════════════════════════════════════════
+// 伤病过滤 — 按 injuryStatus 自动匹配替代训练
+// ═══════════════════════════════════════════
+
+export type InjuryStatus = 'healthy' | 'minor' | 'out';
+
+export interface InjuryAdjustedTraining {
+  playerId: string;
+  playerName: string;
+  status: InjuryStatus;
+  originalScene: string;
+  adjustedScene: string | null;
+  adjustedIntensity: string;
+  substituteActivity: string;
+}
+
+/**
+ * Given a player's injury status, return the adjusted training assignment.
+ * - healthy → normal training
+ * - minor → reduced intensity, no contact, technical work only
+ * - out → observation/rehab only, no field/gym participation
+ */
+export function adjustForInjury(
+  playerId: string,
+  playerName: string,
+  status: InjuryStatus,
+  plannedScene: 'gym' | 'pitch' | null,
+  plannedIntensity: string
+): InjuryAdjustedTraining {
+  if (status === 'healthy') {
+    return {
+      playerId, playerName, status,
+      originalScene: plannedScene || 'rest',
+      adjustedScene: plannedScene,
+      adjustedIntensity: plannedIntensity,
+      substituteActivity: '正常训练',
+    };
+  }
+
+  if (status === 'minor') {
+    return {
+      playerId, playerName, status,
+      originalScene: plannedScene || 'rest',
+      adjustedScene: plannedScene, // same scene but reduced
+      adjustedIntensity: '低',
+      substituteActivity: plannedScene === 'gym'
+        ? '上肢维持+核心+泳池（禁下肢大重量）'
+        : '技术观察+轻传球+无对抗跑动（禁对抗/冲刺/头球）',
+    };
+  }
+
+  // out
+  return {
+    playerId, playerName, status,
+    originalScene: plannedScene || 'rest',
+    adjustedScene: null,
+    adjustedIntensity: '-',
+    substituteActivity: '康复治疗+录像分析+上肢轻量维持（如有医嘱）',
+  };
+}
+
+// ═══════════════════════════════════════════
+// 准备度 → 训练强度自动调整
+// ═══════════════════════════════════════════
+
+export interface ReadinessAdjustment {
+  originalIntensity: string;
+  adjustedIntensity: string;
+  intensityMod: string; // e.g. "-15%"
+  recommendation: string;
+  overrideDay: boolean; // true = 强制改为恢复日
+}
+
+/**
+ * Map readiness score (0-100) to training intensity adjustment.
+ * - ≥85: full send, +10%
+ * - 70-84: normal, as planned
+ * - 55-69: reduce 15%, no new exercises
+ * - 40-54: reduce 30%, technique only
+ * - <40: override → recovery day
+ */
+export function adjustIntensityByReadiness(
+  readinessScore: number,
+  originalIntensity: string
+): ReadinessAdjustment {
+  if (readinessScore >= 85) {
+    return {
+      originalIntensity, adjustedIntensity: bumpIntensity(originalIntensity, 1),
+      intensityMod: '+10%', recommendation: '状态极佳，可冲击上限', overrideDay: false,
+    };
+  }
+  if (readinessScore >= 70) {
+    return {
+      originalIntensity, adjustedIntensity: originalIntensity,
+      intensityMod: '原计划', recommendation: '按计划执行', overrideDay: false,
+    };
+  }
+  if (readinessScore >= 55) {
+    return {
+      originalIntensity, adjustedIntensity: dropIntensity(originalIntensity, 1),
+      intensityMod: '-15%', recommendation: '降量15%，避免新动作和极限重量', overrideDay: false,
+    };
+  }
+  if (readinessScore >= 40) {
+    return {
+      originalIntensity, adjustedIntensity: '低',
+      intensityMod: '-30%', recommendation: '仅技术维持+主动恢复，禁高强度对抗', overrideDay: false,
+    };
+  }
+  return {
+    originalIntensity, adjustedIntensity: '-',
+    intensityMod: '休息', recommendation: '全天休息或仅拉伸/泡沫轴', overrideDay: true,
+  };
+}
+
+function bumpIntensity(i: string, steps: number): string {
+  const scale = ['-', '低', '中低', '中', '中高', '高', '极高'];
+  const idx = scale.indexOf(i);
+  return scale[Math.min(idx + steps, scale.length - 1)] || i;
+}
+
+function dropIntensity(i: string, steps: number): string {
+  const scale = ['-', '低', '中低', '中', '中高', '高', '极高'];
+  const idx = scale.indexOf(i);
+  return scale[Math.max(idx - steps, 0)] || i;
 }
