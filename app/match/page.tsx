@@ -1110,39 +1110,35 @@ export default function MatchPage() {
                 })}
                 {/* ── 补负荷操作 ── */}
                 <div className="space-y-2">
-                  <p className="text-[10px] text-gray-500">补负荷最佳时机：比赛结束后立即执行（身体仍处于激活状态）。</p>
-                  <div className="flex gap-2">
+                  <p className="text-[10px] text-gray-500">补负荷不一定要全放在一天。可以赛后立刻跑完，也可以分摊到后面1-2天慢慢消化。</p>
+                  <div className="flex flex-col gap-2">
                     <button
                       onClick={() => {
-                        const suppData = underloaded
-                          .filter(p => p.position !== 'goalkeeper')
-                          .map(p => {
-                            const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
-                            const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
-                            return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
-                          });
-                        localStorage.setItem('kenshin_supplement_now', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData, immediate: true }));
+                        const suppData = underloaded.filter(p => p.position !== 'goalkeeper').map(p => {
+                          const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
+                          const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                          return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
+                        });
+                        localStorage.setItem('kenshin_supplement_now', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData, mode: 'immediate' }));
                         window.location.href = '/load';
                       }}
-                      className="flex-1 py-2.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition"
+                      className="w-full py-2.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition"
                     >
-                      ⚡ 赛后立刻补负荷
+                      ⚡ 赛后立刻全部补完
                     </button>
                     <button
                       onClick={() => {
-                        const suppData = underloaded
-                          .filter(p => p.position !== 'goalkeeper')
-                          .map(p => {
-                            const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
-                            const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
-                            return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
-                          });
-                        localStorage.setItem('kenshin_supplement_bridge', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData }));
+                        const suppData = underloaded.filter(p => p.position !== 'goalkeeper').map(p => {
+                          const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
+                          const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                          return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio), dailyMeters: Math.round(bd * ratio / 2) };
+                        });
+                        localStorage.setItem('kenshin_supplement_bridge', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData, mode: 'spread' }));
                         window.location.href = '/planning';
                       }}
-                      className="flex-1 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#992828] text-gray-400 hover:text-[#992828] rounded-lg text-xs font-bold transition"
+                      className="w-full py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#992828] text-gray-400 hover:text-[#992828] rounded-lg text-xs font-bold transition"
                     >
-                      📋 安排到最近训练日
+                      📋 分摊到后面 1-2 天
                     </button>
                   </div>
                 </div>
