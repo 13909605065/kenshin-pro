@@ -202,148 +202,7 @@ interface EditState {
   index: number;
   exercise: any;
 }
-
-function DailyTrainingNotes({ matchDate, modules, setTrainingActive, trainingStartRef }: {
-    matchDate: string;
-    modules: TrainingModule[];
-    setTrainingActive: (v: boolean) => void;
-    trainingStartRef: React.MutableRefObject<number>;
-  }) {
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  // ── manual input state ──
-  const [tactical, setTactical] = useState('');
-  const [coachNotes, setCoachNotes] = useState('');
-  const [saved, setSaved] = useState(false);
-
-  // ── load existing notes on mount ──
-  useEffect(() => {
-    try {
-      const all = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
-      const today = all[todayStr];
-      if (today) {
-        setTactical(today.tactical || '');
-        setCoachNotes(today.notes || '');
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── auto-read: warmup name from kenshin_warmup_calendar + kenshin_warmup_library ──
-  const warmupName = (() => {
-    try {
-      const cal = JSON.parse(localStorage.getItem('kenshin_warmup_calendar') || '{}');
-      const today = cal[todayStr];
-      if (!today?.warmupId) return '';
-      const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
-      const w = lib.find((x: any) => x.id === today.warmupId);
-      return w?.name || '';
-    } catch { return ''; }
-  })();
-
-  // ── auto-read: strength plan name from kenshin_gym_calendar + kenshin_gym_library ──
-  const strengthName = (() => {
-    try {
-      const cal = JSON.parse(localStorage.getItem('kenshin_gym_calendar') || '[]');
-      if (!Array.isArray(cal)) return '';
-      const entry = cal.find((e: any) => e.date === todayStr);
-      if (!entry?.comboId) return '';
-      const lib = JSON.parse(localStorage.getItem('kenshin_gym_library') || '[]');
-      const w = lib.find((x: any) => x.id === entry.comboId);
-      return w?.name || '';
-    } catch { return ''; }
-  })();
-
-  // ── auto-read: match state if today is match day ──
-  const matchInfo = (() => {
-    try {
-      const state = JSON.parse(localStorage.getItem('kenshin_match_state') || 'null');
-      if (!state || !state.startedAt) return '';
-      const stateDate = state.startedAt.slice(0, 10);
-      if (stateDate !== todayStr) return '';
-      const parts: string[] = [];
-      if (state.matchType) parts.push(state.matchType);
-      if (state.matchName) parts.push(state.matchName);
-      if (state.players?.length) parts.push(`${state.players.length}人`);
-      return parts.join(' · ');
-    } catch { return ''; }
-  })();
-
-  // ── save to kenshin_structured_notes ──
-  const handleSave = () => {
-    try {
-      const all = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
-      all[todayStr] = {
-        warmup: warmupName,
-        tactical,
-        strength: strengthName,
-        match: matchInfo,
-        notes: coachNotes,
-      };
-      localStorage.setItem('kenshin_structured_notes', JSON.stringify(all));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
-  };
-
-  return (
-    <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-4">
-      <h3 className="text-xs font-semibold text-[#999] mb-3">今日训练笔记</h3>
-
-      <div className="space-y-3 text-xs">
-        {/* ── warmup: auto-read ── */}
-        <div className="flex gap-2 items-start">
-          <span className="text-[#888] shrink-0 w-[72px]">热身内容:</span>
-          <span className={warmupName ? 'text-[#ccc]' : 'text-[#666]'}>{warmupName || '（未绑定热身方案）'}</span>
-        </div>
-
-        {/* ── tactical: manual input ── */}
-        <div className="flex gap-2 items-start">
-          <span className="text-[#888] shrink-0 w-[72px] pt-2">战术内容:</span>
-          <textarea
-            value={tactical}
-            onChange={e => setTactical(e.target.value)}
-            placeholder="今天练了什么战术/SSG/定位球"
-            className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#992828] resize-none min-h-[56px]"
-            rows={2}
-          />
-        </div>
-
-        {/* ── strength: auto-read ── */}
-        <div className="flex gap-2 items-start">
-          <span className="text-[#888] shrink-0 w-[72px]">力量内容:</span>
-          <span className={strengthName ? 'text-[#ccc]' : 'text-[#666]'}>{strengthName || '（今日无力量房排课）'}</span>
-        </div>
-
-        {/* ── match: auto-read if match day ── */}
-        <div className="flex gap-2 items-start">
-          <span className="text-[#888] shrink-0 w-[72px]">比赛数据:</span>
-          <span className={matchInfo ? 'text-[#992828]' : 'text-[#777]'}>{matchInfo || '（非比赛日）'}</span>
-        </div>
-
-        {/* ── coach notes: manual input ── */}
-        <div className="flex gap-2 items-start">
-          <span className="text-[#888] shrink-0 w-[72px] pt-2">教练备注:</span>
-          <textarea
-            value={coachNotes}
-            onChange={e => setCoachNotes(e.target.value)}
-            placeholder="其他补充说明..."
-            className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#992828] resize-none min-h-[48px]"
-            rows={2}
-          />
-        </div>
-
-        {/* ── divider + save button ── */}
-        <div className="border-t border-[#2c2c2c] pt-3 flex items-center gap-2">
-          <button
-            onClick={handleSave}
-            className="flex-1 py-2.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition active:scale-[0.98]"
-          >
-            {saved ? '✓ 已保存' : '保存笔记'}
-          </button>
-        </div>
-      </div>
-    </div>
+// 训练笔记已统一到 planning 页
   );
 }
 
@@ -433,7 +292,6 @@ export default function CoachWorkbench() {
   // ── exercise editor + training log ──
   const [editState, setEditState] = useState<EditState | null>(null);
   const [showLog, setShowLog] = useState(false);
-  const [showNotesDrawer, setShowNotesDrawer] = useState(false);
   const [planEditMode, setPlanEditMode] = useState(false);
 
   // ── share toast ──
@@ -1709,52 +1567,6 @@ export default function CoachWorkbench() {
           数据已保存
         </div>
       )}
-
-      {/* ═══════════════════════════════════════════════
-          NOTES DRAWER — floating button + slide-out panel
-          ═══════════════════════════════════════════════ */}
-      {/* Floating trigger button */}
-      <button
-        onClick={() => setShowNotesDrawer(true)}
-        className="fixed left-0 top-1/3 w-10 h-10 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-r-full flex items-center justify-center shadow-lg z-40 transition active:scale-95"
-        title="训练笔记"
-      >
-        <span className="text-sm">笔记</span>
-      </button>
-
-      {/* Slide-out drawer + overlay */}
-      {showNotesDrawer && (
-        <>
-          {/* Semi-transparent backdrop */}
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowNotesDrawer(false)}
-          />
-
-          {/* Drawer panel */}
-          <div className="fixed left-0 top-0 h-full w-[380px] max-w-[100vw] z-50 bg-[#0A0A0A] border-r border-[#2c2c2c] shadow-2xl overflow-y-auto">
-            {/* Drawer header */}
-            <div className="sticky top-0 bg-[#0A0A0A] border-b border-[#2c2c2c] p-4 flex items-center justify-between z-10">
-              <h3 className="text-sm font-bold text-white">训练笔记</h3>
-              <button
-                onClick={() => setShowNotesDrawer(false)}
-                className="w-8 h-8 rounded-full bg-[#1a1a1a] hover:bg-[#333] text-gray-400 hover:text-white flex items-center justify-center transition text-sm"
-                aria-label="关闭"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Drawer body — DailyTrainingNotes inline */}
-            <div className="p-4">
-              <DailyTrainingNotes
-                matchDate={matchDate}
-                modules={modules}
-                setTrainingActive={setTrainingActive}
-                trainingStartRef={trainingStartRef}
-              />
-            </div>
-          </div>
         </>
       )}
     </div>
