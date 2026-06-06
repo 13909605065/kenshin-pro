@@ -98,19 +98,19 @@ export default function Home() {
               <span className="text-[#d1d1d1] font-light text-lg ml-0.5">PRO S&C</span>
               <span className="text-[#888] text-[10px] ml-2 font-medium">体能教练工作台 v2</span>
             </a>
-            <nav className="flex items-center gap-1 overflow-hidden">
-              <a href="/" className="px-3 py-1.5 text-sm text-[#992828] font-semibold relative transition">
+            <nav className="flex items-center gap-0.5 overflow-hidden flex-nowrap">
+              <a href="/" className="px-2 py-1.5 text-xs text-[#992828] font-semibold relative transition whitespace-nowrap">
                 体能训练
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#992828] rounded-full" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#992828] rounded-full" />
               </a>
-              <a href="/match" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">比赛模式</a>
-              <a href="/warmup" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">热身设计</a>
-              <a href="/exercises" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">动作库</a>
-              <a href="/roster" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">花名册</a>
-              <a href="/fitness" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">体能测试</a>
-              <a href="/load" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">负荷管理</a>
-              <a href="/planning" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">周期方案</a>
-              <a href="/settings" className="px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition">设置</a>
+              <a href="/match" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">比赛</a>
+              <a href="/warmup" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">热身</a>
+              <a href="/exercises" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">动作库</a>
+              <a href="/roster" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">花名册</a>
+              <a href="/fitness" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">体测</a>
+              <a href="/load" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">负荷</a>
+              <a href="/planning" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">周期</a>
+              <a href="/settings" className="px-2 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-[#1e1e1e] transition whitespace-nowrap">设置</a>
             </nav>
           </div>
           <div className="flex items-center gap-3">
