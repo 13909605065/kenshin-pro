@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Moon, Activity, Zap, Heart, Brain, Scale, Send, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Activity, Users, Upload, Save, ChevronDown } from "lucide-react";
+import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 
 // ── Types ──
 
@@ -86,170 +87,156 @@ function getRecommendation(score: number): { label: string; color: string; advic
   };
 }
 
-const STORAGE_KEY = "kenshin_daily_readiness";
+const STORAGE_KEY = "kenshin_team_readiness";
 
-export function DailyReadiness({ athleteId = "self", onReadinessChange }: Props) {
+export function DailyReadiness({ onReadinessChange }: Props) {
   const today = new Date().toISOString().slice(0, 10);
-  const [submitted, setSubmitted] = useState(false);
-  const [lastScore, setLastScore] = useState<number | null>(null);
-  const [sleepQuality, setSleepQuality] = useState(4);
-  const [sleepHours, setSleepHours] = useState(7.5);
-  const [muscleSoreness, setMuscleSoreness] = useState(2);
-  const [generalFatigue, setGeneralFatigue] = useState(2);
-  const [stressLevel, setStressLevel] = useState(2);
-  const [morningHR, setMorningHR] = useState(60);
-  const [bodyWeight, setBodyWeight] = useState("");
-  const [notes, setNotes] = useState("");
+  const players = useMemo(() => getPlayers(), []);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [saved, setSaved] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-  // Load today's checkin if exists
+  // Load today's existing scores
   useEffect(() => {
     try {
-      const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      const todayCheckin = all.find((c: any) => c.date === today && c.athleteId === athleteId);
-      if (todayCheckin) {
-        setSubmitted(true);
-        setLastScore(todayCheckin.readinessScore);
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const all = JSON.parse(raw);
+      const todayData = all[today];
+      if (todayData && typeof todayData === 'object') {
+        setScores(todayData);
+        setSaved(true);
       }
     } catch {}
-  }, [today, athleteId]);
+  }, [today]);
 
-  const readinessScore = calcReadiness({
-    date: today, athleteId, sleepQuality: sleepQuality as any,
-    sleepHours, muscleSoreness: muscleSoreness as any,
-    generalFatigue: generalFatigue as any, stressLevel: stressLevel as any,
-    morningHR, bodyWeight: bodyWeight ? Number(bodyWeight) : undefined, notes,
-  });
-
-  const rec = getRecommendation(readinessScore);
-
-  const handleSubmit = () => {
-    const checkin: DailyCheckin = {
-      date: today, athleteId,
-      sleepQuality: sleepQuality as any, sleepHours,
-      muscleSoreness: muscleSoreness as any, generalFatigue: generalFatigue as any,
-      stressLevel: stressLevel as any, morningHR,
-      bodyWeight: bodyWeight ? Number(bodyWeight) : undefined,
-      readinessScore, notes,
-    };
-    try {
-      const all = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      const filtered = all.filter((c: any) => !(c.date === today && c.athleteId === athleteId));
-      filtered.push(checkin);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered.slice(-90))); // keep 90 days
-    } catch {}
-    setSubmitted(true);
-    setLastScore(readinessScore);
-    onReadinessChange?.(readinessScore, rec.advice);
+  const quickSet = (playerId: string, score: number) => {
+    setScores(prev => ({ ...prev, [playerId]: score }));
+    setSaved(false);
   };
 
-  if (submitted && lastScore !== null) {
-    const prevRec = getRecommendation(lastScore);
+  const getLabel = (score: number) => {
+    if (score >= 85) return { text: '极佳', color: 'text-green-400' };
+    if (score >= 70) return { text: '良好', color: 'text-blue-400' };
+    if (score >= 55) return { text: '疲劳', color: 'text-yellow-400' };
+    if (score >= 40) return { text: '很累', color: 'text-orange-400' };
+    return { text: '休息', color: 'text-[#992828]' };
+  };
+
+  const handleSave = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const all = raw ? JSON.parse(raw) : {};
+      all[today] = scores;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      setSaved(true);
+      onReadinessChange?.(Object.values(scores).reduce((a,b)=>a+b,0) / Math.max(1,Object.keys(scores).length), '');
+    } catch {}
+  };
+
+  const handleCSVImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const lines = (ev.target?.result as string).trim().split('\n');
+        const newScores: Record<string, number> = {};
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.trim());
+          const name = cols[0]; const score = parseInt(cols[1]);
+          if (!name || isNaN(score)) continue;
+          const player = players.find(p => p.name === name);
+          if (player) newScores[player.id] = score;
+        }
+        setScores(prev => ({ ...prev, ...newScores }));
+        setSaved(false);
+      } catch {}
+    };
+    reader.readAsText(file);
+  };
+
+  const enteredCount = Object.keys(scores).length;
+  const avgScore = enteredCount > 0 ? Math.round(Object.values(scores).reduce((a,b)=>a+b,0) / enteredCount) : null;
+
+  if (players.length === 0) {
     return (
-      <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <CheckCircle2 className="w-4 h-4 text-green-500" />
-          <span className="text-xs font-bold text-green-500">今日已评估</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-black" style={{ color: prevRec.color }}>{lastScore}</span>
-          <div>
-            <p className="text-xs text-white font-medium">{prevRec.label}</p>
-            <p className="text-[10px] text-gray-400">{prevRec.advice}</p>
-          </div>
-        </div>
-        <button onClick={() => setSubmitted(false)} className="mt-2 text-[10px] text-gray-500 hover:text-white transition">重新评估</button>
+      <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 text-center">
+        <p className="text-xs text-gray-500">暂无球员数据，请先在花名册添加球员</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 space-y-4">
-      <h3 className="text-xs font-bold text-white flex items-center gap-2">
-        <Activity className="w-3.5 h-3.5 text-[#992828]" />
-        球员状态录入（教练代填或导入）
-      </h3>
-      <p className="text-[9px] text-gray-500">发送问卷链接到球队群 → 球员自评 → 教练汇总导入。也支持教练逐人录入。</p>
-
-      {/* Sleep */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Moon className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">睡眠质量</span>
-          <span className="text-[10px] text-gray-600 ml-auto">{sleepQuality}/5</span>
-        </div>
-        <input type="range" min={1} max={5} value={sleepQuality} onChange={e => setSleepQuality(Number(e.target.value))} className="w-full h-1 accent-[#992828]" />
-        <div className="flex justify-between text-[8px] text-gray-600"><span>很差</span><span>极好</span></div>
-      </div>
-
-      <div>
-        <label className="text-[10px] text-gray-400">睡眠时长 (小时)</label>
-        <input type="number" value={sleepHours} onChange={e => setSleepHours(Number(e.target.value))} min={0} max={14} step={0.5} className="w-20 ml-2 bg-[#0d0d0d] border border-[#333] rounded px-2 py-0.5 text-xs text-white" />
-      </div>
-
-      {/* Muscle Soreness */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Zap className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">肌肉酸痛</span>
-          <span className="text-[10px] text-gray-600 ml-auto">{muscleSoreness}/5</span>
-        </div>
-        <input type="range" min={1} max={5} value={muscleSoreness} onChange={e => setMuscleSoreness(Number(e.target.value))} className="w-full h-1 accent-[#992828]" />
-        <div className="flex justify-between text-[8px] text-gray-600"><span>无感觉</span><span>很酸痛</span></div>
-      </div>
-
-      {/* Fatigue */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Activity className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">整体疲劳</span>
-          <span className="text-[10px] text-gray-600 ml-auto">{generalFatigue}/5</span>
-        </div>
-        <input type="range" min={1} max={5} value={generalFatigue} onChange={e => setGeneralFatigue(Number(e.target.value))} className="w-full h-1 accent-[#992828]" />
-        <div className="flex justify-between text-[8px] text-gray-600"><span>精力充沛</span><span>极度疲劳</span></div>
-      </div>
-
-      {/* Stress */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Brain className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">精神压力</span>
-          <span className="text-[10px] text-gray-600 ml-auto">{stressLevel}/5</span>
-        </div>
-        <input type="range" min={1} max={5} value={stressLevel} onChange={e => setStressLevel(Number(e.target.value))} className="w-full h-1 accent-[#992828]" />
-        <div className="flex justify-between text-[8px] text-gray-600"><span>放松</span><span>很紧张</span></div>
-      </div>
-
-      {/* Morning HR */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Heart className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">晨脉 (bpm)</span>
-        </div>
-        <input type="number" value={morningHR} onChange={e => setMorningHR(Number(e.target.value))} min={35} max={120} className="w-20 bg-[#0d0d0d] border border-[#333] rounded px-2 py-0.5 text-xs text-white" />
-        <span className="text-[8px] text-gray-600 ml-2">正常 50-65</span>
-      </div>
-
-      {/* Body Weight */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Scale className="w-3 h-3 text-gray-500" />
-          <span className="text-[10px] text-gray-400">体重 (kg，选填)</span>
-        </div>
-        <input type="number" value={bodyWeight} onChange={e => setBodyWeight(e.target.value)} min={30} max={150} step={0.1} placeholder="—" className="w-20 bg-[#0d0d0d] border border-[#333] rounded px-2 py-0.5 text-xs text-white" />
-      </div>
-
-      {/* Readiness Score Preview */}
-      <div className="bg-[#0d0d0d] rounded-lg p-3 flex items-center gap-3">
-        <span className="text-3xl font-black" style={{ color: rec.color }}>{readinessScore}</span>
-        <div>
-          <p className="text-xs text-white font-bold">{rec.label}</p>
-          <p className="text-[10px] text-gray-400">{rec.advice}</p>
+    <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold text-white flex items-center gap-2">
+          <Activity className="w-3.5 h-3.5 text-[#992828]" />
+          全队状态录入
+        </h3>
+        <div className="flex items-center gap-2">
+          {avgScore !== null && <span className={`text-xs font-bold ${getLabel(avgScore).color}`}>均分 {avgScore}</span>}
+          <span className="text-[10px] text-gray-500">{enteredCount}/{players.length}人</span>
+          <label className="flex items-center gap-1 px-2 py-1 bg-[#0d0d0d] border border-[#333] rounded text-[10px] text-gray-400 hover:text-white cursor-pointer transition">
+            <Upload className="w-3 h-3" /> 导入CSV
+            <input type="file" accept=".csv" onChange={handleCSVImport} className="hidden" />
+          </label>
         </div>
       </div>
 
-      <button onClick={handleSubmit}
-        className="w-full py-2.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
-        <Send className="w-3.5 h-3.5" /> 提交评估
+      {/* Quick-set summary bar */}
+      {avgScore !== null && (
+        <div className="flex items-center gap-2 bg-[#0d0d0d] rounded-lg p-2">
+          <span className={`text-lg font-black ${getLabel(avgScore).color}`}>{avgScore}</span>
+          <div className="text-[10px] text-gray-400">
+            全队均分 · {getLabel(avgScore).text}
+            {avgScore < 55 && <span className="text-[#992828] ml-1">⚠️ 建议降强度</span>}
+          </div>
+        </div>
+      )}
+
+      {/* Player list */}
+      <div className={`space-y-1 ${expanded ? '' : 'max-h-[240px] overflow-y-auto'}`}>
+        {players.map(p => {
+          const s = scores[p.id];
+          const label = s ? getLabel(s) : null;
+          return (
+            <div key={p.id} className="flex items-center gap-2 bg-[#0d0d0d] rounded-lg p-2 group">
+              <span className="text-[10px] text-white w-20 truncate font-medium">{p.name}</span>
+              <span className="text-[9px] text-gray-500 w-8">{p.position?.slice(0,2)||'—'}</span>
+              <div className="flex items-center gap-1 flex-1 justify-end">
+                {[85, 70, 55, 40, 25].map(score => (
+                  <button
+                    key={score}
+                    onClick={() => quickSet(p.id, score)}
+                    className={`w-7 h-6 rounded text-[9px] font-medium transition ${
+                      s === score
+                        ? 'bg-[#992828] text-white'
+                        : 'bg-[#1a1a1a] text-gray-500 hover:bg-[#333] hover:text-white'
+                    }`}
+                    title={getLabel(score).text}
+                  >{score}</button>
+                ))}
+                {s !== undefined && <span className={`text-[10px] font-bold ml-1 ${label?.color}`}>{s}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {players.length > 8 && (
+        <button onClick={() => setExpanded(!expanded)} className="w-full text-[10px] text-gray-500 hover:text-white flex items-center justify-center gap-1">
+          <ChevronDown className={`w-3 h-3 transition ${expanded ? 'rotate-180' : ''}`} />
+          {expanded ? '收起' : `展开全部 ${players.length} 人`}
+        </button>
+      )}
+
+      <button onClick={handleSave}
+        className={`w-full py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+          saved ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[#992828] hover:bg-[#7a1e1e] text-white'
+        }`}
+      >
+        <Save className="w-3.5 h-3.5" />
+        {saved ? '✓ 已保存' : `保存全队状态 (${enteredCount}人)`}
       </button>
     </div>
   );
