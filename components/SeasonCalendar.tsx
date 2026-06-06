@@ -114,15 +114,71 @@ function parseDate(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
-function loadData(): SeasonCalendarData | null {
+function getDefaultData(): SeasonCalendarData {
+  const now = new Date();
+  const year = now.getMonth() < 7 ? now.getFullYear() - 1 : now.getFullYear();
+  return {
+    events: [],
+    phaseRanges: [],
+    matchDates: [],
+    seasonStart: `${year}-07-01`,
+    seasonEnd: `${year + 1}-06-30`,
+  };
+}
+
+/** Validate loaded data — repair corruption, return clean default if broken */
+function validateData(raw: any): SeasonCalendarData | null {
+  if (!raw || typeof raw !== 'object') return null;
+  if (!Array.isArray(raw.events)) return null;
+  if (!Array.isArray(raw.phaseRanges)) return null;
+  if (!Array.isArray(raw.matchDates)) return null;
+  // Validate each event has required fields
+  for (const ev of raw.events) {
+    if (!ev.id || !ev.date || !ev.label) return null;
+  }
+  // Validate each phase range
+  for (const pr of raw.phaseRanges) {
+    if (!pr.id || !pr.phaseType) return null;
+  }
+  return raw as SeasonCalendarData;
+}
+
+function loadData(): SeasonCalendarData {
   try {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+    if (!raw) return getDefaultData();
+    const parsed = JSON.parse(raw);
+    const validated = validateData(parsed);
+    if (!validated) {
+      // Data corrupted — backup the bad data and reset
+      try { localStorage.setItem(STORAGE_KEY + '_corrupted_backup', raw); } catch {}
+      localStorage.removeItem(STORAGE_KEY);
+      return getDefaultData();
+    }
+    return validated;
+  } catch {
+    return getDefaultData();
+  }
 }
 
 function saveData(data: SeasonCalendarData) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+  syncSeasonToSupabase(data); // fire-and-forget best-effort sync
+}
+
+/** Sync season data to Supabase for cross-device access */
+async function syncSeasonToSupabase(data: SeasonCalendarData) {
+  try {
+    const { createClient } = await import("@/lib/supabase/supabase-client");
+    const supabase = createClient();
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user?.id) return;
+    await supabase.from("season_calendar").upsert({
+      user_id: session.session.user.id,
+      calendar_data: data,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+  } catch {}
 }
 
 function getDefaultSeasonYear(): number {
