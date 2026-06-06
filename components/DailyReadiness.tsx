@@ -166,8 +166,9 @@ export function DailyReadiness({ athleteId = "self", onReadinessChange }: Props)
     <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 space-y-4">
       <h3 className="text-xs font-bold text-white flex items-center gap-2">
         <Activity className="w-3.5 h-3.5 text-[#992828]" />
-        每日状态自评
+        球员状态录入（教练代填或导入）
       </h3>
+      <p className="text-[9px] text-gray-500">发送问卷链接到球队群 → 球员自评 → 教练汇总导入。也支持教练逐人录入。</p>
 
       {/* Sleep */}
       <div>

@@ -5,7 +5,6 @@ import { useTraining } from '@/hooks/useTraining';
 import { PhysicalTab } from './tabs/PhysicalTab';
 import { WorkoutTimer } from './WorkoutTimer';
 import { ExportTable } from './ExportTable';
-import AIAssistant from './AIAssistant';
 import { ExerciseEditor } from './ExerciseEditor';
 import { TrainingLogPanel } from './TrainingLogPanel';
 import TrainingTimer from './TrainingTimer';
@@ -1622,8 +1621,6 @@ export default function CoachWorkbench() {
           })}
         </div>
       </div>
-
-      <AIAssistant />
 
       {/* ══ TRAINING TIMER — full-screen overlay ══ */}
       {trainingActive && (
