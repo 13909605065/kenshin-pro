@@ -10,7 +10,7 @@ import { StickFigure } from "@/components/StickFigure";
 // Category Types
 // ═══════════════════════════════════════════════
 
-type BodyPart = "all" | "上肢" | "下肢" | "核心" | "背部" | "全身";
+type BodyPart = "all" | "上半身" | "下半身" | "全身";
 type Equipment = "all" | "杠铃" | "哑铃" | "悬吊" | "自重";
 type FootballCategory = "all" | "爆发力" | "灵敏" | "速度" | "力量" | "耐力";
 type FootballComponent = "all" | "基础力量" | "爆发力" | "直线速度" | "协调灵敏" | "专项耐力";
@@ -18,7 +18,7 @@ type Difficulty = "基础" | "中级" | "进阶";
 type LibraryMode = "football" | "fitness";
 type SceneFilter = "all" | "pitch" | "gym" | "both";
 
-const BODY_PARTS: BodyPart[] = ["all", "上肢", "下肢", "核心", "背部", "全身"];
+const BODY_PARTS: BodyPart[] = ["all", "上半身", "下半身", "全身"];
 const EQUIPMENTS: Equipment[] = ["all", "杠铃", "哑铃", "悬吊", "自重"];
 const FOOTBALL_CATEGORIES: FootballCategory[] = ["all", "爆发力", "灵敏", "速度", "力量", "耐力"];
 const FOOTBALL_COMPONENTS: FootballComponent[] = ["all", "基础力量", "爆发力", "直线速度", "协调灵敏", "专项耐力"];
@@ -131,10 +131,10 @@ const FULL_BODY_IDS = new Set([
 ]);
 
 function detectBodyPart(id: string): BodyPart {
-  if (UPPER_IDS.has(id)) return "上肢";
-  if (LOWER_IDS.has(id)) return "下肢";
-  if (CORE_IDS.has(id)) return "核心";
-  if (BACK_IDS.has(id)) return "背部";
+  if (UPPER_IDS.has(id)) return "上半身";
+  if (LOWER_IDS.has(id)) return "下半身";
+  if (CORE_IDS.has(id)) return "全身";
+  if (BACK_IDS.has(id)) return "上半身";
   if (FULL_BODY_IDS.has(id)) return "全身";
   if (id.startsWith("drill-")) return "全身";
   if (id.startsWith("warm-")) return "全身";
@@ -783,7 +783,7 @@ function ExerciseCard({
 
       {/* Image area */}
       <div className="aspect-square bg-[#111] flex items-center justify-center p-2 relative">
-        <StickFigure name={exercise.name} size={56} compact={true} bodyPart={exercise.bodyPart === "上肢" ? "upper" : exercise.bodyPart === "下肢" ? "lower" : exercise.bodyPart === "核心" ? "core" : exercise.bodyPart === "背部" ? "back" : undefined} />
+        <StickFigure name={exercise.name} size={56} compact={true} bodyPart={exercise.bodyPart === "上半身" ? "upper" : exercise.bodyPart === "下半身" ? "lower" : exercise.bodyPart === "全身" ? "core" : undefined} />
 
         {/* Football component badge — football mode only */}
         {libraryMode === "football" && exercise.football_component && (

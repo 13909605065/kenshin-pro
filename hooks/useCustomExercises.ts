@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 // Types
 // ═══════════════════════════════════════════════
 
-export type CustomBodyPart = "下肢" | "上肢推" | "上肢拉" | "核心" | "全身";
+export type CustomBodyPart = "上半身" | "下半身" | "全身";
 export type CustomEquipment = "杠铃" | "哑铃" | "壶铃" | "自重" | "弹力带" | "药球" | "波速球" | "其他";
 export type CustomDifficulty = "初级" | "中级" | "高级";
 
@@ -126,18 +126,8 @@ export function useCustomExercises() {
 // ═══════════════════════════════════════════════
 
 /** Map custom body_part to page's BodyPart filter */
-export function mapCustomBodyPart(bp: CustomBodyPart): "上肢" | "下肢" | "核心" | "背部" | "全身" {
-  switch (bp) {
-    case "下肢":
-      return "下肢";
-    case "上肢推":
-    case "上肢拉":
-      return "上肢";
-    case "核心":
-      return "核心";
-    case "全身":
-      return "全身";
-  }
+export function mapCustomBodyPart(bp: CustomBodyPart): "上半身" | "下半身" | "全身" {
+  return bp;
 }
 
 /** Map custom equipment to page's Equipment filter */
@@ -167,19 +157,8 @@ export function mapCustomEquipment(eq: CustomEquipment): "杠铃" | "哑铃" | "
 // ═══════════════════════════════════════════════
 
 /** Map custom body_part to strength-types BodyPart */
-export function mapCustomToBodyPart(bp: CustomBodyPart): "chest" | "back" | "legs" | "shoulders" | "arms" | "core" {
-  switch (bp) {
-    case "下肢":
-      return "legs";
-    case "上肢推":
-      return "chest";
-    case "上肢拉":
-      return "back";
-    case "核心":
-      return "core";
-    case "全身":
-      return "core";
-  }
+export function mapCustomToBodyPart(bp: CustomBodyPart): "上半身" | "下半身" | "全身" {
+  return bp;
 }
 
 /** Map custom equipment to strength-types Equipment */

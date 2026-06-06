@@ -22,16 +22,9 @@ const CALENDAR_KEY = "kenshin_gym_calendar";
 
 const BODY_PART_FILTERS: { value: BodyPart | "all"; label: string; group: string }[] = [
   { value: "all", label: "全部", group: "" },
-  { value: "upper_push", label: "上肢推", group: "上肢" },
-  { value: "upper_pull", label: "上肢拉", group: "上肢" },
-  { value: "shoulders", label: "肩部", group: "上肢" },
-  { value: "chest", label: "胸部", group: "上肢" },
-  { value: "arms", label: "手臂", group: "上肢" },
-  { value: "back", label: "背部", group: "上肢" },
-  { value: "lower", label: "下肢", group: "下肢" },
-  { value: "legs", label: "腿部", group: "下肢" },
-  { value: "core", label: "核心", group: "核心" },
-  { value: "full_body", label: "全身", group: "全身" },
+  { value: "上半身", label: "上半身", group: "上半身" },
+  { value: "下半身", label: "下半身", group: "下半身" },
+  { value: "全身", label: "全身", group: "全身" },
 ];
 
 const EQUIPMENT_FILTERS: { value: Equipment | "all"; label: string }[] = [

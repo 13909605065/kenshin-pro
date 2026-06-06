@@ -12,10 +12,9 @@ interface Props {
 }
 
 const BODY_PART_OPTIONS: { value: CustomBodyPart; label: string }[] = [
-  { value: "下肢", label: "下肢" },
-  { value: "上肢推", label: "上肢推" },
-  { value: "上肢拉", label: "上肢拉" },
-  { value: "核心", label: "核心" },
+  { value: "上半身", label: "上半身" },
+  { value: "下半身", label: "下半身" },
+  { value: "全身", label: "全身" },
   { value: "全身", label: "全身" },
 ];
 

@@ -3,16 +3,9 @@ import { ExerciseLibItem, StrengthTemplate, BodyPart, Equipment } from "./streng
 // ====== Label Maps ======
 
 export const BODY_PART_LABELS: Record<BodyPart, string> = {
-  chest: "胸部",
-  back: "背部",
-  legs: "腿部",
-  shoulders: "肩部",
-  arms: "手臂",
-  core: "核心",
-  lower: "下肢",
-  upper_push: "上肢推",
-  upper_pull: "上肢拉",
-  full_body: "全身/功能性",
+  上半身: "上半身",
+  下半身: "下半身",
+  全身: "全身",
 };
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {
@@ -36,7 +29,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "barbell-back-squat",
     name: "杠铃后蹲",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "barbell",
     type: "力量",
     description: "将杠铃置于斜方肌上，双脚与肩同宽，屈膝屈髋下蹲至大腿与地面平行，伸膝伸髋还原。核心收紧，背部保持中立。",
@@ -54,7 +47,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "deadlift",
     name: "传统硬拉",
-    body_part: "back",
+    body_part: "上半身",
     equipment: "barbell",
     type: "力量",
     description: "双脚与髋同宽，杠铃贴近小腿，屈髋后推、保持背部平直，握杠后伸髋伸膝拉起杠铃至站立位。",
@@ -74,7 +67,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "bench-press",
     name: "杠铃卧推",
-    body_part: "chest",
+    body_part: "上半身",
     equipment: "barbell",
     type: "力量",
     description: "仰卧于平凳上，握距略宽于肩，下放杠铃至胸部，推起至肘关节锁定。",
@@ -92,7 +85,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "overhead-press",
     name: "杠铃推举",
-    body_part: "shoulders",
+    body_part: "上半身",
     equipment: "barbell",
     type: "力量",
     description: "站立位，杠铃置于锁骨前方，向上推举至头顶上方锁定，控制下放。核心收紧防后仰。",
@@ -110,7 +103,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "bent-over-row",
     name: "杠铃俯身划船",
-    body_part: "back",
+    body_part: "上半身",
     equipment: "barbell",
     type: "力量",
     description: "俯身至躯干与地面约 45°，握杠铃，沿大腿方向拉起至下腹部，顶峰收缩后控制下放。",
@@ -128,7 +121,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "romanian-deadlift",
     name: "罗马尼亚硬拉",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "barbell",
     type: "力量",
     description: "站立握杠铃，微屈膝，髋部后推使杠铃沿腿前侧下降至小腿中部，伸髋还原。强调腘绳肌拉伸。",
@@ -146,7 +139,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "front-squat",
     name: "杠铃前蹲",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "barbell",
     type: "力量",
     description: "杠铃置于锁骨前方，双手交叉或前架位支撑，保持躯干直立下蹲至大腿平行地面。",
@@ -166,7 +159,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dumbbell-lunges",
     name: "哑铃弓步走",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "双手各持哑铃，交替向前跨步至前后膝关节均约 90°，后膝接近地面但不触碰，前腿发力推回。",
@@ -184,7 +177,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dumbbell-shoulder-press",
     name: "哑铃推举",
-    body_part: "shoulders",
+    body_part: "上半身",
     equipment: "dumbbell",
     type: "力量",
     description: "坐姿（有靠背），哑铃置于肩外侧，向上推至头顶，控制下放。",
@@ -202,7 +195,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "goblet-squat",
     name: "高脚杯深蹲",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "双手托哑铃一端于胸前，肘关节在膝关节内侧，下蹲至大腿平行地面。适合初学者建立动作模式。",
@@ -222,7 +215,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "cable-row",
     name: "坐姿绳索划船",
-    body_part: "back",
+    body_part: "上半身",
     equipment: "cable",
     type: "力量",
     description: "坐姿，双脚踩踏板，握 V 柄，挺胸收腹，将手柄拉向腹部，肩胛骨充分收缩。",
@@ -240,7 +233,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "tricep-pushdown",
     name: "绳索三头下压",
-    body_part: "arms",
+    body_part: "上半身",
     equipment: "cable",
     type: "力量",
     description: "站姿，高位滑轮，握绳索或直杆，上臂固定于体侧，伸肘下压至手臂伸直。",
@@ -258,7 +251,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "face-pull",
     name: "绳索面拉",
-    body_part: "shoulders",
+    body_part: "上半身",
     equipment: "cable",
     type: "热身",
     description: "高位滑轮，握绳索两端，拉向面部，双手分开至耳侧，肩外旋，激活后束和肩袖。",
@@ -278,7 +271,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "pull-up",
     name: "引体向上",
-    body_part: "back",
+    body_part: "上半身",
     equipment: "bodyweight",
     type: "力量",
     description: "正握单杠，握距略宽于肩，从完全悬垂位拉起至下巴过杠，控制下放。核心收紧，身体不摆动。",
@@ -296,7 +289,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "push-up",
     name: "俯卧撑",
-    body_part: "chest",
+    body_part: "上半身",
     equipment: "bodyweight",
     type: "力量",
     description: "手略宽于肩，身体成一直线，屈肘下降至胸部近地面，推起至肘关节锁定。",
@@ -316,7 +309,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "lat-pulldown",
     name: "高位下拉",
-    body_part: "back",
+    body_part: "上半身",
     equipment: "machine",
     type: "力量",
     description: "坐姿，大腿固定垫，宽握横杆，挺胸后仰微角，下拉至锁骨位置，控制上放至起始位。",
@@ -334,7 +327,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "leg-press",
     name: "腿举",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "machine",
     type: "力量",
     description: "坐于腿举机，双脚与肩同宽置于踏板，解锁安全杆，屈膝至 90° 后伸膝还原。背部紧贴靠垫。",
@@ -352,7 +345,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "cable-chest-fly",
     name: "绳索飞鸟",
-    body_part: "chest",
+    body_part: "上半身",
     equipment: "cable",
     type: "力量",
     description: "站姿中立位，双手各握高位滑轮手柄，肘微屈固定角度，向胸前合拢手臂至双手相遇，控制张开。",
@@ -372,7 +365,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "nordic-hamstring-curl",
     name: "北欧腘绳肌弯举",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "跪姿，脚踝固定（搭档压住或器械固定），身体笔直，缓慢前倾至极限后用手缓冲推回。全程髋关节保持伸展，腘绳肌离心控制。",
@@ -390,7 +383,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "box-jump",
     name: "跳箱",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "跳跃",
     description: "面对跳箱站立，屈膝摆臂爆发性跳上箱面，双脚同时落箱、膝关节缓冲吸收冲击。下箱时走下（勿跳下，保护跟腱）。",
@@ -408,7 +401,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "pallof-press",
     name: "抗旋推",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "cable",
     type: "核心",
     description: "侧对绳索站立，双手握手柄于胸前，向正前方推出至肘伸直，保持 2 秒后收回。全程核心抗旋，躯干不随绳索旋转。",
@@ -426,7 +419,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "single-leg-rdl",
     name: "单腿罗马尼亚硬拉",
-    body_part: "legs",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "单腿站立，对侧手持哑铃，支撑腿微屈膝，髋部后推使躯干前倾、自由腿向后伸展，保持髋部水平。哑铃沿支撑腿下降至小腿中部，伸髋还原。",
@@ -450,7 +443,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "bulgarian-split-squat",
     name: "保加利亚分腿蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "后脚置于凳上，前腿屈膝下蹲至大腿平行地面，前腿发力推起还原。核心收紧保持躯干直立。",
@@ -468,7 +461,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "split-squat",
     name: "分腿蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "前后分腿站立，后膝下降接近地面，前腿发力推起。保持躯干直立，核心收紧。",
@@ -486,7 +479,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "cossack-squat",
     name: "哥萨克深蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "宽站距，重心侧移至一侧腿，屈膝下蹲至大腿平行地面，对侧腿伸直脚尖朝上。左右交替。",
@@ -504,7 +497,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "sumo-squat",
     name: "宽距深蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "宽站距脚尖外展，双手持哑铃于体前，屈膝屈髋下蹲至大腿平行地面，伸膝伸髋还原。",
@@ -522,7 +515,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "barbell-hip-thrust",
     name: "杠铃臀冲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "barbell",
     type: "热身",
     description: "上背部靠凳，杠铃横跨髋部，屈膝脚踏实地面，伸髋将杠铃推至最高点，臀部充分收缩。",
@@ -540,7 +533,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "weighted-glute-bridge",
     name: "负重臀桥",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "热身",
     description: "仰卧屈膝，哑铃置于髋部，伸髋抬臀至肩-髋-膝成直线，顶峰收缩臀肌后控制下放。",
@@ -558,7 +551,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "single-leg-glute-bridge",
     name: "单侧臀桥",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "热身",
     description: "仰卧，一侧腿屈膝支撑，对侧腿伸直抬起，伸髋抬臀至肩-髋-膝成直线，控制下放。",
@@ -576,7 +569,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "kneeling-hip-extension",
     name: "跪姿伸髋",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "四足跪姿，一侧腿屈膝 90° 向后上方伸髋，至大腿与躯干平齐，臀肌收缩后控制下放。",
@@ -594,7 +587,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "rapid-hip-thrust",
     name: "快速挺髋",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "热身",
     description: "仰卧屈膝，快速爆发性伸髋抬臀，强调动作速率。每组完成 10-15 次快速重复。",
@@ -612,7 +605,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "kettlebell-single-leg-rdl",
     name: "壶铃单腿RDL",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "kettlebell",
     type: "力量",
     description: "单腿站立，对侧手持壶铃，髋部后推躯干前倾，自由腿后伸，壶铃沿支撑腿下降至小腿中部。",
@@ -630,7 +623,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "seated-calf-raise",
     name: "坐姿负重足跖屈",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "dumbbell",
     type: "力量",
     description: "坐姿，哑铃置于膝上大腿远端，前掌踩踏板或台阶边缘，提踵至最高点后控制下落。",
@@ -648,7 +641,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "standing-calf-raise",
     name: "站姿提踵",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，前掌踩台阶边缘，脚跟悬空，提踵至最高点后控制下落至低于水平面。",
@@ -666,7 +659,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "rapid-calf-raise",
     name: "快速提踵",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位前掌着地，快速连续提踵，强调踝关节刚性（stiffness）和跖屈速率，每组 20-30 次。",
@@ -684,7 +677,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "barbell-squat-jump",
     name: "杠铃深蹲跳",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "barbell",
     type: "跳跃",
     description: "杠铃置于斜方肌上（轻负荷 20-30% 1RM），下蹲后爆发性起跳，落地缓冲衔接下一次。",
@@ -702,7 +695,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "squat-to-sprint",
     name: "深蹲衔接冲刺跑",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "自重深蹲到底部后，爆发性站起并立即转为 5-10m 加速冲刺。强调力量到速度的转换。",
@@ -720,7 +713,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "kettlebell-goblet-split-squat",
     name: "壶铃高脚杯分腿蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "kettlebell",
     type: "力量",
     description: "双手托壶铃于胸前（高脚杯握法），前后分腿站立，后膝下降接近地面，前腿发力推起还原。核心收紧保持躯干直立。",
@@ -738,7 +731,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "hamstring-glute-bridge",
     name: "大腿后侧臀桥",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "热身",
     description: "仰卧，脚跟置于凳面或地面（脚跟位置比常规臀桥更远），屈膝约 90°，伸髋抬臀至肩-髋-膝成直线，重点感受腘绳肌和臀肌收缩。",
@@ -756,7 +749,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "lateral-lunge",
     name: "侧弓步",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，向一侧跨出大步，屈膝下蹲至大腿平行地面，对侧腿保持伸直，支撑腿发力推回起始位。左右交替。锻炼内收肌和下肢侧向稳定性。",
@@ -774,7 +767,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "lunge-squat",
     name: "弓箭步蹲",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，一脚向前跨步，前后膝关节均屈至约 90°，后膝接近地面，前腿发力推回起始位。原地完成，非行进间。核心收紧保持躯干直立。",
@@ -792,7 +785,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "walking-lunge",
     name: "连续弓箭步",
-    body_part: "lower",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，向前跨步完成弓箭步后，后腿蹬地向前迈进衔接下一次弓箭步，交替行进。强调动作连贯性和动态稳定性。",
@@ -815,7 +808,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dumbbell-bench-press",
     name: "哑铃卧推",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "dumbbell",
     type: "力量",
     description: "仰卧平凳，双手持哑铃于胸两侧，推起至手臂伸直，控制下放。肩胛收紧，双脚踏实地面。",
@@ -833,7 +826,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "single-leg-db-bench-press",
     name: "单腿哑铃卧推",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "dumbbell",
     type: "力量",
     description: "仰卧平凳，一侧脚抬起离地，仅单腿支撑，在此姿势下完成哑铃卧推。核心收紧防身体旋转。",
@@ -851,7 +844,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "single-arm-kettlebell-press",
     name: "单臂壶铃上举",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "kettlebell",
     type: "力量",
     description: "站姿单手持壶铃于肩外侧（架铃位），向上推至头顶上方，核心抗侧屈维持躯干中立。",
@@ -869,7 +862,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "med-ball-overhead-slam",
     name: "药球过顶下砸",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "med_ball",
     type: "力量",
     description: "站姿持药球高举过头，全力向下砸向地面，接反弹后连贯重复。强调爆发性屈髋和上肢发力。",
@@ -887,7 +880,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "lying-med-ball-chest-push",
     name: "躺姿橡胶球平推",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "med_ball",
     type: "力量",
     description: "仰卧，双手持药球于胸前，爆发性将球向天花板推出，接住后控制下放至胸前。",
@@ -905,7 +898,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dynamic-pushup",
     name: "动态俯卧撑",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "bodyweight",
     type: "力量",
     description: "俯卧撑姿势，推起时双手离地并拍手/触摸肩膀/前后交替，落地缓冲后连贯完成下一次。",
@@ -923,7 +916,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "wide-pushup",
     name: "宽距俯卧撑",
-    body_part: "upper_push",
+    body_part: "上半身",
     equipment: "bodyweight",
     type: "力量",
     description: "双手撑地，握距约为肩宽 1.5-2 倍，身体从头到脚一条直线，屈肘下降至胸部近地面，推起至肘关节锁定。宽握距增加胸肌外侧和三角肌前束参与。",
@@ -946,7 +939,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dumbbell-row",
     name: "哑铃划船",
-    body_part: "upper_pull",
+    body_part: "上半身",
     equipment: "dumbbell",
     type: "力量",
     description: "单手扶凳，同侧膝置凳面，对侧手持哑铃，背部发力将哑铃拉向髋侧，顶峰收缩后控制下放。",
@@ -964,7 +957,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "inverted-row",
     name: "反向引体向上",
-    body_part: "upper_pull",
+    body_part: "上半身",
     equipment: "bodyweight",
     type: "力量",
     description: "双手握杠铃杆（置于深蹲架安全杆），身体斜卧，脚跟着地，将胸部拉向杠铃杆，控制下放。",
@@ -982,7 +975,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "band-face-pull",
     name: "弹力带面拉",
-    body_part: "upper_pull",
+    body_part: "上半身",
     equipment: "band",
     type: "热身",
     description: "将弹力带固定于面部高度，双手握弹力带两端，拉向面部，双手分开至耳侧，肩外旋。",
@@ -1000,7 +993,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "trx-row",
     name: "TRX划船",
-    body_part: "upper_pull",
+    body_part: "上半身",
     equipment: "other",
     type: "力量",
     description: "双手握 TRX 手柄，身体后仰斜卧，脚跟支撑，将胸部拉向手柄，顶峰收缩背部后控制下放。",
@@ -1023,7 +1016,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "plank",
     name: "平板支撑",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "俯卧，前臂与脚尖支撑，身体从头到脚一条直线，核心收紧保持静态。从 30 秒开始逐步增加时长。",
@@ -1041,7 +1034,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "dead-bug",
     name: "死虫式",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "仰卧，四肢朝天，对侧手臂和腿同时向地面伸展，保持核心收紧、腰部贴地，交替进行。",
@@ -1059,7 +1052,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "bird-dog",
     name: "鸟狗式",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "四足跪姿，对侧手臂和腿同时伸展至与躯干平齐，保持核心稳定、骨盆不旋转，交替进行。",
@@ -1077,7 +1070,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "copenhagen-plank",
     name: "哥本哈根支撑",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "侧卧，上侧腿置于凳上，下侧前臂支撑，抬髋使身体成直线，内收肌和核心同时发力。",
@@ -1095,7 +1088,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "russian-twist",
     name: "俄罗斯转体",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "坐姿，躯干后仰约 45°，双脚离地或着地，双手合十左右旋转躯干，核心紧绷控制节奏。",
@@ -1113,7 +1106,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "bosu-russian-twist",
     name: "波速球俄罗斯转体",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bosu",
     type: "核心",
     description: "坐在波速球平面侧上，完成俄罗斯转体动作。不稳定的支撑面增加核心激活程度。",
@@ -1131,7 +1124,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "v-up",
     name: "两头起",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "仰卧，手臂和双腿同时抬起，手触脚尖，形成 V 字形，控制下放至起始位。",
@@ -1149,7 +1142,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "opposite-arm-leg-raise",
     name: "对侧起",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "俯卧，手臂前伸，同时抬起对侧手臂和腿，保持核心收紧，交替进行。强化后链和核心稳定。",
@@ -1167,7 +1160,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "adductor-raise",
     name: "内收肌抬起",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "力量",
     description: "侧卧，下方腿伸直，上方腿屈膝跨至前方，下方腿内侧发力抬起，控制下放。锻炼内收肌。",
@@ -1185,7 +1178,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "plank-shoulder-tap",
     name: "平板摸肩",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "俯卧撑支撑位，单手交替触摸对侧肩膀，核心和肩带保持稳定，骨盆不旋转或晃动。",
@@ -1203,7 +1196,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "saw-plank",
     name: "拉锯平板支撑",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "前臂平板支撑位，身体前后微移（向前后锯动），在移动中保持核心稳定，身体仍成直线。",
@@ -1221,7 +1214,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "hollow-body-hold",
     name: "仰卧空体支撑",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "仰卧，手臂和双腿微离地面，腰部贴地，核心收紧使身体呈弧形（香蕉状），保持静态时长。",
@@ -1239,7 +1232,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "side-plank",
     name: "侧支撑",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "侧卧，单侧前臂支撑，身体成直线，髋部抬离地面，侧面核心和髋外展肌持续收缩。",
@@ -1257,7 +1250,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "banded-plank-variation",
     name: "弹力带平板变式",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "band",
     type: "核心",
     description: "平板支撑位，弹力带绕脚踝或手腕，在平板支撑基础上加入肢体外展或抗旋等变式。",
@@ -1275,7 +1268,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "sit-up",
     name: "仰卧起坐",
-    body_part: "core",
+    body_part: "下半身",
     equipment: "bodyweight",
     type: "核心",
     description: "仰卧屈膝，双脚固定或自由，核心发力卷腹抬起上半身至坐立位，控制下放至起始位。",
@@ -1298,7 +1291,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "kettlebell-swing",
     name: "壶铃摇摆",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "kettlebell",
     type: "力量",
     description: "站姿宽距，双手持壶铃，屈髋后推壶铃从胯下后摆，伸髋爆发性将壶铃前摆至胸部高度。",
@@ -1316,7 +1309,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "farmers-walk",
     name: "负重农夫行走",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "dumbbell",
     type: "力量",
     description: "双手各持重哑铃（或壶铃），自然站立，核心收紧，向前行走固定距离或时间。全身肌群协同稳定。",
@@ -1334,7 +1327,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "plate-rotation",
     name: "杠铃片交替转体",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "other",
     type: "核心",
     description: "站姿持杠铃片于胸前，核心收紧，左右旋转躯干将杠铃片交替传向身体两侧。强化旋转爆发力。",
@@ -1357,7 +1350,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "fast-feet-in-place",
     name: "原地快速脚步",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "步伐",
     description: "站立位微屈膝，前脚掌着地，最快速度原地交替踏步，手臂配合摆动。强调触地时间最短化和脚步频率最大化。",
@@ -1375,7 +1368,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "forward-back-alternate",
     name: "前后交替",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "步伐",
     description: "站立位，双脚快速前后交替切换（剪刀步），前脚掌着地，手臂配合摆动。强调脚步切换速度和身体协调性。",
@@ -1393,7 +1386,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "lateral-leap",
     name: "侧向跨越跳",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "跳跃",
     description: "侧向站立，外侧腿蹬地发力向对侧跨越跳跃，落地屈膝缓冲后立即反向跳回。强调侧向爆发力和落地稳定性。",
@@ -1411,7 +1404,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "step-crossover",
     name: "踏步交叉",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "步伐",
     description: "侧向移动中，后腿交替从前方和后方交叉跨越前腿（葡萄步/卡里奥克步），强调髋关节灵活性和脚步协调。",
@@ -1429,7 +1422,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "outward-jump",
     name: "外跳跃",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "跳跃",
     description: "站立位，双脚同时向外侧跳开再跳回，如同开合跳的下半身版本。强调踝关节刚性和侧向爆发力。触地时间最短化。",
@@ -1452,7 +1445,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "standing-band-work",
     name: "站姿弹力带",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "band",
     type: "力量",
     description: "站立位，弹力带固定于身体前方或侧方，双手握弹力带完成推、拉、旋转等动作，在可变阻力下训练全身稳定性和力量。",
@@ -1474,7 +1467,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "crossover-step",
     name: "交叉步",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "步伐",
     description: "侧向移动中，后腿交替从前方和后方交叉跨越前腿行进。激活髋关节旋转肌群，改善下肢协调性。常用于热身阶段的动态准备。",
@@ -1492,7 +1485,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "hip-adduction",
     name: "髋内收",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，一侧腿从外展位向内收方向摆动，跨过身体中线至对侧。动态激活内收肌群，提升髋关节活动范围。常用于热身阶段。",
@@ -1510,7 +1503,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "hip-abduction",
     name: "髋外展",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "力量",
     description: "站立位，一侧腿从内收位向外展方向摆动，远离身体中线。动态激活臀中肌和外展肌群，提升髋关节侧向稳定性。常用于热身阶段。",
@@ -1528,7 +1521,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "high-skip",
     name: "高跳步",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "跳跃",
     description: "跑动中单腿起跳，对侧膝关节高抬至髋水平以上，手臂配合大幅度摆动。激活下肢爆发力，提升跑动节奏和协调性。常用于热身阶段的动态准备。",
@@ -1546,7 +1539,7 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = [
   {
     id: "hop-with-leg-lift",
     name: "小跳后抬腿",
-    body_part: "full_body",
+    body_part: "全身",
     equipment: "bodyweight",
     type: "跳跃",
     description: "跑动中做小幅跳跃，每次落地后对侧腿向后上方抬起（脚跟接近臀部），激活腘绳肌和臀部。常用于热身阶段的肌肉激活。",
@@ -1576,7 +1569,7 @@ export function findExercise(id: string): ExerciseLibItem | undefined {
 }
 
 /** Map body_part to module section */
-export function bodyPartToSection(body_part: BodyPart): "upper" | "lower" | "core" {
+export function bodyPartToSection(body_part: BodyPart): "上半身" | "下半身" | "全身" {
   switch (body_part) {
     case "chest":
     case "shoulders":
@@ -1584,12 +1577,12 @@ export function bodyPartToSection(body_part: BodyPart): "upper" | "lower" | "cor
     case "upper_push":
     case "upper_pull":
       return "upper";
-    case "legs":
-    case "lower":
-      return "lower";
+    case "下半身":
+    case "下半身":
+      return "下半身";
     case "back":
-    case "core":
-    case "full_body":
-      return "core";
+    case "下半身":
+    case "全身":
+      return "下半身";
   }
 }
