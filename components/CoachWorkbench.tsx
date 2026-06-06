@@ -202,6 +202,9 @@ interface EditState {
   index: number;
   exercise: any;
 }
+// 训练笔记已统一到 planning 页
+  );
+}
 
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
