@@ -2,8 +2,10 @@
 
 import CoachWorkbench from "@/components/CoachWorkbench";
 import { DailyReadiness } from "@/components/DailyReadiness";
-import { ReportGenerator } from "@/components/ReportGenerator";
+import dynamic from "next/dynamic";
 import { MobileNav } from "@/components/MobileNav";
+
+const ReportGenerator = dynamic(() => import("@/components/ReportGenerator").then(m => ({ default: m.ReportGenerator })), { ssr: false });
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useLang } from "@/components/providers/LanguageProvider";
