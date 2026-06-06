@@ -1222,7 +1222,7 @@ export default function CoachWorkbench() {
         </div>
       </details>
 
-      {/* ── 四大功能入口：热身设计 -> 场地训练监控 -> 热身方案库 ── */}
+      {/* ── 功能入口 ── */}
       <div className="space-y-3">
         <a href="/warmup" className="bg-[#171717] border border-[#2c2c2c] hover:border-[#3d3d3d] rounded-xl p-4 group transition no-underline block">
           <div className="flex items-center gap-3">
@@ -1240,15 +1240,6 @@ export default function CoachWorkbench() {
               <p className="text-[10px] text-[#888] mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
             </div>
             <span className="text-[#555] group-hover:text-[#992828] text-lg transition">&rarr;</span>
-          </div>
-        </a>
-        <a href="/warmup" className="bg-[#171717] border border-[#8b6914]/30 hover:border-[#8b6914]/50 rounded-xl p-4 group transition no-underline block">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <h3 className="text-sm font-bold text-[#F1F1F1] group-hover:text-white transition">热身方案库</h3>
-              <p className="text-[10px] text-[#888] mt-0.5">预设方案 · 快速调用 · 自定义组合</p>
-            </div>
-            <span className="text-[#555] group-hover:text-[#999] text-lg transition">&rarr;</span>
           </div>
         </a>
       </div>
