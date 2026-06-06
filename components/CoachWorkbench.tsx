@@ -1488,7 +1488,7 @@ export default function CoachWorkbench() {
           duration={duration}
           matchDay={activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
           playerName={planMode === 'individual' && selectedPlayers.size > 0 ? loadRoster().filter(p => selectedPlayers.has(p.name)).map(p => p.name).join('/') : undefined}
-          onClose={() => {
+          onClose={async () => {
             setTrainingActive(false);
             const elapsedMin = Math.round((Date.now() - trainingStartRef.current) / 60000);
             if (elapsedMin > 0) {
