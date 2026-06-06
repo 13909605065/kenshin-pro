@@ -281,7 +281,7 @@ function EventEditorPopup({
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-[10px] font-bold transition"
+            className="px-4 py-2 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-[10px] font-bold transition"
           >
             保存
           </button>
@@ -578,11 +578,11 @@ export default function SeasonCalendar() {
         key={d}
         onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
         className="relative flex items-center justify-center rounded transition cursor-pointer w-9 h-9 text-[11px]"
-        style={{ backgroundColor: phaseBg || (matchDay ? '#d9252520' : 'transparent') }}
+        style={{ backgroundColor: phaseBg || (matchDay ? '#99282820' : 'transparent') }}
         title={events.map(e => EVENT_CONFIG[e.type].label).join(', ') || d}
       >
         <span className={`font-medium leading-none ${
-          isToday ? 'text-[#d92525] font-bold' : matchDay ? 'text-white font-bold' : 'text-gray-400'
+          isToday ? 'text-[#992828] font-bold' : matchDay ? 'text-white font-bold' : 'text-gray-400'
         }`}>{dayNum}</span>
         {events.length > 0 && (
           <span className="absolute -bottom-0.5 text-[8px]">{EVENT_CONFIG[events[0].type].emoji}</span>
@@ -605,14 +605,14 @@ export default function SeasonCalendar() {
         key={d}
         onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
         className={`relative rounded-lg p-1.5 border transition cursor-pointer text-left flex flex-col min-h-[72px]
-          ${isToday ? 'ring-1 ring-[#d92525]' : ''}
-          ${matchDay ? 'border-[#d92525]/40 bg-[#d92525]/5' : 'border-[#222] bg-[#111] hover:border-[#444]'}
+          ${isToday ? 'ring-1 ring-[#992828]' : ''}
+          ${matchDay ? 'border-[#992828]/40 bg-[#992828]/5' : 'border-[#222] bg-[#111] hover:border-[#444]'}
           ${isWeekend ? 'opacity-70' : ''}
         `}
       >
         {/* Date + Weekday */}
         <div className="flex items-center justify-between mb-1">
-          <span className={`text-[10px] font-bold ${isToday ? 'text-[#d92525]' : matchDay ? 'text-white' : 'text-gray-400'}`}>
+          <span className={`text-[10px] font-bold ${isToday ? 'text-[#992828]' : matchDay ? 'text-white' : 'text-gray-400'}`}>
             {dayNum}
           </span>
           <span className="text-[7px] text-gray-600">{weekday}</span>
@@ -664,7 +664,7 @@ export default function SeasonCalendar() {
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[#d92525]">📅 赛季全景</span>
+          <span className="text-sm font-semibold text-[#992828]">📅 赛季全景</span>
           <span className="text-[10px] text-gray-500">
             {seasonYear}-{seasonYear + 1}
           </span>
@@ -676,7 +676,7 @@ export default function SeasonCalendar() {
               <button
                 onClick={e => { e.stopPropagation(); setViewMode('season'); }}
                 className={`px-2 py-1 rounded text-[10px] font-medium transition ${
-                  viewMode === 'season' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
+                  viewMode === 'season' ? 'bg-[#992828] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
                 }`}
               >
                 全赛季
@@ -684,7 +684,7 @@ export default function SeasonCalendar() {
               <button
                 onClick={e => { e.stopPropagation(); setViewMode('month'); }}
                 className={`px-2 py-1 rounded text-[10px] font-medium transition ${
-                  viewMode === 'month' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
+                  viewMode === 'month' ? 'bg-[#992828] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
                 }`}
               >
                 月视图
@@ -692,7 +692,7 @@ export default function SeasonCalendar() {
               <button
                 onClick={e => { e.stopPropagation(); setViewMode('week'); }}
                 className={`px-2 py-1 rounded text-[10px] font-medium transition ${
-                  viewMode === 'week' ? 'bg-[#d92525] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
+                  viewMode === 'week' ? 'bg-[#992828] text-white' : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
                 }`}
               >
                 周视图
@@ -709,7 +709,7 @@ export default function SeasonCalendar() {
               <button
                 onClick={e => { e.stopPropagation(); setShowBatchPanel(!showBatchPanel); }}
                 className={`px-2 py-1 rounded text-[10px] transition ${
-                  showBatchPanel ? 'bg-[#d92525]/20 text-[#d92525]' : 'bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-300 hover:text-white'
+                  showBatchPanel ? 'bg-[#992828]/20 text-[#992828]' : 'bg-[#1a1a1a] border border-[#333] hover:border-[#555] text-gray-300 hover:text-white'
                 }`}
               >
                 批量规划
@@ -793,7 +793,7 @@ export default function SeasonCalendar() {
                   <button
                     onClick={handleBatchPlan}
                     disabled={!batchStartDate || !batchEndDate}
-                    className="px-3 py-1 bg-[#d92525] hover:bg-[#b71d1d] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
+                    className="px-3 py-1 bg-[#992828] hover:bg-[#7a1e1e] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
                   >
                     应用
                   </button>
@@ -830,7 +830,7 @@ export default function SeasonCalendar() {
                       onClick={() => { setFocusedMonth(col.month); setViewMode('month'); }}
                       className="w-full text-center py-1.5 mb-1 rounded hover:bg-[#1a1a1a] transition"
                     >
-                      <span className="text-xs font-bold text-[#d92525] block">
+                      <span className="text-xs font-bold text-[#992828] block">
                         {MONTH_LABELS[SEASON_MONTHS.indexOf(col.month)]}
                       </span>
                       <span className="text-[8px] text-gray-600">{col.year}</span>
@@ -866,7 +866,7 @@ export default function SeasonCalendar() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-sm font-bold text-[#d92525]">
+                <span className="text-sm font-bold text-[#992828]">
                   {focusedMonth}月 {monthDays.yr}
                 </span>
                 <button
@@ -959,8 +959,8 @@ export default function SeasonCalendar() {
                   return (
                     <div key={d} className="flex flex-col">
                       {/* Day header */}
-                      <div className={`text-center py-1.5 rounded-t-lg ${isToday ? 'bg-[#d92525]/10' : 'bg-[#0a0a0a]'}`}>
-                        <div className={`text-[10px] font-bold ${isToday ? 'text-[#d92525]' : 'text-gray-400'}`}>
+                      <div className={`text-center py-1.5 rounded-t-lg ${isToday ? 'bg-[#992828]/10' : 'bg-[#0a0a0a]'}`}>
+                        <div className={`text-[10px] font-bold ${isToday ? 'text-[#992828]' : 'text-gray-400'}`}>
                           {WEEKDAY_CN[i]}
                         </div>
                         <div className="text-[9px] text-gray-600">{parseDate(d).getDate()}日</div>
@@ -969,7 +969,7 @@ export default function SeasonCalendar() {
                       <button
                         onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
                         className={`flex-1 p-2 border border-t-0 rounded-b-lg transition cursor-pointer min-h-[80px]
-                          ${isToday ? 'border-[#d92525]/30 bg-[#d92525]/3' : 'border-[#222] bg-[#111] hover:border-[#444]'}
+                          ${isToday ? 'border-[#992828]/30 bg-[#992828]/3' : 'border-[#222] bg-[#111] hover:border-[#444]'}
                         `}
                       >
                         {events.length > 0 ? (

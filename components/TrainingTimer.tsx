@@ -100,9 +100,9 @@ const PHASE_LABELS: Record<string, string> = {
 
 const PHASE_COLORS: Record<string, string> = {
   warmup: 'text-orange-400',
-  upper: 'text-[#d92525]',
-  lower: 'text-[#d92525]',
-  core: 'text-[#d92525]',
+  upper: 'text-[#992828]',
+  lower: 'text-[#992828]',
+  core: 'text-[#992828]',
   drill: 'text-blue-400',
   cooldown: 'text-green-400',
 };
@@ -480,7 +480,7 @@ export default function TrainingTimer({
       <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
         <p className="text-gray-400 text-lg mb-4">该方案暂无跟练动作</p>
         <button type="button" onClick={onClose}
-          className="px-6 py-3 bg-[#d92525] text-white font-bold rounded-xl text-base active:scale-95 transition">
+          className="px-6 py-3 bg-[#992828] text-white font-bold rounded-xl text-base active:scale-95 transition">
           返回方案
         </button>
       </div>
@@ -510,7 +510,7 @@ export default function TrainingTimer({
 
         <button type="button"
           onClick={handleConfirmPhase}
-          className="w-full max-w-xs py-4 bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold rounded-xl text-base active:scale-95 transition mb-3"
+          className="w-full max-w-xs py-4 bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold rounded-xl text-base active:scale-95 transition mb-3"
         >
           ✅ 完成{currentPhase.label}阶段
         </button>
@@ -556,7 +556,7 @@ export default function TrainingTimer({
         {/* Save button */}
         <button type="button"
           onClick={handleSaveLog}
-          className="w-full max-w-xs py-4 bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold rounded-xl text-base active:scale-95 transition mb-3"
+          className="w-full max-w-xs py-4 bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold rounded-xl text-base active:scale-95 transition mb-3"
         >
           保存训练日志
         </button>
@@ -616,7 +616,7 @@ export default function TrainingTimer({
         <div className="flex items-center gap-3 mb-3">
           <div className="flex-1 h-1.5 bg-[#222] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#d92525] rounded-full transition-all duration-500"
+              className="h-full bg-[#992828] rounded-full transition-all duration-500"
               style={{ width: `${globalProgress}%` }}
             />
           </div>
@@ -675,7 +675,7 @@ export default function TrainingTimer({
                 <circle
                   cx="80" cy="80" r={ringRadius}
                   fill="none"
-                  stroke="#d92525"
+                  stroke="#992828"
                   strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={circumference}
@@ -687,7 +687,7 @@ export default function TrainingTimer({
                 <span className="text-5xl font-bold text-white font-mono tracking-tight">
                   {fmtTime(restRemaining)}
                 </span>
-                <span className="text-xs text-[#d92525]/70 mt-1">组间休息</span>
+                <span className="text-xs text-[#992828]/70 mt-1">组间休息</span>
               </div>
             </div>
 
@@ -767,7 +767,7 @@ export default function TrainingTimer({
                 {ex.reps}
               </span>
               {ex.load && ex.load !== 'BW' && (
-                <span className="text-2xl text-[#d92525] font-bold">{ex.load}</span>
+                <span className="text-2xl text-[#992828] font-bold">{ex.load}</span>
               )}
               {ex.load === 'BW' && (
                 <span className="text-lg text-gray-500">自重</span>
@@ -807,7 +807,7 @@ export default function TrainingTimer({
         {subPhase === 'active' && (
           <button type="button"
             onClick={handleCompleteSet}
-            className="w-full py-5 bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold rounded-2xl text-lg active:scale-[0.98] transition flex items-center justify-center gap-2"
+            className="w-full py-5 bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold rounded-2xl text-lg active:scale-[0.98] transition flex items-center justify-center gap-2"
           >
             ✓ 完成组
           </button>
@@ -816,7 +816,7 @@ export default function TrainingTimer({
         {subPhase === 'rest' && (
           <button type="button"
             onClick={handleSkipRest}
-            className="w-full py-5 bg-[#d92525] hover:bg-[#b71d1d] text-white font-bold rounded-2xl text-lg active:scale-[0.98] transition"
+            className="w-full py-5 bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold rounded-2xl text-lg active:scale-[0.98] transition"
           >
             跳过休息 · 开始第 {currentSet + 1} 组
           </button>

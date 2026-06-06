@@ -41,8 +41,8 @@ export function ExerciseCard({ exercise, onView, onAdd, selected = false, onTogg
     <div
       className={`relative bg-[#1e1e1e] border rounded-xl overflow-hidden transition-all duration-200 ease-out group ${
         selected
-          ? "border-[#d92525] shadow-lg shadow-[#d92525]/10 -translate-y-1"
-          : "border-[#222] hover:-translate-y-1 hover:border-[#d92525] hover:shadow-lg hover:shadow-[#d92525]/10"
+          ? "border-[#992828] shadow-lg shadow-[#992828]/10 -translate-y-1"
+          : "border-[#222] hover:-translate-y-1 hover:border-[#992828] hover:shadow-lg hover:shadow-[#992828]/10"
       }`}
     >
       {/* Checkbox (when enabled) */}
@@ -51,7 +51,7 @@ export function ExerciseCard({ exercise, onView, onAdd, selected = false, onTogg
           onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
           className={`absolute top-2 right-2 z-10 p-0.5 rounded transition-all duration-150 ${
             selected
-              ? "text-[#d92525]"
+              ? "text-[#992828]"
               : "text-gray-600 opacity-0 group-hover:opacity-100 hover:text-white"
           }`}
         >
@@ -86,7 +86,7 @@ export function ExerciseCard({ exercise, onView, onAdd, selected = false, onTogg
         <span
           className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
             difficulty === "进阶"
-              ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30"
+              ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/30"
               : difficulty === "中级"
               ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
               : "bg-green-500/20 text-green-500 border border-green-500/30"
@@ -111,7 +111,7 @@ export function ExerciseCard({ exercise, onView, onAdd, selected = false, onTogg
       <div className="p-3">
         <h3 className="text-[#d1d1d1] font-bold text-sm truncate">{exercise.name}</h3>
         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          <span className="px-1.5 py-0.5 rounded bg-[#d92525]/10 border border-[#d92525]/20 text-[10px] text-[#d92525] font-medium">
+          <span className="px-1.5 py-0.5 rounded bg-[#992828]/10 border border-[#992828]/20 text-[10px] text-[#992828] font-medium">
             {BODY_PART_LABELS[exercise.body_part]}
           </span>
           <span className="px-1.5 py-0.5 rounded bg-[#222] text-[10px] text-gray-400">
@@ -124,8 +124,8 @@ export function ExerciseCard({ exercise, onView, onAdd, selected = false, onTogg
           <button
             onClick={() => onAdd(exercise)}
             className="w-full mt-3 flex items-center justify-center gap-1.5 py-2 rounded-lg
-                       bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] text-xs font-medium
-                       hover:bg-[#d92525] hover:text-white transition-all duration-150"
+                       bg-[#992828]/10 border border-[#992828]/20 text-[#992828] text-xs font-medium
+                       hover:bg-[#992828] hover:text-white transition-all duration-150"
           >
             <Plus className="w-3.5 h-3.5" />
             添加到计划

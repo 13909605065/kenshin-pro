@@ -127,7 +127,7 @@ export function RecoveryCheckin({ trainingSessionId = 'default', onComplete }: R
               onClick={() => toggleSoreness(m.id)}
               className={`px-2.5 py-1.5 rounded-lg text-[10px] transition ${
                 soreness[m.id] !== undefined
-                  ? 'bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30'
+                  ? 'bg-[#992828]/20 text-[#992828] border border-[#992828]/30'
                   : 'bg-[#1a1a1a] text-gray-400 border border-[#222]'
               }`}>
               {m.label}
@@ -178,7 +178,7 @@ export function RecoveryCheckin({ trainingSessionId = 'default', onComplete }: R
               onClick={() => setRecoveryQuality(i + 1 as 1|2|3|4|5)}
               className={`flex-1 py-2 rounded-lg text-[10px] transition ${
                 recoveryQuality === i + 1
-                  ? 'bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30'
+                  ? 'bg-[#992828]/20 text-[#992828] border border-[#992828]/30'
                   : 'bg-[#1a1a1a] text-gray-400'
               }`}>
               {label}
@@ -212,7 +212,7 @@ export function RecoveryCheckin({ trainingSessionId = 'default', onComplete }: R
         rows={2} />
 
       <button onClick={handleSubmit}
-        className="w-full py-3 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition">
+        className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition">
         提交恢复日志
       </button>
     </div>

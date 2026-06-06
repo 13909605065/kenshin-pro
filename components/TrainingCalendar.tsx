@@ -323,7 +323,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
             onClick={() => setWeekOffset(0)}
             className={`px-2 py-0.5 text-[10px] rounded transition ${
               isCurrentWeek
-                ? 'bg-[#d92525] text-white'
+                ? 'bg-[#992828] text-white'
                 : 'text-gray-500 hover:text-white hover:bg-[#1a1a1a]'
             }`}
           >
@@ -369,9 +369,9 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
           // ── Determine border treatment ──
           let borderClass = 'border-[#222] bg-[#1a1a1a]';
           if (isMatchDay) {
-            borderClass = 'border-[#d92525]/70 bg-[#d92525]/8';
+            borderClass = 'border-[#992828]/70 bg-[#992828]/8';
           } else if (isToday) {
-            borderClass = 'border-[#d92525]/50 bg-[#1a1a1a] shadow-[0_0_16px_rgba(217,37,37,0.12)]';
+            borderClass = 'border-[#992828]/50 bg-[#1a1a1a] shadow-[0_0_16px_rgba(217,37,37,0.12)]';
           }
 
           return (
@@ -386,7 +386,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                 <div className="flex items-baseline gap-1.5">
                   <span
                     className={`text-xs font-bold leading-none ${
-                      isToday ? 'text-[#d92525]' : isMatchDay ? 'text-[#d92525]' : 'text-gray-200'
+                      isToday ? 'text-[#992828]' : isMatchDay ? 'text-[#992828]' : 'text-gray-200'
                     }`}
                   >
                     {dateFmt(day)}
@@ -397,9 +397,9 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                   <span
                     className={`text-[8px] font-bold px-1.5 py-0.5 rounded leading-none ${
                       isMatchDay
-                        ? 'bg-[#d92525] text-white'
+                        ? 'bg-[#992828] text-white'
                         : isBeforeMatch
-                          ? 'bg-[#d92525]/20 text-[#d92525]'
+                          ? 'bg-[#992828]/20 text-[#992828]'
                           : 'bg-green-500/20 text-green-400'
                     }`}
                   >
@@ -480,7 +480,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                   }
                   className={`flex-1 py-1 rounded text-[9px] font-medium transition ${
                     notes?.ballOption === 'ball'
-                      ? 'bg-[#d92525] text-white'
+                      ? 'bg-[#992828] text-white'
                       : 'bg-[#121212] text-gray-600 hover:text-gray-400'
                   }`}
                 >
@@ -494,7 +494,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                   }
                   className={`flex-1 py-1 rounded text-[9px] font-medium transition ${
                     notes?.ballOption === 'no-ball'
-                      ? 'bg-[#d92525] text-white'
+                      ? 'bg-[#992828] text-white'
                       : 'bg-[#121212] text-gray-600 hover:text-gray-400'
                   }`}
                 >
@@ -517,7 +517,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                 {selectedWarmup ? (
                   <div className="bg-[#121212] rounded p-2 border border-[#1a1a1a]">
                     <div className="flex items-center justify-between">
-                      <span className="text-[8px] text-[#d92525] font-medium truncate max-w-[80px]">
+                      <span className="text-[8px] text-[#992828] font-medium truncate max-w-[80px]">
                         {selectedWarmup.name}
                       </span>
                       <button
@@ -541,7 +541,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                         onChange={e =>
                           handleDurationChange(dayStr, Number(e.target.value))
                         }
-                        className="flex-1 h-1 accent-[#d92525] cursor-pointer"
+                        className="flex-1 h-1 accent-[#992828] cursor-pointer"
                       />
                       <span className="text-[8px] text-gray-500 shrink-0 w-7 text-right">
                         {notes?.warmupDuration || selectedWarmup.duration}m
@@ -600,7 +600,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                   </p>
                   <a
                     href="/warmup"
-                    className="inline-flex items-center gap-1 px-4 py-2 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-medium transition"
+                    className="inline-flex items-center gap-1 px-4 py-2 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-medium transition"
                   >
                     + 创建热身方案
                   </a>
@@ -613,12 +613,12 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
                     <button
                       key={warmup.id}
                       onClick={() => handleWarmupSelect(warmup, showWarmupModal)}
-                      className="w-full p-3 bg-[#1a1a1a] border border-[#222] hover:border-[#d92525]/40 rounded-lg text-left transition group"
+                      className="w-full p-3 bg-[#1a1a1a] border border-[#222] hover:border-[#992828]/40 rounded-lg text-left transition group"
                     >
                       {/* Top row: name + type + duration */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs font-semibold text-white group-hover:text-[#d92525] transition truncate">
+                          <span className="text-xs font-semibold text-white group-hover:text-[#992828] transition truncate">
                             {warmup.name}
                           </span>
                           <span
@@ -666,7 +666,7 @@ export default function TrainingCalendar({ matchDate, mdDay: _mdDay, onSelectDay
             <div className="p-3 border-t border-[#222]">
               <a
                 href="/warmup"
-                className="block text-center py-1.5 text-[10px] text-gray-500 hover:text-[#d92525] transition"
+                className="block text-center py-1.5 text-[10px] text-gray-500 hover:text-[#992828] transition"
               >
                 + 创建新热身方案
               </a>

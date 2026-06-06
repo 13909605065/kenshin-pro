@@ -43,7 +43,7 @@ function flattenForAthlete(modules: TrainingModule[]): SeqCard[] {
 
 const TYPE_META: Record<string, {label:string;icon:string;color:string}> = {
   warmup: {label:"热身",icon:"🔥",color:"bg-green-500/10 border-green-500/30 text-green-400"},
-  strength: {label:"力量",icon:"💪",color:"bg-[#d92525]/10 border-[#d92525]/30 text-[#d92525]"},
+  strength: {label:"力量",icon:"💪",color:"bg-[#992828]/10 border-[#992828]/30 text-[#992828]"},
   tech: {label:"技术",icon:"⚽",color:"bg-blue-500/10 border-blue-500/30 text-blue-400"},
   cooldown: {label:"放松",icon:"🧊",color:"bg-yellow-500/10 border-yellow-500/30 text-yellow-400"},
 };
@@ -65,13 +65,13 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
         <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3 flex items-center gap-2 text-[11px]">
           <span className="text-gray-400">{formData.name||"运动员"} · {formData.position||"?"} · {formData.age||"?"}岁</span>
           {(formData.injurySites||[]).length > 0 && <span className="text-red-400">⚠️伤病: 训练中注意保护</span>}
-          <span className="text-[#d92525] ml-auto">{doneCount}/{total}</span>
+          <span className="text-[#992828] ml-auto">{doneCount}/{total}</span>
         </div>
       )}
 
       {/* Progress bar */}
       <div className="h-1 bg-[#222] rounded-full overflow-hidden">
-        <div className="h-full bg-[#d92525] transition-all duration-300" style={{width:(total>0?Math.round(doneCount/total*100):0)+"%"}}/>
+        <div className="h-full bg-[#992828] transition-all duration-300" style={{width:(total>0?Math.round(doneCount/total*100):0)+"%"}}/>
       </div>
 
       {/* Cards */}
@@ -91,7 +91,7 @@ export function AthleteSequentialView({ modules, formData }: { modules: Training
                   <p className={`text-sm font-bold truncate ${isDone?"line-through":""}`}>{card.name}</p>
                   <p className="text-[11px] opacity-70">{card.detail}</p>
                 </div>
-                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${isDone?"bg-[#d92525] border-[#d92525]":"border-gray-600"}`}>
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${isDone?"bg-[#992828] border-[#992828]":"border-gray-600"}`}>
                   {isDone && <Check className="w-3 h-3 text-black"/>}
                 </div>
                 {isExp ? <ChevronUp className="w-4 h-4 opacity-50"/> : <ChevronDown className="w-4 h-4 opacity-50"/>}
@@ -147,7 +147,7 @@ export function AthleteCategoryView({ modules }: { modules: TrainingModule[] }) 
       <div className="flex gap-0.5 bg-[#111] rounded-lg p-0.5">
         {tabs.map(t => (
           <button key={t.id} onClick={()=>setTab(t.id)}
-            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-[#d92525] text-black":"text-gray-400")}>
+            className={"flex-1 py-1.5 rounded-md text-[11px] font-medium "+(tab===t.id?"bg-[#992828] text-black":"text-gray-400")}>
             {t.icon} {t.label}
           </button>
         ))}

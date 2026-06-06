@@ -51,7 +51,7 @@ export function PlanBuilder({
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="输入计划名称..."
             maxLength={40}
-            className="w-full bg-transparent text-lg font-bold text-white placeholder-gray-600 focus:outline-none border-b border-transparent focus:border-[#d92525] transition-colors"
+            className="w-full bg-transparent text-lg font-bold text-white placeholder-gray-600 focus:outline-none border-b border-transparent focus:border-[#992828] transition-colors"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export function PlanBuilder({
             </button>
             <button
               onClick={onClearPlan}
-              className="text-xs text-gray-400 hover:text-[#d92525] transition flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-[#992828] transition flex items-center gap-1"
             >
               <Trash2 className="w-3 h-3" />
               清空

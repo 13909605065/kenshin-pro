@@ -132,10 +132,10 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
   if (!open) return null;
 
   const inputClass =
-    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition-colors";
+    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#992828] transition-colors";
   const labelClass = "text-xs text-gray-400 font-medium mb-1 block";
   const selectClass =
-    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#d92525] transition-colors appearance-none cursor-pointer";
+    "w-full bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#992828] transition-colors appearance-none cursor-pointer";
 
   return (
     <>
@@ -165,7 +165,7 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
           {/* 动作名称 */}
           <div>
             <label className={labelClass}>
-              动作名称 <span className="text-[#d92525]">*</span>
+              动作名称 <span className="text-[#992828]">*</span>
             </label>
             <input
               type="text"
@@ -381,14 +381,14 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
           </button>
           <button
             onClick={handleSubmit}
-            className="px-5 py-2 bg-[#d92525] text-white text-sm font-bold rounded-lg hover:opacity-90 transition flex items-center gap-1.5"
+            className="px-5 py-2 bg-[#992828] text-white text-sm font-bold rounded-lg hover:opacity-90 transition flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             {isEditing ? "保存修改" : "保存"}
           </button>
         </div>
         {errorMsg && (
-          <p className="text-sm text-[#d92525] mt-2">{errorMsg}</p>
+          <p className="text-sm text-[#992828] mt-2">{errorMsg}</p>
         )}
       </div>
     </>

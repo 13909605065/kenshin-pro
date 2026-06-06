@@ -265,9 +265,9 @@ export default function VoiceNotes({ players, activeModules, planId }: Props) {
 
             {/* Recording status */}
             {recording && (
-              <div className="flex items-center gap-2 p-2 bg-[#d92525]/10 border border-[#d92525]/30 rounded-lg">
-                <span className="w-2 h-2 rounded-full bg-[#d92525] animate-pulse" />
-                <span className="text-[10px] text-[#d92525] font-medium">录音中…</span>
+              <div className="flex items-center gap-2 p-2 bg-[#992828]/10 border border-[#992828]/30 rounded-lg">
+                <span className="w-2 h-2 rounded-full bg-[#992828] animate-pulse" />
+                <span className="text-[10px] text-[#992828] font-medium">录音中…</span>
                 <button onClick={stopRecording} className="ml-auto text-[9px] text-gray-400 hover:text-white">
                   停止
                 </button>
@@ -297,7 +297,7 @@ export default function VoiceNotes({ players, activeModules, planId }: Props) {
                 />
                 <div className="flex gap-1 mt-1">
                   <button onClick={handleFallbackSubmit}
-                    className="flex-1 py-1 bg-[#d92525] text-white rounded text-[10px] font-bold">
+                    className="flex-1 py-1 bg-[#992828] text-white rounded text-[10px] font-bold">
                     保存
                   </button>
                   <button onClick={() => setShowFallbackInput(false)}
@@ -344,7 +344,7 @@ export default function VoiceNotes({ players, activeModules, planId }: Props) {
                   <div key={n.id} className="bg-[#1a1a1a] rounded-lg p-1.5 text-[10px]">
                     <div className="flex items-center gap-1">
                       {n.player && (
-                        <span className="text-[#d92525] font-medium">{n.player}</span>
+                        <span className="text-[#992828] font-medium">{n.player}</span>
                       )}
                       {n.exercise && (
                         <span className="text-gray-400">· {n.exercise}</span>
@@ -374,8 +374,8 @@ export default function VoiceNotes({ players, activeModules, planId }: Props) {
           }}
           className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all ${
             recording
-              ? 'bg-[#d92525] scale-110 animate-pulse ring-2 ring-[#d92525]/50'
-              : 'bg-[#d92525] hover:bg-[#b71d1d] hover:scale-105 active:scale-95'
+              ? 'bg-[#992828] scale-110 animate-pulse ring-2 ring-[#992828]/50'
+              : 'bg-[#992828] hover:bg-[#7a1e1e] hover:scale-105 active:scale-95'
           }`}
           title="语音备注"
         >

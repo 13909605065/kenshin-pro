@@ -20,7 +20,7 @@ export function StrengthTabSwitcher({ active, onChange }: Props) {
           onClick={() => onChange(tab.value)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition ${
             active === tab.value
-              ? "bg-[#d92525] text-white"
+              ? "bg-[#992828] text-white"
               : "text-gray-400 hover:text-white"
           }`}
         >

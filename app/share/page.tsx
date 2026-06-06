@@ -16,7 +16,7 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
       </div>
       {session.warmup?.length > 0 && (
         <div>
-          <h2 className="text-[#d92525] text-sm font-bold mb-2">🔥 热身 ({session.warmup.reduce((s: number, w: any) => s + w.duration, 0)}min)</h2>
+          <h2 className="text-[#992828] text-sm font-bold mb-2">🔥 热身 ({session.warmup.reduce((s: number, w: any) => s + w.duration, 0)}min)</h2>
           {session.warmup.map((w: any, i: number) => (
             <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-1"><span className="text-white text-sm">{w.name}</span><span className="text-xs text-gray-400 ml-2">{w.duration}min</span><p className="text-xs text-gray-400">{w.description}</p></div>
           ))}
@@ -24,10 +24,10 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
       )}
       {session.activities?.length > 0 && (
         <div>
-          <h2 className="text-[#d92525] text-sm font-bold mb-2">⚽ 主体训练</h2>
+          <h2 className="text-[#992828] text-sm font-bold mb-2">⚽ 主体训练</h2>
           {session.activities.map((act: any, i: number) => (
-            <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-2 border-l-2 border-[#d92525]">
-              <div className="flex justify-between"><span className="text-white font-bold">{i + 1}. {act.name}</span><span className="text-xs text-[#d92525]">{act.duration}min</span></div>
+            <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-2 border-l-2 border-[#992828]">
+              <div className="flex justify-between"><span className="text-white font-bold">{i + 1}. {act.name}</span><span className="text-xs text-[#992828]">{act.duration}min</span></div>
               <p className="text-xs text-gray-400">{act.area} · {act.groups}</p>
               <p className="text-xs text-gray-300 mt-1">{act.description}</p>
               {act.coaching_points?.length > 0 && <p className="text-[10px] text-gray-400 mt-1">要点：{act.coaching_points.join("；")}</p>}
@@ -37,13 +37,13 @@ function CoachShareView({ modules }: { modules: TrainingModule[] }) {
       )}
       {session.ssg && (
         <div>
-          <h2 className="text-[#d92525] text-sm font-bold mb-2">🏟️ {session.ssg.name}</h2>
+          <h2 className="text-[#992828] text-sm font-bold mb-2">🏟️ {session.ssg.name}</h2>
           <div className="bg-[#1e1e1e]/50 rounded p-3"><p className="text-xs text-gray-300">{session.ssg.duration}min · {session.ssg.area} · {session.ssg.players}</p><p className="text-xs text-gray-400">{session.ssg.rules}</p></div>
         </div>
       )}
       {session.cooldown?.length > 0 && (
         <div>
-          <h2 className="text-[#d92525] text-sm font-bold mb-2">🧊 冷身 ({session.cooldown.reduce((s: number, c: any) => s + c.duration, 0)}min)</h2>
+          <h2 className="text-[#992828] text-sm font-bold mb-2">🧊 冷身 ({session.cooldown.reduce((s: number, c: any) => s + c.duration, 0)}min)</h2>
           {session.cooldown.map((c: any, i: number) => (
             <div key={i} className="bg-[#1e1e1e]/50 rounded p-3 mb-1"><span className="text-white text-sm">{c.name}</span><span className="text-xs text-gray-400 ml-2">{c.duration}min</span></div>
           ))}
@@ -63,13 +63,13 @@ function AthleteShareView({ modules, formData }: { modules: TrainingModule[]; fo
         <h1 className="text-white font-bold text-lg">{(POSITION_LABELS as any)[formData.position] || ""} · {(GOAL_LABELS as any)[formData.goal] || ""} · {(PHASE_LABELS as any)[formData.phase] || ""}</h1>
         <p className="text-xs text-gray-400">{formData.name} · {formData.gender === "female" ? "♀" : "♂"} · {formData.age}岁 · {formData.height}cm · {formData.weight}kg</p>
       </div>
-      {posModule.analysis && <div className="bg-[#d92525]/5 border border-[#d92525]/20 rounded-xl p-3"><p className="text-xs text-gray-300">{posModule.analysis}</p></div>}
+      {posModule.analysis && <div className="bg-[#992828]/5 border border-[#992828]/20 rounded-xl p-3"><p className="text-xs text-gray-300">{posModule.analysis}</p></div>}
       {posModule.warmup?.map((w: any, i: number) => (
         <div key={i} className="bg-[#1e1e1e]/50 rounded p-3"><span className="text-white text-sm">🔥 {w.name}</span><span className="text-xs text-gray-400 ml-2">{w.duration}min</span></div>
       ))}
       {(["upper_limb","lower_limb","core","ability"] as const).map(key => {
         const exs = posModule[key]; if (!exs?.length) return null;
-        return <div key={key}><h2 className="text-[#d92525] text-sm font-bold mb-1">{{upper_limb:"上肢",lower_limb:"下肢",core:"核心",ability:"专项"}[key]}</h2>
+        return <div key={key}><h2 className="text-[#992828] text-sm font-bold mb-1">{{upper_limb:"上肢",lower_limb:"下肢",core:"核心",ability:"专项"}[key]}</h2>
           {exs.map((ex: any, i: number) => (
             <div key={i} className="bg-[#1e1e1e]/50 rounded p-2 mb-1 flex justify-between"><span className="text-white text-sm">{ex.name}</span><span className="text-xs text-gray-400">{ex.sets}×{ex.reps} · 间歇{ex.rest}s · {ex.load||`RPE${ex.rpe}`}</span></div>
           ))}</div>;
@@ -116,7 +116,7 @@ export default function SharePage() {
   }, []);
 
   if (error) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><p className="text-gray-400">{error}</p></div>;
-  if (!data) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-[#d92525] border-t-transparent animate-spin" /></div>;
+  if (!data) return <div className="min-h-screen bg-[#121212] flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-[#992828] border-t-transparent animate-spin" /></div>;
 
   const isCoach = data.formData.role === "coach";
   return (
@@ -126,7 +126,7 @@ export default function SharePage() {
         <span className="text-[10px] text-gray-400 ml-2">Kenshinpro · 只读</span>
       </div>
       {isCoach ? <CoachShareView modules={data.modules} /> : <AthleteShareView modules={data.modules} formData={data.formData} />}
-      <div className="text-center py-6"><button onClick={() => window.print()} className="px-4 py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm">🖨️ 打印方案</button></div>
+      <div className="text-center py-6"><button onClick={() => window.print()} className="px-4 py-2 bg-[#992828] text-white font-bold rounded-lg text-sm">🖨️ 打印方案</button></div>
     </div>
   );
 }

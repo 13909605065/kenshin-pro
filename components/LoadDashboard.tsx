@@ -44,19 +44,19 @@ function getLast7Days(): string[] {
 function loadColor(load: number): string {
   if (load < 300) return "#22c55e";
   if (load <= 500) return "#f59e0b";
-  return "#d92525";
+  return "#992828";
 }
 
 function loadBgClass(load: number): string {
   if (load < 300) return "bg-[#22c55e]";
   if (load <= 500) return "bg-[#f59e0b]";
-  return "bg-[#d92525]";
+  return "bg-[#992828]";
 }
 
 function loadTextClass(load: number): string {
   if (load < 300) return "text-[#22c55e]";
   if (load <= 500) return "text-[#f59e0b]";
-  return "text-[#d92525]";
+  return "text-[#992828]";
 }
 
 function loadLabel(load: number): string {
@@ -93,7 +93,7 @@ function computeACWR(data: LoadDay[]): { ratio: number | null; label: string; co
     if (ratio < 0.8) return { ratio, label: "负荷不足", color: "#22c55e" };
     if (ratio <= 1.3) return { ratio, label: "负荷合理", color: "#22c55e" };
     if (ratio <= 1.5) return { ratio, label: "负荷偏高", color: "#f59e0b" };
-    return { ratio, label: "负荷过高", color: "#d92525" };
+    return { ratio, label: "负荷过高", color: "#992828" };
   }
 
   const chronicSlice = sorted.slice(0, 28);
@@ -104,7 +104,7 @@ function computeACWR(data: LoadDay[]): { ratio: number | null; label: string; co
   if (ratio < 0.8) return { ratio, label: "负荷不足", color: "#22c55e" };
   if (ratio <= 1.3) return { ratio, label: "负荷合理", color: "#22c55e" };
   if (ratio <= 1.5) return { ratio, label: "负荷偏高", color: "#f59e0b" };
-  return { ratio, label: "负荷过高", color: "#d92525" };
+  return { ratio, label: "负荷过高", color: "#992828" };
 }
 
 function LoadEntryModal({
@@ -153,7 +153,7 @@ function LoadEntryModal({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#d92525] focus:outline-none"
+            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#992828] focus:outline-none"
           />
         </div>
 
@@ -169,7 +169,7 @@ function LoadEntryModal({
                 onClick={() => setSRPE(v)}
                 className={`flex-1 py-2 rounded-md text-xs font-bold transition-all duration-150 border ${
                   sRPE === v
-                    ? "bg-[#d92525] text-white border-[#d92525]"
+                    ? "bg-[#992828] text-white border-[#992828]"
                     : "bg-[#1e1e1e] text-gray-400 border-[#222] hover:border-[#444]"
                 }`}
               >
@@ -205,7 +205,7 @@ function LoadEntryModal({
               onChange={(e) =>
                 setDuration(Math.max(1, parseInt(e.target.value) || 0))
               }
-              className="w-24 bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white text-center focus:border-[#d92525] focus:outline-none"
+              className="w-24 bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white text-center focus:border-[#992828] focus:outline-none"
             />
             <span className="text-sm text-gray-400">分钟</span>
             <div className="flex gap-1 ml-2">
@@ -215,7 +215,7 @@ function LoadEntryModal({
                   onClick={() => setDuration(m)}
                   className={`px-2 py-1 rounded text-[10px] font-medium transition border ${
                     duration === m
-                      ? "bg-[#d92525]/15 text-[#d92525] border-[#d92525]/20"
+                      ? "bg-[#992828]/15 text-[#992828] border-[#992828]/20"
                       : "bg-[#1e1e1e] text-gray-400 border-[#222] hover:border-[#444]"
                   }`}
                 >
@@ -247,13 +247,13 @@ function LoadEntryModal({
             onChange={(e) => setNote(e.target.value)}
             placeholder="例如：比赛日、高强度间歇..."
             maxLength={60}
-            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none"
+            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none"
           />
         </div>
 
         <button
           onClick={handleSave}
-          className="w-full py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm hover:bg-opacity-90 transition"
+          className="w-full py-2.5 bg-[#992828] text-white font-bold rounded-xl text-sm hover:bg-opacity-90 transition"
         >
           保存负荷数据
         </button>
@@ -363,7 +363,7 @@ export function LoadDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-[#d92525]" />
+            <Activity className="w-5 h-5 text-[#992828]" />
             <p className="text-sm font-bold text-white">训练负荷仪表盘</p>
           </div>
 
@@ -482,7 +482,7 @@ export function LoadDashboard() {
             <span className="text-[10px] text-gray-400">300-500 中</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#d92525]" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#992828]" />
             <span className="text-[10px] text-gray-400">&gt;500 高</span>
           </div>
         </div>
@@ -490,7 +490,7 @@ export function LoadDashboard() {
         {/* Log today button */}
         <button
           onClick={() => setShowModal(true)}
-          className="w-full mt-3 py-2.5 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded-xl text-sm font-bold hover:bg-[#d92525]/20 transition flex items-center justify-center gap-2"
+          className="w-full mt-3 py-2.5 bg-[#992828]/10 border border-[#992828]/20 text-[#992828] rounded-xl text-sm font-bold hover:bg-[#992828]/20 transition flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           录入今日负荷

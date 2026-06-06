@@ -89,7 +89,7 @@ function diffBadge(aVal: string, bVal: string): { text: string; className: strin
     const a0 = numsA[0];
     const b0 = numsB[0];
     if (b0 > a0) return { text: `+${b0 - a0}`, className: "text-green-400 font-bold" };
-    if (b0 < a0) return { text: `${b0 - a0}`, className: "text-[#d92525] font-bold" };
+    if (b0 < a0) return { text: `${b0 - a0}`, className: "text-[#992828] font-bold" };
   }
 
   return { text: "已变更", className: "text-amber-400" };
@@ -121,12 +121,12 @@ export function PlanCompareModal({
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="bg-[#121212] rounded-lg p-2.5 border border-[#222]">
             <span className="text-gray-400">方案 1: </span>
-            <span className="text-[#d92525] font-bold">{planA.name}</span>
+            <span className="text-[#992828] font-bold">{planA.name}</span>
             <span className="text-gray-500 ml-2">{planA.date}</span>
           </div>
           <div className="bg-[#121212] rounded-lg p-2.5 border border-[#222]">
             <span className="text-gray-400">方案 2: </span>
-            <span className="text-[#d92525] font-bold">{planB.name}</span>
+            <span className="text-[#992828] font-bold">{planB.name}</span>
             <span className="text-gray-500 ml-2">{planB.date}</span>
           </div>
         </div>

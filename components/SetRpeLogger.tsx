@@ -165,7 +165,7 @@ export function SetRpeLogger({ exerciseName, setNumber, totalSets, targetReps, t
           disabled={rpe === null}
           className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${
             rpe !== null
-              ? 'bg-[#d92525] text-white hover:bg-[#b71d1d]'
+              ? 'bg-[#992828] text-white hover:bg-[#7a1e1e]'
               : 'bg-gray-700 text-gray-500 cursor-not-allowed'
           }`}>
           ✓ 标记完成
@@ -228,7 +228,7 @@ export function MultiSetLogger({ exercises, onAllComplete }: MultiSetLoggerProps
       <div className="flex items-center gap-2 text-[10px] text-gray-500 mb-2">
         <span>动作 {currentExIdx + 1}/{exercises.length}</span>
         <div className="flex-1 h-1 bg-gray-800 rounded-full">
-          <div className="h-full bg-[#d92525] rounded-full transition"
+          <div className="h-full bg-[#992828] rounded-full transition"
             style={{ width: `${((currentExIdx * ex.sets + currentSet - 1) / (exercises.reduce((s, e) => s + e.sets, 0))) * 100}%` }} />
         </div>
       </div>

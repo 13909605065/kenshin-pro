@@ -12,7 +12,7 @@ export function ResultsPanel({ modules, activeModule }: Props) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-white flex items-center gap-2">
-        <span className="w-1 h-6 bg-[#d92525] rounded-full" />
+        <span className="w-1 h-6 bg-[#992828] rounded-full" />
         训练方案
       </h2>
 

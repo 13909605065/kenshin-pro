@@ -186,7 +186,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
       confettiTriggered.current = true;
       navigator.vibrate?.([100, 80, 100, 80, 200]);
 
-      const colors = ["#d92525", "#e8780a", "#ffffff", "#4a90d9"];
+      const colors = ["#992828", "#e8780a", "#ffffff", "#4a90d9"];
       const particles = Array.from({ length: 20 }, (_, i) => ({
         id: i,
         x: (Math.random() - 0.5) * 280,
@@ -223,12 +223,12 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
             `}</style>
           </div>
         ))}
-        <CheckCircle2 className="w-20 h-20 text-[#d92525] mb-6 relative z-10" />
+        <CheckCircle2 className="w-20 h-20 text-[#992828] mb-6 relative z-10" />
         <h1 className="text-2xl font-bold text-white mb-2 relative z-10">训练完成！🎉</h1>
         <p className="text-gray-400 text-sm mb-8 relative z-10">共完成 {totalExercises} 项训练</p>
         <div className="grid grid-cols-2 gap-3 w-full max-w-xs relative z-10">
           <button onClick={onClose}
-            className="py-4 bg-[#d92525] text-white font-bold rounded-xl text-sm">
+            className="py-4 bg-[#992828] text-white font-bold rounded-xl text-sm">
             返回方案
           </button>
           <button onClick={() => { setCurrentIdx(0); setCompletedSets({}); confettiTriggered.current = false; }}
@@ -250,11 +250,11 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#121212]">
         <p className="text-gray-400 text-sm mb-2">休息一下</p>
-        <div className="w-32 h-32 rounded-full border-4 border-[#d92525]/30 flex items-center justify-center mb-4"
-          style={{ borderTopColor: "#d92525", animation: "spin 1s linear infinite" }}>
+        <div className="w-32 h-32 rounded-full border-4 border-[#992828]/30 flex items-center justify-center mb-4"
+          style={{ borderTopColor: "#992828", animation: "spin 1s linear infinite" }}>
           <span className="text-4xl font-bold text-white">{restSeconds}</span>
         </div>
-        <p className="text-[#d92525] text-sm font-bold">下一项：{exercises[currentIdx]?.name}</p>
+        <p className="text-[#992828] text-sm font-bold">下一项：{exercises[currentIdx]?.name}</p>
         <button onClick={() => { setIsResting(false); setRestSeconds(0); }}
           className="mt-6 px-6 py-3 bg-[#1e1e1e] border border-[#333] text-white rounded-xl text-sm">
           跳过休息
@@ -272,7 +272,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
         </button>
         <div className="flex-1 mx-4">
           <div className="h-1.5 bg-[#222] rounded-full overflow-hidden">
-            <div className="h-full bg-[#d92525] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-[#992828] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
           <p className="text-[10px] text-gray-400 text-center mt-1">{currentIdx + 1}/{totalExercises}</p>
         </div>
@@ -282,7 +282,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
       {/* Main exercise card */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         {/* Section label */}
-        <p className="text-xs text-[#d92525] font-bold uppercase tracking-wider mb-4">{current.section}</p>
+        <p className="text-xs text-[#992828] font-bold uppercase tracking-wider mb-4">{current.section}</p>
 
         {/* Exercise name — BIG */}
         <h1 className="text-3xl sm:text-4xl font-black text-white text-center mb-8 leading-tight">
@@ -313,7 +313,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
             <div key={i}
               className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition ${
                 i < doneSets
-                  ? "bg-[#d92525] border-[#d92525] text-white"
+                  ? "bg-[#992828] border-[#992828] text-white"
                   : "border-[#333] text-gray-600"
               }`}>
               {i + 1}
@@ -323,7 +323,7 @@ export default function MobileTrainingMode({ modules, planId, onClose }: Props) 
 
         {/* Complete Set button — BIG */}
         <button onClick={completeSet}
-          className="w-full max-w-sm py-5 bg-[#d92525] text-white font-black rounded-2xl text-xl active:scale-95 transition-transform touch-manipulation mb-3"
+          className="w-full max-w-sm py-5 bg-[#992828] text-white font-black rounded-2xl text-xl active:scale-95 transition-transform touch-manipulation mb-3"
           style={{ minHeight: 64 }}>
           {doneSets + 1 >= totalSets ? "✅ 完成最后一组" : `完成第 ${doneSets + 1} 组`}
         </button>

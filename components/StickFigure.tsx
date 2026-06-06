@@ -302,7 +302,7 @@ function detectEquip(name: string, poseKey: string): Pose["equip"] {
    COLORS — project black-pink theme, bone=#eee
    ================================================================ */
 
-const AGONIST = "#d92525";      // 🔴 原动肌 — project red
+const AGONIST = "#992828";      // 🔴 原动肌 — project red
 const SYNERGIST = "#ff9966";    // 🟠 协同肌 — orange
 const STABILIZER = "#8B7355";   // 🟤 稳定肌 — brown
 const BONE_MAIN = "#eeeeee";    // 主骨 — white
@@ -317,7 +317,7 @@ export function StickFigure({ name, size = 120, showMuscles = true, compact = fa
   name: string; size?: number; showMuscles?: boolean; compact?: boolean;
   bodyPart?: "upper" | "lower" | "core" | "back" | "full";
 }) {
-  const highlightColor = bodyPart && bodyPart !== "full" ? "#d92525" : undefined;
+  const highlightColor = bodyPart && bodyPart !== "full" ? "#992828" : undefined;
   const key = detect(name);
   const p = POSES[key];
   const equip = detectEquip(name, key) || p.equip; // name overrides pose default

@@ -43,7 +43,7 @@ export function UpdateBanner() {
   if (!updateAvailable) return null;
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 mx-auto w-fit bg-[#d92525] text-white rounded-xl shadow-lg z-50 px-4 py-2 flex items-center gap-3">
+    <div className="fixed bottom-16 left-0 right-0 mx-auto w-fit bg-[#992828] text-white rounded-xl shadow-lg z-50 px-4 py-2 flex items-center gap-3">
       <span className="text-sm">🔄 有新版本可用</span>
       <button
         onClick={handleUpdate}

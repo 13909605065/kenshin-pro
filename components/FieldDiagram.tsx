@@ -245,19 +245,19 @@ export function FieldDiagram({ diagram }: Props) {
       {/* Legend */}
       <div className="px-4 py-3 border-t border-[#222] flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#d92525] border border-[#d92525]" />
+          <span className="w-3 h-3 rounded-full bg-[#992828] border border-[#992828]" />
           <span className="text-[10px] text-gray-400">{start_label}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full border border-[#d92525]" />
+          <span className="w-3 h-3 rounded-full border border-[#992828]" />
           <span className="text-[10px] text-gray-400">{end_label}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-[#1e1e1e] border border-[#d92525]/40" />
+          <span className="w-3 h-3 rounded-full bg-[#1e1e1e] border border-[#992828]/40" />
           <span className="text-[10px] text-gray-400">标志盘</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-4 h-0.5 bg-[#d92525] rounded" />
+          <div className="w-4 h-0.5 bg-[#992828] rounded" />
           <span className="text-[10px] text-gray-400">跑动路线</span>
         </div>
         {cone_count > 0 && (

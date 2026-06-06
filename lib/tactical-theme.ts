@@ -28,7 +28,7 @@ export const TAC_THEME = {
   textWhite: "#fff",
 
   // 主强调色
-  accent: "#d92525",
+  accent: "#992828",
 
   // 辅助色
   blue: "#203E96",

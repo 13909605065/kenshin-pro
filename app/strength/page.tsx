@@ -57,7 +57,7 @@ export default function StrengthPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-[#d92525]" />
+                <Dumbbell className="w-5 h-5 text-[#992828]" />
                 动作库
               </h2>
               <p className="text-sm text-gray-400 mt-1">
@@ -96,7 +96,7 @@ export default function StrengthPage() {
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#d92525]" />
+                <Zap className="w-5 h-5 text-[#992828]" />
                 自由选择
               </h2>
               <p className="text-sm text-gray-400 mt-1">

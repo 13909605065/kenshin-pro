@@ -34,7 +34,7 @@ type DiagramTab = "formation" | "press" | "transition";
    Constants
    ============================================================ */
 
-const CARD_CLASS = "bg-[#1e1e1e] border border-[#222] rounded-xl p-4 hover:border-[#d92525]/30 transition-colors duration-200";
+const CARD_CLASS = "bg-[#1e1e1e] border border-[#222] rounded-xl p-4 hover:border-[#992828]/30 transition-colors duration-200";
 
 const TAB_LABELS: Record<DiagramTab, string> = {
   formation: "阵型",
@@ -96,7 +96,7 @@ function InlineFieldCanvas({
       const num = state.playerCounter + 1;
       onStateChange({
         ...state,
-        players: [...state.players, { x: pt.x, y: pt.y, number: String(num), color: "#d92525" }],
+        players: [...state.players, { x: pt.x, y: pt.y, number: String(num), color: "#992828" }],
         playerCounter: num,
       });
     }
@@ -105,7 +105,7 @@ function InlineFieldCanvas({
       if (!arrowStart) {
         setArrowStart(pt);
       } else {
-        const newArrow: CanvasArrow = { from: arrowStart, to: pt, color: "#d92525", dashed: false };
+        const newArrow: CanvasArrow = { from: arrowStart, to: pt, color: "#992828", dashed: false };
         onStateChange({ ...state, arrows: [...state.arrows, newArrow] });
         setArrowStart(null);
       }
@@ -137,7 +137,7 @@ function InlineFieldCanvas({
         <button
           onClick={() => { setDrawMode(drawMode === "addPlayer" ? "none" : "addPlayer"); setArrowStart(null); }}
           className={`px-1.5 py-1 rounded text-[10px] transition ${
-            drawMode === "addPlayer" ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white hover:bg-[#291a1a]"
+            drawMode === "addPlayer" ? "bg-[#992828] text-white" : "text-gray-400 hover:text-white hover:bg-[#291a1a]"
           }`}
           title="添加球员"
         >
@@ -146,7 +146,7 @@ function InlineFieldCanvas({
         <button
           onClick={() => { setDrawMode(drawMode === "drawArrow" ? "none" : "drawArrow"); setArrowStart(null); }}
           className={`px-1.5 py-1 rounded text-[10px] transition ${
-            drawMode === "drawArrow" ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white hover:bg-[#291a1a]"
+            drawMode === "drawArrow" ? "bg-[#992828] text-white" : "text-gray-400 hover:text-white hover:bg-[#291a1a]"
           }`}
           title="画线"
         >
@@ -188,27 +188,27 @@ function InlineFieldCanvas({
             {/* Back 4 */}
             {[{x:60,y:45},{x:130,y:35},{x:170,y:35},{x:240,y:45}].map((p,i) => (
               <g key={"d"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+2}</text>
               </g>
             ))}
             {/* Mid 4 */}
             {[{x:55,y:90},{x:105,y:85},{x:195,y:85},{x:245,y:90}].map((p,i) => (
               <g key={"m"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+6}</text>
               </g>
             ))}
             {/* FW 2 */}
             {[{x:110,y:145},{x:190,y:145}].map((p,i) => (
               <g key={"f"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+9}</text>
               </g>
             ))}
             {/* GK */}
             <g>
-              <circle cx="150" cy="18" r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+              <circle cx="150" cy="18" r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
               <text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text>
             </g>
           </>
@@ -219,34 +219,34 @@ function InlineFieldCanvas({
           <>
             <defs>
               <marker id="press-arrow-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-                <path d="M0,0 L10,5 L0,10z" fill="#d92525"/>
+                <path d="M0,0 L10,5 L0,10z" fill="#992828"/>
               </marker>
             </defs>
             {/* Back 4 positions */}
             {[{x:60,y:45},{x:130,y:35},{x:170,y:35},{x:240,y:45}].map((p,i) => (
               <g key={"d"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+2}</text>
               </g>
             ))}
             {/* Mid 4 */}
             {[{x:55,y:90},{x:105,y:85},{x:195,y:85},{x:245,y:90}].map((p,i) => (
               <g key={"m"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+6}</text>
               </g>
             ))}
             {/* FW 2 */}
             {[{x:110,y:145},{x:190,y:145}].map((p,i) => (
               <g key={"f"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+9}</text>
               </g>
             ))}
-            <g><circle cx="150" cy="18" r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/><text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text></g>
+            <g><circle cx="150" cy="18" r="5" fill="#992828" stroke="#fff" strokeWidth="1"/><text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text></g>
             {/* Press arrows */}
-            <line x1={60} y1={45} x2={80} y2={65} stroke="#d92525" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#press-arrow-head)"/>
-            <line x1={240} y1={45} x2={220} y2={65} stroke="#d92525" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#press-arrow-head)"/>
+            <line x1={60} y1={45} x2={80} y2={65} stroke="#992828" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#press-arrow-head)"/>
+            <line x1={240} y1={45} x2={220} y2={65} stroke="#992828" strokeWidth="1.5" strokeDasharray="4,2" markerEnd="url(#press-arrow-head)"/>
           </>
         )}
 
@@ -256,24 +256,24 @@ function InlineFieldCanvas({
             {/* Back 4 deeper */}
             {[{x:60,y:55},{x:130,y:45},{x:170,y:45},{x:240,y:55}].map((p,i) => (
               <g key={"d"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+2}</text>
               </g>
             ))}
             {/* Mid 4 pushed up */}
             {[{x:55,y:75},{x:105,y:65},{x:195,y:65},{x:245,y:75}].map((p,i) => (
               <g key={"m"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+6}</text>
               </g>
             ))}
             {[{x:110,y:145},{x:190,y:145}].map((p,i) => (
               <g key={"f"+i}>
-                <circle cx={p.x} cy={p.y} r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/>
+                <circle cx={p.x} cy={p.y} r="5" fill="#992828" stroke="#fff" strokeWidth="1"/>
                 <text x={p.x} y={p.y+1} textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">{i+9}</text>
               </g>
             ))}
-            <g><circle cx="150" cy="18" r="5" fill="#d92525" stroke="#fff" strokeWidth="1"/><text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text></g>
+            <g><circle cx="150" cy="18" r="5" fill="#992828" stroke="#fff" strokeWidth="1"/><text x="150" y="19" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="bold">1</text></g>
             <defs>
               <marker id="trans-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">
                 <path d="M0,0 L10,5 L0,10z" fill="#FFD700"/>
@@ -315,7 +315,7 @@ function InlineFieldCanvas({
         {/* Arrow start indicator when drawing */}
         {arrowStart && drawMode === "drawArrow" && (() => {
           const pt = toSvg(arrowStart.x, arrowStart.y);
-          return <circle cx={pt.x} cy={pt.y} r="4" fill="#d92525" opacity="0.6" />;
+          return <circle cx={pt.x} cy={pt.y} r="4" fill="#992828" opacity="0.6" />;
         })()}
       </svg>
     </div>
@@ -415,17 +415,17 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
   return (
     <div className="space-y-4">
       {/* === Header bar === */}
-      <div className="flex items-center justify-between bg-[#1e1e1e] border border-[#222] rounded-xl px-4 py-3 hover:border-[#d92525]/30 transition-colors duration-200">
+      <div className="flex items-center justify-between bg-[#1e1e1e] border border-[#222] rounded-xl px-4 py-3 hover:border-[#992828]/30 transition-colors duration-200">
         <div className="flex items-center gap-3">
-          <Shield className="w-5 h-5 text-[#d92525]" />
+          <Shield className="w-5 h-5 text-[#992828]" />
           <div>
             <p className="text-sm font-bold text-white">{module.title}</p>
-            <span className="text-[10px] text-[#d92525] bg-[#d92525]/10 px-2 py-0.5 rounded">{module.tactical_theme}</span>
+            <span className="text-[10px] text-[#992828] bg-[#992828]/10 px-2 py-0.5 rounded">{module.tactical_theme}</span>
           </div>
         </div>
         <button
           onClick={onOpenBoard}
-          className="flex items-center gap-1 px-3 py-1.5 bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg text-[10px] text-[#d92525] hover:bg-[#d92525]/20 transition-colors duration-150"
+          className="flex items-center gap-1 px-3 py-1.5 bg-[#992828]/10 border border-[#992828]/20 rounded-lg text-[10px] text-[#992828] hover:bg-[#992828]/20 transition-colors duration-150"
         >
           <Map className="w-3.5 h-3.5" /> 打开战术板
         </button>
@@ -439,12 +439,12 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
           {/* Core Tactical Points */}
           <div className={CARD_CLASS}>
             <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-[#d92525]" /> 核心战术
+              <Zap className="w-3 h-3 text-[#992828]" /> 核心战术
             </h3>
             <div className="space-y-2">
               {module.tactical_analysis?.slice(0, 4).map((point, i) => (
                 <div key={i} className="flex items-start gap-2">
-                  <span className="text-[#d92525] font-bold text-[10px] mt-0.5 flex-shrink-0">{i + 1}</span>
+                  <span className="text-[#992828] font-bold text-[10px] mt-0.5 flex-shrink-0">{i + 1}</span>
                   <p className="text-xs text-[#d1d1d1] leading-relaxed">{point}</p>
                 </div>
               ))}
@@ -457,7 +457,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
             {hasStrengthContent && (
               <button
                 onClick={() => router.push("/exercises")}
-                className="mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] text-[#d92525] bg-[#d92525]/10 border border-[#d92525]/20 hover:bg-[#d92525]/20 transition-colors duration-150"
+                className="mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] text-[#992828] bg-[#992828]/10 border border-[#992828]/20 hover:bg-[#992828]/20 transition-colors duration-150"
               >
                 💪 添加力量动作
               </button>
@@ -467,7 +467,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
           {/* Player Roles */}
           <div className={CARD_CLASS}>
             <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
-              <Users className="w-3 h-3 text-[#d92525]" /> 球员角色
+              <Users className="w-3 h-3 text-[#992828]" /> 球员角色
             </h3>
             <div className="space-y-1.5">
               {module.player_roles?.slice(0, 5).map((role, i) => (
@@ -475,7 +475,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
                   key={i}
                   className="flex items-center gap-2 text-xs p-1.5 rounded-lg hover:bg-[#291a1a] transition-colors duration-150 cursor-default"
                 >
-                  <span className="w-4 h-4 rounded bg-[#d92525]/20 text-[8px] flex items-center justify-center text-[#d92525] font-bold flex-shrink-0">
+                  <span className="w-4 h-4 rounded bg-[#992828]/20 text-[8px] flex items-center justify-center text-[#992828] font-bold flex-shrink-0">
                     {i + 1}
                   </span>
                   <span className="text-[#d1d1d1] text-xs">{role}</span>
@@ -502,7 +502,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
                     onClick={() => switchTab(k)}
                     className={`px-2.5 py-1 rounded text-[9px] font-medium transition-all duration-150 border-b-2 ${
                       activeDiagram === k
-                        ? "text-[#d92525] border-[#d92525] bg-[#291a1a]"
+                        ? "text-[#992828] border-[#992828] bg-[#291a1a]"
                         : "text-gray-400 border-transparent hover:text-gray-300 hover:bg-[#291a1a]"
                     }`}
                   >
@@ -563,7 +563,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
             {/* Sync to session button */}
             <button
               onClick={handleSyncToSession}
-              className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] text-[#d92525] bg-[#d92525]/10 border border-[#d92525]/20 hover:bg-[#d92525]/20 transition-colors duration-150"
+              className="mt-2 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] text-[#992828] bg-[#992828]/10 border border-[#992828]/20 hover:bg-[#992828]/20 transition-colors duration-150"
             >
               <ClipboardList className="w-3 h-3" /> 同步至教案
             </button>
@@ -593,7 +593,7 @@ export function CoachTacticalBriefing({ module, onOpenBoard }: Props) {
           {/* Set Pieces */}
           <div className={CARD_CLASS}>
             <h3 className="text-[10px] text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-1">
-              <Flag className="w-3 h-3 text-[#d92525]" /> 定位球
+              <Flag className="w-3 h-3 text-[#992828]" /> 定位球
             </h3>
             <div className="space-y-2">
               <div className="bg-[#0a0a0a] rounded-lg p-2 text-[10px]">

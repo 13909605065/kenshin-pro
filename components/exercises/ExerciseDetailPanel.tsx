@@ -75,7 +75,7 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
 
           {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-1 rounded bg-[#d92525]/10 border border-[#d92525]/20 text-xs text-[#d92525] font-medium">
+            <span className="px-2 py-1 rounded bg-[#992828]/10 border border-[#992828]/20 text-xs text-[#992828] font-medium">
               {BODY_PART_LABELS[exercise.body_part]}
             </span>
             <span className="px-2 py-1 rounded bg-[#222] text-xs text-gray-400">
@@ -84,7 +84,7 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
             <span
               className={`px-2 py-1 rounded text-xs font-medium ${
                 difficulty === "进阶"
-                  ? "bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525]"
+                  ? "bg-[#992828]/10 border border-[#992828]/20 text-[#992828]"
                   : difficulty === "中级"
                   ? "bg-yellow-500/10 border border-yellow-500/20 text-yellow-500"
                   : "bg-green-500/10 border border-green-500/20 text-green-500"
@@ -93,7 +93,7 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
               {difficulty}
             </span>
             {football && (
-              <span className="px-2 py-1 rounded bg-[#d92525]/10 border border-[#d92525]/20 text-xs text-[#d92525] font-medium">
+              <span className="px-2 py-1 rounded bg-[#992828]/10 border border-[#992828]/20 text-xs text-[#992828] font-medium">
                 ⚽ 足球专项
               </span>
             )}
@@ -111,7 +111,7 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
             <ol className="space-y-1.5">
               {exercise.cue_points.map((cue, i) => (
                 <li key={i} className="flex items-start gap-1.5 text-sm text-gray-300">
-                  <span className="text-[#d92525] font-bold shrink-0">{i + 1}.</span>
+                  <span className="text-[#992828] font-bold shrink-0">{i + 1}.</span>
                   <span>{cue}</span>
                 </li>
               ))}
@@ -122,8 +122,8 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
           <div className="grid grid-cols-1 gap-2">
             <div className="bg-[#111] rounded-xl p-3 border border-[#222]">
               <div className="flex items-center gap-1.5 mb-1">
-                <TrendingUp className="w-4 h-4 text-[#d92525]" />
-                <span className="text-xs text-[#d92525] font-bold">进阶变式</span>
+                <TrendingUp className="w-4 h-4 text-[#992828]" />
+                <span className="text-xs text-[#992828] font-bold">进阶变式</span>
               </div>
               <p className="text-xs text-gray-400">{exercise.progression}</p>
             </div>
@@ -140,7 +140,7 @@ export function ExerciseDetailPanel({ exercise, onClose, onAdd }: Props) {
           {onAdd && (
             <button
               onClick={() => onAdd(exercise)}
-              className="w-full bg-[#d92525] text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#e03030] transition-all duration-150 hover:shadow-lg hover:shadow-[#d92525]/20"
+              className="w-full bg-[#992828] text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#e03030] transition-all duration-150 hover:shadow-lg hover:shadow-[#992828]/20"
             >
               <Plus className="w-4 h-4" />
               添加到训练方案

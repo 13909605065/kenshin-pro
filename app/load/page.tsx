@@ -690,7 +690,7 @@ export default function LoadPage() {
       {/* ═══ MUSCLE GROUP LOAD HEATMAP ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
         <h3 className="text-xs font-semibold text-gray-400 mb-3 flex items-center gap-2">
-          <Activity className="w-3.5 h-3.5 text-[#d92525]" /> 肌肉群负荷热力图
+          <Activity className="w-3.5 h-3.5 text-[#992828]" /> 肌肉群负荷热力图
           <span className="text-[9px] text-gray-600 ml-auto">本周力量训练统计</span>
         </h3>
 
@@ -773,11 +773,11 @@ export default function LoadPage() {
       {/* ═══ DAILY BREAKDOWN ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
         <h3 className="text-xs font-semibold text-gray-400 mb-3 flex items-center gap-2">
-          <Activity className="w-3.5 h-3.5 text-[#d92525]" /> 每日明细
+          <Activity className="w-3.5 h-3.5 text-[#992828]" /> 每日明细
         </h3>
         <div className="space-y-1.5">
           {weekDays.map((d: any) => (
-            <div key={d.date} className={`flex items-center gap-3 py-2 px-3 rounded-lg ${d.log ? 'bg-[#111]' : 'bg-[#0a0a0a] opacity-50'} ${d.isToday ? 'ring-1 ring-[#d92525]' : ''}`}>
+            <div key={d.date} className={`flex items-center gap-3 py-2 px-3 rounded-lg ${d.log ? 'bg-[#111]' : 'bg-[#0a0a0a] opacity-50'} ${d.isToday ? 'ring-1 ring-[#992828]' : ''}`}>
               <span className="text-xs text-white font-medium w-16 shrink-0">{d.monthDay} {d.day}</span>
               {d.log ? (d.isRest ? (
                 <span className="text-xs text-gray-500">休息日</span>
@@ -808,7 +808,7 @@ export default function LoadPage() {
       {/* ═══ LOG ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
         <h3 className="text-xs font-semibold text-gray-400 mb-3 flex items-center gap-2">
-          <TrendingUp className="w-3.5 h-3.5 text-[#d92525]" /> 训练日志
+          <TrendingUp className="w-3.5 h-3.5 text-[#992828]" /> 训练日志
         </h3>
         {logs.length === 0 ? (
           <p className="text-xs text-gray-600 text-center py-6">暂无记录</p>
@@ -831,7 +831,7 @@ export default function LoadPage() {
            ═══════════════════════════════════════════ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-5 mb-4">
         <h3 className="text-xs font-semibold text-gray-400 mb-4 flex items-center gap-2">
-          <User className="w-3.5 h-3.5 text-[#d92525]" /> 单人球员负荷
+          <User className="w-3.5 h-3.5 text-[#992828]" /> 单人球员负荷
         </h3>
 
         {/* Player selector */}
@@ -839,7 +839,7 @@ export default function LoadPage() {
           <select
             value={selectedPlayer}
             onChange={e => setSelectedPlayer(e.target.value)}
-            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#d92525] appearance-none cursor-pointer"
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#992828] appearance-none cursor-pointer"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E")`,
               backgroundRepeat: 'no-repeat',
@@ -870,7 +870,7 @@ export default function LoadPage() {
                   const isWarn = d.trimp > dayCap * 0.8 && !isOver;
                   const isToday = d.date === new Date().toISOString().slice(0, 10);
                   return (
-                    <div key={d.date} className={`flex items-center gap-3 py-1.5 px-2 rounded ${isToday ? 'bg-[#d92525]/5 ring-1 ring-[#d92525]/30' : ''}`}>
+                    <div key={d.date} className={`flex items-center gap-3 py-1.5 px-2 rounded ${isToday ? 'bg-[#992828]/5 ring-1 ring-[#992828]/30' : ''}`}>
                       <span className="text-[11px] text-gray-400 w-16 shrink-0">{d.date.slice(5)} {d.day}</span>
                       <div className="flex-1 h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all"
@@ -893,7 +893,7 @@ export default function LoadPage() {
             {/* 4-week TRIMP trend bars */}
             <div>
               <h4 className="text-[11px] font-medium text-gray-400 mb-2 flex items-center gap-1.5">
-                <BarChart3 className="w-3 h-3 text-[#d92525]" /> 近 4 周 TRIMP 趋势
+                <BarChart3 className="w-3 h-3 text-[#992828]" /> 近 4 周 TRIMP 趋势
               </h4>
               <div className="flex items-end gap-2 h-24 px-2">
                 {singlePlayerData.weekTotals.map((w, i) => {
@@ -911,7 +911,7 @@ export default function LoadPage() {
                         className="w-full rounded-t transition-all"
                         style={{
                           height: `${h}%`,
-                          backgroundColor: overWeek ? '#ef4444' : isCurrent ? '#d92525' : '#333',
+                          backgroundColor: overWeek ? '#ef4444' : isCurrent ? '#992828' : '#333',
                           minHeight: '4px',
                         }}
                       />
@@ -989,7 +989,7 @@ export default function LoadPage() {
            ═══════════════════════════════════════════ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-5 mb-4">
         <h3 className="text-xs font-semibold text-gray-400 mb-4 flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#d92525]" /> 缺额补负荷
+          <CheckCircle2 className="w-3.5 h-3.5 text-[#992828]" /> 缺额补负荷
         </h3>
 
         {!supplementData ? (
@@ -1055,7 +1055,7 @@ export default function LoadPage() {
                     className={`w-4 h-4 rounded border mx-auto flex items-center justify-center transition ${
                       row.completed
                         ? 'bg-green-500 border-green-500 text-white'
-                        : 'border-[#444] hover:border-[#d92525] text-transparent hover:text-gray-500'
+                        : 'border-[#444] hover:border-[#992828] text-transparent hover:text-gray-500'
                     }`}
                     title={row.completed ? '已完成补训' : '标记完成补训'}
                   >
@@ -1072,7 +1072,7 @@ export default function LoadPage() {
                   <div key={row.playerName} className="text-[10px] text-gray-500 flex items-center gap-2 px-1">
                     <span className="text-white">{row.playerName}</span>
                     <span>缺口 {row.deficitTRIMP} TRIMP</span>
-                    <span className="text-[#d92525]">补跑 {row.deficitDistance}m</span>
+                    <span className="text-[#992828]">补跑 {row.deficitDistance}m</span>
                     <span className="text-gray-600">
                       ({row.positionGroup}基准 {getBaseline(row.position).trimp} TRIMP/90min，{getBaseline(row.position).distance / 1000}km)
                     </span>

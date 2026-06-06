@@ -99,7 +99,7 @@ export function ExerciseEditor({ exercise, onSave, onCancel }: Props) {
           </button>
           <button
             onClick={() => onSave(form)}
-            className="flex-1 py-2 rounded-lg text-xs bg-[#d92525] text-white font-bold hover:bg-[#b91d1d] transition active:scale-[0.98]"
+            className="flex-1 py-2 rounded-lg text-xs bg-[#992828] text-white font-bold hover:bg-[#b91d1d] transition active:scale-[0.98]"
           >
             保存修改
           </button>
@@ -133,7 +133,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         min={min}
         max={max}
-        className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#d92525] focus:outline-none transition"
+        className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#992828] focus:outline-none transition"
       />
     </div>
   );

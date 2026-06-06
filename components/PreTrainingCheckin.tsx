@@ -225,7 +225,7 @@ export function PreTrainingCheckin({ athleteId = 'default', onComplete, compact 
             <span className="font-semibold text-white">准备度 {result.score}%</span>
             <span className="text-gray-400 ml-1">— {result.recommendation.slice(0, 20)}…</span>
           </div>
-          <button onClick={handleReset} className="ml-auto text-[#d92525] text-[10px]">重评</button>
+          <button onClick={handleReset} className="ml-auto text-[#992828] text-[10px]">重评</button>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ export function PreTrainingCheckin({ athleteId = 'default', onComplete, compact 
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-white">🏥 训练前状态自评</h3>
         {submitted && (
-          <button onClick={handleReset} className="text-[10px] text-[#d92525] hover:underline">重新评估</button>
+          <button onClick={handleReset} className="text-[10px] text-[#992828] hover:underline">重新评估</button>
         )}
       </div>
 
@@ -341,7 +341,7 @@ export function PreTrainingCheckin({ athleteId = 'default', onComplete, compact 
           </div>
 
           <button onClick={handleSubmit}
-            className="w-full py-3 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition">
+            className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition">
             提交自评
           </button>
         </>

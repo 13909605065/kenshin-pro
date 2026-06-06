@@ -377,16 +377,16 @@ function generatePDFPrintableHTML(session: FieldSession, players: PlayerRecord[]
 <head><meta charset="UTF-8"><title>场地战术训练报告</title>
 <style>
   body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; padding: 30px; color: #111; }
-  h1 { color: #d92525; font-size: 20px; margin-bottom: 4px; }
+  h1 { color: #992828; font-size: 20px; margin-bottom: 4px; }
   .date { color: #888; font-size: 13px; margin-bottom: 20px; }
   .summary { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
   .summary-box { background: #f5f5f5; border-radius: 8px; padding: 10px 16px; min-width: 80px; }
-  .summary-box .val { font-size: 22px; font-weight: 700; color: #d92525; }
+  .summary-box .val { font-size: 22px; font-weight: 700; color: #992828; }
   .summary-box .lbl { font-size: 11px; color: #888; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
   th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
   th { background: #f0f0f0; font-weight: 600; }
-  h2 { font-size: 16px; color: #333; margin-top: 24px; margin-bottom: 10px; border-bottom: 2px solid #d92525; padding-bottom: 4px; }
+  h2 { font-size: 16px; color: #333; margin-top: 24px; margin-bottom: 10px; border-bottom: 2px solid #992828; padding-bottom: 4px; }
 </style></head>
 <body>
   <h1>KenshinPro 场地战术训练报告</h1>
@@ -794,10 +794,10 @@ export default function FieldPage() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <a href="/" className="text-gray-400 hover:text-white transition-colors text-sm touch-target flex items-center gap-1">← 返回</a>
-            <a href="/" className="text-[#d92525] font-black text-lg">KENSHIN</a>
+            <a href="/" className="text-[#992828] font-black text-lg">KENSHIN</a>
             <span className="text-gray-500 text-sm">|</span>
             <h1 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#d92525]" />
+              <Activity className="w-4 h-4 text-[#992828]" />
               场地战术训练监控
             </h1>
           </div>
@@ -837,7 +837,7 @@ export default function FieldPage() {
               <FileSpreadsheet className="w-4 h-4 text-green-400" /> 导出 Excel (CSV)
             </button>
             <button onClick={handleExportPDF} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-200 hover:bg-[#2a2a2a] transition">
-              <FileText className="w-4 h-4 text-[#d92525]" /> 导出 PDF (打印)
+              <FileText className="w-4 h-4 text-[#992828]" /> 导出 PDF (打印)
             </button>
           </div>
         </div>
@@ -872,8 +872,8 @@ export default function FieldPage() {
         <div className="glass-card p-4 mb-4">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-[#d92525]/10 flex items-center justify-center shrink-0">
-                <Gauge className="w-5 h-5 text-[#d92525]" />
+              <div className="w-10 h-10 rounded-xl bg-[#992828]/10 flex items-center justify-center shrink-0">
+                <Gauge className="w-5 h-5 text-[#992828]" />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] text-gray-500 uppercase tracking-wider">总计</p>
@@ -893,7 +893,7 @@ export default function FieldPage() {
                     const v = Math.max(0, parseInt(e.target.value) || 0);
                     setSession(prev => { const updated = { ...prev, warmupMin: v }; saveSessions([updated]); return updated; });
                   }}
-                  className="w-12 text-center bg-transparent border-b border-[#333] text-sm text-white focus:border-[#d92525] outline-none"
+                  className="w-12 text-center bg-transparent border-b border-[#333] text-sm text-white focus:border-[#992828] outline-none"
                   min={0}
                 />
                 <span className="text-xs text-gray-500">min</span>
@@ -925,7 +925,7 @@ export default function FieldPage() {
                     }}
                     className={`w-5 h-5 rounded text-[9px] font-medium transition ${
                       n <= session.avgTeamRPE
-                        ? "bg-[#d92525] text-white"
+                        ? "bg-[#992828] text-white"
                         : "bg-[#222] text-gray-500 hover:bg-[#333]"
                     }`}
                   >
@@ -937,7 +937,7 @@ export default function FieldPage() {
 
             <div className="text-center">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">总TRIMP</p>
-              <p className="text-lg font-bold text-[#d92525]">{sessionTotals.totalTRIMP}</p>
+              <p className="text-lg font-bold text-[#992828]">{sessionTotals.totalTRIMP}</p>
             </div>
           </div>
         </div>
@@ -954,7 +954,7 @@ export default function FieldPage() {
                 value={tacticalInput}
                 onChange={e => setTacticalInput(e.target.value)}
                 placeholder='例如: "半场4v4高位压迫+就地反抢，无限制轮换"'
-                className="w-full px-4 py-3 bg-[#121212] border border-[#222] rounded-xl text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none transition text-sm"
+                className="w-full px-4 py-3 bg-[#121212] border border-[#222] rounded-xl text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none transition text-sm"
               />
               {tacticalInput && (
                 <button
@@ -995,7 +995,7 @@ export default function FieldPage() {
                   type="number"
                   value={durationMin}
                   onChange={e => setDurationMin(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-14 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white text-center focus:border-[#d92525] outline-none"
+                  className="w-14 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white text-center focus:border-[#992828] outline-none"
                   min={1}
                 />
                 <span className="text-xs text-gray-500">min/组</span>
@@ -1007,7 +1007,7 @@ export default function FieldPage() {
                   type="number"
                   value={restSec}
                   onChange={e => setRestSec(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-14 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white text-center focus:border-[#d92525] outline-none"
+                  className="w-14 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white text-center focus:border-[#992828] outline-none"
                   min={0}
                 />
                 <span className="text-xs text-gray-500">s休息</span>
@@ -1020,14 +1020,14 @@ export default function FieldPage() {
                   value={groupSize}
                   onChange={e => setGroupSize(e.target.value)}
                   placeholder='分组 (如 "4v4" "半场")'
-                  className="w-32 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white placeholder-gray-600 focus:border-[#d92525] outline-none"
+                  className="w-32 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-lg text-xs text-white placeholder-gray-600 focus:border-[#992828] outline-none"
                 />
               </div>
 
               <button
                 onClick={addPhase}
                 disabled={!tacticalInput.trim()}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-[#d92525] text-white rounded-lg text-sm font-bold hover:bg-[#c41f1f] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="flex items-center gap-1.5 px-4 py-1.5 bg-[#992828] text-white rounded-lg text-sm font-bold hover:bg-[#c41f1f] disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 <Plus className="w-4 h-4" /> 确认添加
               </button>
@@ -1039,7 +1039,7 @@ export default function FieldPage() {
             ACTIVE PHASE TIMER
             ═══════════════════════════════════════ */}
         {activePhaseId && (
-          <div className="glass-card p-4 mb-4 border-[#d92525]/30">
+          <div className="glass-card p-4 mb-4 border-[#992828]/30">
             {(() => {
               const active = session.phases.find(p => p.id === activePhaseId);
               if (!active) return null;
@@ -1053,7 +1053,7 @@ export default function FieldPage() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-center">
-                      <p className={`text-3xl font-mono font-bold ${isComplete ? "text-green-400" : "text-[#d92525]"}`}>
+                      <p className={`text-3xl font-mono font-bold ${isComplete ? "text-green-400" : "text-[#992828]"}`}>
                         {formatTime(isComplete ? 0 : remainingSec)}
                       </p>
                       <p className="text-[10px] text-gray-500">
@@ -1071,7 +1071,7 @@ export default function FieldPage() {
                       ) : (
                         <button
                           onClick={completeSet}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525] rounded-lg text-xs font-bold hover:bg-[#d92525]/20 transition"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-[#992828]/10 border border-[#992828]/30 text-[#992828] rounded-lg text-xs font-bold hover:bg-[#992828]/20 transition"
                         >
                           提前结束本组
                         </button>
@@ -1095,7 +1095,7 @@ export default function FieldPage() {
             ═══════════════════════════════════════ */}
         <div className="glass-card p-4 mb-4">
           <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[#d92525]" />
+            <Zap className="w-4 h-4 text-[#992828]" />
             训练阶段 ({session.phases.length})
           </h2>
 
@@ -1115,7 +1115,7 @@ export default function FieldPage() {
                   key={phase.id}
                   className={`p-3 rounded-xl border transition ${
                     isActive
-                      ? "border-[#d92525]/50 bg-[#d92525]/5"
+                      ? "border-[#992828]/50 bg-[#992828]/5"
                       : "border-[#222] bg-[#121212] hover:border-[#333]"
                   }`}
                 >
@@ -1126,7 +1126,7 @@ export default function FieldPage() {
                         type="text"
                         value={phase.text}
                         onChange={e => updatePhaseField(phase.id, "text", e.target.value)}
-                        className="w-full bg-transparent text-sm font-medium text-white outline-none border-b border-transparent hover:border-[#333] focus:border-[#d92525] transition"
+                        className="w-full bg-transparent text-sm font-medium text-white outline-none border-b border-transparent hover:border-[#333] focus:border-[#992828] transition"
                       />
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
@@ -1149,7 +1149,7 @@ export default function FieldPage() {
                       )}
                       <button
                         onClick={() => removePhase(phase.id)}
-                        className="p-1.5 rounded-lg text-gray-500 hover:text-[#d92525] hover:bg-[#d92525]/10 transition"
+                        className="p-1.5 rounded-lg text-gray-500 hover:text-[#992828] hover:bg-[#992828]/10 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1163,7 +1163,7 @@ export default function FieldPage() {
                       type="text"
                       value={phase.groupSize}
                       onChange={e => updatePhaseField(phase.id, "groupSize", e.target.value)}
-                      className="w-16 px-1.5 py-0.5 bg-[#1e1e1e] border border-[#222] rounded text-center text-white outline-none focus:border-[#d92525]"
+                      className="w-16 px-1.5 py-0.5 bg-[#1e1e1e] border border-[#222] rounded text-center text-white outline-none focus:border-[#992828]"
                       placeholder="分组"
                     />
 
@@ -1174,7 +1174,7 @@ export default function FieldPage() {
                         type="number"
                         value={phase.durationMin}
                         onChange={e => updatePhaseField(phase.id, "durationMin", parseInt(e.target.value) || 1)}
-                        className="w-10 bg-transparent border-b border-[#333] text-white text-center outline-none focus:border-[#d92525]"
+                        className="w-10 bg-transparent border-b border-[#333] text-white text-center outline-none focus:border-[#992828]"
                         min={1}
                       />
                       min/组
@@ -1187,7 +1187,7 @@ export default function FieldPage() {
                         type="number"
                         value={phase.restSec}
                         onChange={e => updatePhaseField(phase.id, "restSec", parseInt(e.target.value) || 0)}
-                        className="w-10 bg-transparent border-b border-[#333] text-white text-center outline-none focus:border-[#d92525]"
+                        className="w-10 bg-transparent border-b border-[#333] text-white text-center outline-none focus:border-[#992828]"
                         min={0}
                       />
                       s休息
@@ -1212,7 +1212,7 @@ export default function FieldPage() {
                     </span>
 
                     {/* TRIMP */}
-                    <span className="text-[#d92525] font-bold">
+                    <span className="text-[#992828] font-bold">
                       TRIMP {phase.phaseTRIMP}
                     </span>
                   </div>
@@ -1239,7 +1239,7 @@ export default function FieldPage() {
             ═══════════════════════════════════════ */}
         <div className="glass-card p-4 mb-4">
           <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-            <Users className="w-4 h-4 text-[#d92525]" />
+            <Users className="w-4 h-4 text-[#992828]" />
             球员负荷 ({players.length}人)
           </h2>
 
@@ -1319,7 +1319,7 @@ export default function FieldPage() {
           <button
             onClick={archiveSession}
             disabled={session.phases.length === 0}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#d92525] text-white rounded-xl text-sm font-bold hover:bg-[#c41f1f] disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#992828] text-white rounded-xl text-sm font-bold hover:bg-[#c41f1f] disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             <Save className="w-4 h-4" />
             结束训练并归档

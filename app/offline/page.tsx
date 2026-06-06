@@ -35,7 +35,7 @@ export default function OfflinePage() {
     <div className="min-h-screen bg-[#121212] flex flex-col items-center justify-start pt-20 px-6">
       {/* Icon */}
       <div className="w-20 h-20 rounded-full bg-[#1e1e1e] border border-[#333] flex items-center justify-center mb-6">
-        <WifiOff className="w-10 h-10 text-[#d92525]" />
+        <WifiOff className="w-10 h-10 text-[#992828]" />
       </div>
 
       {/* Title */}
@@ -61,7 +61,7 @@ export default function OfflinePage() {
               <div className="flex items-center gap-3 mt-1.5">
                 <span className="text-xs text-gray-400">{plan.date}</span>
                 <span className="text-xs text-gray-600">·</span>
-                <span className="text-xs text-[#d92525]">{plan.modules} 个模块</span>
+                <span className="text-xs text-[#992828]">{plan.modules} 个模块</span>
               </div>
             </div>
           ))}
@@ -71,7 +71,7 @@ export default function OfflinePage() {
       {/* Retry button */}
       <button
         onClick={() => window.location.reload()}
-        className="flex items-center gap-2 px-8 py-4 bg-[#d92525] text-white font-bold rounded-xl text-sm active:scale-95 transition-transform"
+        className="flex items-center gap-2 px-8 py-4 bg-[#992828] text-white font-bold rounded-xl text-sm active:scale-95 transition-transform"
       >
         <RefreshCw className="w-4 h-4" />
         重试连接

@@ -115,9 +115,9 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
 
   if (submitted) {
     return (
-      <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-4 text-center">
+      <div className="bg-[#0d0d0d] border border-[#992828]/30 rounded-xl p-4 text-center">
         <div className="text-2xl mb-1">📋</div>
-        <div className="text-sm text-[#d92525] font-bold">伤病报告已记录</div>
+        <div className="text-sm text-[#992828] font-bold">伤病报告已记录</div>
         <div className="text-[10px] text-gray-500 mt-0.5">
           {selectedPart && BODY_PARTS_ANTERIOR.find(p => p.id === selectedPart)?.label} · 严重度 {severity}/4
         </div>
@@ -157,8 +157,8 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
               {BODY_PARTS_ANTERIOR.map(part => (
                 <circle key={part.id}
                   cx={part.x} cy={part.y} r={part.r}
-                  fill={selectedPart === part.id ? '#d92525' : 'transparent'}
-                  stroke={selectedPart === part.id ? '#d92525' : '#333'}
+                  fill={selectedPart === part.id ? '#992828' : 'transparent'}
+                  stroke={selectedPart === part.id ? '#992828' : '#333'}
                   strokeWidth="0.5"
                   className="cursor-pointer hover:fill-red-900/30 transition"
                   onClick={() => handlePartClick(part.id)} />
@@ -168,7 +168,7 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
         </>
       ) : (
         <>
-          <div className="text-xs text-[#d92525] font-semibold">
+          <div className="text-xs text-[#992828] font-semibold">
             已选: {BODY_PARTS_ANTERIOR.find(p => p.id === selectedPart)?.label}
             <button onClick={() => setShowForm(false)} className="ml-2 text-gray-400 text-[10px]">重选</button>
           </div>
@@ -181,7 +181,7 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
                 <button key={t.value}
                   onClick={() => setInjuryType(t.value)}
                   className={`px-2.5 py-1.5 rounded-lg text-[10px] ${
-                    injuryType === t.value ? 'bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30' : 'bg-[#1a1a1a] text-gray-400'
+                    injuryType === t.value ? 'bg-[#992828]/20 text-[#992828] border border-[#992828]/30' : 'bg-[#1a1a1a] text-gray-400'
                   }`}>{t.label}</button>
               ))}
             </div>
@@ -200,7 +200,7 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
                 <button key={s.v}
                   onClick={() => setSeverity(s.v as 1|2|3|4)}
                   className={`flex-1 py-2 rounded-lg text-[9px] whitespace-pre-line text-center leading-tight ${
-                    severity === s.v ? 'bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30' : 'bg-[#1a1a1a] text-gray-400'
+                    severity === s.v ? 'bg-[#992828]/20 text-[#992828] border border-[#992828]/30' : 'bg-[#1a1a1a] text-gray-400'
                   }`}>{s.l}</button>
               ))}
             </div>
@@ -232,7 +232,7 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
                 ✅ 可以继续
               </button>
               <button onClick={() => setCanContinue(false)}
-                className={`flex-1 py-2 rounded-lg text-[10px] ${!canContinue ? 'bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30' : 'bg-[#1a1a1a] text-gray-400'}`}>
+                className={`flex-1 py-2 rounded-lg text-[10px] ${!canContinue ? 'bg-[#992828]/20 text-[#992828] border border-[#992828]/30' : 'bg-[#1a1a1a] text-gray-400'}`}>
                 ❌ 需要休息
               </button>
             </div>
@@ -244,7 +244,7 @@ export function InjuryReportComponent({ athleteId = 'default', onReport }: Injur
             rows={2} />
 
           <button onClick={handleSubmit}
-            className="w-full py-3 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition">
+            className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition">
             提交伤情报备
           </button>
         </>

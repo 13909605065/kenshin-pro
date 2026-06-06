@@ -17,12 +17,12 @@ export default function GymPage() {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <a href="/" className="text-[#d92525] font-black text-sm" style={{ letterSpacing: "-0.5px" }}>
+          <a href="/" className="text-[#992828] font-black text-sm" style={{ letterSpacing: "-0.5px" }}>
             KENSHIN<span className="text-[#d1d1d1] font-light">PRO</span>
           </a>
           <span className="text-gray-400 text-xs hidden sm:inline">/</span>
           <span className="text-white text-sm font-semibold flex items-center gap-1.5">
-            <Dumbbell className="w-4 h-4 text-[#d92525]" />
+            <Dumbbell className="w-4 h-4 text-[#992828]" />
             力量房
           </span>
         </div>

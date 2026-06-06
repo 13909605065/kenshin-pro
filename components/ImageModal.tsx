@@ -39,7 +39,7 @@ export function ImageModal({ open, imageUrl, title, onClose }: Props) {
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-5 right-5 z-10 w-10 h-10 rounded-full bg-[#1e1e1e]/80 border border-[#222] flex items-center justify-center text-gray-400 hover:text-white hover:border-[#d92525] transition"
+        className="absolute top-5 right-5 z-10 w-10 h-10 rounded-full bg-[#1e1e1e]/80 border border-[#222] flex items-center justify-center text-gray-400 hover:text-white hover:border-[#992828] transition"
       >
         <X className="w-5 h-5" />
       </button>

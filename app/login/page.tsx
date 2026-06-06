@@ -73,7 +73,7 @@ export default function LoginPage() {
   if (checking) {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#d92525] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#992828] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
         )}
         {message && (
-          <div className="bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] px-4 py-3 rounded-xl text-sm text-center">
+          <div className="bg-[#992828]/10 border border-[#992828]/20 text-[#992828] px-4 py-3 rounded-xl text-sm text-center">
             {message}
           </div>
         )}
@@ -130,7 +130,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="邮箱地址"
-                className="w-full h-11 px-4 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#d92525] focus:outline-none transition-colors"
+                className="w-full h-11 px-4 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#992828] focus:outline-none transition-colors"
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
 
@@ -140,7 +140,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="密码（至少 6 位）"
-                  className="w-full h-11 px-4 pr-10 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#d92525] focus:outline-none transition-colors"
+                  className="w-full h-11 px-4 pr-10 bg-[#1e1e1e] border border-[#222] rounded-lg text-white text-sm placeholder-gray-500 focus:border-[#992828] focus:outline-none transition-colors"
                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 />
                 <button
@@ -155,7 +155,7 @@ export default function LoginPage() {
                 <button
                   onClick={handleLogin}
                   disabled={loading !== null || !email || password.length < 6}
-                  className="flex-1 h-10 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition disabled:opacity-40"
+                  className="flex-1 h-10 bg-[#992828] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition disabled:opacity-40"
                 >
                   {loading === "login" ? "登录中..." : "登录"}
                 </button>

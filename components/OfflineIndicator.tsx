@@ -43,7 +43,7 @@ export function OfflineIndicator() {
   if (!offline && queueLen === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[101] bg-[#d92525] text-white text-xs font-medium py-1.5 px-4 text-center flex items-center justify-center gap-2 pt-safe">
+    <div className="fixed top-0 left-0 right-0 z-[101] bg-[#992828] text-white text-xs font-medium py-1.5 px-4 text-center flex items-center justify-center gap-2 pt-safe">
       {offline ? (
         <>
           <WifiOff className="w-3 h-3" />

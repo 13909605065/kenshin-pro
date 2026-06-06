@@ -18,10 +18,10 @@ const config: Config = {
           400: "#3A3A3A",
         },
         neon: {
-          pink: "#d92525",
+          pink: "#992828",
           green: "#30D158",
-          gold: "#d92525",
-          red: "#d92525",
+          gold: "#992828",
+          red: "#992828",
         },
       },
       fontFamily: {

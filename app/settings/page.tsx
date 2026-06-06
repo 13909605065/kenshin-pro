@@ -113,21 +113,21 @@ export default function SettingsPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-bold text-white">个人设置</h1>
-          {message && <span className={`text-xs ${message.includes('✅') ? 'text-green-400' : 'text-[#d92525]'}`}>{message}</span>}
+          {message && <span className={`text-xs ${message.includes('✅') ? 'text-green-400' : 'text-[#992828]'}`}>{message}</span>}
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         {/* ── Backup Reminder Banner ── */}
-        <section className="bg-[#d92525]/10 border border-[#d92525]/20 rounded-xl p-4 flex items-start gap-3">
-          <Shield className="w-5 h-5 text-[#d92525] shrink-0 mt-0.5" />
+        <section className="bg-[#992828]/10 border border-[#992828]/20 rounded-xl p-4 flex items-start gap-3">
+          <Shield className="w-5 h-5 text-[#992828] shrink-0 mt-0.5" />
           <div>
             <p className="text-sm text-white font-bold">建议每次训练后导出数据备份</p>
             <p className="text-xs text-gray-400 mt-1">
               训练记录是教练最重要的资产。定期导出备份，防止数据丢失。
               <button
                 onClick={() => document.getElementById("data-management")?.scrollIntoView({ behavior: "smooth" })}
-                className="text-[#d92525] underline ml-1 hover:text-[#ff4444] transition"
+                className="text-[#992828] underline ml-1 hover:text-[#ff4444] transition"
               >
                 前往数据管理
               </button>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
         {/* ── Data Management (id for scroll anchor) ── */}
         <section id="data-management" className="glass-card p-6 space-y-4">
           <h2 className="text-white font-bold flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#d92525]" />
+            <Shield className="w-4 h-4 text-[#992828]" />
             数据管理
           </h2>
           <p className="text-xs text-gray-500">
@@ -257,9 +257,9 @@ export default function SettingsPage() {
 
         {/* ── Import Confirm Modal ── */}
         {showImportConfirm && importPreview && (
-          <section className="glass-card p-6 space-y-4 border-[#d92525]/50">
+          <section className="glass-card p-6 space-y-4 border-[#992828]/50">
             <h2 className="text-white font-bold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#d92525]" />
+              <AlertTriangle className="w-4 h-4 text-[#992828]" />
               确认数据恢复
             </h2>
 
@@ -290,7 +290,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleConfirmImport}
                 disabled={importing}
-                className="flex-1 py-3 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {importing ? "恢复中..." : "确认恢复，将覆盖当前数据"}
               </button>

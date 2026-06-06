@@ -81,7 +81,7 @@ function ProfileSummary({ formData, t }: any) {
     return (
       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
         {parts.map((p, i) => (
-          <span key={i} className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">{p}</span>
+          <span key={i} className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#992828]/15 text-[#992828] border border-[#992828]/20">{p}</span>
         ))}
         {parts.length === 0 && <span className="text-[10px] text-gray-400">未设置</span>}
       </div>
@@ -95,7 +95,7 @@ function ProfileSummary({ formData, t }: any) {
     ].filter(Boolean);
     return (
       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">健身</span>
+        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#992828] text-white">健身</span>
         {formData.gender && (
           <span className="text-[10px] text-gray-400">{formData.gender === "female" ? "♀" : "♂"}</span>
         )}
@@ -117,7 +117,7 @@ function ProfileSummary({ formData, t }: any) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
       {posLabel && (
-        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#d92525] text-white">{posLabel}</span>
+        <span className="px-2 py-0.5 rounded text-[9px] font-semibold bg-[#992828] text-white">{posLabel}</span>
       )}
       {formData.gender && (
         <span className="text-[10px] text-gray-400">{formData.gender === "female" ? "♀" : "♂"}</span>
@@ -216,16 +216,16 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                 }}
                 placeholder={t("player.name")} maxLength={30} className="input-field text-sm w-full" />
               {profiles.hasProfile(formData.name) && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[#d92525]">📋 已有档案</span>
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[#992828]">📋 已有档案</span>
               )}
             </div>
 
             {/* Gender */}
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => updateField("gender", "male")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>♂ 男</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="male"?"border-[#992828] bg-[#992828]/10 text-[#992828]":"border-[#222] text-gray-400"}`}>♂ 男</button>
               <button onClick={() => updateField("gender", "female")}
-                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>♀ 女</button>
+                className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.gender==="female"?"border-[#992828] bg-[#992828]/10 text-[#992828]":"border-[#222] text-gray-400"}`}>♀ 女</button>
             </div>
 
             {/* Position 3+2 — athletes only, not fitness */}
@@ -236,13 +236,13 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                 <div className="grid grid-cols-3 gap-1.5">
                   {["goalkeeper","defender","midfielder"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center ${formData.position===pos?"border-[#992828] bg-[#992828]/10 text-[#992828]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
                 <div className="flex justify-center gap-1.5">
                   {["forward","wingback"].map((pos: string) => (
                     <button key={pos} onClick={() => updateField("position", pos)}
-                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-[#d92525] bg-[#d92525]/10 text-[#d92525]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
+                      className={`p-2 rounded-lg text-xs font-medium border transition text-center w-[calc(33.33%-0.25rem)] ${formData.position===pos?"border-[#992828] bg-[#992828]/10 text-[#992828]":"border-[#222] text-gray-400"}`}>{t(`pos.${pos}`)}</button>
                   ))}
                 </div>
               </div>
@@ -296,8 +296,8 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
 
         {/* Auto-fill toast with undo */}
         {autoFillToast && (
-          <div className="flex items-center justify-between bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg px-3 py-2">
-            <span className="text-xs text-[#d92525]">已自动填入「{autoFillToast.name}」的档案</span>
+          <div className="flex items-center justify-between bg-[#992828]/10 border border-[#992828]/20 rounded-lg px-3 py-2">
+            <span className="text-xs text-[#992828]">已自动填入「{autoFillToast.name}」的档案</span>
             <button
               onClick={() => {
                 if (autoFillToast.prevData) {
@@ -317,7 +317,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
                 }
                 setAutoFillToast(null);
               }}
-              className="text-xs text-[#d92525] underline hover:text-white transition-colors ml-2 flex-shrink-0"
+              className="text-xs text-[#992828] underline hover:text-white transition-colors ml-2 flex-shrink-0"
             >
               撤销
             </button>
@@ -325,7 +325,7 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
         )}
 
         <button onClick={onClose}
-          className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
+          className="w-full py-2 bg-[#992828] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition">
           完成
         </button>
       </div>
@@ -586,13 +586,13 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               {/* 训练场: timer + roster */}
               {scene === "pitch" && (
                 <>
-                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else { setValidationError("请先进「备课」生成训练方案"); setTimeout(()=>setValidationError(null),3000); } }} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
-                    <Timer className="w-5 h-5 text-[#d92525] mb-1" />
+                  <button onClick={() => { if (training.modules.length > 0) { setLaunchTimer(true); setStatus("complete"); } else { setValidationError("请先进「备课」生成训练方案"); setTimeout(()=>setValidationError(null),3000); } }} className="flex-1 min-w-[100px] bg-[#992828]/10 border border-[#992828]/20 rounded-lg p-2.5 text-left hover:bg-[#992828]/20 transition">
+                    <Timer className="w-5 h-5 text-[#992828] mb-1" />
                     <p className="text-xs font-bold text-white">计时跟练</p>
                     <p className="text-[10px] text-gray-400">执行教案</p>
                   </button>
-                  <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-[#d92525]/10 border border-[#d92525]/20 rounded-lg p-2.5 text-left hover:bg-[#d92525]/20 transition">
-                    <ClipboardList className="w-5 h-5 text-[#d92525] mb-1" />
+                  <button onClick={() => window.location.href = "/roster"} className="flex-1 min-w-[100px] bg-[#992828]/10 border border-[#992828]/20 rounded-lg p-2.5 text-left hover:bg-[#992828]/20 transition">
+                    <ClipboardList className="w-5 h-5 text-[#992828] mb-1" />
                     <p className="text-xs font-bold text-white">花名册</p>
                     <p className="text-[10px] text-gray-400">人数+伤病</p>
                   </button>
@@ -612,8 +612,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
           {/* Profile Bar */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl px-3 sm:px-4 py-3">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-[#d92525] text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
+              <div className="w-8 h-8 rounded-full bg-[#992828]/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#992828] text-xs font-bold">{isCoach ? "C" : isFitness ? "F" : "A"}</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-white text-sm sm:text-base font-bold truncate">
@@ -625,15 +625,15 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 {/* Identity switch */}
                 <div className="flex bg-[#111] rounded-lg p-0.5">
                   <button onClick={() => setRole("coach")}
-                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="coach"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
+                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="coach"?"bg-[#992828] text-white":"bg-[#1e1e1e] text-[#777]")}>
                     教练
                   </button>
                   <button onClick={() => setRole("athlete")}
-                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="athlete"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
+                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="athlete"?"bg-[#992828] text-white":"bg-[#1e1e1e] text-[#777]")}>
                     球员
                   </button>
                   <button onClick={() => setRole("fitness")}
-                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="fitness"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
+                    className={"px-2 sm:px-3 py-1.5 rounded-md text-[10px] sm:text-xs font-bold transition " + (role==="fitness"?"bg-[#992828] text-white":"bg-[#1e1e1e] text-[#777]")}>
                     健身
                   </button>
                 </div>
@@ -641,7 +641,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 {!isCoach && !isFitness && (
                   <div className="flex bg-[#111] rounded-lg p-0.5">
                     <button onClick={() => setScene("pitch")}
-                      className={"px-1.5 sm:px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition flex items-center gap-0.5 " + (scene==="pitch"?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-[#777]")}>
+                      className={"px-1.5 sm:px-2 py-1 rounded-md text-[10px] sm:text-xs font-bold transition flex items-center gap-0.5 " + (scene==="pitch"?"bg-[#992828] text-white":"bg-[#1e1e1e] text-[#777]")}>
                       <MapPin className="w-3 h-3" /><span className="hidden sm:inline">球场</span>
                     </button>
                     <button onClick={() => router.push("/gym")}
@@ -669,13 +669,13 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     {isFitness ? fitnessGoals.map((gid) => {
                       const g = FITNESS_GOALS.find(fg => fg.id === gid);
                       return (
-                        <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                        <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#992828]/15 text-[#992828] border border-[#992828]/20">
                           {g?.label || gid}
                           <button onClick={() => updateFitnessGoals(fitnessGoals.filter(x => x !== gid))} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                         </span>
                       );
                     }) : athleteGoals.map((gid) => (
-                      <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                      <span key={gid} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#992828]/15 text-[#992828] border border-[#992828]/20">
                         {GOAL_LABELS[gid] || t(`goal.${gid}`)}
                         <button onClick={() => {
                           const next = athleteGoals.filter(x => x !== gid);
@@ -685,13 +685,13 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                       </span>
                     ))}
                     {!isFitness && formData.phase && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#992828]/15 text-[#992828] border border-[#992828]/20">
                         {PHASE_LABELS[formData.phase] || t(`phase.${formData.phase}`)}
                         <button onClick={() => updateField("phase", null)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
                     )}
                     {formData.injurySites.map((s: string) => (
-                      <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20">
+                      <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#992828]/15 text-[#992828] border border-[#992828]/20">
                         {t(`injury.${s}`)}
                         <button onClick={() => updateField("injurySites", formData.injurySites.filter(x => x !== s) as any)} className="p-2 hover:text-white transition-colors"><X className="w-3 h-3" /></button>
                       </span>
@@ -705,11 +705,11 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] text-gray-500 mr-1">训练场景：</span>
                   <button onClick={() => setScene("pitch")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "pitch" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "pitch" ? "bg-[#992828] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
                     <MapPin className="w-3.5 h-3.5" /> 球场
                   </button>
                   <button onClick={() => setScene("gym")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#d92525] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#992828] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
                     <Dumbbell className="w-3.5 h-3.5" /> 体能房
                   </button>
                   <span className="text-[10px] text-gray-600 ml-2">
@@ -720,8 +720,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
 
               {/* Gym scene — show gym-specific panel instead of goals */}
               {!isCoach && !isFitness && scene === "gym" ? (
-                <div className="bg-[#1e1e1e] border border-[#d92525]/20 rounded-2xl p-5 space-y-4">
-                  <p className="text-xs text-[#d92525] font-bold uppercase tracking-wide">🏋️ 体能房训练</p>
+                <div className="bg-[#1e1e1e] border border-[#992828]/20 rounded-2xl p-5 space-y-4">
+                  <p className="text-xs text-[#992828] font-bold uppercase tracking-wide">🏋️ 体能房训练</p>
                   {(() => {
                     const age = formData.age || 25;
                     const weight = formData.weight || 70;
@@ -734,9 +734,9 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     return (
                       <>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
-                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
-                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#d92525] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#992828] font-bold text-lg">{age}</p><p className="text-[10px] text-gray-400">年龄</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#992828] font-bold text-lg">{bmi.toFixed(1)}</p><p className="text-[10px] text-gray-400">BMI</p></div>
+                          <div className="text-center bg-[#121212] rounded-lg p-2"><p className="text-[#992828] font-bold text-lg">{years}年</p><p className="text-[10px] text-gray-400">训练年限</p></div>
                         </div>
                         {isU18 && <p className="text-xs text-amber-400">未成年，禁止大重量(&gt;85%1RM)，专注动作质量</p>}
                         {isO35 && <p className="text-xs text-amber-400">热身延长至20min，关节保护优先</p>}
@@ -754,7 +754,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               {!isFitness && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <MapPin className="w-4 h-4 text-[#d92525]" />
+                    <MapPin className="w-4 h-4 text-[#992828]" />
                     <p className="text-xs font-bold text-white">{t("player.position")}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -773,8 +773,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           onClick={() => updateField("position", value)}
                           className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all duration-150 border ${
                             isSelected
-                              ? "bg-[#d92525] text-white border-[#d92525]"
-                              : "bg-[#1e1e1e] text-[#777] border-[#222] hover:border-[#d92525]/30"
+                              ? "bg-[#992828] text-white border-[#992828]"
+                              : "bg-[#1e1e1e] text-[#777] border-[#222] hover:border-[#992828]/30"
                           }`}
                         >
                           {label}
@@ -788,7 +788,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               <div className={isFitness ? "" : "grid grid-cols-2 gap-3"}>
                 {/* Left: Training Goals */}
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-3"><Target className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
+                  <div className="flex items-center gap-2 mb-3"><Target className="w-5 h-5 text-[#992828]" /><p className="text-sm font-bold text-white">{isFitness ? "健身目标" : t("goal.title")}</p></div>
                   <div className="space-y-2">
                     {isFitness ? (
                       <div className="grid grid-cols-3 gap-2">
@@ -801,11 +801,11 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                             }}
                               className={`text-left rounded-lg p-3 transition-all duration-150 border ${
                                 isSelected
-                                  ? "bg-[#281a1a] border-[#d92525]/40"
-                                  : "bg-[#1e1e1e] border-[#222] hover:border-[#d92525]/20"
+                                  ? "bg-[#281a1a] border-[#992828]/40"
+                                  : "bg-[#1e1e1e] border-[#222] hover:border-[#992828]/20"
                               }`}>
-                              <span className={`block text-sm font-bold ${isSelected ? "text-[#d92525]" : "text-[#999]"}`}>{g.label}</span>
-                              <span className={`block text-[10px] mt-0.5 ${isSelected ? "text-[#d92525]/70" : "text-[#666]"}`}>{g.desc}</span>
+                              <span className={`block text-sm font-bold ${isSelected ? "text-[#992828]" : "text-[#999]"}`}>{g.label}</span>
+                              <span className={`block text-[10px] mt-0.5 ${isSelected ? "text-[#992828]/70" : "text-[#666]"}`}>{g.desc}</span>
                             </button>
                           );
                         })}
@@ -832,10 +832,10 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                         }}
                           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
                             isSelected
-                              ? "bg-[#d92525] text-white border-[#d92525]"
+                              ? "bg-[#992828] text-white border-[#992828]"
                               : isHighlighted
-                                ? "bg-[#1e1e1e] text-gray-300 border-[#d92525]/40"
-                                : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                                ? "bg-[#1e1e1e] text-gray-300 border-[#992828]/40"
+                                : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#992828]/30"
                           }`}>
                           {GOAL_LABELS[g] || t(`goal.${g}`)}
                         </button>
@@ -847,7 +847,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 {/* Right: Season Phase — athletes only */}
                 {!isFitness && (
                 <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-3"><Clock className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
+                  <div className="flex items-center gap-2 mb-3"><Clock className="w-5 h-5 text-[#992828]" /><p className="text-sm font-bold text-white">{t("phase.title")}</p></div>
                   <div className="space-y-2">
                     {PHASES.map((p) => {
                       const isSelected = formData.phase === p;
@@ -855,8 +855,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                         <button key={p} onClick={() => updateField("phase", p)}
                           className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
                             isSelected
-                              ? "bg-[#d92525] text-white border-[#d92525]"
-                              : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#d92525]/30"
+                              ? "bg-[#992828] text-white border-[#992828]"
+                              : "bg-[#1e1e1e] text-gray-400 border-transparent hover:border-[#992828]/30"
                           }`}>
                           {PHASE_LABELS[p] || t(`phase.${p}`)}
                         </button>
@@ -880,7 +880,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 <div className="flex items-center gap-2">
                   <span className="text-sm">⚠️</span>
                   <p className="text-xs font-bold text-white">伤病情况</p>
-                  {formData.injurySites.length > 0 && <span className="text-[10px] text-[#d92525]">{formData.injurySites.length}处</span>}
+                  {formData.injurySites.length > 0 && <span className="text-[10px] text-[#992828]">{formData.injurySites.length}处</span>}
                 </div>
                 <span className="text-[10px] text-gray-400 transition-transform duration-200" style={{transform: injOpen["_main"] ? "rotate(180deg)" : "rotate(0deg)"}}>▼</span>
               </div>
@@ -894,7 +894,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           const active = formData.injurySites.includes(s as any);
                           return (
                             <button key={s} onClick={() => { const next = active ? formData.injurySites.filter((x: any) => x!==s) : [...formData.injurySites, s as any]; updateField("injurySites", next as any); }}
-                              className={`px-3 py-1.5 min-h-[44px] rounded text-[10px] transition-all duration-150 ${active?"bg-[#d92525]/15 text-[#d92525] border border-[#d92525]/20":"bg-[#1e1e1e] text-gray-400 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
+                              className={`px-3 py-1.5 min-h-[44px] rounded text-[10px] transition-all duration-150 ${active?"bg-[#992828]/15 text-[#992828] border border-[#992828]/20":"bg-[#1e1e1e] text-gray-400 hover:bg-[#222]"}`}>{t(`injury.${s}`)}</button>
                           );
                         })}
                       </div>
@@ -932,8 +932,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                             const content = n[key];
                             if (!content) return null;
                             return (
-                              <div key={key} className="bg-[#121212] rounded-lg p-2.5 border-l-2 border-[#d92525]">
-                                <p className="text-[10px] text-[#d92525] font-bold mb-1">{label}</p>
+                              <div key={key} className="bg-[#121212] rounded-lg p-2.5 border-l-2 border-[#992828]">
+                                <p className="text-[10px] text-[#992828] font-bold mb-1">{label}</p>
                                 <p className="text-[11px] text-[#d1d1d1]">{content}</p>
                               </div>
                             );
@@ -961,7 +961,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     <button key={k} onClick={() => { const next = active ? formData.tacticalThemes.filter((x) => x!==k) : [...formData.tacticalThemes, k]; updateField("tacticalThemes", next as any); }}
                       className={`px-3 py-1.5 min-h-[36px] rounded text-sm font-medium transition-all duration-150 border ${
                         active
-                          ? "bg-[#d92525] border-[#d92525] text-white"
+                          ? "bg-[#992828] border-[#992828] text-white"
                           : "bg-[#1e1e1e] border-transparent text-[#777]"
                       }`}>{v}</button>
                   );
@@ -976,7 +976,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               <p className="text-xs text-gray-400 mb-3">
                 {"可选器材（不选则AI自动推荐）"}
                 {formData.equipmentAvailable?.length > 0 && (
-                  <span className="text-[#d92525] ml-2">{formData.equipmentAvailable.length} 项已选</span>
+                  <span className="text-[#992828] ml-2">{formData.equipmentAvailable.length} 项已选</span>
                 )}
               </p>
               <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
@@ -993,17 +993,17 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                   { n:"绳梯",    color:"#c8960c" },
                   { n:"敏捷圈",  color:"#4a90d9" },
                   { n:"弹力带",  color:"#e8780a" },
-                  { n:"药球",    color:"#d92525" },
+                  { n:"药球",    color:"#992828" },
                   { n:"瑜伽球",  color:"#4a90d9" },
                   { n:"泡沫轴",  color:"#888888" },
                 ].map(({ n, color }) => {
                   const act = formData.equipmentAvailable?.includes(n);
-                  const iconColor = act ? "#d92525" : color;
+                  const iconColor = act ? "#992828" : color;
                   const count = equipmentInv.getCount(n);
                   return (
                     <div key={n} className={`flex flex-col items-center justify-center rounded-lg transition-all duration-150 border py-1.5 relative ${
                       act
-                        ? "bg-[#261818] border-[#d92525]/30"
+                        ? "bg-[#261818] border-[#992828]/30"
                         : "bg-[#1e1e1e] border-[#222] hover:border-[#333]"
                     }`}>
                       <button
@@ -1035,14 +1035,14 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
                           {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
                         </svg>
-                        <span className={`text-[10px] font-medium ${act ? "text-[#d92525]" : "text-[#777]"}`}>{n}</span>
+                        <span className={`text-[10px] font-medium ${act ? "text-[#992828]" : "text-[#777]"}`}>{n}</span>
                       </button>
                       {/* Count controls — only shown when selected */}
                       {act && (
                         <div className="flex items-center gap-0.5 mt-0.5" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); if (c > 1) equipmentInv.setCount(n, c - 1); }}
-                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            className="p-0.5 text-[#992828] hover:text-white transition-colors"
                             aria-label={`减少${n}数量`}
                           >
                             <Minus className="w-3 h-3" />
@@ -1050,7 +1050,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                           <span className="text-[10px] text-white font-bold min-w-[14px] text-center">{count || equipmentInv.getCount(n) || "?"}</span>
                           <button
                             onClick={(e) => { e.stopPropagation(); const c = equipmentInv.getCount(n); equipmentInv.setCount(n, (c || 0) + 1); }}
-                            className="p-0.5 text-[#d92525] hover:text-white transition-colors"
+                            className="p-0.5 text-[#992828] hover:text-white transition-colors"
                             aria-label={`增加${n}数量`}
                           >
                             <Plus className="w-3 h-3" />
@@ -1069,7 +1069,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
             <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-bold text-white flex items-center gap-2">
-                  <History className="w-4 h-4 text-[#d92525]" />
+                  <History className="w-4 h-4 text-[#992828]" />
                   方案历史
                   {formData.name && (
                     <span className="text-xs text-gray-400 font-normal">· {formData.name}</span>
@@ -1079,7 +1079,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                   {compareIds.length === 2 && (
                     <button
                       onClick={() => setCompareOpen(true)}
-                      className="flex items-center gap-1 px-2 py-1 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded text-[10px] font-medium hover:bg-[#d92525]/20 transition"
+                      className="flex items-center gap-1 px-2 py-1 bg-[#992828]/10 border border-[#992828]/20 text-[#992828] rounded text-[10px] font-medium hover:bg-[#992828]/20 transition"
                     >
                       <GitCompare className="w-3 h-3" />对比选中方案
                     </button>
@@ -1095,7 +1095,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                         type="checkbox"
                         checked={compareIds.includes(plan.id)}
                         onChange={() => toggleCompareId(plan.id)}
-                        className="w-4 h-4 accent-[#d92525] flex-shrink-0"
+                        className="w-4 h-4 accent-[#992828] flex-shrink-0"
                         aria-label={`对比 ${plan.playerName}`}
                       />
                       <button
@@ -1137,30 +1137,30 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               <span className="text-[10px] text-gray-400 mr-1">阶段:</span>
               {PHASES.map(p => (
                 <button key={p} onClick={() => updateField("phase", p)}
-                  className={`px-3 py-1.5 min-h-[36px] rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#d92525] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
+                  className={`px-3 py-1.5 min-h-[36px] rounded text-[10px] transition-all duration-150 ${formData.phase===p?"bg-[#992828] text-white":"bg-[#1e1e1e] text-gray-400 hover:text-white hover:bg-[#222]"}`}>{PHASE_LABELS[p] || t("phase."+p)}</button>
               ))}
             </div>
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#d92525]" />
+                <Users className="w-4 h-4 text-[#992828]" />
                 <span className="text-xs text-gray-400">训练人数</span>
                 <input type="number" min={1} max={50} defaultValue={formData.playerCount || 11}
                   onChange={(e) => updateField("playerCount", parseInt(e.target.value) || undefined)}
-                  className="w-16 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#d92525] focus:outline-none" />
+                  className="w-16 px-2 py-1.5 bg-[#121212] border border-[#222] rounded-md text-white text-sm text-center focus:border-[#992828] focus:outline-none" />
               </div>
             </div>
             <textarea
               value={coachInput} onChange={(e) => setCoachInput(e.target.value)}
               placeholder={"今天练什么？\n例：周三对XX队，他们边路快，练防守宽度…"}
               rows={3}
-              className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none resize-y min-h-[80px]"
+              className="w-full bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none resize-y min-h-[80px]"
             />
           </div>
           )}
 
           {/* Training Duration Selector — all roles */}
           <div className="bg-[#1e1e1e] border border-[#222] rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3"><Timer className="w-5 h-5 text-[#d92525]" /><p className="text-sm font-bold text-white">训练时长</p></div>
+            <div className="flex items-center gap-2 mb-3"><Timer className="w-5 h-5 text-[#992828]" /><p className="text-sm font-bold text-white">训练时长</p></div>
             <div className="flex items-center gap-3">
               <input
                 type="number"
@@ -1170,7 +1170,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 value={formData.trainingDuration ?? ""}
                 onChange={(e) => updateField("trainingDuration", e.target.value ? Number(e.target.value) : undefined)}
                 placeholder="60"
-                className="w-20 bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white text-center focus:border-[#d92525] focus:outline-none"
+                className="w-20 bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white text-center focus:border-[#992828] focus:outline-none"
               />
               <span className="text-sm text-gray-400">分钟</span>
               <div className="flex gap-1.5 ml-2">
@@ -1180,8 +1180,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     <button key={mins} onClick={() => updateField("trainingDuration", mins)}
                       className={`px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-medium transition-all duration-150 border ${
                         isSelected
-                          ? "bg-[#d92525] text-white border-[#d92525]"
-                          : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#d92525]/30"
+                          ? "bg-[#992828] text-white border-[#992828]"
+                          : "bg-[#1e1e1e] text-[#999] border-[#222] hover:border-[#992828]/30"
                       }`}>{mins}min</button>
                   );
                 })}
@@ -1208,20 +1208,20 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
 
           {/* Validation error */}
           {validationError && (
-            <div className="px-4 py-2 bg-[#d92525]/10 border border-[#d92525]/30 rounded-lg text-sm text-[#d92525]">
+            <div className="px-4 py-2 bg-[#992828]/10 border border-[#992828]/30 rounded-lg text-sm text-[#992828]">
               {validationError}
             </div>
           )}
 
           {/* Generate Button */}
           <button onClick={handleGenerate} disabled={isCoach ? !isStepValid : isFitness ? fitnessGoals.length === 0 : (!isStepValid || athleteGoals.length === 0)}
-            className={`w-full bg-[#d92525] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#d92525]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
+            className={`w-full bg-[#992828] text-white font-bold rounded-xl text-lg hover:scale-[1.02] hover:shadow-lg hover:shadow-[#992828]/30 transition-all duration-200 disabled:bg-[#333] disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none flex items-center justify-center gap-2 ${isFitness ? "py-3.5" : "py-5"}`}>
             <Zap className="w-5 h-5" /> {isCoach ? (isStepValid ? "生成训练方案" : "请完善训练配置") : isFitness ? (fitnessGoals.length > 0 ? "生成个人训练方案" : "请选择健身目标") : (isStepValid && athleteGoals.length > 0 ? "生成训练方案" : "请完善训练配置")}
           </button>
 
           {/* Template Library — quick access */}
           <button onClick={() => setShowTemplates(true)}
-            className="w-full py-2.5 text-center text-xs text-gray-400 hover:text-[#d92525] transition-colors">
+            className="w-full py-2.5 text-center text-xs text-gray-400 hover:text-[#992828] transition-colors">
             📁 从模板库套用方案
           </button>
 
@@ -1231,7 +1231,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               <input value={profileName} onChange={(e) => setProfileName(e.target.value)} placeholder="档案名称" className="input-field text-sm flex-1"
                 onKeyDown={(e) => { if(e.key==="Enter"&&profileName){ profiles.saveProfile(profileName, wizard.formData); syncToSupabase(); setProfileName(""); setShowProfileSave(false); }}} />
               <button onClick={() => { if(profileName){ profiles.saveProfile(profileName, wizard.formData); syncToSupabase(); setProfileName(""); setShowProfileSave(false); }}}
-                className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
+                className="bg-[#992828] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
             </div>
           )}
         </div>
@@ -1262,8 +1262,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
       {/* ====== Completion flash ====== */}
       {showDone && (
         <div className="glass-card p-12 flex flex-col items-center justify-center space-y-6 animate-in fade-in">
-          <div className="w-16 h-16 rounded-full bg-[#d92525]/20 flex items-center justify-center">
-            <svg className="w-10 h-10 text-[#d92525]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <div className="w-16 h-16 rounded-full bg-[#992828]/20 flex items-center justify-center">
+            <svg className="w-10 h-10 text-[#992828]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
@@ -1278,8 +1278,8 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
       {/* ====== Empty Results Fallback ====== */}
       {(status === "complete" || status === "stream-interrupted") && training.modules.length === 0 && !showDone && (
         <div className="glass-card p-8 text-center space-y-4">
-          <div className="w-16 h-16 mx-auto rounded-full bg-[#d92525]/10 flex items-center justify-center">
-            <Zap className="w-8 h-8 text-[#d92525]" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#992828]/10 flex items-center justify-center">
+            <Zap className="w-8 h-8 text-[#992828]" />
           </div>
           <div>
             <p className="text-white font-bold text-lg mb-1">AI 返回内容为空</p>
@@ -1288,7 +1288,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
             </p>
           </div>
           <div className="flex items-center justify-center gap-3">
-            <button onClick={handleRetry} className="px-6 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm">
+            <button onClick={handleRetry} className="px-6 py-2.5 bg-[#992828] text-white font-bold rounded-xl text-sm">
               重试生成
             </button>
             <button onClick={() => { training.reset(); setStatus("idle"); setErrorCode(null); }}
@@ -1306,7 +1306,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               {training.fromCache ? (
-                <span className="text-sm text-[#d92525] font-bold">⚡ 已有方案 · 秒开</span>
+                <span className="text-sm text-[#992828] font-bold">⚡ 已有方案 · 秒开</span>
               ) : (
                 <>
                   <p className="text-white font-bold text-lg">训练方案</p>
@@ -1314,7 +1314,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     {status === "streaming" ? `AI 生成中 ${training.modules.length}/${isCoach ? 3 : 5}...` : "✓ 生成完成"}
                   </p>
                   {savedPlanId && status === "complete" && (
-                    <p className="text-[10px] text-[#d92525] mt-0.5">✓ 已自动保存到方案历史</p>
+                    <p className="text-[10px] text-[#992828] mt-0.5">✓ 已自动保存到方案历史</p>
                   )}
                 </>
               )}
@@ -1324,7 +1324,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
               {status === "complete" && (
                 <button
                   onClick={() => { setManualSaveName(formData.name?.trim() || ""); setShowManualSave(true); }}
-                  className="flex items-center gap-1 px-3 py-2 bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525] rounded-lg text-xs hover:bg-[#d92525]/20 transition font-medium"
+                  className="flex items-center gap-1 px-3 py-2 bg-[#992828]/10 border border-[#992828]/30 text-[#992828] rounded-lg text-xs hover:bg-[#992828]/20 transition font-medium"
                 >
                   <Save className="w-3.5 h-3.5" />保存当前方案
                 </button>
@@ -1334,7 +1334,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 <div className="relative">
                   <button
                     onClick={() => setPlanHistoryOpen(!planHistoryOpen)}
-                    className="flex items-center gap-1 px-3 py-2 bg-[#1e1e1e] border border-[#222] text-gray-300 rounded-lg text-xs hover:border-[#d92525] transition"
+                    className="flex items-center gap-1 px-3 py-2 bg-[#1e1e1e] border border-[#222] text-gray-300 rounded-lg text-xs hover:border-[#992828] transition"
                   >
                     <History className="w-3.5 h-3.5" />
                     方案历史 ({playerPlans.length})
@@ -1345,7 +1345,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                       {compareIds.length === 2 && (
                         <button
                           onClick={() => { setCompareOpen(true); setPlanHistoryOpen(false); }}
-                          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded text-xs font-medium hover:bg-[#d92525]/20 transition mb-1"
+                          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-[#992828]/10 border border-[#992828]/20 text-[#992828] rounded text-xs font-medium hover:bg-[#992828]/20 transition mb-1"
                         >
                           <GitCompare className="w-3.5 h-3.5" />对比选中方案
                         </button>
@@ -1357,7 +1357,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                               type="checkbox"
                               checked={compareIds.includes(plan.id)}
                               onChange={() => toggleCompareId(plan.id)}
-                              className="w-4 h-4 accent-[#d92525] flex-shrink-0"
+                              className="w-4 h-4 accent-[#992828] flex-shrink-0"
                               aria-label={`对比 ${plan.playerName}`}
                             />
                             <button
@@ -1426,7 +1426,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                     setShowManualSave(false);
                   }
                 }}
-                className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded"
+                className="bg-[#992828] text-white text-xs font-bold px-4 py-2 rounded"
               >
                 保存
               </button>
@@ -1451,7 +1451,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
           <input value={templateName} onChange={(e) => setTemplateName(e.target.value)} placeholder={t("dashboard.templateName")} className="input-field text-sm flex-1"
             onKeyDown={(e) => { if(e.key==="Enter"&&templateName){ templates.saveTemplate(templateName, wizard.formData, training.modules); setTemplateName(""); setShowTemplateSave(false); }}} />
           <button onClick={() => { if(templateName){ templates.saveTemplate(templateName, wizard.formData, training.modules); setTemplateName(""); setShowTemplateSave(false); }}}
-            className="bg-[#d92525] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
+            className="bg-[#992828] text-white text-xs font-bold px-4 py-2 rounded">保存</button>
         </div>
       )}
 

@@ -191,7 +191,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
           style={{ minWidth: 320 }}
         >
           {/* Header with red accent */}
-          <div className="bg-[#d92525] px-5 py-4 text-white">
+          <div className="bg-[#992828] px-5 py-4 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[10px] opacity-80 font-bold tracking-wider">
@@ -211,8 +211,8 @@ export function ShareCard({ modules, formData, onClose }: Props) {
           <div className="p-5 space-y-4">
             {/* Player info */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#d92525]/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-[#d92525] font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-[#992828]/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#992828] font-bold text-sm">
                   {summary.isCoach ? "教" : summary.position[0]}
                 </span>
               </div>
@@ -234,7 +234,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
               <StatBox
                 value={summary.exerciseCount}
                 label="训练动作"
-                color="text-[#d92525]"
+                color="text-[#992828]"
               />
               <StatBox
                 value={summary.warmupCount}
@@ -265,7 +265,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
                       key={i}
                       className="flex items-center gap-2 text-xs text-gray-300"
                     >
-                      <span className="text-[#d92525] text-[10px] font-bold w-4 text-right flex-shrink-0">
+                      <span className="text-[#992828] text-[10px] font-bold w-4 text-right flex-shrink-0">
                         {i + 1}
                       </span>
                       <span className="truncate">{name}</span>
@@ -285,7 +285,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-gray-500">扫码查看完整方案</p>
-                <p className="text-[11px] text-[#d92525] font-bold">
+                <p className="text-[11px] text-[#992828] font-bold">
                   {planUrl.replace("https://", "").replace("http://", "")}
                 </p>
               </div>
@@ -296,7 +296,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
         {/* Instructions */}
         <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3 text-center">
           <p className="text-xs text-gray-300">
-            <span className="text-[#d92525] font-bold">长按保存图片</span>
+            <span className="text-[#992828] font-bold">长按保存图片</span>
             <span className="text-gray-500"> 即可分享到微信/朋友圈</span>
           </p>
         </div>
@@ -305,7 +305,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
         <div className="flex gap-2">
           <button
             onClick={handleDownload}
-            className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]"
+            className="flex-1 py-2.5 bg-[#992828] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
             下载图片
@@ -316,7 +316,7 @@ export function ShareCard({ modules, formData, onClose }: Props) {
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-[#d92525]" />
+                <Check className="w-4 h-4 text-[#992828]" />
                 已复制
               </>
             ) : (

@@ -206,7 +206,7 @@ export default function RosterPage() {
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
       {/* Import toast */}
       {importToast && (
-        <div className={`mb-3 px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#d92525]/10 border border-[#d92525]/30 text-[#d92525]'}`}>
+        <div className={`mb-3 px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#992828]/10 border border-[#992828]/30 text-[#992828]'}`}>
           {importToast.msg}
         </div>
       )}
@@ -233,7 +233,7 @@ export default function RosterPage() {
           <Upload className="w-3.5 h-3.5" />导入Excel
         </button>
         <button onClick={() => { setEditing({ id: "", name: "", position: "", number: "", age: null, height: null, weight: null, injuryStatus: "healthy", injuryNote: "", injuryHistory: "", disabledExercises: [], notes: "" }); setShowAdd(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-[#d92525] hover:bg-[#d92525]/90 rounded-lg transition font-bold">
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-[#992828] hover:bg-[#992828]/90 rounded-lg transition font-bold">
           <Plus className="w-3.5 h-3.5" />添加球员
         </button>
       </div>
@@ -242,7 +242,7 @@ export default function RosterPage() {
       <div className="flex gap-2 mb-4">
         {(["all", "healthy", "minor", "out"] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded-lg text-xs transition ${filter === f ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
+            className={`px-3 py-1 rounded-lg text-xs transition ${filter === f ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
             {f === "all" ? "全部" : `${statusEmoji(f)} ${statusLabel(f)}`}
           </button>
         ))}
@@ -255,11 +255,11 @@ export default function RosterPage() {
           const fit = getFitnessProfile(p.id);
           const hasFitData = fit.sprint30m != null || fit.squat1RM != null || fit.verticalJump != null || fit.yoYoIR1 != null;
           return (
-            <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#d92525] transition group">
+            <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#992828] transition group">
               {/* Top section: name + position + number */}
               <div className="p-3 pb-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
+                  <div className="w-8 h-8 rounded-full bg-[#992828]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium truncate">{p.name}</p>
                     <p className="text-[10px] text-gray-400">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
@@ -400,7 +400,7 @@ export default function RosterPage() {
                   <div className="flex gap-2 mt-2">
                     <button
                       onClick={saveFitness}
-                      className="flex-1 py-1.5 bg-[#d92525] text-white rounded text-[10px] font-bold"
+                      className="flex-1 py-1.5 bg-[#992828] text-white rounded text-[10px] font-bold"
                     >
                       保存
                     </button>
@@ -471,7 +471,7 @@ export default function RosterPage() {
             </div>
             <input value={editing?.notes || ""} onChange={(e) => setEditing((p) => p ? { ...p, notes: e.target.value } : null)} placeholder="备注" className="input-field text-sm" />
             <button onClick={handleAdd}
-              className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1">
+              className="w-full py-2 bg-[#992828] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1">
               <Save className="w-3.5 h-3.5" />{editing?.id ? "保存" : "添加"}
             </button>
             {editing?.id && (
@@ -507,7 +507,7 @@ export default function RosterPage() {
             </div>
             <button
               onClick={calcSupp}
-              className="w-full py-2 bg-[#d92525] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1"
+              className="w-full py-2 bg-[#992828] text-white font-bold rounded-lg text-sm flex items-center justify-center gap-1"
             >
               <Zap className="w-3.5 h-3.5" />计算补负荷
             </button>
@@ -545,7 +545,7 @@ export default function RosterPage() {
                 <button onClick={handleCancelImport} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
 
-              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-[#d92525] font-bold">{preview.parsed.length}</span> 名球员</p>
+              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-[#992828] font-bold">{preview.parsed.length}</span> 名球员</p>
 
               {/* Column mapping */}
               <div>
@@ -601,7 +601,7 @@ export default function RosterPage() {
                   取消
                 </button>
                 <button onClick={handleConfirmImport}
-                  className="flex-1 py-2 bg-[#d92525] hover:bg-[#d92525]/90 text-black font-bold rounded-lg text-sm transition">
+                  className="flex-1 py-2 bg-[#992828] hover:bg-[#992828]/90 text-black font-bold rounded-lg text-sm transition">
                   确认导入 {preview.parsed.length} 名球员
                 </button>
               </div>

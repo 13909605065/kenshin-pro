@@ -44,7 +44,7 @@ export function OfflineBanner() {
   if (!offline) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[100] bg-[#d92525] text-white text-xs font-bold py-2 px-4 text-center flex items-center justify-center gap-2 pt-safe">
+    <div className="fixed top-0 left-0 right-0 z-[100] bg-[#992828] text-white text-xs font-bold py-2 px-4 text-center flex items-center justify-center gap-2 pt-safe">
       <WifiOff className="w-3.5 h-3.5" />
       <span>离线模式</span>
       <span className="opacity-80 font-normal">· 数据将在恢复网络后同步</span>

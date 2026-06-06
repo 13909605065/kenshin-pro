@@ -224,7 +224,7 @@ function TrainingNotes() {
         ) : (
           <div className="flex gap-2">
             <button onClick={() => setEditing(false)} className="text-[10px] text-gray-500 hover:text-white">取消</button>
-            <button onClick={save} className="text-[10px] bg-[#d92525] hover:bg-[#b71d1d] text-white px-3 py-1 rounded font-bold">保存</button>
+            <button onClick={save} className="text-[10px] bg-[#992828] hover:bg-[#7a1e1e] text-white px-3 py-1 rounded font-bold">保存</button>
           </div>
         )}
       </div>
@@ -243,7 +243,7 @@ function TrainingNotes() {
           onChange={e => setText(e.target.value)}
           placeholder={`${today} 训练记录...\n热身: \n主训: \n力量: \n战术: \n备注:`}
           rows={6}
-          className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 resize-none focus:outline-none focus:border-[#d92525]"
+          className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 resize-none focus:outline-none focus:border-[#992828]"
         />
       ) : (
         <pre className="text-xs text-gray-300 whitespace-pre-wrap font-sans min-h-[40px]">
@@ -373,7 +373,7 @@ export default function PlanningPage() {
                 disabled={generating}
                 className={`p-3 rounded-xl border text-left transition ${isActive ? 'ring-1' : ''}
                   ${activePreset?.phaseType === preset.phaseType ? 'ring-1 ring-white' : ''}
-                  hover:border-[#d92525]/50`}
+                  hover:border-[#992828]/50`}
                 style={{
                   backgroundColor: '#0d0d0d',
                   borderColor: isActive ? preset.color : '#222',
@@ -392,7 +392,7 @@ export default function PlanningPage() {
               </button>
             );
           })}
-          {generating && <div className="col-span-full text-center py-2"><Loader2 className="w-4 h-4 animate-spin text-[#d92525] mx-auto" /></div>}
+          {generating && <div className="col-span-full text-center py-2"><Loader2 className="w-4 h-4 animate-spin text-[#992828] mx-auto" /></div>}
         </div>
       )}
 
@@ -401,7 +401,7 @@ export default function PlanningPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
           {Object.values(PHASE_PRESETS).map(preset => (
             <button key={preset.phaseType} onClick={() => handleGenerateFromPreset(preset)} disabled={generating}
-              className="p-3 rounded-xl border border-[#222] bg-[#0d0d0d] hover:border-[#d92525]/50 text-left transition">
+              className="p-3 rounded-xl border border-[#222] bg-[#0d0d0d] hover:border-[#992828]/50 text-left transition">
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="text-xs font-bold text-white">{preset.label}</span>
               </div>
@@ -438,7 +438,7 @@ export default function PlanningPage() {
                 {DAY_LABELS.map((l, i) => <option key={i} value={i}>{l}</option>)}
               </select>
               <button onClick={addDay} className="flex items-center gap-1 px-2 py-1 text-[10px] text-gray-400 hover:text-white bg-[#1a1a1a] rounded transition"><Plus className="w-3 h-3" />加天</button>
-              <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-[10px] bg-[#d92525] hover:bg-[#b71d1d] text-white rounded font-bold transition"><Save className="w-3 h-3" />保存</button>
+              <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-[10px] bg-[#992828] hover:bg-[#7a1e1e] text-white rounded font-bold transition"><Save className="w-3 h-3" />保存</button>
             </div>
           </div>
 
@@ -448,17 +448,17 @@ export default function PlanningPage() {
               const isEditing = editingDayId === day.id;
               return (
                 <div key={day.id} draggable onDragStart={e => handleDragStart(e, day.id)} onDragOver={handleDragOver} onDrop={e => handleDrop(e, day.id)}
-                  className={`rounded-lg border transition ${isMatchDay ? 'border-[#d92525]/40 bg-[#d92525]/5' : isEditing ? 'border-[#d92525] bg-[#0d0d0d]' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'}`}>
+                  className={`rounded-lg border transition ${isMatchDay ? 'border-[#992828]/40 bg-[#992828]/5' : isEditing ? 'border-[#992828] bg-[#0d0d0d]' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'}`}>
                   <div className="flex items-center gap-3 p-3">
                     <GripVertical className="w-3.5 h-3.5 text-gray-600 cursor-grab shrink-0" />
-                    <span className={`text-xs font-bold w-10 shrink-0 ${isMatchDay ? 'text-[#d92525]' : 'text-white'}`}>{isMatchDay ? 'MD' : day.day}</span>
+                    <span className={`text-xs font-bold w-10 shrink-0 ${isMatchDay ? 'text-[#992828]' : 'text-white'}`}>{isMatchDay ? 'MD' : day.day}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-xs font-medium truncate">{day.focus}</p>
                       <p className="text-[9px] text-gray-500">{day.scene === 'gym' ? '力量房' : '外场'} · {day.goal} · {day.duration}min</p>
                     </div>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${day.intensity === '极高' || day.intensity === '高' ? 'bg-[#d92525]/20 text-[#d92525]' : day.intensity === '中' || day.intensity === '中高' || day.intensity === '中低' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-400'}`}>{day.intensity}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${day.intensity === '极高' || day.intensity === '高' ? 'bg-[#992828]/20 text-[#992828]' : day.intensity === '中' || day.intensity === '中高' || day.intensity === '中低' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-400'}`}>{day.intensity}</span>
                     <button onClick={() => setEditingDayId(isEditing ? null : day.id)} className="p-1 text-gray-600 hover:text-white transition text-[10px]">{isEditing ? '收起' : '编辑'}</button>
-                    <button onClick={() => pushToWorkbench(day)} title="推送到工作台" className="p-1 text-gray-600 hover:text-[#d92525] transition"><ChevronRight className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => pushToWorkbench(day)} title="推送到工作台" className="p-1 text-gray-600 hover:text-[#992828] transition"><ChevronRight className="w-3.5 h-3.5" /></button>
                     <button onClick={() => removeDay(day.id)} className="p-1 text-gray-600 hover:text-red-500 transition"><Trash2 className="w-3 h-3" /></button>
                   </div>
                   {isEditing && (
@@ -468,7 +468,7 @@ export default function PlanningPage() {
                         <div><label className="text-[9px] text-gray-500 block mb-1">强度</label><select value={day.intensity} onChange={e => updateDay(day.id, 'intensity', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">{INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}</select></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">时长(min)</label><input type="number" value={day.duration} onChange={e => updateDay(day.id, 'duration', Number(e.target.value))} min={15} max={120} step={5} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">场景</label><select value={day.scene} onChange={e => updateDay(day.id, 'scene', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white"><option value="gym">力量房</option><option value="pitch">外场</option></select></div>
-                        <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">训练目标</label><div className="flex gap-1">{['strength','power','speed','mas_endurance','agility'].map(g => <button key={g} onClick={() => updateDay(day.id, 'goal', g)} className={`px-2 py-1 rounded text-[9px] transition ${day.goal === g ? 'bg-[#d92525] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{g}</button>)}</div></div>
+                        <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">训练目标</label><div className="flex gap-1">{['strength','power','speed','mas_endurance','agility'].map(g => <button key={g} onClick={() => updateDay(day.id, 'goal', g)} className={`px-2 py-1 rounded text-[9px] transition ${day.goal === g ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{g}</button>)}</div></div>
                         <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">备注</label><input value={day.notes} onChange={e => updateDay(day.id, 'notes', e.target.value)} placeholder="补充说明..." className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                       </div>
                     </div>

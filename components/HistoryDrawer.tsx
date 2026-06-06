@@ -68,7 +68,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                     <div>
                       <div className="flex items-center gap-2">
                         {item.is_favorite && (
-                          <Heart className="w-3 h-3 fill-[#d92525] text-[#d92525]" />
+                          <Heart className="w-3 h-3 fill-[#992828] text-[#992828]" />
                         )}
                         <span className="text-white font-medium text-sm">
                           {GOAL_LABELS[item.form_data?.goal as keyof typeof GOAL_LABELS] || "未知目标"}
@@ -84,7 +84,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                     </div>
                     <button
                       onClick={(e) => deleteItem(item.id, e)}
-                      className="p-1 text-gray-600 hover:text-[#d92525] transition"
+                      className="p-1 text-gray-600 hover:text-[#992828] transition"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -95,7 +95,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                     <div className="mt-3 pt-3 border-t border-[#222] space-y-2">
                       {item.plan_content?.map((mod: any, i: number) => (
                         <div key={i} className="text-xs">
-                          <span className="text-[#d92525] font-bold">{mod.title}</span>
+                          <span className="text-[#992828] font-bold">{mod.title}</span>
                           <span className="text-gray-400 ml-2">
                             {mod.status === "skipped" ? "已跳过" : `${mod.exercises?.length || mod.drills?.length || mod.phases?.length || 0} 项`}
                           </span>
@@ -109,7 +109,7 @@ export function HistoryDrawer({ open, onClose }: Props) {
                           );
                           onClose();
                         }}
-                        className="mt-2 text-xs text-[#d92525] hover:underline"
+                        className="mt-2 text-xs text-[#992828] hover:underline"
                       >
                         加载此方案
                       </button>

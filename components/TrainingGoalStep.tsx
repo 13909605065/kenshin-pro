@@ -33,13 +33,13 @@ export function TrainingGoalStep({ selected, onChange, error }: Props) {
             onClick={() => onChange(goal.value)}
             className={`p-5 rounded-xl border transition-all text-left ${
               selected === goal.value
-                ? "border-[#d92525] bg-[#d92525]/10 shadow-[0_0_15px_rgba(0,255,136,0.1)]"
-                : "border-[#222] hover:border-[#d92525] bg-[#1e1e1e]"
+                ? "border-[#992828] bg-[#992828]/10 shadow-[0_0_15px_rgba(0,255,136,0.1)]"
+                : "border-[#222] hover:border-[#992828] bg-[#1e1e1e]"
             }`}
           >
             <div
               className={`mb-3 ${
-                selected === goal.value ? "text-[#d92525]" : "text-gray-400"
+                selected === goal.value ? "text-[#992828]" : "text-gray-400"
               }`}
             >
               {goal.icon}
@@ -50,7 +50,7 @@ export function TrainingGoalStep({ selected, onChange, error }: Props) {
         ))}
       </div>
 
-      {error && <p className="text-[#d92525] text-sm">{error}</p>}
+      {error && <p className="text-[#992828] text-sm">{error}</p>}
     </div>
   );
 }

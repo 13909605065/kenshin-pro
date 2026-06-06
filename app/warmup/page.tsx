@@ -18,7 +18,7 @@ const RAMP_PHASES = [
   { phase: 1, label: "Raise 提升", desc: "慢跑、跳跃、变向 — 提升心率和体温", color: "#22c55e" },
   { phase: 2, label: "Activate 激活", desc: "臀肌激活、核心稳定 — FIFA 11+ 核心", color: "#3B82F6" },
   { phase: 3, label: "Mobilize 动员", desc: "动态拉伸、关节活动度 — 禁止静态拉伸", color: "#eab308" },
-  { phase: 4, label: "Potentiate 增强", desc: "神经激活、增强式、短冲刺 — 为训练做好准备", color: "#d92525" },
+  { phase: 4, label: "Potentiate 增强", desc: "神经激活、增强式、短冲刺 — 为训练做好准备", color: "#992828" },
 ];
 
 // ─── Dynamic import (Fabric.js 仅客户端) ──────────────────
@@ -28,7 +28,7 @@ const FabricBoardDynamic = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex-1 flex items-center justify-center bg-[#121212]">
-        <div className="w-8 h-8 border-2 border-[#d92525] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#992828] border-t-transparent rounded-full animate-spin" />
       </div>
     ),
   }
@@ -274,8 +274,8 @@ export default function WarmupDesignPage() {
       { x: 100, y: 340, name: "起点", color: "#22c55e" },
       { x: 300, y: 200, name: "绳梯", color: "#3B82F6" },
       { x: 500, y: 340, name: "栏架", color: "#eab308" },
-      { x: 700, y: 200, name: "冲刺", color: "#d92525" },
-      { x: 900, y: 340, name: "终点", color: "#d92525" },
+      { x: 700, y: 200, name: "冲刺", color: "#992828" },
+      { x: 900, y: 340, name: "终点", color: "#992828" },
     ];
 
     stations.forEach((st) => {
@@ -295,7 +295,7 @@ export default function WarmupDesignPage() {
       { x: 60, y: 620, text: "① Raise", color: "#22c55e" },
       { x: 260, y: 620, text: "② Activate", color: "#3B82F6" },
       { x: 460, y: 620, text: "③ Mobilize", color: "#eab308" },
-      { x: 660, y: 620, text: "④ Potentiate", color: "#d92525" },
+      { x: 660, y: 620, text: "④ Potentiate", color: "#992828" },
     ];
     labels.forEach(l => {
       const txt = new FabricText(l.text, {

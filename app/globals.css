@@ -109,13 +109,13 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-[#1e1e1e] border border-[#222] rounded-xl
-           text-white placeholder-gray-500 focus:border-[#d92525]
+    @apply w-full px-4 py-3 bg-[#1e1e1e] border border-[#2c2c2c] rounded-xl
+           text-white placeholder-gray-500 focus:border-[#992828]
            focus:outline-none transition-colors duration-200;
   }
 
   .input-error {
-    @apply input-field border-[#d92525] focus:border-[#d92525];
+    @apply input-field border-[#992828] focus:border-[#992828];
   }
 
   .step-indicator {
@@ -124,11 +124,11 @@
   }
 
   .step-active {
-    @apply step-indicator bg-[#d92525] text-white;
+    @apply step-indicator bg-[#992828] text-white;
   }
 
   .step-done {
-    @apply step-indicator bg-[#d92525]/30 text-[#d92525] border border-[#d92525];
+    @apply step-indicator bg-[#992828]/30 text-[#992828] border border-[#992828];
   }
 
   .step-pending {
@@ -197,7 +197,7 @@
   h1, h2, h3, h4, h5, span, p {
     color: black !important;
   }
-  .text-[#d92525] {
+  .text-[#992828] {
     color: #333 !important;
   }
   .text-gray-300, .text-gray-400, .text-gray-500 {

@@ -72,13 +72,13 @@ export function PRDashboard() {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-white">🏆 个人纪录</h3>
           <button onClick={() => setShowAddPR(!showAddPR)}
-            className="text-[10px] text-[#d92525] hover:underline">
+            className="text-[10px] text-[#992828] hover:underline">
             + 添加PR
           </button>
         </div>
 
         {showAddPR && (
-          <div className="bg-[#0d0d0d] border border-[#d92525]/30 rounded-xl p-3 space-y-2 mb-3">
+          <div className="bg-[#0d0d0d] border border-[#992828]/30 rounded-xl p-3 space-y-2 mb-3">
             <input type="text" value={newPRName} onChange={e => setNewPRName(e.target.value)}
               placeholder="动作名称" className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white" />
             <div className="flex gap-2">
@@ -91,7 +91,7 @@ export function PRDashboard() {
               </select>
             </div>
             <button onClick={handleAddPR}
-              className="w-full py-2 bg-[#d92525] text-white rounded-lg text-xs font-bold">
+              className="w-full py-2 bg-[#992828] text-white rounded-lg text-xs font-bold">
               记录
             </button>
           </div>
@@ -117,7 +117,7 @@ export function PRDashboard() {
                   <div className="text-[10px] text-gray-500">{pr.count}次记录 · 最近: {pr.date}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-[#d92525]">
+                  <div className="text-lg font-bold text-[#992828]">
                     {pr.best}<span className="text-xs text-gray-500 ml-0.5">{pr.unit}</span>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ export function PRDashboard() {
                 </div>
                 {!badge.earnedAt && badge.progress > 0 && (
                   <div className="mt-1 h-1 bg-gray-800 rounded-full">
-                    <div className="h-full bg-[#d92525] rounded-full" style={{ width: `${badge.progress}%` }} />
+                    <div className="h-full bg-[#992828] rounded-full" style={{ width: `${badge.progress}%` }} />
                   </div>
                 )}
               </div>
@@ -156,7 +156,7 @@ export function PRDashboard() {
 
       {/* 当前Streak */}
       {motivation && motivation.currentStreak > 0 && (
-        <div className="bg-[#0d0d0d] border border-[#d92525]/20 rounded-xl p-3 flex items-center gap-3">
+        <div className="bg-[#0d0d0d] border border-[#992828]/20 rounded-xl p-3 flex items-center gap-3">
           <span className="text-2xl">🔥</span>
           <div>
             <div className="text-white font-bold">连续训练 {motivation.currentStreak} 天</div>

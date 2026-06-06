@@ -67,7 +67,7 @@ export function TrainingLogPanel({ modules, planId, scene, goal, duration, match
           {saved ? (
             <span className="text-[10px] text-green-400 flex items-center gap-1"><Check className="w-3 h-3" /> 已保存</span>
           ) : (
-            <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-[10px] bg-[#d92525] hover:bg-[#b71d1d] text-white rounded font-bold transition">
+            <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-[10px] bg-[#992828] hover:bg-[#7a1e1e] text-white rounded font-bold transition">
               <Save className="w-3 h-3" /> 保存日志
             </button>
           )}

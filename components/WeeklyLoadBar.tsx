@@ -109,7 +109,7 @@ export default function WeeklyLoadBar({ matchDate }: Props) {
                 </span>
                 <span className={`w-10 shrink-0 text-right text-[9px] font-mono ${
                   day.mdLabel === 'MD'
-                    ? 'text-[#d92525] font-bold'
+                    ? 'text-[#992828] font-bold'
                     : 'text-gray-500'
                 }`}>
                   {day.mdLabel}

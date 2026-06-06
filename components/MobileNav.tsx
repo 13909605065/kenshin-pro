@@ -51,7 +51,7 @@ export function MobileNav() {
                   onClick={() => { router.push(tab.path); setMoreOpen(false); }}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl transition ${
                     isActive(tab.path)
-                      ? "bg-[#d92525]/10 text-[#d92525]"
+                      ? "bg-[#992828]/10 text-[#992828]"
                       : "bg-[#1e1e1e] text-gray-400 hover:bg-[#1e1e1e]"
                   }`}
                 >
@@ -67,7 +67,7 @@ export function MobileNav() {
                   key={l.value}
                   onClick={() => setLang(l.value)}
                   className={`px-3 py-1 rounded-md text-xs font-medium transition ${
-                    lang === l.value ? "bg-[#d92525] text-white" : "text-gray-400 hover:text-white"
+                    lang === l.value ? "bg-[#992828] text-white" : "text-gray-400 hover:text-white"
                   }`}
                 >
                   {l.label}
@@ -86,7 +86,7 @@ export function MobileNav() {
               key={tab.id}
               onClick={() => router.push(tab.path)}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-                isActive(tab.path) ? "text-[#d92525]" : "text-gray-400"
+                isActive(tab.path) ? "text-[#992828]" : "text-gray-400"
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -97,7 +97,7 @@ export function MobileNav() {
           <button
             onClick={() => setMoreOpen(true)}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition ${
-              MORE_TABS.some((t) => isActive(t.path)) ? "text-[#d92525]" : "text-gray-400"
+              MORE_TABS.some((t) => isActive(t.path)) ? "text-[#992828]" : "text-gray-400"
             }`}
           >
             <Ellipsis className="w-5 h-5" />

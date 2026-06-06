@@ -55,7 +55,7 @@ export function FilterBar({
               onClick={() => onBodyPartChange(opt.value)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                 bodyPart === opt.value
-                  ? "bg-[#d92525] text-white"
+                  ? "bg-[#992828] text-white"
                   : "text-gray-400 hover:text-white hover:bg-[#222]"
               }`}
             >
@@ -75,7 +75,7 @@ export function FilterBar({
               onClick={() => onEquipmentChange(opt.value)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                 equipment === opt.value
-                  ? "bg-[#d92525] text-white"
+                  ? "bg-[#992828] text-white"
                   : "text-gray-400 hover:text-white hover:bg-[#222]"
               }`}
             >
@@ -98,7 +98,7 @@ export function FilterBar({
                 onClick={() => onFootballCategoryChange(opt.value)}
                 className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                   footballCategory === opt.value
-                    ? "bg-[#d92525] text-white"
+                    ? "bg-[#992828] text-white"
                     : "text-gray-400 hover:text-white hover:bg-[#222]"
                 }`}
               >
@@ -120,7 +120,7 @@ export function FilterBar({
                 onClick={() => onExerciseTypeChange(t)}
                 className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150 ${
                   exerciseType === t
-                    ? "bg-[#d92525] text-white"
+                    ? "bg-[#992828] text-white"
                     : "text-gray-400 hover:text-white hover:bg-[#222]"
                 }`}
               >

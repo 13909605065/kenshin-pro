@@ -51,9 +51,9 @@ export function OnboardingGuide({ onComplete }: OnboardingGuideProps) {
               key={i}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                 i === step
-                  ? "bg-[#d92525] scale-125"
+                  ? "bg-[#992828] scale-125"
                   : i < step
-                    ? "bg-[#d92525]/50"
+                    ? "bg-[#992828]/50"
                     : "bg-[#444]"
               }`}
             />
@@ -79,7 +79,7 @@ export function OnboardingGuide({ onComplete }: OnboardingGuideProps) {
         <div className="space-y-2">
           <button
             onClick={handleNext}
-            className="w-full py-2.5 bg-[#d92525] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition"
+            className="w-full py-2.5 bg-[#992828] text-white font-bold rounded-lg text-sm hover:bg-opacity-90 transition"
           >
             {step < STEPS.length - 1 ? "下一步" : "开始使用"}
           </button>

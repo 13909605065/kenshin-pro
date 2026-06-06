@@ -236,10 +236,10 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[] }) {
       <div className="bg-[#1e1e1e] border border-[#333] rounded-xl p-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] text-gray-400">训练进度</span>
-          <span className="text-[11px] text-[#d92525] font-bold">{pct}%</span>
+          <span className="text-[11px] text-[#992828] font-bold">{pct}%</span>
         </div>
         <div className="h-1.5 bg-[#222] rounded-full overflow-hidden flex">
-          <div className="h-full bg-[#d92525] rounded-full transition-all duration-300" style={{width:pct+"%"}} />
+          <div className="h-full bg-[#992828] rounded-full transition-all duration-300" style={{width:pct+"%"}} />
         </div>
         <div className="flex items-center justify-between mt-2 gap-1">
           {segments.map((seg, i) => (
@@ -279,7 +279,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[] }) {
                     {/* 序号 + checkbox */}
                     <td className="py-2 pl-3 text-center">
                       <div onClick={(e) => { e.stopPropagation(); setDone(p => { const n = new Set(p); n.has(row.id)?n.delete(row.id):n.add(row.id); return n; }); }}
-                        className={"w-5 h-5 rounded border-2 mx-auto flex items-center justify-center cursor-pointer transition " + (isDone ? "bg-[#d92525] border-[#d92525]" : "border-[#444] hover:border-[#d92525]/50")}>
+                        className={"w-5 h-5 rounded border-2 mx-auto flex items-center justify-center cursor-pointer transition " + (isDone ? "bg-[#992828] border-[#992828]" : "border-[#444] hover:border-[#992828]/50")}>
                         {isDone && <Check className="w-3 h-3 text-black" />}
                       </div>
                     </td>
@@ -321,7 +321,7 @@ export function CoachSessionTable({ modules }: { modules: TrainingModule[] }) {
                     <td className="py-2 pr-2 text-center">
                       {row.hasDia ? (
                         <button onClick={(e) => { e.stopPropagation(); setDiagramModal(row.dia); }}
-                          className="text-[10px] px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#271919] text-[#d1d1d1] border border-[#333] hover:border-[#d92525] transition">
+                          className="text-[10px] px-2.5 py-1 rounded bg-[#1e1e1e] hover:bg-[#271919] text-[#d1d1d1] border border-[#333] hover:border-[#992828] transition">
                           查看
                         </button>
                       ) : <span className="text-[10px] text-gray-600">-</span>}

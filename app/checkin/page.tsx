@@ -253,7 +253,7 @@ function CheckinContent() {
             onKeyDown={e => { if (e.key === 'Enter') handleCodeLookup(); }}
             placeholder="000000"
             maxLength={6}
-            className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl px-4 py-4 text-center text-2xl text-white tracking-[0.5em] font-mono placeholder-gray-700 focus:border-[#d92525] outline-none"
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl px-4 py-4 text-center text-2xl text-white tracking-[0.5em] font-mono placeholder-gray-700 focus:border-[#992828] outline-none"
           />
 
           {error && (
@@ -263,7 +263,7 @@ function CheckinContent() {
           )}
 
           <button onClick={handleCodeLookup} disabled={loading || code.length !== 6}
-            className="w-full py-3 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
+            className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
             {loading ? <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full inline-block" /> : ''} 查找训练方案
           </button>
 
@@ -310,12 +310,12 @@ function CheckinContent() {
             value={playerNameInput}
             onChange={e => setPlayerNameInput(e.target.value)}
             placeholder="输入你的名字"
-            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#d92525] outline-none"
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#992828] outline-none"
           />
         )}
         {playerName && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#d92525]/20 flex items-center justify-center text-[#d92525] font-bold text-xs">
+            <div className="w-8 h-8 rounded-full bg-[#992828]/20 flex items-center justify-center text-[#992828] font-bold text-xs">
               {playerName[0]}
             </div>
             <span className="text-white font-medium text-sm">{playerName}</span>
@@ -357,7 +357,7 @@ function CheckinContent() {
           value={generalNotes}
           onChange={e => setGeneralNotes(e.target.value)}
           placeholder="补充说明（如：左膝稍有不适、今天状态不错）"
-          className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 resize-none focus:border-[#d92525] outline-none"
+          className="w-full bg-[#1a1a1a] border border-[#333] rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 resize-none focus:border-[#992828] outline-none"
           rows={2}
         />
       </div>
@@ -365,7 +365,7 @@ function CheckinContent() {
       {/* Submit button */}
       <div className="max-w-lg mx-auto px-4 mt-4">
         <button onClick={handleSubmit}
-          className="w-full py-3.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]">
+          className="w-full py-3.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]">
           <Send className="w-4 h-4" />
           提交确认
         </button>
@@ -429,7 +429,7 @@ function CheckinExerciseCard({
           <p className="text-[10px] text-gray-500">
             {exercise.plannedSets}组 × {exercise.plannedReps}次 · {exercise.plannedLoad}
             {exercise.actualRPE && (
-              <span className="ml-2 text-[#d92525]">RPE {exercise.actualRPE}</span>
+              <span className="ml-2 text-[#992828]">RPE {exercise.actualRPE}</span>
             )}
           </p>
         </div>
@@ -453,7 +453,7 @@ function CheckinExerciseCard({
                   onClick={() => onRPE(r)}
                   className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium transition ${
                     exercise.actualRPE === r
-                      ? 'bg-[#d92525] text-white'
+                      ? 'bg-[#992828] text-white'
                       : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
                   }`}>
                   <div>{r}</div>

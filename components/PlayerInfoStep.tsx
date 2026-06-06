@@ -24,8 +24,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
             onClick={() => onSetRole ? onSetRole("athlete") : onChange("role", "athlete")}
             className={`p-4 rounded-xl border transition-all text-center ${
               formData.role === "athlete"
-                ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                : "border-[#222] text-gray-400 hover:border-[#992828]"
             }`}
           >
             <User className="w-6 h-6 mx-auto mb-1" />
@@ -35,8 +35,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
             onClick={() => onSetRole ? onSetRole("coach") : onChange("role", "coach")}
             className={`p-4 rounded-xl border transition-all text-center ${
               formData.role === "coach"
-                ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                : "border-[#222] text-gray-400 hover:border-[#992828]"
             }`}
           >
             <Users className="w-6 h-6 mx-auto mb-1" />
@@ -47,7 +47,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
 
       {/* Coach-specific fields: 3-tier cascading selector */}
       {formData.role === "coach" && (
-        <div className="space-y-4 bg-[#d92525]/5 border border-[#d92525]/20 rounded-xl p-4">
+        <div className="space-y-4 bg-[#992828]/5 border border-[#992828]/20 rounded-xl p-4">
           {/* Tier 1: Certificate */}
           <div>
             <label className="block text-sm text-gray-400 mb-2">教练证书等级 *</label>
@@ -62,15 +62,15 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   }}
                   className={`p-2 rounded-lg text-xs font-medium border transition-all ${
                     formData.coachCert === cert.value
-                      ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                      : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                      ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                      : "border-[#222] text-gray-400 hover:border-[#992828]"
                   }`}
                 >
                   {cert.label}
                 </button>
               ))}
             </div>
-            {errors.coachCert && <p className="mt-1 text-[#d92525] text-xs">{errors.coachCert}</p>}
+            {errors.coachCert && <p className="mt-1 text-[#992828] text-xs">{errors.coachCert}</p>}
           </div>
 
           {/* Tier 2: Coach Role (grayed based on cert) */}
@@ -93,8 +93,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                         disabled
                           ? "opacity-30 cursor-not-allowed border-[#222] text-gray-600"
                           : formData.coachRole === roleOpt.value
-                          ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                          : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                          ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                          : "border-[#222] text-gray-400 hover:border-[#992828]"
                       }`}
                       title={disabled ? "当前证书不可选" : ""}
                     >
@@ -103,7 +103,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   );
                 })}
               </div>
-              {errors.coachRole && <p className="mt-1 text-[#d92525] text-xs">{errors.coachRole}</p>}
+              {errors.coachRole && <p className="mt-1 text-[#992828] text-xs">{errors.coachRole}</p>}
             </div>
           )}
 
@@ -124,8 +124,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                         disabled
                           ? "opacity-30 cursor-not-allowed border-[#222] text-gray-600"
                           : formData.leagueTag === league.value
-                          ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                          : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                          ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                          : "border-[#222] text-gray-400 hover:border-[#992828]"
                       }`}
                       title={disabled ? "当前证书不可选" : ""}
                     >
@@ -134,7 +134,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   );
                 })}
               </div>
-              {errors.leagueTag && <p className="mt-1 text-[#d92525] text-xs">{errors.leagueTag}</p>}
+              {errors.leagueTag && <p className="mt-1 text-[#992828] text-xs">{errors.leagueTag}</p>}
             </div>
           )}
         </div>
@@ -166,8 +166,8 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                   onClick={() => onChange("position", pos.value)}
                   className={`p-3 rounded-xl text-sm font-medium border transition-all ${
                     formData.position === pos.value
-                      ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                      : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                      ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                      : "border-[#222] text-gray-400 hover:border-[#992828]"
                   }`}
                 >
                   {pos.label}
@@ -175,7 +175,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
               ))}
             </div>
             {errors.position && (
-              <p className="mt-1 text-[#d92525] text-xs">{errors.position}</p>
+              <p className="mt-1 text-[#992828] text-xs">{errors.position}</p>
             )}
           </div>
 
@@ -192,7 +192,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={60}
                 className={errors.age ? "input-error" : "input-field"}
               />
-              {errors.age && <p className="mt-1 text-[#d92525] text-xs">{errors.age}</p>}
+              {errors.age && <p className="mt-1 text-[#992828] text-xs">{errors.age}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">身高 (cm) *</label>
@@ -205,7 +205,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={220}
                 className={errors.height ? "input-error" : "input-field"}
               />
-              {errors.height && <p className="mt-1 text-[#d92525] text-xs">{errors.height}</p>}
+              {errors.height && <p className="mt-1 text-[#992828] text-xs">{errors.height}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">体重 (kg) *</label>
@@ -218,7 +218,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={150}
                 className={errors.weight ? "input-error" : "input-field"}
               />
-              {errors.weight && <p className="mt-1 text-[#d92525] text-xs">{errors.weight}</p>}
+              {errors.weight && <p className="mt-1 text-[#992828] text-xs">{errors.weight}</p>}
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-2">训练年限 (年) *</label>
@@ -231,7 +231,7 @@ export function PlayerInfoStep({ formData, errors, onChange, onSetRole }: Props)
                 max={40}
                 className={errors.years ? "input-error" : "input-field"}
               />
-              {errors.years && <p className="mt-1 text-[#d92525] text-xs">{errors.years}</p>}
+              {errors.years && <p className="mt-1 text-[#992828] text-xs">{errors.years}</p>}
             </div>
           </div>
 

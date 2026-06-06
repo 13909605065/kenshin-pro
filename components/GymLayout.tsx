@@ -148,7 +148,7 @@ function StationRect({
         rx={6}
         fill={station.color}
         fillOpacity={isDragTarget ? 0.35 : 0.15}
-        stroke={isDragTarget ? "#d92525" : station.color}
+        stroke={isDragTarget ? "#992828" : station.color}
         strokeWidth={isDragTarget ? 2.5 : 1.5}
         strokeDasharray={station.type === "open" ? "8 4" : "none"}
         onClick={(e) => { e.stopPropagation(); onClickStation(station.id); }}
@@ -254,7 +254,7 @@ function StationRect({
                   cx={gx}
                   cy={gy}
                   r={7}
-                  fill="#d92525"
+                  fill="#992828"
                   stroke="#fff"
                   strokeWidth={0.8}
                 />
@@ -642,7 +642,7 @@ export function GymLayout({
     <div className="bg-[#121212] rounded-xl overflow-hidden">
       {/* Header bar */}
       <div className="flex flex-wrap items-center gap-3 p-3 border-b border-[#222] bg-[#1a1a1a]">
-        <MapPin className="w-4 h-4 text-[#d92525] shrink-0" />
+        <MapPin className="w-4 h-4 text-[#992828] shrink-0" />
         <span className="text-sm font-bold text-white shrink-0">训练站布局</span>
         <span className="text-[10px] text-gray-500">
           已放置 {placedExerciseIds.size}/{selectedIds.length} 个动作 · {activeStations.length} 个站点
@@ -667,7 +667,7 @@ export function GymLayout({
               const v = parseInt(e.target.value, 10);
               if (!isNaN(v) && v >= 1) setPeopleCount(v);
             }}
-            className="w-14 px-2 py-1 bg-[#121212] border border-[#333] rounded text-xs text-white text-center focus:outline-none focus:border-[#d92525]"
+            className="w-14 px-2 py-1 bg-[#121212] border border-[#333] rounded text-xs text-white text-center focus:outline-none focus:border-[#992828]"
             min={1}
             max={60}
           />
@@ -697,7 +697,7 @@ export function GymLayout({
         </button>
         <button
           onClick={handleExportPNG}
-          className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-semibold text-white bg-[#d92525] hover:bg-[#b91c1c] rounded-lg transition shrink-0"
+          className="flex items-center gap-1 px-3 py-1.5 text-[10px] font-semibold text-white bg-[#992828] hover:bg-[#b91c1c] rounded-lg transition shrink-0"
         >
           <Download className="w-3 h-3" />
           导出PNG
@@ -781,7 +781,7 @@ export function GymLayout({
                   markerHeight={6}
                   orient="auto-start-reverse"
                 >
-                  <path d="M 0 2 L 8 5 L 0 8 Z" fill="#d92525" />
+                  <path d="M 0 2 L 8 5 L 0 8 Z" fill="#992828" />
                 </marker>
               </defs>
 
@@ -874,7 +874,7 @@ export function GymLayout({
                       return `M ${arrow.x1} ${arrow.y1} Q ${midX + perpX} ${midY + perpY} ${arrow.x2} ${arrow.y2}`;
                     })()}
                     fill="none"
-                    stroke="#d92525"
+                    stroke="#992828"
                     strokeWidth={2}
                     strokeDasharray="8 4"
                     markerEnd="url(#arrowHead)"
@@ -910,7 +910,7 @@ export function GymLayout({
                   x={VB_W / 2}
                   y={VB_H - 20}
                   textAnchor="middle"
-                  fill="#d92525"
+                  fill="#992828"
                   fontSize={12}
                   style={{ pointerEvents: "none" }}
                 >
@@ -961,7 +961,7 @@ export function GymLayout({
                         onClick={() => handleSelectExercise(eid)}
                         className={`flex items-center gap-2 p-2 rounded-lg text-left transition border ${
                           isActive
-                            ? "bg-[#d92525]/10 border-[#d92525]/40 text-white"
+                            ? "bg-[#992828]/10 border-[#992828]/40 text-white"
                             : "bg-[#121212] border-transparent hover:border-[#333] text-gray-300"
                         }`}
                       >
@@ -976,7 +976,7 @@ export function GymLayout({
                           )}
                         </div>
                         {isActive && (
-                          <MapPin className="w-3.5 h-3.5 text-[#d92525] shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-[#992828] shrink-0" />
                         )}
                       </button>
                     );
@@ -997,7 +997,7 @@ export function GymLayout({
               <button
                 onClick={handleClearPlacements}
                 disabled={placedExerciseIds.size === 0}
-                className="w-full py-1.5 text-[10px] font-medium text-gray-400 hover:text-[#d92525] bg-transparent border border-[#333]/50 rounded-lg hover:border-[#d92525]/30 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-full py-1.5 text-[10px] font-medium text-gray-400 hover:text-[#992828] bg-transparent border border-[#333]/50 rounded-lg hover:border-[#992828]/30 transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 清除全部放置
               </button>
@@ -1013,7 +1013,7 @@ export function GymLayout({
               <div className="p-2 space-y-1.5 max-h-[200px] overflow-y-auto">
                 {groupInfo.groups.map((group) => (
                   <div key={group.label} className="flex items-center gap-2 p-2 bg-[#121212] rounded-lg">
-                    <div className="w-5 h-5 rounded-full bg-[#d92525] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-[#992828] flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                       {group.label}
                     </div>
                     <div className="flex items-center gap-1 flex-wrap min-w-0">

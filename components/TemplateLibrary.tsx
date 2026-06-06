@@ -70,14 +70,14 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
             templates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="bg-[#121212] border border-[#222] rounded-xl p-4 hover:border-[#d92525]/30 transition-all duration-150 group"
+                className="bg-[#121212] border border-[#222] rounded-xl p-4 hover:border-[#992828]/30 transition-all duration-150 group"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Name + badges */}
                     <div className="flex items-center gap-2 mb-1.5">
                       <h3 className="text-white font-bold text-sm truncate">{tpl.name}</h3>
-                      <span className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#d92525]/15 text-[#d92525] flex-shrink-0">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-medium bg-[#992828]/15 text-[#992828] flex-shrink-0">
                         {tpl.plan_content?.length || 0} 模块
                       </span>
                     </div>
@@ -111,7 +111,7 @@ export function TemplateLibrary({ templates, onApply, onDelete, onClose }: Props
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       onClick={() => onApply(tpl)}
-                      className="flex items-center gap-1 px-3 py-2 bg-[#d92525] text-white rounded-lg text-xs font-bold hover:bg-[#b91d1d] transition active:scale-[0.98]"
+                      className="flex items-center gap-1 px-3 py-2 bg-[#992828] text-white rounded-lg text-xs font-bold hover:bg-[#b91d1d] transition active:scale-[0.98]"
                     >
                       <Zap className="w-3.5 h-3.5" />套用
                     </button>

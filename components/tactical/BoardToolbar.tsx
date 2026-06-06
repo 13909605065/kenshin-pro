@@ -11,7 +11,7 @@ const TEXT_DIM = TAC_THEME.textDim;
 const TEXT_MAIN = TAC_THEME.textMain;
 const BG_HOVER = TAC_THEME.bgHover;
 const ERROR = TAC_THEME.error;
-const ACTIVE_BG = "#d92525";
+const ACTIVE_BG = "#992828";
 
 // ─── Inline line-style icons ─────────────────────────────
 

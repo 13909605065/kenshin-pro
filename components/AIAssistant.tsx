@@ -228,7 +228,7 @@ export default function AIAssistant() {
                     <button
                       key={i}
                       onClick={() => handleQuickQuestion(item.q)}
-                      className="block w-full text-left px-3 py-2 rounded-lg bg-[#1e1e1e] border border-[#222] text-xs text-gray-300 hover:border-[#d92525]/30 hover:text-white transition-all"
+                      className="block w-full text-left px-3 py-2 rounded-lg bg-[#1e1e1e] border border-[#222] text-xs text-gray-300 hover:border-[#992828]/30 hover:text-white transition-all"
                     >
                       {item.q}
                     </button>
@@ -241,7 +241,7 @@ export default function AIAssistant() {
                   <div
                     className={`max-w-[85%] px-3 py-2 rounded-xl text-xs whitespace-pre-wrap ${
                       msg.role === "user"
-                        ? "bg-[#d92525] text-white rounded-br-sm"
+                        ? "bg-[#992828] text-white rounded-br-sm"
                         : "bg-[#1e1e1e] text-gray-200 rounded-bl-sm border border-[#222]"
                     }`}
                   >
@@ -259,7 +259,7 @@ export default function AIAssistant() {
                       <button
                         key={i}
                         onClick={() => handleQuickQuestion(item.q)}
-                        className="block w-full text-left px-3 py-1.5 rounded-lg bg-[#1e1e1e] border border-[#222] text-xs text-gray-300 hover:border-[#d92525]/30 hover:text-white transition-all"
+                        className="block w-full text-left px-3 py-1.5 rounded-lg bg-[#1e1e1e] border border-[#222] text-xs text-gray-300 hover:border-[#992828]/30 hover:text-white transition-all"
                       >
                         {item.q}
                       </button>
@@ -279,11 +279,11 @@ export default function AIAssistant() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
                   placeholder="输入问题..."
-                  className="flex-1 bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none"
+                  className="flex-1 bg-[#1e1e1e] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none"
                 />
                 <button
                   onClick={() => handleSend(input)}
-                  className="w-9 h-9 rounded-lg bg-[#d92525] text-white flex items-center justify-center hover:bg-opacity-90 transition flex-shrink-0"
+                  className="w-9 h-9 rounded-lg bg-[#992828] text-white flex items-center justify-center hover:bg-opacity-90 transition flex-shrink-0"
                 >
                   <Send className="w-3.5 h-3.5" />
                 </button>

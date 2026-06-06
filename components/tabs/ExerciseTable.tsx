@@ -39,7 +39,7 @@ export function ExerciseTable({ exercises, onEditExercise, showProgression }: Pr
           return (
             <div
               key={i}
-              className="bg-[#1e1e1e] border border-[#222] border-l-2 border-l-[#d92525] rounded-xl p-4 flex flex-col gap-3"
+              className="bg-[#1e1e1e] border border-[#222] border-l-2 border-l-[#992828] rounded-xl p-4 flex flex-col gap-3"
             >
               {/* Header row: icon + name + edit hint */}
               <div className="flex items-start gap-3">
@@ -47,7 +47,7 @@ export function ExerciseTable({ exercises, onEditExercise, showProgression }: Pr
                 <div className="flex-1 min-w-0">
                   <button
                     onClick={() => onEditExercise?.(i, ex)}
-                    className="text-base font-bold text-white hover:text-[#d92525] hover:underline cursor-pointer transition text-left leading-tight"
+                    className="text-base font-bold text-white hover:text-[#992828] hover:underline cursor-pointer transition text-left leading-tight"
                     title="点击编辑此动作"
                   >
                     {ex.name}
@@ -63,9 +63,9 @@ export function ExerciseTable({ exercises, onEditExercise, showProgression }: Pr
 
               {/* Sets x Reps — large and prominent */}
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-[#d92525]">{ex.sets}组</span>
-                <span className="text-[#d92525]/50 text-sm font-medium">×</span>
-                <span className="text-lg font-bold text-[#d92525]">{ex.reps}次</span>
+                <span className="text-lg font-bold text-[#992828]">{ex.sets}组</span>
+                <span className="text-[#992828]/50 text-sm font-medium">×</span>
+                <span className="text-lg font-bold text-[#992828]">{ex.reps}次</span>
               </div>
 
               {/* Badge row: load / rest / RPE / heart-rate zone */}
@@ -110,7 +110,7 @@ export function ExerciseTable({ exercises, onEditExercise, showProgression }: Pr
                     }}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium
                                bg-[#121212] border border-[#333] text-[#d1d1d1]
-                               hover:border-[#d92525] hover:text-[#d92525] transition-all
+                               hover:border-[#992828] hover:text-[#992828] transition-all
                                min-h-[44px] min-w-[44px]"
                   >
                     <Eye className="w-3.5 h-3.5" />
@@ -122,7 +122,7 @@ export function ExerciseTable({ exercises, onEditExercise, showProgression }: Pr
                     onClick={() => onEditExercise(i, ex)}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium
                                bg-[#121212] border border-[#333] text-[#d1d1d1]
-                               hover:border-[#d92525] hover:text-[#d92525] transition-all
+                               hover:border-[#992828] hover:text-[#992828] transition-all
                                min-h-[44px] min-w-[44px]"
                   >
                     <Pencil className="w-3.5 h-3.5" />

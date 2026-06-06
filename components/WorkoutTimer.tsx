@@ -390,7 +390,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
       case "warmup":
         return <Flame className="w-5 h-5 text-orange-400" />;
       case "strength":
-        return <Dumbbell className="w-5 h-5 text-[#d92525]" />;
+        return <Dumbbell className="w-5 h-5 text-[#992828]" />;
       case "technique":
         return <Footprints className="w-5 h-5 text-blue-400" />;
       case "cooldown":
@@ -430,7 +430,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
             <p className="text-gray-400 text-sm mb-4">完成 {steps.length} 项练习</p>
             <button
               onClick={onClose}
-              className="px-8 py-2.5 bg-[#d92525] text-white font-bold rounded-xl hover:bg-[#b91d1d] transition text-sm"
+              className="px-8 py-2.5 bg-[#992828] text-white font-bold rounded-xl hover:bg-[#b91d1d] transition text-sm"
             >
               返回方案
             </button>
@@ -470,10 +470,10 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
   if (minimized) {
     return (
       <div
-        className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl px-4 py-2.5 shadow-xl flex items-center gap-3 cursor-pointer select-none hover:border-[#d92525]/50 transition"
+        className="fixed bottom-4 right-4 z-50 bg-[#1e1e1e] border border-[#333] rounded-xl px-4 py-2.5 shadow-xl flex items-center gap-3 cursor-pointer select-none hover:border-[#992828]/50 transition"
         onClick={() => setMinimized(false)}
       >
-        <div className={phase === "rest" ? "text-yellow-400" : phase === "paused" ? "text-gray-400" : "text-[#d92525]"}>
+        <div className={phase === "rest" ? "text-yellow-400" : phase === "paused" ? "text-gray-400" : "text-[#992828]"}>
           <Timer className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
@@ -521,7 +521,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
 
       {/* PROGRESS BAR */}
       <div className="h-0.5 bg-[#222]">
-        <div className="h-full bg-[#d92525] transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-[#992828] transition-all duration-500" style={{ width: `${progress}%` }} />
       </div>
 
       {/* MAIN CONTENT */}
@@ -531,7 +531,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
 
         {/* Set counter */}
         {step.mode === "sets" && (
-          <p className="text-[#d92525] text-xs font-medium mb-1">
+          <p className="text-[#992828] text-xs font-medium mb-1">
             第 {currentSet} 组 / 共 {step.sets} 组
           </p>
         )}
@@ -553,7 +553,7 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
               ? "border-yellow-500/40 bg-yellow-500/10"
               : phase === "paused"
               ? "border-gray-500/40 bg-gray-500/10"
-              : "border-[#d92525]/40 bg-[#d92525]/10"
+              : "border-[#992828]/40 bg-[#992828]/10"
           }`}
         >
           <div className="text-center">
@@ -601,25 +601,25 @@ export function WorkoutTimer({ modules, planId, onClose }: Props) {
         <div className="flex gap-2">
           {step.mode === "sets" && phase === "active" && (
             <button onClick={handleCompleteSet}
-              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
+              className="flex-1 py-2.5 bg-[#992828] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
               ✓ 完成本组
             </button>
           )}
           {(step.mode === "countdown" || step.mode === "free") && (
             <button onClick={handleSkip}
-              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95 flex items-center justify-center gap-1">
+              className="flex-1 py-2.5 bg-[#992828] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95 flex items-center justify-center gap-1">
               <SkipForward className="w-3.5 h-3.5" /> 跳过
             </button>
           )}
           {phase === "rest" && (
             <button onClick={handleSkipRest}
-              className="flex-1 py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
+              className="flex-1 py-2.5 bg-[#992828] text-white font-bold rounded-xl text-xs hover:bg-[#b91d1d] transition active:scale-95">
               跳过休息
             </button>
           )}
           <button onClick={handlePause}
             className={`px-3 py-2.5 rounded-xl text-xs font-medium border transition active:scale-95 ${
-              phase === "paused" ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : "border-[#333] text-gray-400 hover:text-white"
+              phase === "paused" ? "border-[#992828] text-[#992828] bg-[#992828]/10" : "border-[#333] text-gray-400 hover:text-white"
             }`}>
             {phase === "paused" ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
           </button>

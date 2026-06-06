@@ -157,15 +157,15 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         {/* ── Group 1: 复制 | 收藏 | 分享 ── */}
         <div className="flex items-center gap-1">
           <button onClick={copyAll} className={btnBase}>
-            {copyAllDone ? <Check className="w-3.5 h-3.5 text-[#d92525]" /> : <Copy className="w-3.5 h-3.5" />}
+            {copyAllDone ? <Check className="w-3.5 h-3.5 text-[#992828]" /> : <Copy className="w-3.5 h-3.5" />}
             {copyAllDone ? "已复制" : "复制"}
           </button>
 
           <button
             onClick={toggleFavorite}
-            className={`${btnBase} ${favorited ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10" : ""}`}
+            className={`${btnBase} ${favorited ? "border-[#992828] text-[#992828] bg-[#992828]/10" : ""}`}
           >
-            <Heart className={`w-3.5 h-3.5 ${favorited ? "fill-[#d92525] text-[#d92525]" : ""}`} />
+            <Heart className={`w-3.5 h-3.5 ${favorited ? "fill-[#992828] text-[#992828]" : ""}`} />
             {favorited ? "已收藏" : "收藏"}
           </button>
 
@@ -175,7 +175,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
               shareFailed
                 ? "border-yellow-600 text-yellow-500 bg-yellow-500/10"
                 : shareDone
-                ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10"
+                ? "border-[#992828] text-[#992828] bg-[#992828]/10"
                 : ""
             }`}
           >
@@ -220,7 +220,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         {/* ── Standalone: 新方案 ── */}
         <button
           onClick={() => window.location.reload()}
-          className="flex items-center gap-1.5 text-[11px] py-1.5 px-4 rounded-lg border transition-all duration-150 bg-[#d92525] border-[#d92525] text-white hover:bg-[#b71d1d] hover:border-[#b71d1d] active:scale-[0.98] font-medium"
+          className="flex items-center gap-1.5 text-[11px] py-1.5 px-4 rounded-lg border transition-all duration-150 bg-[#992828] border-[#992828] text-white hover:bg-[#7a1e1e] hover:border-[#7a1e1e] active:scale-[0.98] font-medium"
         >
           <Plus className="w-3.5 h-3.5" />
           新方案
@@ -234,7 +234,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           onClick={() => sendFeedback("up")}
           className={`p-1.5 rounded-lg transition ${
             feedback === "up"
-              ? "bg-[#d92525]/20 text-[#d92525]"
+              ? "bg-[#992828]/20 text-[#992828]"
               : "text-gray-400 hover:text-gray-300 hover:bg-[#222]"
           }`}
         >

@@ -63,7 +63,7 @@ export function WarmupTab({ modules, position }: Props) {
               onClick={() => setMode(opt.value)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
                 mode === opt.value
-                  ? "bg-[#d92525] text-white"
+                  ? "bg-[#992828] text-white"
                   : "text-gray-400 hover:text-white"
               }`}
             >
@@ -108,7 +108,7 @@ export function WarmupTab({ modules, position }: Props) {
             return phases.map((phase) => (
               <div key={phase}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-bold text-[#d92525]/80 bg-[#d92525]/10 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-[#992828]/80 bg-[#992828]/10 px-2 py-0.5 rounded">
                     {PHASE_LABELS[phase]}
                   </span>
                   <div className="flex-1 h-px bg-[#1e1e1e]/50" />

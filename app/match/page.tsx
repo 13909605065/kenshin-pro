@@ -722,7 +722,7 @@ export default function MatchPage() {
             {state && (
               <button
                 onClick={resetMatch}
-                className="text-[10px] text-gray-500 hover:text-[#d92525] flex items-center gap-1"
+                className="text-[10px] text-gray-500 hover:text-[#992828] flex items-center gap-1"
               >
                 <X className="w-3 h-3" /> 取消
               </button>
@@ -738,14 +738,14 @@ export default function MatchPage() {
                 value={homeTeamName}
                 onChange={(e) => setHomeTeamName(e.target.value)}
                 placeholder="主队名称"
-                className="flex-1 bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] outline-none"
+                className="flex-1 bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#992828] outline-none"
               />
               <span className="text-gray-600 text-sm font-bold">VS</span>
               <input
                 value={awayTeamName}
                 onChange={(e) => setAwayTeamName(e.target.value)}
                 placeholder="客队名称"
-                className="flex-1 bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] outline-none"
+                className="flex-1 bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#992828] outline-none"
               />
             </div>
           </div>
@@ -780,7 +780,7 @@ export default function MatchPage() {
                   }
                   className={`flex-1 py-2 rounded-lg text-xs font-medium transition ${
                     state?.matchType === t
-                      ? "bg-[#d92525] text-white"
+                      ? "bg-[#992828] text-white"
                       : "bg-[#0d0d0d] text-gray-400 hover:text-white border border-[#333]"
                   }`}
                 >
@@ -798,7 +798,7 @@ export default function MatchPage() {
                   onClick={() => setSetupTab("squad")}
                   className={`text-xs font-medium px-2 py-1 rounded cursor-pointer transition ${
                     setupTab === "squad"
-                      ? "bg-[#d92525]/20 text-[#d92525]"
+                      ? "bg-[#992828]/20 text-[#992828]"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -808,7 +808,7 @@ export default function MatchPage() {
                   onClick={() => selectedSquadIds.size > 0 && setSetupTab("starting11")}
                   className={`text-xs font-medium px-2 py-1 rounded cursor-pointer transition ${
                     setupTab === "starting11"
-                      ? "bg-[#d92525]/20 text-[#d92525]"
+                      ? "bg-[#992828]/20 text-[#992828]"
                       : "text-gray-400 hover:text-white"
                   } ${selectedSquadIds.size === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
@@ -818,7 +818,7 @@ export default function MatchPage() {
               {setupTab === "starting11" && (
                 <button
                   onClick={autoSelectStarting11}
-                  className="text-[10px] text-[#d92525] hover:underline"
+                  className="text-[10px] text-[#992828] hover:underline"
                   disabled={selectedSquadIds.size === 0}
                 >
                   一键首发
@@ -831,7 +831,7 @@ export default function MatchPage() {
                 <p className="text-xs text-gray-500 mb-2">花名册为空</p>
                 <a
                   href="/roster"
-                  className="text-[10px] text-[#d92525] hover:underline"
+                  className="text-[10px] text-[#992828] hover:underline"
                 >
                   去导入球员
                 </a>
@@ -846,14 +846,14 @@ export default function MatchPage() {
                       onClick={() => toggleSquadPlayer(rp.id)}
                       className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left transition ${
                         isSelected
-                          ? "bg-[#d92525]/10 border border-[#d92525]/30"
+                          ? "bg-[#992828]/10 border border-[#992828]/30"
                           : "bg-[#0d0d0d] border border-transparent hover:border-[#333]"
                       }`}
                     >
                       <div
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition ${
                           isSelected
-                            ? "bg-[#d92525] border-[#d92525]"
+                            ? "bg-[#992828] border-[#992828]"
                             : "border-gray-600"
                         }`}
                       >
@@ -914,7 +914,7 @@ export default function MatchPage() {
           <button
             onClick={startMatch}
             disabled={starting11Ids.size !== 11}
-            className="w-full py-4 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-base font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full py-4 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl text-base font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <Play className="w-5 h-5" />
             {starting11Ids.size !== 11
@@ -950,7 +950,7 @@ export default function MatchPage() {
                 setShowFullReport(false);
                 resetMatch();
               }}
-              className="px-3 py-1.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-medium transition"
+              className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-medium transition"
             >
               新比赛
             </button>
@@ -1057,7 +1057,7 @@ export default function MatchPage() {
               setShowFullReport(false);
               resetMatch();
             }}
-            className="w-full py-3.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full py-3.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <CheckCircle2 className="w-4 h-4" />
             完成并返回
@@ -1079,7 +1079,7 @@ export default function MatchPage() {
             </div>
             <button
               onClick={startSecondHalf}
-              className="px-3 py-1.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-lg text-xs font-medium transition"
+              className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-medium transition"
             >
               开始下半场
             </button>
@@ -1203,7 +1203,7 @@ export default function MatchPage() {
             </div>
             <button
               onClick={resetMatch}
-              className="text-[10px] text-gray-500 hover:text-[#d92525] flex items-center gap-0.5"
+              className="text-[10px] text-gray-500 hover:text-[#992828] flex items-center gap-0.5"
             >
               <X className="w-3 h-3" /> 退出
             </button>
@@ -1217,7 +1217,7 @@ export default function MatchPage() {
               className="flex items-center gap-1.5 bg-[#1a1a1a] hover:bg-[#222] rounded-lg px-3 py-1.5 transition"
             >
               {state.clockRunning ? (
-                <Pause className="w-4 h-4 text-[#d92525]" />
+                <Pause className="w-4 h-4 text-[#992828]" />
               ) : (
                 <Play className="w-4 h-4 text-green-400" />
               )}
@@ -1474,7 +1474,7 @@ export default function MatchPage() {
         {state.phase === "second_half" && (
           <button
             onClick={finishMatch}
-            className="w-full py-3.5 bg-[#d92525] hover:bg-[#b71d1d] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full py-3.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <Flag className="w-4 h-4" />
             结束比赛
@@ -1520,7 +1520,7 @@ export default function MatchPage() {
                 }
               }}
               placeholder="如：左膝不适、70min降速"
-              className="w-full bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#d92525] outline-none"
+              className="w-full bg-[#0d0d0d] border border-[#333] rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:border-[#992828] outline-none"
               autoFocus
             />
             <div className="flex gap-2">
@@ -1539,7 +1539,7 @@ export default function MatchPage() {
                 if (noteText.trim()) savePlayerNote(showNotesInput, noteText.trim());
               }}
               disabled={!noteText.trim()}
-              className="w-full py-2.5 bg-[#d92525] hover:bg-[#b71d1d] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg text-xs font-bold transition"
+              className="w-full py-2.5 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-lg text-xs font-bold transition"
             >
               保存备注
             </button>
@@ -1575,7 +1575,7 @@ function PlayerRow({
 }) {
   const bgClass =
     bg === "white"
-      ? "bg-[#0d0d0d] active:bg-[#d92525]/10"
+      ? "bg-[#0d0d0d] active:bg-[#992828]/10"
       : bg === "blue"
       ? "bg-blue-500/5 active:bg-blue-500/15"
       : "bg-[#0d0d0d]/50 active:bg-[#333]/50";

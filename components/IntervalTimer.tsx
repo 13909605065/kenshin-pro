@@ -81,7 +81,7 @@ const PHASE_COLORS: Record<TimerPhase, string> = {
   rest: 'text-yellow-400',
   set_rest: 'text-orange-400',
   cooldown: 'text-blue-300',
-  done: 'text-[#d92525]',
+  done: 'text-[#992828]',
 };
 
 const PHASE_BG: Record<TimerPhase, string> = {
@@ -91,7 +91,7 @@ const PHASE_BG: Record<TimerPhase, string> = {
   rest: 'border-yellow-500/30',
   set_rest: 'border-orange-500/30',
   cooldown: 'border-blue-400/30',
-  done: 'border-[#d92525]/30',
+  done: 'border-[#992828]/30',
 };
 
 const PHASE_LABELS: Record<TimerPhase, string> = {
@@ -237,10 +237,10 @@ export default function IntervalTimer({ preset: initialPreset, onComplete, onPha
             <span className={`text-xs ${PHASE_COLORS[state.phase]}`}>{PHASE_LABELS[state.phase]}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`font-mono text-lg font-bold ${isLastFive ? 'text-[#d92525] animate-pulse' : PHASE_COLORS[state.phase]}`}>
+            <span className={`font-mono text-lg font-bold ${isLastFive ? 'text-[#992828] animate-pulse' : PHASE_COLORS[state.phase]}`}>
               {state.phase === 'idle' ? '--:--' : formatTime(state.remainingSeconds)}
             </span>
-            <button onClick={toggle} className="w-8 h-8 rounded-full bg-[#d92525] text-white text-xs flex items-center justify-center">
+            <button onClick={toggle} className="w-8 h-8 rounded-full bg-[#992828] text-white text-xs flex items-center justify-center">
               {isRunning ? '⏸' : '▶'}
             </button>
           </div>
@@ -263,7 +263,7 @@ export default function IntervalTimer({ preset: initialPreset, onComplete, onPha
             onClick={() => selectPreset(p)}
             className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition ${
               preset.id === p.id
-                ? 'bg-[#d92525] text-white'
+                ? 'bg-[#992828] text-white'
                 : 'bg-[#1a1a1a] text-gray-400 hover:text-white'
             }`}>
             {p.nameCn}
@@ -297,7 +297,7 @@ export default function IntervalTimer({ preset: initialPreset, onComplete, onPha
           className={`flex-1 py-3 rounded-xl text-sm font-bold transition ${
             isRunning
               ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-600/30'
-              : 'bg-[#d92525] text-white hover:bg-[#b71d1d]'
+              : 'bg-[#992828] text-white hover:bg-[#7a1e1e]'
           }`}>
           {isRunning ? '⏸ 暂停' : state.phase === 'done' ? '🔄 重新开始' : '▶ 开始'}
         </button>
@@ -311,7 +311,7 @@ export default function IntervalTimer({ preset: initialPreset, onComplete, onPha
 
       {/* 完成提示 */}
       {state.phase === 'done' && (
-        <div className="text-center mt-3 text-[#d92525] font-bold text-sm animate-bounce">
+        <div className="text-center mt-3 text-[#992828] font-bold text-sm animate-bounce">
           🎉 训练完成！总用时 {formatTime(state.totalElapsed)}
         </div>
       )}

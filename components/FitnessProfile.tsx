@@ -60,7 +60,7 @@ function computeChange(
     return { diff: rawDiff, label: `${rawDiff > 0 ? "+" : ""}${rawDiff.toFixed(2)}`, icon: "up", color: "#22c55e" };
   }
   if (declined) {
-    return { diff: rawDiff, label: `${rawDiff > 0 ? "+" : ""}${rawDiff.toFixed(2)}`, icon: "down", color: "#d92525" };
+    return { diff: rawDiff, label: `${rawDiff > 0 ? "+" : ""}${rawDiff.toFixed(2)}`, icon: "down", color: "#992828" };
   }
   return { diff: rawDiff, label: `${rawDiff > 0 ? "+" : ""}${rawDiff.toFixed(2)}`, icon: "flat", color: "#888" };
 }
@@ -118,7 +118,7 @@ function EntryModal({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#d92525] focus:outline-none"
+            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white focus:border-[#992828] focus:outline-none"
           />
         </div>
 
@@ -149,7 +149,7 @@ function EntryModal({
                   else if (m.key === "verticalJump") setVerticalJump(v);
                   else setYBalance(v);
                 }}
-                className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none"
+                className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none"
               />
             </div>
           ))}
@@ -166,13 +166,13 @@ function EntryModal({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="例如：赛季前测试、康复后测试..."
             maxLength={100}
-            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#d92525] focus:outline-none"
+            className="w-full bg-[#121212] border border-[#333] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-[#992828] focus:outline-none"
           />
         </div>
 
         <button
           onClick={handleSave}
-          className="w-full py-2.5 bg-[#d92525] text-white font-bold rounded-xl text-sm hover:bg-opacity-90 transition"
+          className="w-full py-2.5 bg-[#992828] text-white font-bold rounded-xl text-sm hover:bg-opacity-90 transition"
         >
           保存体能数据
         </button>
@@ -253,7 +253,7 @@ export function FitnessProfile() {
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#d92525]" />
+            <TrendingUp className="w-5 h-5 text-[#992828]" />
             <p className="text-sm font-bold text-white">体能档案</p>
           </div>
           {current && (
@@ -321,7 +321,7 @@ export function FitnessProfile() {
                       <TrendingUp className="w-3.5 h-3.5 text-[#22c55e]" />
                     )}
                     {change.icon === "down" && (
-                      <TrendingDown className="w-3.5 h-3.5 text-[#d92525]" />
+                      <TrendingDown className="w-3.5 h-3.5 text-[#992828]" />
                     )}
                     {change.icon === "flat" && change.diff !== null && (
                       <Minus className="w-3.5 h-3.5 text-gray-500" />
@@ -387,7 +387,7 @@ export function FitnessProfile() {
         {/* Add entry button */}
         <button
           onClick={() => setShowModal(true)}
-          className="w-full mt-3 py-2.5 bg-[#d92525]/10 border border-[#d92525]/20 text-[#d92525] rounded-xl text-sm font-bold hover:bg-[#d92525]/20 transition flex items-center justify-center gap-2"
+          className="w-full mt-3 py-2.5 bg-[#992828]/10 border border-[#992828]/20 text-[#992828] rounded-xl text-sm font-bold hover:bg-[#992828]/20 transition flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           录入新数据

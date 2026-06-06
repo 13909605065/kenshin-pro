@@ -220,7 +220,7 @@ function axisPoint(i: number, total: number, radius: number): { x: number; y: nu
 const GREEN = '#22c55e';   // ≥100% 基准
 const YELLOW = '#eab308';  // 80-100% 基准
 const RED = '#ef4444';     // <80% 基准
-const PLAYER_COLOR = '#d92525';
+const PLAYER_COLOR = '#992828';
 const BENCH_COLOR = '#9ca3af';
 const GRID_COLOR = '#e5e7eb';
 const AXIS_COLOR = '#d1d5db';
@@ -482,7 +482,7 @@ const FitnessRadar: React.FC<Props> = ({ profile, position, bodyWeight }) => {
       {/* 图例 */}
       <div className="flex items-center justify-center gap-6 mt-3 text-sm">
         <div className="flex items-center gap-1.5">
-          <div className="w-4 h-0.5 bg-[#d92525]" />
+          <div className="w-4 h-0.5 bg-[#992828]" />
           <span className="text-gray-700 font-medium">你</span>
         </div>
         <div className="flex items-center gap-1.5">

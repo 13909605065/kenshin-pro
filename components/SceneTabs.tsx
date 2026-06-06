@@ -43,19 +43,19 @@ export function SceneTabs() {
         onClick={() => setScene("gym")}
         className={`flex-1 flex items-center gap-2 px-3 py-3 rounded-xl border transition-all ${
           scene === "gym"
-            ? "bg-[#d92525]/10 border-[#d92525]/40 shadow-lg shadow-[#d92525]/5"
+            ? "bg-[#992828]/10 border-[#992828]/40 shadow-lg shadow-[#992828]/5"
             : "bg-[#1e1e1e] border-[#333] hover:border-[#555]"
         }`}
       >
         <div
           className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition ${
-            scene === "gym" ? "bg-[#d92525] text-white" : "bg-[#111] text-gray-400"
+            scene === "gym" ? "bg-[#992828] text-white" : "bg-[#111] text-gray-400"
           }`}
         >
           <Dumbbell className="w-4 h-4" />
         </div>
         <div className="text-left min-w-0">
-          <p className={`text-xs font-bold transition truncate ${scene === "gym" ? "text-[#d92525]" : "text-white"}`}>
+          <p className={`text-xs font-bold transition truncate ${scene === "gym" ? "text-[#992828]" : "text-white"}`}>
             体能房
           </p>
           <p className="text-[10px] text-gray-400 truncate">板块三·力量</p>

@@ -590,7 +590,7 @@ function ExerciseLibraryPanel({
       {/* Panel header */}
       <div className="p-3 border-b border-[#222]">
         <div className="flex items-center gap-2 mb-2">
-          <Dumbbell className="w-4 h-4 text-[#d92525]" />
+          <Dumbbell className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">动作库</span>
           <span className="text-[10px] text-gray-500 ml-auto">{EXERCISE_LIBRARY.length}个动作</span>
         </div>
@@ -602,7 +602,7 @@ function ExerciseLibraryPanel({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索动作名称或ID..."
-            className="w-full pl-8 pr-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition"
+            className="w-full pl-8 pr-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#992828] transition"
           />
         </div>
       </div>
@@ -617,7 +617,7 @@ function ExerciseLibraryPanel({
               onClick={() => setBodyPartFilter(f.value)}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 bodyPartFilter === f.value
-                  ? "bg-[#d92525] text-white"
+                  ? "bg-[#992828] text-white"
                   : "bg-[#121212] text-gray-400 hover:text-white hover:bg-[#252525]"
               }`}
             >
@@ -633,7 +633,7 @@ function ExerciseLibraryPanel({
               onClick={() => setEquipmentFilter(f.value)}
               className={`px-2 py-0.5 rounded text-[10px] font-medium transition ${
                 equipmentFilter === f.value
-                  ? "bg-[#d92525] text-white"
+                  ? "bg-[#992828] text-white"
                   : "bg-[#222] text-gray-400 hover:text-white hover:bg-[#252525]"
               }`}
             >
@@ -658,19 +658,19 @@ function ExerciseLibraryPanel({
                   disabled={isSelected}
                   className={`flex items-center gap-2 p-2 rounded-lg text-left transition group ${
                     isSelected
-                      ? "bg-[#d92525]/10 border border-[#d92525]/30 cursor-not-allowed"
+                      ? "bg-[#992828]/10 border border-[#992828]/30 cursor-not-allowed"
                       : "bg-[#121212] border border-transparent hover:border-[#333] hover:bg-[#1a1a1a]"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-medium truncate ${isSelected ? "text-[#d92525]" : "text-gray-200"}`}>
+                      <span className={`text-xs font-medium truncate ${isSelected ? "text-[#992828]" : "text-gray-200"}`}>
                         {ex.name}
                       </span>
-                      {isSelected && <CheckCircle2 className="w-3 h-3 text-[#d92525] shrink-0" />}
+                      {isSelected && <CheckCircle2 className="w-3 h-3 text-[#992828] shrink-0" />}
                     </div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#d92525]/10 text-[#d92525] font-medium">
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#992828]/10 text-[#992828] font-medium">
                         {BODY_PART_LABELS[ex.body_part] || ex.body_part}
                       </span>
                       <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#222] text-gray-400 font-medium">
@@ -749,7 +749,7 @@ function WorkoutPanel({
     <div className="flex flex-col h-full bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden">
       <div className="p-3 border-b border-[#222]">
         <div className="flex items-center gap-2">
-          <Shuffle className="w-4 h-4 text-[#d92525]" />
+          <Shuffle className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">当前训练方案</span>
           <span className="text-[10px] text-gray-500 ml-auto">{selectedIds.length}个动作</span>
         </div>
@@ -778,9 +778,9 @@ function WorkoutPanel({
                   onDrop={(e) => handleDrop(e, idx)}
                   className={`flex items-center gap-2 p-2 rounded-lg bg-[#121212] border transition group ${
                     isDragOver
-                      ? "border-[#d92525] bg-[#d92525]/5"
+                      ? "border-[#992828] bg-[#992828]/5"
                       : dragIndex === idx
-                        ? "border-[#d92525]/50 opacity-50"
+                        ? "border-[#992828]/50 opacity-50"
                         : "border-[#222] hover:border-[#333]"
                   }`}
                 >
@@ -829,7 +829,7 @@ function WorkoutPanel({
                   {/* Remove button */}
                   <button
                     onClick={() => onRemoveExercise(id)}
-                    className="p-1 text-gray-500 hover:text-[#d92525] rounded transition shrink-0"
+                    className="p-1 text-gray-500 hover:text-[#992828] rounded transition shrink-0"
                     title="移除"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -881,7 +881,7 @@ function ValidationPanel({
     switch (s) {
       case 'pass': return { bg: 'bg-green-500/5', border: 'border-green-500/20', text: 'text-green-400', badge: 'bg-green-500/20 text-green-400' };
       case 'warn': return { bg: 'bg-yellow-500/5', border: 'border-yellow-500/20', text: 'text-yellow-400', badge: 'bg-yellow-500/20 text-yellow-400' };
-      case 'fail': return { bg: 'bg-[#d92525]/5', border: 'border-[#d92525]/20', text: 'text-[#d92525]', badge: 'bg-[#d92525]/20 text-[#d92525]' };
+      case 'fail': return { bg: 'bg-[#992828]/5', border: 'border-[#992828]/20', text: 'text-[#992828]', badge: 'bg-[#992828]/20 text-[#992828]' };
       case 'skip': return { bg: 'bg-[#222]/50', border: 'border-[#333]', text: 'text-gray-400', badge: 'bg-[#333] text-gray-500' };
     }
   };
@@ -889,7 +889,7 @@ function ValidationPanel({
     switch (s) {
       case 'pass': return <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />;
       case 'warn': return <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />;
-      case 'fail': return <XCircle className="w-4 h-4 text-[#d92525] shrink-0 mt-0.5" />;
+      case 'fail': return <XCircle className="w-4 h-4 text-[#992828] shrink-0 mt-0.5" />;
       case 'skip': return <AlertTriangle className="w-3.5 h-3.5 text-gray-500 shrink-0 mt-0.5" />;
     }
   };
@@ -899,7 +899,7 @@ function ValidationPanel({
       <div className="flex flex-col h-full bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden">
         <div className="p-3 border-b border-[#222]">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-[#d92525]" />
+            <AlertTriangle className="w-4 h-4 text-[#992828]" />
             <span className="text-sm font-bold text-white">AI 校验</span>
           </div>
         </div>
@@ -917,7 +917,7 @@ function ValidationPanel({
     <div className="flex flex-col h-full bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden">
       <div className="p-3 border-b border-[#222]">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-[#d92525]" />
+          <AlertTriangle className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">AI 校验</span>
           <span className="text-[10px] text-gray-500 ml-auto">
             {passCount}通过 {warnCount > 0 ? `/ ${warnCount}建议` : ''} {failCount > 0 ? `/ ${failCount}不推荐` : ''}
@@ -944,11 +944,11 @@ function ValidationPanel({
                     {statusLabel(r.status)}
                   </span>
                 </div>
-                <p className={`leading-relaxed ${r.status === 'fail' ? 'text-[#d92525]/80' : r.status === 'warn' ? 'text-yellow-400/80' : 'text-gray-400'}`}>
+                <p className={`leading-relaxed ${r.status === 'fail' ? 'text-[#992828]/80' : r.status === 'warn' ? 'text-yellow-400/80' : 'text-gray-400'}`}>
                   {r.reason}
                 </p>
                 {r.suggestion && (
-                  <p className={`mt-1 text-[10px] ${r.status === 'fail' ? 'text-[#d92525]/60' : 'text-yellow-400/60'}`}>
+                  <p className={`mt-1 text-[10px] ${r.status === 'fail' ? 'text-[#992828]/60' : 'text-yellow-400/60'}`}>
                     {r.status === 'fail' ? '建议: ' : '提示: '}{r.suggestion}
                   </p>
                 )}
@@ -1033,7 +1033,7 @@ function DayPickerModal({
                 onClick={() => onSelectDate(dateStr)}
                 className={`p-2 text-xs rounded-lg transition font-medium ${
                   isToday
-                    ? "bg-[#d92525]/20 text-[#d92525] border border-[#d92525]/30"
+                    ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/30"
                     : "text-gray-300 hover:bg-[#252525] hover:text-white"
                 }`}
               >
@@ -1255,7 +1255,7 @@ export function GymDesigner() {
             onClick={() => setActiveTab("editor")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
               activeTab === "editor"
-                ? "bg-[#d92525] text-white"
+                ? "bg-[#992828] text-white"
                 : "text-gray-400 hover:text-white hover:bg-[#222]"
             }`}
           >
@@ -1266,7 +1266,7 @@ export function GymDesigner() {
             onClick={() => setActiveTab("layout")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition ${
               activeTab === "layout"
-                ? "bg-[#d92525] text-white"
+                ? "bg-[#992828] text-white"
                 : "text-gray-400 hover:text-white hover:bg-[#222]"
             }`}
           >
@@ -1286,7 +1286,7 @@ export function GymDesigner() {
                   value={workoutName}
                   onChange={(e) => setWorkoutName(e.target.value)}
                   placeholder="方案名称（如：基础力量日）"
-                  className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#d92525] transition"
+                  className="w-full px-3 py-2 bg-[#121212] border border-[#333] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#992828] transition"
                 />
               </div>
 
@@ -1300,7 +1300,7 @@ export function GymDesigner() {
                       onClick={() => setPhase(p.value)}
                       className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
                         phase === p.value
-                          ? "bg-[#d92525] text-white"
+                          ? "bg-[#992828] text-white"
                           : "text-gray-400 hover:text-white"
                       }`}
                     >
@@ -1320,7 +1320,7 @@ export function GymDesigner() {
                       onClick={() => setGoal(g.value)}
                       className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
                         goal === g.value
-                          ? "bg-[#d92525] text-white"
+                          ? "bg-[#992828] text-white"
                           : "text-gray-400 hover:text-white"
                       }`}
                     >
@@ -1335,7 +1335,7 @@ export function GymDesigner() {
                 <button
                   onClick={handleSaveToLibrary}
                   disabled={selectedIds.length === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#d92525] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#992828] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-3.5 h-3.5" />
                   保存到资料库
@@ -1343,7 +1343,7 @@ export function GymDesigner() {
                 <button
                   onClick={() => setDayPickerOpen(true)}
                   disabled={selectedIds.length === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#d92525]/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] hover:border-[#992828]/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   绑定到训练日历

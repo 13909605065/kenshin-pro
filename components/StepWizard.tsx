@@ -106,7 +106,7 @@ export function StepWizard() {
             {i < STEP_NAMES.length - 1 && (
               <div
                 className={`w-8 sm:w-16 h-0.5 mx-1 mt-[-16px] ${
-                  analysisComplete || i < currentStep ? "bg-[#d92525]" : "bg-[#222]"
+                  analysisComplete || i < currentStep ? "bg-[#992828]" : "bg-[#222]"
                 }`}
               />
             )}
@@ -179,8 +179,8 @@ export function StepWizard() {
               }}
               className={`px-3 py-1.5 rounded-lg text-xs border transition ${
                 profiles.activeId === p.id
-                  ? "border-[#d92525] text-[#d92525] bg-[#d92525]/10"
-                  : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                  ? "border-[#992828] text-[#992828] bg-[#992828]/10"
+                  : "border-[#222] text-gray-400 hover:border-[#992828]"
               }`}
             >
               {p.name}
@@ -261,7 +261,7 @@ export function StepWizard() {
                 setShowProfileSave(true);
                 setProfileName(profiles.getActive()?.name || "");
               }}
-              className="text-xs text-gray-400 hover:text-[#d92525] transition flex items-center gap-1"
+              className="text-xs text-gray-400 hover:text-[#992828] transition flex items-center gap-1"
             >
               <Save className="w-3 h-3" />
               保存档案
@@ -303,8 +303,8 @@ export function StepWizard() {
                     }}
                     className={`p-3 rounded-lg text-sm font-medium border transition-all text-center ${
                       formData.tacticalThemes.includes(t.value)
-                        ? "border-[#d92525] bg-[#d92525]/10 text-[#d92525]"
-                        : "border-[#222] text-gray-400 hover:border-[#d92525]"
+                        ? "border-[#992828] bg-[#992828]/10 text-[#992828]"
+                        : "border-[#222] text-gray-400 hover:border-[#992828]"
                     }`}
                   >
                     <span className="block text-xl mb-1">{t.icon}</span>
@@ -313,7 +313,7 @@ export function StepWizard() {
                 ))}
               </div>
               {errors.tacticalThemes && (
-                <p className="text-[#d92525] text-sm">{errors.tacticalThemes}</p>
+                <p className="text-[#992828] text-sm">{errors.tacticalThemes}</p>
               )}
             </div>
           )}
@@ -340,8 +340,8 @@ export function StepWizard() {
           {analysisComplete && !isCoach && (
             <div className="mt-8 pt-6 border-t border-[#222] text-center space-y-4">
               <div className="flex justify-center">
-                <div className="w-16 h-16 rounded-full bg-[#d92525]/20 flex items-center justify-center">
-                  <Check className="w-8 h-8 text-[#d92525]" />
+                <div className="w-16 h-16 rounded-full bg-[#992828]/20 flex items-center justify-center">
+                  <Check className="w-8 h-8 text-[#992828]" />
                 </div>
               </div>
               <h2 className="text-xl font-bold text-white">分析完成</h2>

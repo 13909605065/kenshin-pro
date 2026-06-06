@@ -37,7 +37,7 @@ export function TrainingHistory() {
   return (
     <div className="mt-6 glass-card p-4">
       <h2 className="text-white text-sm font-bold mb-3 flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-[#d92525]" />
+        <TrendingUp className="w-4 h-4 text-[#992828]" />
         训练历史
       </h2>
 
@@ -45,15 +45,15 @@ export function TrainingHistory() {
       {thisWeek.length > 0 && (
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-[#1e1e1e]/50 rounded-lg p-2 text-center">
-            <div className="text-[#d92525] font-bold text-lg">{thisWeek.length}</div>
+            <div className="text-[#992828] font-bold text-lg">{thisWeek.length}</div>
             <div className="text-[10px] text-gray-400">本周训练</div>
           </div>
           <div className="bg-[#1e1e1e]/50 rounded-lg p-2 text-center">
-            <div className="text-[#d92525] font-bold text-lg">{Math.round(totalMin)}</div>
+            <div className="text-[#992828] font-bold text-lg">{Math.round(totalMin)}</div>
             <div className="text-[10px] text-gray-400">总分钟</div>
           </div>
           <div className="bg-[#1e1e1e]/50 rounded-lg p-2 text-center">
-            <div className="text-[#d92525] font-bold text-lg">{thisWeek.length > 0 ? Math.round(totalMin / thisWeek.length) : 0}</div>
+            <div className="text-[#992828] font-bold text-lg">{thisWeek.length > 0 ? Math.round(totalMin / thisWeek.length) : 0}</div>
             <div className="text-[10px] text-gray-400">平均分钟</div>
           </div>
         </div>
