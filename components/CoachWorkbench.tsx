@@ -202,9 +202,7 @@ interface EditState {
   index: number;
   exercise: any;
 }
-// 训练笔记已统一到 planning 页
-  );
-}
+
 
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
@@ -1566,8 +1564,6 @@ export default function CoachWorkbench() {
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white text-xs px-4 py-2 rounded-xl shadow-xl animate-in slide-in-from-bottom-2">
           数据已保存
         </div>
-      )}
-        </>
       )}
     </div>
   );
