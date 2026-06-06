@@ -1,11 +1,13 @@
 export type BodyPart = "chest" | "back" | "legs" | "shoulders" | "arms" | "core" | "lower" | "upper_push" | "upper_pull" | "full_body";
 export type Equipment = "barbell" | "dumbbell" | "cable" | "bodyweight" | "machine" | "kettlebell" | "med_ball" | "band" | "bosu" | "bench" | "other";
+export type ExerciseType = "热身" | "力量" | "拉伸" | "步伐" | "跳跃" | "核心";
 
 export interface ExerciseLibItem {
   id: string;
   name: string;
   body_part: BodyPart;
   equipment: Equipment;
+  type: ExerciseType;
   description: string;
   cue_points: string[];     // 动作要点
   progression: string;       // 进阶变式（更难）

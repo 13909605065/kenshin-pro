@@ -211,6 +211,7 @@ export function customToExerciseLibItem(ex: CustomExercise): import("@/lib/stren
     name: ex.name,
     body_part: mapCustomToBodyPart(ex.body_part),
     equipment: mapCustomToEquipment(ex.equipment),
+    type: "力量",
     description: ex.description,
     cue_points: ex.cue_points,
     progression: ex.progression || "—",
