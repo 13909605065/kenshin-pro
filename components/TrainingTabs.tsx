@@ -598,6 +598,20 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
 
       {/* Tab view — all roles */}
       <>
+      {/* Action bar */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[10px] text-gray-500">AI 生成结果</span>
+        <button
+          onClick={() => {
+            const bridgeData = { modules: editableModules, formData, savedAt: new Date().toISOString() };
+            localStorage.setItem('kenshin_ai_to_planning', JSON.stringify(bridgeData));
+            router.push('/planning');
+          }}
+          className="text-[10px] px-3 py-1.5 bg-[#1a1a1a] border border-[#333] hover:border-[#992828] text-gray-400 hover:text-[#992828] rounded-lg transition"
+        >
+          📋 推送到周期方案
+        </button>
+      </div>
       {/* Tab Bar */}
       <div className="flex flex-wrap justify-center gap-x-1 border-b border-[#1e1e1e] mb-4">
         {tabs.map((tab) => (

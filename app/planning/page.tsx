@@ -514,8 +514,14 @@ export default function PlanningPage() {
                       <p className="text-[9px] text-gray-500">
                         {day.scene === null ? '全天休息' : day.scene === 'gym' ? '力量房' : '外场'}
                         {day.scene !== null && <> · {day.duration}min</>}
-                        {day.scene === null && day.notes && <span className="text-[#992828] ml-1">· 有个别训练</span>}
                       </p>
+                      {day.scene === null && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingDayId(day.id); updateDay(day.id, 'notes', (day.notes || '') + '⚡个别训练: '); }}
+                          className="text-[9px] text-[#992828] hover:text-white bg-[#992828]/10 hover:bg-[#992828]/30 px-2 py-0.5 rounded transition"
+                          title="添加个别球员单练"
+                        >+ 个别训练</button>
+                      )}
                     </div>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${day.intensity === '极高' || day.intensity === '高' ? 'bg-[#992828]/20 text-[#992828]' : day.intensity === '中' || day.intensity === '中高' || day.intensity === '中低' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-400'}`}>{day.intensity}</span>
                     <button onClick={() => setEditingDayId(isEditing ? null : day.id)} className="p-1 text-gray-600 hover:text-white transition text-[10px]">{isEditing ? '收起' : '编辑'}</button>

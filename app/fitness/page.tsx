@@ -48,6 +48,22 @@ function saveResults(results: TestResult[]) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(results)); } catch {}
 }
 
+// Supabase sync (best-effort, falls back to localStorage)
+async function syncToSupabase(results: TestResult[]) {
+  try {
+    const { createClient } = await import("@/lib/supabase/supabase-client");
+    const supabase = createClient();
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user?.id) return;
+    const rows = results.map(r => ({
+      user_id: session.session.user.id, player_id: r.playerId, player_name: r.playerName,
+      position: r.position, test_id: r.testId, test_name: r.testName,
+      value: r.value, date: r.date, level: r.level, created_at: new Date().toISOString(),
+    }));
+    await supabase.from("fitness_tests").upsert(rows, { onConflict: 'id' });
+  } catch {}
+}
+
 function classify(value: number, test: typeof TESTS[0]): "elite" | "good" | "average" | "low" {
   if (test.higherIsBetter) {
     if (value >= test.elite) return "elite";

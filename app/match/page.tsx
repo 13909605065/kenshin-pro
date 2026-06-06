@@ -1108,6 +1108,23 @@ export default function MatchPage() {
                     </details>
                   );
                 })}
+                {/* ── 一键加入明日计划 ── */}
+                <button
+                  onClick={() => {
+                    const suppData = underloaded
+                      .filter(p => p.position !== 'goalkeeper')
+                      .map(p => {
+                        const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
+                        const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                        return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
+                      });
+                    localStorage.setItem('kenshin_supplement_bridge', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData }));
+                    window.location.href = '/planning';
+                  }}
+                  className="w-full py-2 bg-[#992828]/20 hover:bg-[#992828]/30 text-[#992828] rounded-lg text-xs font-bold transition border border-[#992828]/30"
+                >
+                  📋 将补负荷加入明日训练计划
+                </button>
               </div>
             );
           })()}
