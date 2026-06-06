@@ -1,10 +1,10 @@
 "use client";
 
 import CoachWorkbench from "@/components/CoachWorkbench";
-import { DailyReadiness } from "@/components/DailyReadiness";
 import dynamic from "next/dynamic";
 import { MobileNav } from "@/components/MobileNav";
 
+const DailyReadiness = dynamic(() => import("@/components/DailyReadiness").then(m => ({ default: m.DailyReadiness })), { ssr: false });
 const ReportGenerator = dynamic(() => import("@/components/ReportGenerator").then(m => ({ default: m.ReportGenerator })), { ssr: false });
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
