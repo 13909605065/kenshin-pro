@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Moon, Activity, Zap, Heart, Brain, Scale, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Moon, Activity, Zap, Heart, Brain, Scale, Send, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 // ── Types ──
 
