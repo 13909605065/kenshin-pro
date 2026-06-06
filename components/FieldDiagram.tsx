@@ -40,9 +40,9 @@ function getConePositions(
       { x: 75, y: 75 },
     ].slice(0, count),
     triangle: [
-      { x: 50, y: 15 },
-      { x: 15, y: 80 },
-      { x: 85, y: 80 },
+      { x: 50, y: 25 },
+      { x: 18, y: 75 },
+      { x: 82, y: 75 },
     ].slice(0, count),
   };
 
@@ -243,7 +243,7 @@ export function FieldDiagram({ diagram }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="px-4 py-3 border-t border-[#222] flex items-center gap-4 flex-wrap">
+      <div className="px-4 py-2 border-t border-[#222] flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-[#992828] border border-[#992828]" />
           <span className="text-[10px] text-gray-400">{start_label}</span>

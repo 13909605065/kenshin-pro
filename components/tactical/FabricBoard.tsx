@@ -8,6 +8,33 @@ import { TAC_THEME } from "@/lib/tactical-theme";
 const FW = 1050;
 const FH = 680;
 
+/**
+ * 以画布几何中心为基准缩放，保证上下左右留白完全均等。
+ *
+ * 公式推导：
+ *   viewportTransform = [zoom, 0, 0, zoom, tx, ty]
+ *   逻辑坐标 (x, y) → CSS像素 (x*zoom + tx, y*zoom + ty)
+ *
+ *   要求：逻辑中心 (FW/2, FH/2) 映射到 CSS 可视中心 (vpW/2, vpH/2)
+ *   → vpW/2 = FW/2 * zoom + tx  →  tx = vpW/2 - FW/2 * zoom
+ *   → vpH/2 = FH/2 * zoom + ty  →  ty = vpH/2 - FH/2 * zoom
+ */
+function centerAtZoom(canvas: Canvas, zoom: number) {
+  const el = canvas.getElement();
+  const vpW = el.clientWidth;   // canvas 元素 CSS 宽度
+  const vpH = el.clientHeight;  // canvas 元素 CSS 高度
+
+  const vpt = canvas.viewportTransform!;
+  vpt[0] = zoom;
+  vpt[1] = 0;
+  vpt[2] = 0;
+  vpt[3] = zoom;
+  vpt[4] = vpW / 2 - (FW / 2) * zoom;  // tx
+  vpt[5] = vpH / 2 - (FH / 2) * zoom;  // ty
+
+  canvas.requestRenderAll();
+}
+
 interface FabricBoardProps {
   activeTool: string;
   activeColor: string;
@@ -59,14 +86,13 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       fireRightClick: true,
     });
 
-    // Mouse wheel zoom (desktop)
+    // Mouse wheel zoom (desktop) — always centers after zoom
     canvas.on("mouse:wheel", (opt: any) => {
       const delta = opt.e.deltaY;
       let zoom = canvas.getZoom();
       zoom *= 0.999 ** delta;
       zoom = Math.min(Math.max(zoom, 0.3), 5);
-      const point = { x: opt.e.offsetX, y: opt.e.offsetY };
-      canvas.zoomToPoint(point as any, zoom);
+      centerAtZoom(canvas, zoom);
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
@@ -77,10 +103,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const dx = t2.clientX - t1.clientX;
       const dy = t2.clientY - t1.clientY;
       return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    const getTouchCenter = (t1: Touch, t2: Touch): { x: number; y: number } => {
-      return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -103,22 +125,13 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2 && pinchStartRef.current) {
-        // Pinch zoom — use zoomToPoint to properly center on pinch midpoint
+        // Pinch zoom — centered on canvas geometric center
         const t1 = e.touches[0], t2 = e.touches[1];
         const dist = getTouchDist(t1, t2);
-        const center = getTouchCenter(t1, t2);
         const scale = dist / pinchStartRef.current.dist;
         let newZoom = pinchStartRef.current.zoom * scale;
         newZoom = Math.min(Math.max(newZoom, 0.3), 5);
-
-        // Convert client coordinates to canvas element CSS coordinates
-        const rect = el.getBoundingClientRect();
-        const point = {
-          x: center.x - rect.left,
-          y: center.y - rect.top,
-        };
-        canvas.zoomToPoint(point as any, newZoom);
-        canvas.requestRenderAll();
+        centerAtZoom(canvas, newZoom);
         e.preventDefault();
       }
     };
@@ -141,6 +154,9 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     el.addEventListener("touchcancel", onTouchEnd);
 
     boardRef.current = canvas;
+    // Expose centered zoom API for external callers (warmup page, toolbar)
+    (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
+    (canvas as any)._getZoom = () => canvas.getZoom();
 
     // History
     let history: string[] = [], historyIdx = -1, restoring = false;
@@ -241,7 +257,14 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     container.addEventListener("drop", onDrop);
     container.addEventListener("dragover", (e) => { e.preventDefault(); e.dataTransfer!.dropEffect = "copy"; });
 
+    // ── Container resize → auto re-center ──
+    const ro = new ResizeObserver(() => {
+      centerAtZoom(canvas, canvas.getZoom());
+    });
+    ro.observe(container);
+
     return () => {
+      ro.disconnect();
       container.removeEventListener("drop", onDrop);
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
@@ -494,24 +517,14 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   const zoomIn = () => {
     const c = boardRef.current; if (!c) return;
-    let z = c.getZoom() * 1.15;
-    z = Math.min(z, 5);
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
-    c.requestRenderAll();
+    const z = Math.min(c.getZoom() * 1.15, 5);
+    centerAtZoom(c, z);
   };
   const zoomOut = () => {
     const c = boardRef.current; if (!c) return;
-    let z = c.getZoom() / 1.15;
-    z = Math.max(z, 0.3);
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
-    c.requestRenderAll();
+    const z = Math.max(c.getZoom() / 1.15, 0.3);
+    centerAtZoom(c, z);
   };
-  const zoomFit = () => {
-    const c = boardRef.current; if (!c) return;
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, 1);
-    c.requestRenderAll();
-  };
-
   return (
     <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
       <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
@@ -522,11 +535,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
           onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
           onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
           title="放大">+</button>
-        <button onClick={zoomFit} className="w-7 h-7 flex items-center justify-center rounded text-[10px] font-mono transition-colors"
-          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
-          title="重置缩放">1:1</button>
         <button onClick={zoomOut} className="w-7 h-7 flex items-center justify-center rounded text-xs font-bold transition-colors"
           style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
           onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}

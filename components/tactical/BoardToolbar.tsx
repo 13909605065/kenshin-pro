@@ -84,7 +84,7 @@ interface Props {
   canUndo: boolean; canRedo: boolean;
   onUndo: () => void; onRedo: () => void;
   onExport: () => void; onFormation?: (f: string) => void; onClear: () => void;
-  onZoomIn?: () => void; onZoomOut?: () => void; onZoomFit?: () => void;
+  onZoomIn?: () => void; onZoomOut?: () => void;
   lockPlayers?: boolean; onLockPlayersChange?: (v: boolean) => void;
   lockRoutes?: boolean; onLockRoutesChange?: (v: boolean) => void;
 }
@@ -380,7 +380,7 @@ export function BoardToolbar(p: Props) {
         <div className="w-px h-6 mx-1 flex-shrink-0" style={{ backgroundColor: BORDER }} />
 
         {/* ── Zoom controls ── */}
-        {p.onZoomIn && p.onZoomOut && p.onZoomFit && (
+        {p.onZoomIn && p.onZoomOut && (
           <div className="flex items-center gap-0.5 rounded-md p-0.5 flex-shrink-0" style={{ backgroundColor: TAC_THEME.bgCard, borderRadius: TAC_THEME.radius }}>
             <button onClick={p.onZoomOut} className="p-1 rounded flex items-center justify-center" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
@@ -388,10 +388,6 @@ export function BoardToolbar(p: Props) {
               title="缩小">
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
-            <button onClick={p.onZoomFit} className="px-1.5 py-0.5 rounded text-[10px] font-mono" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}
-              title="重置缩放">1:1</button>
             <button onClick={p.onZoomIn} className="p-1 rounded flex items-center justify-center" style={{ color: TEXT_DIM, borderRadius: "4px", transition: "all 150ms" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = TEXT_MAIN; e.currentTarget.style.backgroundColor = BG_HOVER; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = TEXT_DIM; e.currentTarget.style.backgroundColor = "transparent"; }}

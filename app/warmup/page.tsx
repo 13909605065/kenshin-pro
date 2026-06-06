@@ -177,22 +177,14 @@ export default function WarmupDesignPage() {
 
   const hZoomIn = () => {
     const c = boardRef.current; if (!c) return;
-    let z = c.getZoom() * 1.15; z = Math.min(z, 5);
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
-    c.requestRenderAll();
+    const z = Math.min((c as any)._getZoom() * 1.15, 5);
+    (c as any)._centerAtZoom(z);
   };
   const hZoomOut = () => {
     const c = boardRef.current; if (!c) return;
-    let z = c.getZoom() / 1.15; z = Math.max(z, 0.3);
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, z);
-    c.requestRenderAll();
+    const z = Math.max((c as any)._getZoom() / 1.15, 0.3);
+    (c as any)._centerAtZoom(z);
   };
-  const hZoomFit = () => {
-    const c = boardRef.current; if (!c) return;
-    c.zoomToPoint({ x: c.width! / 2, y: c.height! / 2 } as any, 1);
-    c.requestRenderAll();
-  };
-
   // ─── Equipment placement ────────────────────────────────
   const eqCountRef = useRef<Record<string, number>>({});
   const hPlaceEquipment = useCallback((filename: string, name: string) => {
@@ -490,7 +482,6 @@ export default function WarmupDesignPage() {
             onClear={hClear}
             onZoomIn={hZoomIn}
             onZoomOut={hZoomOut}
-            onZoomFit={hZoomFit}
             lockPlayers={lockPlayers}
             onLockPlayersChange={setLockPlayers}
             lockRoutes={lockRoutes}
