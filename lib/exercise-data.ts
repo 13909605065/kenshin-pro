@@ -18,7 +18,7 @@ export const EQUIPMENT_LABELS: Record<Equipment, string> = {
   med_ball: "药球",
   band: "弹力带",
   bosu: "波速球",
-  bench: "长凳",
+  跳箱: "跳箱",
   other: "其他",
 };
 

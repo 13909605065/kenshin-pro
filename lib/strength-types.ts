@@ -1,5 +1,5 @@
 export type BodyPart = "上半身" | "下半身" | "全身";
-export type Equipment = "barbell" | "dumbbell" | "cable" | "bodyweight" | "machine" | "kettlebell" | "med_ball" | "band" | "bosu" | "bench" | "other";
+export type Equipment = "barbell" | "dumbbell" | "cable" | "bodyweight" | "machine" | "kettlebell" | "med_ball" | "band" | "bosu" | "跳箱" | "other";
 export type ExerciseType = "热身" | "力量" | "拉伸" | "步伐" | "跳跃" | "核心";
 
 export interface ExerciseLibItem {
