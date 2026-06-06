@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
 import type { SeasonPhase } from "@/lib/types";
+import { saveTrainingPlan, loadTrainingPlans, deleteTrainingPlan } from "@/lib/training-log";
 
 // ── Phase prescriptions: auto-generated from season calendar ──
 interface PhasePreset {
@@ -84,7 +85,7 @@ interface DayPlan {
   focus: string;
   intensity: string;
   duration: number;
-  scene: 'gym' | 'pitch';
+  scene: 'gym' | 'pitch' | null; // null = 休息日（全天无训练）
   goal: string;
   notes: string;
 }
@@ -127,17 +128,18 @@ function daysFromPreset(preset: PhasePreset, weekIndex: number): DayPlan[] {
   // Monday is day 0, Sunday is day 6
 
   // Simple distribution pattern
-  const pattern: { scene: 'gym' | 'pitch'; goal: string; focus: string; intensity: string }[] = [];
+  // scene: 'gym' | 'pitch' | null (null = 休息日，全天无训练)
+  const pattern: { scene: 'gym' | 'pitch' | null; goal: string; focus: string; intensity: string }[] = [];
 
   if (preset.phaseType === 'offseason') {
-    // Mon=力量, Tue=外场, Wed=力量, Thu=外场, Fri=力量, Sat=休息, Sun=休息
+    // Mon=力量, Tue=外场, Wed=力量, Thu=外场, Fri=力量, Sat=全天休息, Sun=全天休息
     pattern.push({ scene:'gym', goal:'strength', focus:'力量训练（全身）', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'低强度有氧+个人技术', intensity:'低' });
     pattern.push({ scene:'gym', goal:'strength', focus:'力量训练（弱链纠正）', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'有氧跑+小场地游戏', intensity:'中低' });
     pattern.push({ scene:'gym', goal:'power', focus:'爆发力+核心', intensity:'中' });
-    pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'主动恢复/休息', intensity:'低' });
-    pattern.push({ scene:'gym', goal:'strength', focus:'休息日', intensity:'低' });
+    pattern.push({ scene:null, goal:'rest', focus:'休息日', intensity:'-' });
+    pattern.push({ scene:null, goal:'rest', focus:'休息日', intensity:'-' });
   } else if (preset.phaseType === 'preseason_build') {
     pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'有氧基础+SSG', intensity:'中高' });
     pattern.push({ scene:'gym', goal:'strength', focus:'力量储备（下肢重点）', intensity:'高' });
@@ -145,7 +147,7 @@ function daysFromPreset(preset: PhasePreset, weekIndex: number): DayPlan[] {
     pattern.push({ scene:'pitch', goal:'power', focus:'爆发力+定位球', intensity:'中高' });
     pattern.push({ scene:'gym', goal:'power', focus:'力量转化（上肢+核心）', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'热身赛/战术演练', intensity:'高' });
-    pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'主动恢复', intensity:'低' });
+    pattern.push({ scene:null, goal:'rest', focus:'休息日', intensity:'-' });
   } else if (preset.phaseType === 'regular_season') {
     pattern.push({ scene:'gym', goal:'strength', focus:'MD-6: 力量维持', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'MD-5: 速度耐力', intensity:'中高' });
@@ -160,8 +162,8 @@ function daysFromPreset(preset: PhasePreset, weekIndex: number): DayPlan[] {
     pattern.push({ scene:'pitch', goal:'speed', focus:'强度控制+定位球', intensity:'中' });
     pattern.push({ scene:'pitch', goal:'power', focus:'赛前激活+轻技术', intensity:'低' });
     pattern.push({ scene:'pitch', goal:'speed', focus:'⚽ 附加赛日', intensity:'极高' });
-    pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'恢复再生', intensity:'低' });
-    pattern.push({ scene:'pitch', goal:'mas_endurance', focus:'主动恢复/休息', intensity:'低' });
+    pattern.push({ scene:null, goal:'rest', focus:'休息日', intensity:'-' });
+    pattern.push({ scene:null, goal:'rest', focus:'休息日', intensity:'-' });
   }
 
   for (let i = 0; i < 7; i++) {
@@ -171,7 +173,7 @@ function daysFromPreset(preset: PhasePreset, weekIndex: number): DayPlan[] {
       day: DAY_LABELS[i],
       focus: p.focus,
       intensity: p.intensity,
-      duration: preset.avgDuration,
+      duration: p.scene === null ? 0 : preset.avgDuration,
       scene: p.scene,
       goal: p.goal,
       notes: '',
@@ -288,6 +290,19 @@ export default function PlanningPage() {
   const [editingDayId, setEditingDayId] = useState<string | null>(null);
   const [planName, setPlanName] = useState('');
   const [savedPlans, setSavedPlans] = useState<SavedMicrocycle[]>(() => loadPlans());
+
+  // Auto-load saved plans from Supabase on mount
+  useEffect(() => {
+    loadTrainingPlans().then(plans => {
+      if (plans.length > 0) {
+        const mapped: SavedMicrocycle[] = plans.map(p => ({
+          id: p.id, name: p.name, phase: 'competition' as SeasonPhase,
+          totalWeeks: 1, createdAt: p.created_at, days: (p.week_data?.days || []) as any,
+        }));
+        setSavedPlans(mapped);
+      }
+    }).catch(() => {});
+  }, []);
   const [dragDayId, setDragDayId] = useState<string | null>(null);
   const [matchDayIndex, setMatchDayIndex] = useState(6);
 
@@ -336,16 +351,24 @@ export default function PlanningPage() {
     setDragDayId(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!activePreset || days.length === 0) return;
-    const plan: SavedMicrocycle = { id: `plan_${Date.now()}`, name: planName || '未命名微周期', phase: 'competition', totalWeeks: 1, createdAt: new Date().toISOString(), days: [...days] };
-    const updated = [plan, ...savedPlans].slice(0, 20);
-    savePlans(updated);
-    setSavedPlans(updated);
+    try {
+      const result = await saveTrainingPlan({ name: planName || '未命名微周期', phaseType: activePreset.phaseType, phaseLabel: activePreset.label, icon: activePreset.icon, days: days as any, matchDayIndex });
+      if (result) {
+        const plan: SavedMicrocycle = { id: result.id, name: result.name, phase: 'competition', totalWeeks: 1, createdAt: result.created_at, days: [...days] };
+        const updated = [plan, ...savedPlans].slice(0, 20);
+        savePlans(updated); setSavedPlans(updated);
+      }
+    } catch {
+      const plan: SavedMicrocycle = { id: `plan_${Date.now()}`, name: planName || '未命名微周期', phase: 'competition', totalWeeks: 1, createdAt: new Date().toISOString(), days: [...days] };
+      const updated = [plan, ...savedPlans].slice(0, 20);
+      savePlans(updated); setSavedPlans(updated);
+    }
   };
 
   const loadSavedPlan = (plan: SavedMicrocycle) => { setDays(plan.days); setPlanName(plan.name); };
-  const deleteSavedPlan = (planId: string) => { const u = savedPlans.filter(p => p.id !== planId); savePlans(u); setSavedPlans(u); };
+  const deleteSavedPlan = async (planId: string) => { await deleteTrainingPlan(planId).catch(() => {}); const u = savedPlans.filter(p => p.id !== planId); savePlans(u); setSavedPlans(u); };
 
   const pushToWorkbench = (day: DayPlan) => {
     localStorage.setItem('kenshin_workbench_preset', JSON.stringify({ scene: day.scene, goal: day.goal, duration: day.duration, focus: day.focus }));
@@ -447,18 +470,24 @@ export default function PlanningPage() {
               const isMatchDay = idx === matchDayIndex;
               const isEditing = editingDayId === day.id;
               return (
-                <div key={day.id} draggable onDragStart={e => handleDragStart(e, day.id)} onDragOver={handleDragOver} onDrop={e => handleDrop(e, day.id)}
-                  className={`rounded-lg border transition ${isMatchDay ? 'border-[#992828]/40 bg-[#992828]/5' : isEditing ? 'border-[#992828] bg-[#0d0d0d]' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'}`}>
+                <div key={day.id} draggable={day.scene !== null} onDragStart={e => day.scene !== null && handleDragStart(e, day.id)} onDragOver={handleDragOver} onDrop={e => day.scene !== null && handleDrop(e, day.id)}
+                  className={`rounded-lg border transition ${day.scene === null ? 'border-[#222]/40 bg-[#0d0d0d]/40 opacity-60' : isMatchDay ? 'border-[#992828]/40 bg-[#992828]/5' : isEditing ? 'border-[#992828] bg-[#0d0d0d]' : 'border-[#222] bg-[#0d0d0d] hover:border-[#444]'}`}>
                   <div className="flex items-center gap-3 p-3">
                     <GripVertical className="w-3.5 h-3.5 text-gray-600 cursor-grab shrink-0" />
-                    <span className={`text-xs font-bold w-10 shrink-0 ${isMatchDay ? 'text-[#992828]' : 'text-white'}`}>{isMatchDay ? 'MD' : day.day}</span>
+                    <span className={`text-xs font-bold w-10 shrink-0 ${day.scene === null ? 'text-gray-600' : isMatchDay ? 'text-[#992828]' : 'text-white'}`}>{isMatchDay ? 'MD' : day.scene === null ? '休' : day.day}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-xs font-medium truncate">{day.focus}</p>
-                      <p className="text-[9px] text-gray-500">{day.scene === 'gym' ? '力量房' : '外场'} · {day.goal} · {day.duration}min</p>
+                      <p className={`text-xs font-medium truncate ${day.scene === null ? 'text-gray-500' : 'text-white'}`}>{day.focus}</p>
+                      <p className="text-[9px] text-gray-500">
+                        {day.scene === null ? '全天休息' : day.scene === 'gym' ? '力量房' : '外场'}
+                        {day.scene !== null && <> · {day.duration}min</>}
+                        {day.scene === null && day.notes && <span className="text-[#992828] ml-1">· 有个别训练</span>}
+                      </p>
                     </div>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ${day.intensity === '极高' || day.intensity === '高' ? 'bg-[#992828]/20 text-[#992828]' : day.intensity === '中' || day.intensity === '中高' || day.intensity === '中低' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-green-500/10 text-green-400'}`}>{day.intensity}</span>
                     <button onClick={() => setEditingDayId(isEditing ? null : day.id)} className="p-1 text-gray-600 hover:text-white transition text-[10px]">{isEditing ? '收起' : '编辑'}</button>
-                    <button onClick={() => pushToWorkbench(day)} title="推送到工作台" className="p-1 text-gray-600 hover:text-[#992828] transition"><ChevronRight className="w-3.5 h-3.5" /></button>
+                    {day.scene !== null && (
+                      <button onClick={() => pushToWorkbench(day)} title="推送到工作台" className="p-1 text-gray-600 hover:text-[#992828] transition"><ChevronRight className="w-3.5 h-3.5" /></button>
+                    )}
                     <button onClick={() => removeDay(day.id)} className="p-1 text-gray-600 hover:text-red-500 transition"><Trash2 className="w-3 h-3" /></button>
                   </div>
                   {isEditing && (
@@ -467,7 +496,7 @@ export default function PlanningPage() {
                         <div><label className="text-[9px] text-gray-500 block mb-1">训练焦点</label><input value={day.focus} onChange={e => updateDay(day.id, 'focus', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">强度</label><select value={day.intensity} onChange={e => updateDay(day.id, 'intensity', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">{INTENSITIES.map(i => <option key={i} value={i}>{i}</option>)}</select></div>
                         <div><label className="text-[9px] text-gray-500 block mb-1">时长(min)</label><input type="number" value={day.duration} onChange={e => updateDay(day.id, 'duration', Number(e.target.value))} min={15} max={120} step={5} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
-                        <div><label className="text-[9px] text-gray-500 block mb-1">场景</label><select value={day.scene} onChange={e => updateDay(day.id, 'scene', e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white"><option value="gym">力量房</option><option value="pitch">外场</option></select></div>
+                        <div><label className="text-[9px] text-gray-500 block mb-1">场景</label><select value={day.scene ?? 'rest'} onChange={e => updateDay(day.id, 'scene', e.target.value === 'rest' ? null : e.target.value)} className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white"><option value="rest">休息日</option><option value="gym">力量房</option><option value="pitch">外场</option></select></div>
                         <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">训练目标</label><div className="flex gap-1">{['strength','power','speed','mas_endurance','agility'].map(g => <button key={g} onClick={() => updateDay(day.id, 'goal', g)} className={`px-2 py-1 rounded text-[9px] transition ${day.goal === g ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-gray-400 hover:text-white'}`}>{g}</button>)}</div></div>
                         <div className="col-span-2"><label className="text-[9px] text-gray-500 block mb-1">备注</label><input value={day.notes} onChange={e => updateDay(day.id, 'notes', e.target.value)} placeholder="补充说明..." className="w-full bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white" /></div>
                       </div>

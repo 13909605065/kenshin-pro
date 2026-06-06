@@ -1052,6 +1052,66 @@ export default function MatchPage() {
             </div>
           )}
 
+          {/* ── 补负荷提醒（按位置区分策略）── */}
+          {(() => {
+            const underloaded = allPlayers
+              .map(p => ({ ...p, minutesPlayed: Math.round(p.timeOnField / 60) }))
+              .filter(p => p.minutesPlayed < 45);
+            if (underloaded.length === 0) return null;
+            return (
+              <div className="bg-[#992828]/5 border border-[#992828]/30 rounded-xl p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-[#992828]" />
+                  <h3 className="text-sm font-bold text-[#992828]">补负荷提醒</h3>
+                  <span className="text-[10px] text-gray-500">{underloaded.filter(p => p.position !== 'goalkeeper').length}人需补跑量</span>
+                </div>
+                {underloaded.map(p => {
+                  const posMap: Record<string, string> = { midfielder: '中场', defender: '后卫', wingback: '翼卫', forward: '前锋', goalkeeper: '门将' };
+                  const pos = posMap[p.position] || '其他';
+                  const baseDist: Record<string, number> = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960, goalkeeper: 4000 };
+                  const bd = baseDist[p.position] || 7000;
+                  let ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                  const needMeters = Math.round(bd * ratio);
+                  const isGk = p.position === 'goalkeeper';
+                  return (
+                    <details key={p.id} className="bg-[#1a1a1a] rounded-lg group">
+                      <summary className="flex items-center gap-3 p-3 cursor-pointer">
+                        <span className="text-xs text-white font-medium w-16 truncate">{p.name}</span>
+                        <span className="text-[10px] text-gray-500">{pos} · {p.minutesPlayed}min</span>
+                        <div className="flex-1" />
+                        <span className={`text-xs font-bold ${isGk ? 'text-yellow-500' : 'text-[#992828]'}`}>
+                          {isGk ? '技术维持' : `${needMeters}m`}
+                        </span>
+                        <ChevronDown className="w-3 h-3 text-gray-600 group-open:rotate-180 transition" />
+                      </summary>
+                      <div className="px-3 pb-3 space-y-1.5 border-t border-[#222] pt-2">
+                        {isGk ? (
+                          <p className="text-[10px] text-gray-400">门将无需补跑量。维持侧扑+出击+脚下技术训练即可。</p>
+                        ) : (
+                          <>
+                            <p className="text-[10px] text-gray-400">
+                              <span className="text-gray-500">主练：</span>
+                              {p.position === 'midfielder' ? 'SSG 4v4 + 间歇变速跑' :
+                               p.position === 'defender' ? '加速制动+变向组合' :
+                               p.position === 'wingback' ? '边路往返冲刺' :
+                               p.position === 'forward' ? '5-15m 爆发冲刺' : '通用跑动'}
+                            </p>
+                            <p className="text-[10px] text-gray-500">
+                              {p.position === 'midfielder' ? 'HR 80-90% · 训练主体后' :
+                               p.position === 'defender' ? 'HR 75-85% · 训练主体中段' :
+                               p.position === 'wingback' ? 'HR 85-95% · 分组轮换' :
+                               p.position === 'forward' ? '最大努力 · 训练主体前段' : ''}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
           <button
             onClick={() => {
               setShowFullReport(false);
