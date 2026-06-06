@@ -528,19 +528,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   return (
     <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
       <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
-      {/* Floating zoom controls */}
-      <div className="absolute bottom-3 right-3 flex flex-col gap-1 z-30">
-        <button onClick={zoomIn} className="w-7 h-7 flex items-center justify-center rounded text-xs font-bold transition-colors"
-          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
-          title="放大">+</button>
-        <button onClick={zoomOut} className="w-7 h-7 flex items-center justify-center rounded text-xs font-bold transition-colors"
-          style={{ backgroundColor: TAC_THEME.bgCard, color: TAC_THEME.textDim, border: `1px solid ${TAC_THEME.border}` }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.accent; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = TAC_THEME.bgCard; }}
-          title="缩小">-</button>
-      </div>
     </div>
   );
 }
