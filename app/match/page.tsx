@@ -1108,23 +1108,44 @@ export default function MatchPage() {
                     </details>
                   );
                 })}
-                {/* ── 一键加入明日计划 ── */}
-                <button
-                  onClick={() => {
-                    const suppData = underloaded
-                      .filter(p => p.position !== 'goalkeeper')
-                      .map(p => {
-                        const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
-                        const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
-                        return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
-                      });
-                    localStorage.setItem('kenshin_supplement_bridge', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData }));
-                    window.location.href = '/planning';
-                  }}
-                  className="w-full py-2 bg-[#992828]/20 hover:bg-[#992828]/30 text-[#992828] rounded-lg text-xs font-bold transition border border-[#992828]/30"
-                >
-                  📋 将补负荷加入明日训练计划
-                </button>
+                {/* ── 补负荷操作 ── */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-gray-500">补负荷最佳时机：比赛结束后立即执行（身体仍处于激活状态）。</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const suppData = underloaded
+                          .filter(p => p.position !== 'goalkeeper')
+                          .map(p => {
+                            const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
+                            const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                            return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
+                          });
+                        localStorage.setItem('kenshin_supplement_now', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData, immediate: true }));
+                        window.location.href = '/load';
+                      }}
+                      className="flex-1 py-2.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition"
+                    >
+                      ⚡ 赛后立刻补负荷
+                    </button>
+                    <button
+                      onClick={() => {
+                        const suppData = underloaded
+                          .filter(p => p.position !== 'goalkeeper')
+                          .map(p => {
+                            const bd = { midfielder: 7061, defender: 7080, wingback: 7012, forward: 6960 }[p.position] || 7000;
+                            const ratio = p.minutesPlayed === 0 ? 0.65 : p.minutesPlayed <= 20 ? 0.45 : 0.25;
+                            return { name: p.name, position: p.position, minutes: p.minutesPlayed, supplementMeters: Math.round(bd * ratio) };
+                          });
+                        localStorage.setItem('kenshin_supplement_bridge', JSON.stringify({ date: new Date().toISOString().slice(0,10), players: suppData }));
+                        window.location.href = '/planning';
+                      }}
+                      className="flex-1 py-2.5 bg-[#1a1a1a] border border-[#333] hover:border-[#992828] text-gray-400 hover:text-[#992828] rounded-lg text-xs font-bold transition"
+                    >
+                      📋 安排到最近训练日
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })()}
