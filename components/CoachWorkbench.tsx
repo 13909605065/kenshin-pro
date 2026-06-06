@@ -1521,6 +1521,40 @@ export default function CoachWorkbench() {
                 } catch {}
               }
 
+              // ── Auto-generate training notes ──
+              const todayKey = new Date().toISOString().slice(0, 10);
+              const sceneLabel = trainType === 'pitch' ? '外场' : '力量房';
+              const intensityLabel = '中'; // default, coach can edit later
+              const noteDraft = `${sceneLabel}训练 · ${elapsedMin}min · ${intensityLabel}强度\n${attendeeNames.length > 0 ? `参训: ${attendeeNames.join('、')}` : '全队合练'}\n要点: ___`;
+              try {
+                const notes = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
+                if (!notes[todayKey] || !notes[todayKey].notes) {
+                  notes[todayKey] = { notes: noteDraft, savedAt: new Date().toISOString() };
+                  localStorage.setItem('kenshin_structured_notes', JSON.stringify(notes));
+                }
+              } catch {}
+
+              // ── Sync to Supabase (best-effort) ──
+              try {
+                const { saveSessionLog, extractExercisesFromModules, calcSummary } = await import('@/lib/training-log');
+                const exercises = extractExercisesFromModules(modules);
+                const summary = calcSummary(exercises, noteDraft);
+                const log = {
+                  id: `log_${Date.now()}`,
+                  date: todayKey,
+                  planId: planId || 'manual',
+                  scene: scene,
+                  goal: goal,
+                  duration: elapsedMin,
+                  matchDay: activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`,
+                  playerName: planMode === 'individual' && selectedPlayers.size > 0 ? Array.from(selectedPlayers).join('/') : undefined,
+                  exercises,
+                  summary,
+                  createdAt: new Date().toISOString(),
+                };
+                saveSessionLog(log);
+              } catch {}
+
               // Notify load management page to refresh
               window.dispatchEvent(new CustomEvent('training-log-updated'));
 
