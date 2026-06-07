@@ -587,8 +587,6 @@ function ExerciseCard({
   onEdit?: () => void;
   onDelete?: () => void;
 }) {
-  const isStrength = exercise.type === "力量";
-
   return (
     <div
       className={`relative bg-[#1e1e1e] border rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ease-out group ${
@@ -610,72 +608,29 @@ function ExerciseCard({
         {selected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
       </button>
 
-      {/* Image area */}
-      <div className="aspect-square bg-[#111] flex items-center justify-center p-2 relative">
-        <StickFigure name={exercise.name} size={56} compact={true} bodyPart={exercise.bodyPart === "上半身" ? "upper" : exercise.bodyPart === "下半身" ? "lower" : exercise.bodyPart === "全身" ? "core" : undefined} />
-
-        {/* Scene badge */}
-        {exercise.scene && (
-          <span
-            className={`absolute bottom-1.5 right-1.5 px-1 py-0 rounded text-[8px] font-bold border ${
-              exercise.scene === "pitch"
-                ? "bg-[#22c55e]/20 text-[#22c55e] border-[#22c55e]/30"
-                : exercise.scene === "gym"
-                ? "bg-[#992828]/20 text-[#992828] border-[#992828]/30"
-                : "bg-yellow-500/20 text-yellow-500 border-yellow-500/30"
-            }`}
-            title={exercise.scene === "pitch" ? "场地可用" : exercise.scene === "gym" ? "健身房" : "均可"}
-          >
-            {exercise.scene === "pitch" ? "⚽场" : exercise.scene === "gym" ? "🏋️" : "⚡双"}
-          </span>
+      {/* Content */}
+      <div className="p-3">
+        <h3 className="text-[#d1d1d1] font-bold text-sm mb-2">{exercise.name}</h3>
+        {exercise.cue_points && exercise.cue_points.length > 0 && (
+          <ul className="text-[10px] text-gray-500 mb-2 space-y-0.5">
+            {exercise.cue_points.map((cue, i) => (
+              <li key={i} className="flex items-start gap-1">
+                <span className="text-[#992828] mt-0.5 shrink-0">•</span>
+                <span>{cue}</span>
+              </li>
+            ))}
+          </ul>
         )}
-
-        {/* Injury contraindications badge */}
-        {exercise.injury_contraindications && exercise.injury_contraindications.length > 0 && (
-          <span
-            className="absolute top-1.5 right-1.5 text-[10px] leading-none drop-shadow-lg"
-            title={`伤病禁忌: ${exercise.injury_contraindications.map(s => INJURY_LABELS[s] || s).join("、")}`}
-          >
-            <AlertTriangle className="w-3 h-3 text-[#f59e0b]" />
-          </span>
-        )}
-
-        {/* Difficulty badge */}
-        {exercise.difficulty && (
-          <span
-            className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
-              exercise.difficulty === "进阶"
-                ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/30"
-                : exercise.difficulty === "中级"
-                ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/30"
-                : "bg-green-500/20 text-green-500 border border-green-500/30"
-            }`}
-          >
-            {exercise.difficulty}
-          </span>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-2">
-        <h3 className="text-[#d1d1d1] font-bold text-xs truncate">{exercise.name}</h3>
-        <div className="flex items-center gap-1 mt-1 flex-wrap">
-          <span className={`px-1 py-0 rounded text-[9px] font-medium ${
-            isStrength ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/20" : "bg-[#222] text-gray-400"
-          }`}>
-            {exercise.type}
-          </span>
-          {exercise.equipment && (
-            <span className="text-[9px] text-gray-400">{exercise.equipment}</span>
-          )}
-        </div>
-        {isStrength && exercise.sets && exercise.reps && (
-          <p className="text-[10px] text-gray-400 mt-0.5">{exercise.sets[0]}-{exercise.sets[1]}x{exercise.reps[0]}-{exercise.reps[1]}</p>
+        {(exercise.progression || exercise.regression) && (
+          <div className="text-[10px] text-gray-600 border-t border-[#222] pt-2 mt-1 space-y-0.5">
+            {exercise.progression && <p><span className="text-gray-500">进阶:</span> {exercise.progression}</p>}
+            {exercise.regression && <p><span className="text-gray-500">退阶:</span> {exercise.regression}</p>}
+          </div>
         )}
         {exercise.isCustom && (
-          <div className="flex gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
-            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1e1e1e] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
-            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-[#1e1e1e] text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
+          <div className="flex gap-1 mt-2" onClick={e => e.stopPropagation()}>
+            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
+            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
           </div>
         )}
       </div>
