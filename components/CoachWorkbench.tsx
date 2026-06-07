@@ -1207,7 +1207,7 @@ export default function CoachWorkbench() {
                     <button key={s.id} onClick={() => { setScene(s.id); setGoal(SCENE_GOALS[s.id][0].id); }}
                       className={`px-2 py-1 rounded text-[10px] font-medium transition ${
                         scene === s.id ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
-                      }`}>{s.icon} {s.label}</button>
+                      }`}>{s.label}</button>
                   ))}
                 </div>
 
@@ -1308,7 +1308,7 @@ export default function CoachWorkbench() {
                 }`}>{label}</div>
 
                 {/* Scene icon */}
-                <div className="text-sm mb-0.5">{dayInfo.icon}</div>
+                
 
                 {/* Short label */}
                 <div className={`text-[8px] leading-tight ${
@@ -1318,7 +1318,7 @@ export default function CoachWorkbench() {
                   'text-[#777]'
                 }`}>
                   {hasPlan && <span className="text-[#992828]">已排</span>}
-                  {!hasPlan && dayInfo.icon}
+                  
                 </div>
 
                 {/* Date hint */}

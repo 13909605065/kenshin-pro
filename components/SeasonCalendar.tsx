@@ -63,15 +63,13 @@ const EVENT_CONFIG: Record<EventType, { label: string; emoji: string; color: str
   preseason_friendly: { label: '季前热身赛', emoji: '🟢', color: '#22c55e', bg: '#22c55e/15', border: '#22c55e/40' },
   fitness_test: { label: '体能测试', emoji: '🟣', color: '#a855f7', bg: '#a855f7/15', border: '#a855f7/40' },
   recovery_week: { label: '恢复周', emoji: '⚪', color: '#9ca3af', bg: '#9ca3af/15', border: '#9ca3af/40' },
-  deload_week: { label: '减量周', emoji: '🟡', color: '#eab308', bg: '#eab308/15', border: '#eab308/40' },
-};
+  deload_week: { label: '减量周', emoji: '🟡', color: '#eab308', bg: '#eab308/15', border: '#eab308/40' } };
 
 const PHASE_CONFIG: Record<PhaseType, { label: string; icon: string; desc: string; defaultEvent: EventType }> = {
   offseason: { label: '休赛期', icon: '🧊', desc: '灰色恢复周 · 禁用全队MD · 仅加练小组 · 短板补强+身体重塑', defaultEvent: 'recovery_week' },
   preseason_build: { label: '季前备战期', icon: '🏋️', desc: '绿色季前 · 体能储备+战术磨合 · 末尾1周自动黄色减量', defaultEvent: 'preseason_friendly' },
   regular_season: { label: '常规赛季', icon: '⚽', desc: '红色联赛+橙色杯赛 · 以赛代练维持状态 · 关键战前可手动标记黄色减量周', defaultEvent: 'league_match' },
-  playoffs: { label: '附加赛', icon: '🏆', desc: '收官冲刺 · 赛程密集 · 默认小强度模板 · 避免透支伤病 · 减量高频', defaultEvent: 'playoff_match' },
-};
+  playoffs: { label: '附加赛', icon: '🏆', desc: '收官冲刺 · 赛程密集 · 默认小强度模板 · 避免透支伤病 · 减量高频', defaultEvent: 'playoff_match' } };
 
 const STORAGE_KEY = 'kenshin_season_calendar';
 
@@ -122,8 +120,7 @@ function getDefaultData(): SeasonCalendarData {
     phaseRanges: [],
     matchDates: [],
     seasonStart: `${year}-07-01`,
-    seasonEnd: `${year + 1}-06-30`,
-  };
+    seasonEnd: `${year + 1}-06-30` };
 }
 
 /** Validate loaded data — repair corruption, return clean default if broken */
@@ -176,8 +173,7 @@ async function syncSeasonToSupabase(data: SeasonCalendarData) {
     await supabase.from("season_calendar").upsert({
       user_id: session.session.user.id,
       calendar_data: data,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'user_id' });
+      updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
   } catch {}
 }
 
@@ -201,8 +197,7 @@ function eventStyle(type: EventType): { bg: string; border: string; color: strin
   return {
     bg: `${colorHex}18`,
     border: `${colorHex}50`,
-    color: colorHex,
-  };
+    color: colorHex };
 }
 
 // ═══════════════════════════════════════════════
@@ -225,8 +220,7 @@ function EventEditorPopup({
   existingEvent,
   onSave,
   onDelete,
-  onClose,
-}: {
+  onClose }: {
   date: string;
   existingEvent: SeasonEvent | null;
   onSave: (evt: SeasonEvent) => void;
@@ -242,8 +236,7 @@ function EventEditorPopup({
       date,
       type,
       notes,
-      createdAt: existingEvent?.createdAt || new Date().toISOString(),
-    };
+      createdAt: existingEvent?.createdAt || new Date().toISOString() };
     onSave(evt);
     onClose();
   };
@@ -291,12 +284,10 @@ function EventEditorPopup({
                   style={type === key ? {
                     backgroundColor: `${cfg.color}20`,
                     borderColor: `${cfg.color}60`,
-                    color: cfg.color,
-                  } : {
+                    color: cfg.color } : {
                     backgroundColor: '#111',
                     color: '#9ca3af',
-                    borderColor: '#222',
-                  }}
+                    borderColor: '#222' }}
                 >
                   <span>{cfg.emoji}</span>
                   <span>{cfg.label}</span>
@@ -452,8 +443,7 @@ export default function SeasonCalendar() {
       recoveryWeeks,
       deloadWeeks,
       totalWeeks,
-      totalMatches: leagueCount + cupCount + playoffCount,
-    };
+      totalMatches: leagueCount + cupCount + playoffCount };
   }, [data]);
 
   // ── Events grouped by date ──
@@ -480,8 +470,7 @@ export default function SeasonCalendar() {
         startDate: batchStartDate,
         endDate: batchEndDate,
         phase: batchPhase,
-        notes: batchNotes || PHASE_CONFIG[batchPhase].label,
-      };
+        notes: batchNotes || PHASE_CONFIG[batchPhase].label };
 
       // Remove overlapping ranges of same phase
       const ranges = prev.phaseRanges.filter(
@@ -581,8 +570,7 @@ export default function SeasonCalendar() {
         weeks.push({
           weekStart: dateStr(cursor),
           month: cursor.getMonth() + 1,
-          days,
-        });
+          days });
       }
       cursor.setDate(cursor.getDate() + 7);
     }
@@ -833,11 +821,10 @@ export default function SeasonCalendar() {
                       }`}
                       style={batchPhase === key ? {
                         backgroundColor: `${PHASE_COLORS[key]}40`,
-                        borderColor: `${PHASE_COLORS[key]}80`,
-                      } : { backgroundColor: '#111' }}
+                        borderColor: `${PHASE_COLORS[key]}80` } : { backgroundColor: '#111' }}
                     >
                       <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: PHASE_COLORS[key] }} />
-                      {cfg.icon} {cfg.label}
+                      {cfg.label}
                     </button>
                   ))}
                 </div>
@@ -1083,7 +1070,7 @@ export default function SeasonCalendar() {
                                   className="text-[8px] px-1.5 py-1 rounded font-medium"
                                   style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
                                 >
-                                  {cfg.emoji} {cfg.label}
+                                  {cfg.label}
                                   {evt.notes && (
                                     <div className="text-[7px] opacity-70 mt-0.5 truncate">{evt.notes}</div>
                                   )}
