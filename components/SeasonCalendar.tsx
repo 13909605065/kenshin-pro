@@ -925,19 +925,24 @@ export default function SeasonCalendar() {
                         {cells.map((cell, i) => {
                           if (!cell) return <div key={"e"+i} className="aspect-square" />;
                           const hasEvent = cell.events.length > 0;
-                          const bg = hasEvent ? EVENT_CONFIG[cell.events[0].type].color + "20" : "transparent";
+                          const cfg = hasEvent ? EVENT_CONFIG[cell.events[0].type] : null;
+                          const bg = cfg ? cfg.color + "30" : "transparent";
                           return (
                             <button key={cell.date}
                               onClick={() => setShowEventEditor({ date: cell.date, event: cell.events[0] || null })}
-                              className={"aspect-square flex items-center justify-center rounded-sm text-[9px] transition " +
-                                (cell.isToday ? "ring-1 ring-[#992828] " : "") +
-                                (hasEvent ? " font-bold" : "")}
-                              style={{ backgroundColor: bg }}
+                              className={"aspect-square flex flex-col items-center justify-center rounded-sm text-[8px] transition " +
+                                (cell.isToday ? "ring-1 ring-[#992828] " : "")}
+                              style={{ backgroundColor: bg, borderLeft: cfg ? "2px solid "+cfg.color : "2px solid transparent" }}
                               title={hasEvent ? cell.events.map(e => EVENT_CONFIG[e.type].label).join(", ") : cell.date}>
-                              <span className={cell.isToday ? "text-[#992828] font-bold"
-                                : hasEvent ? "text-gray-200" : "text-gray-600"}>
+                              <span className={"leading-none " + (cell.isToday ? "text-[#992828] font-bold"
+                                : hasEvent ? "text-gray-200" : "text-gray-600")}>
                                 {cell.day}
                               </span>
+                              {cfg && (
+                                <span className="text-[6px] leading-none mt-px truncate w-full text-center" style={{ color: cfg.color }}>
+                                  {cfg.label}
+                                </span>
+                              )}
                             </button>
                           );
                         })}
