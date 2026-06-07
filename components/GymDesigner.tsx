@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { GymLayout } from "@/components/GymLayout";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
+import { WorkoutOptimizer } from "@/components/WorkoutOptimizer";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import {
@@ -1357,6 +1358,18 @@ export function GymDesigner() {
           </div>
         )}
       </main>
+
+      {/* Workout Optimization Suggestions */}
+      {selectedIds.length > 0 && (
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-6">
+          <WorkoutOptimizer
+            exerciseNames={selectedIds.map(id => EXERCISE_LIBRARY.find(e => e.id === id)?.name || id)}
+            bodyParts={selectedIds.map(id => EXERCISE_LIBRARY.find(e => e.id === id)?.body_part || "")}
+            phase={phase}
+            goal={goal}
+          />
+        </div>
+      )}
 
       {/* Day Picker Modal */}
       <DayPickerModal
