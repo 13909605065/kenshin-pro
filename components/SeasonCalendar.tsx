@@ -368,6 +368,9 @@ export default function SeasonCalendar() {
   const [showEventEditor, setShowEventEditor] = useState<{ date: string; event: SeasonEvent | null } | null>(null);
   const [showBatchPanel, setShowBatchPanel] = useState(false);
   const [batchPhase, setBatchPhase] = useState<PhaseType>('regular_season');
+  const [legendOpen, setLegendOpen] = useState(false);
+  const [showOnlyMarked, setShowOnlyMarked] = useState(false);
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const [batchStartDate, setBatchStartDate] = useState<string>('');
   const [batchEndDate, setBatchEndDate] = useState<string>('');
   const [batchNotes, setBatchNotes] = useState('');
@@ -786,12 +789,26 @@ export default function SeasonCalendar() {
 
       {!collapsed && (
         <>
-          {/* ══ LEGEND — compact ══ */}
-          <div className="px-4 py-1.5 border-b border-[#222] flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[9px] text-gray-500">
-            {(Object.entries(EVENT_CONFIG) as [EventType, typeof EVENT_CONFIG[EventType]][]).map(([key, cfg]) => (
-              <span key={key} className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />{cfg.emoji}{cfg.label}</span>
-            ))}
+          {/* ══ LEGEND + TOGGLES ══ */}
+          <div className="px-3 py-1 border-b border-[#222] flex items-center gap-3 text-[9px]">
+            <button onClick={e => { e.stopPropagation(); setLegendOpen(!legendOpen); }}
+              className="text-gray-600 hover:text-gray-400 flex items-center gap-1">
+              {legendOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              图例
+            </button>
+            <label className="flex items-center gap-1 text-gray-500 cursor-pointer">
+              <input type="checkbox" checked={showOnlyMarked} onChange={e => setShowOnlyMarked(e.target.checked)}
+                className="w-3 h-3 rounded accent-[#992828]" />
+              只看事件
+            </label>
           </div>
+          {legendOpen && (
+            <div className="px-4 py-1.5 border-b border-[#222] flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[9px] text-gray-500">
+              {(Object.entries(EVENT_CONFIG) as [EventType, typeof EVENT_CONFIG[EventType]][]).map(([key, cfg]) => (
+                <span key={key} className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg.color }} />{cfg.label}</span>
+              ))}
+            </div>
+          )}
 
           {/* ══ BATCH PLANNING PANEL ══ */}
           {showBatchPanel && (
@@ -1059,8 +1076,13 @@ export default function SeasonCalendar() {
 
           {/* ═══ SUMMARY STATS BAR ═══ */}
           <div className="px-4 py-2 border-t border-[#222] bg-[#0a0a0a]">
+            <button onClick={e => { e.stopPropagation(); setOverviewOpen(!overviewOpen); }}
+              className="flex items-center gap-1 text-[10px] text-gray-500 font-medium hover:text-gray-300 mb-1">
+              {overviewOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              赛季概览
+            </button>
+            {overviewOpen && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-              <span className="text-gray-500 font-medium">赛季概览</span>
               {data.phaseRanges.length > 0 ? (
                 data.phaseRanges.map(range => {
                   const cfg = PHASE_CONFIG[range.phase];
@@ -1078,6 +1100,7 @@ export default function SeasonCalendar() {
                 <span className="text-gray-500">总{autoStats.totalWeeks}周 · {autoStats.totalMatches || 0}场比赛</span>
               )}
             </div>
+            )}
           </div>
         </>
       )}
