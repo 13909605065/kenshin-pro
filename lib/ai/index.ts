@@ -23,23 +23,7 @@ import { PlayerFormData } from "../types";
  */
 export function buildSystemPrompt(data: PlayerFormData, scene?: string): string {
   const base = data.role === "coach" ? buildCoachSystemPrompt() : buildAthleteSystemPrompt();
-
-  // ── Knowledge Base Citation ──
-  const kbNote = `\n\n## 📚 专业知识来源
-本系统基于以下专业书籍知识库（38本足球体能/运动科学著作，460万字）：
-- NSCA-CSCS 美国国家体能协会体能教练认证指南（第4版）
-- Routledge Handbook of Strength and Conditioning
-- NSCA Strength Training for Soccer (Daniel Guzman, 2022)
-- Training Sport Teams (Tim Caron)
-- 高级运动营养学 / 基础肌动学 / 骨骼肌肉功能解剖学
-- 运动生理学第六版 / 运动解剖学 / 运动心理学
-- 足球比赛决策分析及针对性训练 / 足球技战术训练全书
-- 肌肉与力量全书 / 精准拉伸 / 热身运动系统
-- +30本专业著作
-
-输出方案时请基于运动科学原理，体现循证依据。`;
-
-  const prompt = base + kbNote;
+  const kbNote = `\n\n## 📚 专业循证依据\n本系统基于38本足球体能/运动科学著作的知识库（NSCA-CSCS第4版、Routledge Handbook、Training Sport Teams等，共计460万字）。所有训练方案建议须基于运动科学原理输出。`;
 
   // Inject scene constraint at system prompt level (highest priority for LLM)
   // Corresponds to 四大板块中的板块二/三/四
@@ -54,7 +38,7 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 ability仅限: ex-sled-sprint ex-box-jump ex-nordic-hamstring
 - 🟢 多输出 drill_ids（有球训练是球场核心）
 - 📊 如球员上场时间<45分钟，在方案中增加补负荷建议`;
-    return pitchRule + "\n" + prompt;
+    return pitchRule + "\n" + base + kbNote;
   }
 
   if (scene === "gym") {
@@ -66,7 +50,7 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 专注器械力量训练，优先使用 combo_id
 - 🟢 全部力量动作可用
 - 🟢 可输出：最大力量、基础爆发、基础灵敏、核心/躯干对抗`;
-    return gymRule + "\n" + prompt;
+    return gymRule + "\n" + base;
   }
 
   if (scene === "rehab") {
@@ -80,11 +64,10 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 必须输出 module_5 康复方案（phases 数组）
 - 🟢 康复阶段按组织愈合时间线设计：急性期→增殖期→重塑期→功能期
 - 🟢 优先：弱侧强化、本体感觉训练、ROM恢复、闭链练习`;
-    return rehabRule + "
-" + prompt;
+    return rehabRule + "\n" + base;
   }
 
-  return prompt;
+  return base + kbNote;
 }
 
 /**
