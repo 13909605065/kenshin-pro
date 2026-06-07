@@ -710,11 +710,12 @@ function ExerciseLibraryPanel({
 
 /** Center Panel: Current Workout */
 function WorkoutPanel({
-  selectedIds,
-  onRemoveExercise,
-  onReorder,
+  selectedIds, exerciseParams, onUpdateParams,
+  onRemoveExercise, onReorder,
 }: {
   selectedIds: string[];
+  exerciseParams: Record<string, {sets:number,reps:number,rest:number}>;
+  onUpdateParams: (id: string, field: string, value: number) => void;
   onRemoveExercise: (id: string) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
 }) {
@@ -816,11 +817,24 @@ function WorkoutPanel({
                     <span className="text-xs font-medium text-white block leading-snug">
                       {ex?.name || id}
                     </span>
-                    {ex && (
-                      <span className="text-[9px] text-gray-500">
-                        {BODY_PART_LABELS[ex.body_part] || ex.body_part}
-                      </span>
-                    )}
+                    {/* Editable params */}
+                    <div className="flex items-center gap-2 mt-1">
+                      <input type="number" min={1} max={10}
+                        value={exerciseParams[id]?.sets || 3}
+                        onChange={e => onUpdateParams(id, "sets", parseInt(e.target.value)||1)}
+                        className="w-8 bg-[#0a0a0a] border border-[#333] rounded text-[9px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        title="组数" />组
+                      <input type="number" min={1} max={30}
+                        value={exerciseParams[id]?.reps || 8}
+                        onChange={e => onUpdateParams(id, "reps", parseInt(e.target.value)||1)}
+                        className="w-8 bg-[#0a0a0a] border border-[#333] rounded text-[9px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        title="次数" />次
+                      <input type="number" min={0} max={300}
+                        value={exerciseParams[id]?.rest || 90}
+                        onChange={e => onUpdateParams(id, "rest", parseInt(e.target.value)||0)}
+                        className="w-10 bg-[#0a0a0a] border border-[#333] rounded text-[9px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        title="间歇(秒)" />s
+                    </div>
                   </div>
 
                   {/* Move buttons */}
@@ -1084,6 +1098,7 @@ export function GymDesigner() {
 
   // Workout state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [exerciseParams, setExerciseParams] = useState<Record<string, {sets:number,reps:number,rest:number}>>({});
   const [workoutName, setWorkoutName] = useState("");
   const [phase, setPhase] = useState<string>("preseason");
   const [goal, setGoal] = useState<string>("strength");
@@ -1137,6 +1152,13 @@ export function GymDesigner() {
   }, []);
 
   // Reorder exercises
+  const handleUpdateParams = useCallback((id: string, field: string, value: number) => {
+    setExerciseParams(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] || {sets:3,reps:8,rest:90}), [field]: value }
+    }));
+  }, []);
+
   const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
     setSelectedIds((prev) => {
       const next = [...prev];
@@ -1258,6 +1280,8 @@ export function GymDesigner() {
           <div className="flex-1 min-w-0 h-[400px] lg:h-full">
             <WorkoutPanel
               selectedIds={selectedIds}
+              exerciseParams={exerciseParams}
+              onUpdateParams={handleUpdateParams}
               onRemoveExercise={handleRemoveExercise}
               onReorder={handleReorder}
             />

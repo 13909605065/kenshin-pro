@@ -771,13 +771,13 @@ export default function CoachWorkbench() {
         <button onClick={() => setWorkbenchMode('football')}
           className={`flex-1 py-3 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 relative ${
             workbenchMode === 'football' ? 'bg-[#171717] text-[#992828]' : 'bg-[#171717] text-[#888] hover:text-[#aaa]'
-          }`}>⚽ 足球训练
+          }`}>足球训练
           {workbenchMode === 'football' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#992828] rounded-full" />}
         </button>
         <button onClick={() => setWorkbenchMode('gym')}
           className={`flex-1 py-3 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 relative ${
             workbenchMode === 'gym' ? 'bg-[#171717] text-[#992828]' : 'bg-[#171717] text-[#888] hover:text-[#aaa]'
-          }`}>🏋️ 力量房
+          }`}>力量房
           {workbenchMode === 'gym' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#992828] rounded-full" />}
         </button>
       </div>
@@ -786,7 +786,7 @@ export default function CoachWorkbench() {
       <div className="flex items-center gap-2 bg-[#141414] border border-[#2c2c2c] rounded-xl p-2.5 flex-wrap">
         <input type="date" value={trainDate} onChange={e => setTrainDate(e.target.value)}
           className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:border-[#992828] outline-none" />
-        <span className="text-xs font-bold text-[#F1F1F1]">{workbenchMode === 'football' ? '⚽ 外场' : '🏋️ 力量房'}</span>
+        <span className="text-xs font-bold text-[#F1F1F1]">{workbenchMode === 'football' ? '外场' : '力量房'}</span>
         <span className="text-[#555]">|</span>
         <a href="/planning" className="text-[10px] px-2 py-1 rounded bg-[#1a1a1a] border border-[#333] text-[#888] hover:text-white no-underline">提前排课</a>
         <button onClick={() => setTimeSlot('morning')}
