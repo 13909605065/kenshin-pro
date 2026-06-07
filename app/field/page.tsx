@@ -876,7 +876,6 @@ export default function FieldPage() {
                 <Gauge className="w-5 h-5 text-[#992828]" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider">总计</p>
                 <p className="text-lg font-bold text-white">
                   {sessionTotals.totalMin}<span className="text-sm font-normal text-gray-400 ml-0.5">min</span>
                 </p>
