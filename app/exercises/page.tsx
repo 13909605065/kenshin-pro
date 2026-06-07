@@ -1,10 +1,9 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X, CheckSquare, Square, Filter, ListChecks, AlertTriangle } from "lucide-react";
+import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X, CheckSquare, Square, Filter, ListChecks } from "lucide-react";
 import { STRENGTH_LIBRARY } from "@/lib/training-library";
 import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
 import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
-import { StickFigure } from "@/components/StickFigure";
 
 // ═══════════════════════════════════════════════
 // Category Types
@@ -221,16 +220,6 @@ function buildUnifiedExercises(): UnifiedExercise[] {
 
   return list;
 }
-
-// ═══════════════════════════════════════════════
-// Injury label mapping
-// ═══════════════════════════════════════════════
-
-const INJURY_LABELS: Record<string, string> = {
-  knee: "膝", ankle: "踝", hip: "髋", waist: "腰",
-  shoulder: "肩", elbow: "肘", wrist: "腕",
-  hamstring: "腘绳", achilles: "跟腱", foot: "足", calf: "小腿",
-};
 
 // ═══════════════════════════════════════════════
 // Page Component
@@ -668,105 +657,11 @@ function ExerciseDetailSheet({
         </div>
 
         <div className="p-4 space-y-5">
-          {/* Stick Figure */}
-          <div className="max-w-[200px] mx-auto bg-[#111] rounded-xl p-4">
-            <StickFigure name={exercise.name} size={160} showMuscles={true} />
-          </div>
-
-          {/* External image */}
-          {exercise.image_url && (
-            <div className="w-full aspect-video bg-[#111] rounded-xl overflow-hidden">
-              <img
-                src={exercise.image_url}
-                alt={exercise.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          )}
-
-          {/* Badges row */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-1 rounded bg-[#992828]/10 border border-[#992828]/20 text-xs text-[#992828] font-medium">
-              {exercise.bodyPart}
-            </span>
-            <span className="px-2 py-1 rounded bg-[#222] text-xs text-gray-400">
-              {exercise.equipment}
-            </span>
-            {exercise.difficulty && (
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                exercise.difficulty === "进阶"
-                  ? "bg-[#992828]/10 border border-[#992828]/20 text-[#992828]"
-                  : exercise.difficulty === "中级"
-                  ? "bg-yellow-500/10 border border-yellow-500/20 text-yellow-500"
-                  : "bg-green-500/10 border border-green-500/20 text-green-500"
-              }`}>
-                {exercise.difficulty}
-              </span>
-            )}
-            {exercise.scene && (
-              <span className={`px-2 py-1 rounded text-xs font-medium border ${
-                exercise.scene === "pitch"
-                  ? "bg-[#22c55e]/10 border-[#22c55e]/20 text-[#22c55e]"
-                  : exercise.scene === "gym"
-                  ? "bg-[#992828]/10 border-[#992828]/20 text-[#992828]"
-                  : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500"
-              }`}>
-                {exercise.scene === "pitch" ? "⚽ 场地可用" : exercise.scene === "gym" ? "🏋️ 健身房" : "⚡ 双场景"}
-              </span>
-            )}
-          </div>
-
-          {/* Injury contraindications */}
-          {exercise.injury_contraindications && exercise.injury_contraindications.length > 0 && (
-            <div className="bg-[#f59e0b]/5 border border-[#f59e0b]/20 rounded-xl p-3">
-              <p className="text-[10px] text-[#f59e0b] font-bold mb-1.5 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                伤病禁忌
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {exercise.injury_contraindications.map((s) => (
-                  <span key={s} className="px-2 py-0.5 rounded text-[10px] bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20">
-                    {INJURY_LABELS[s] || s}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[10px] text-gray-500 mt-1.5">以上部位伤病时请避免此动作，或使用退阶版本</p>
-            </div>
-          )}
-
-          {/* Sets/Reps info for strength */}
-          {exercise.type === "力量" && exercise.sets && exercise.reps && (
-            <div className="flex items-center gap-3 text-sm">
-              <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-[10px] text-gray-400 mb-0.5">组数</p>
-                <p className="text-[#d1d1d1] font-bold">{exercise.sets[0]}-{exercise.sets[1]} 组</p>
-              </div>
-              <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                <p className="text-[10px] text-gray-400 mb-0.5">次数</p>
-                <p className="text-[#d1d1d1] font-bold">{exercise.reps[0]}-{exercise.reps[1]} 次</p>
-              </div>
-              {exercise.rest && (
-                <div className="bg-[#111] rounded-lg px-3 py-2 flex-1 text-center">
-                  <p className="text-[10px] text-gray-400 mb-0.5">组间歇</p>
-                  <p className="text-[#d1d1d1] font-bold">{exercise.rest}s</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Description */}
-          {exercise.description && (
-            <div>
-              <p className="text-[10px] text-gray-600 mb-1.5 uppercase tracking-wider font-medium">动作说明</p>
-              <p className="text-sm text-gray-400 leading-relaxed">{exercise.description}</p>
-            </div>
-          )}
 
           {/* Cue Points */}
           {exercise.cue_points && exercise.cue_points.length > 0 && (
             <div>
-              <p className="text-[10px] text-gray-600 mb-1.5 uppercase tracking-wider font-medium">动作要点</p>
+              <p className="text-[10px] text-gray-500 mb-2 uppercase tracking-wider font-medium">注意事项</p>
               <ol className="space-y-1.5">
                 {exercise.cue_points.map((c: string, i: number) => (
                   <li key={i} className="text-sm text-gray-300 flex gap-1.5">
@@ -778,28 +673,10 @@ function ExerciseDetailSheet({
             </div>
           )}
 
-          {/* Load Default */}
-          {exercise.load_default && (
-            <div>
-              <p className="text-[10px] text-gray-600 mb-1.5 uppercase tracking-wider font-medium">参考负荷</p>
-              <span className="px-2 py-1 rounded bg-[#111] text-sm text-gray-300 border border-[#222]">
-                {exercise.load_default}
-              </span>
-            </div>
-          )}
-
-          {/* RPE & Heart Rate */}
-          {(exercise.rpe || exercise.heart_rate_zone) && (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              {exercise.rpe && <span className="bg-[#111] px-2 py-1 rounded border border-[#222]">RPE {exercise.rpe}</span>}
-              {exercise.heart_rate_zone && <span className="bg-[#111] px-2 py-1 rounded border border-[#222]">{exercise.heart_rate_zone}</span>}
-            </div>
-          )}
-
           {/* Progression */}
           {exercise.progression && (
             <div className="bg-[#111] rounded-xl p-3 border border-[#222]">
-              <p className="text-xs text-[#992828] font-bold mb-1">进阶变式</p>
+              <p className="text-xs text-[#992828] font-bold mb-1">进阶</p>
               <p className="text-xs text-gray-400">{exercise.progression}</p>
             </div>
           )}
@@ -807,8 +684,8 @@ function ExerciseDetailSheet({
           {/* Regression */}
           {exercise.regression && (
             <div className="bg-[#111] rounded-xl p-3 border border-[#222]">
-              <p className="text-xs text-blue-400 font-bold mb-1">退阶变式</p>
-              <p className="text-xs text-gray-400">{exercise.regression}</p>
+              <p className="text-xs text-gray-400 font-bold mb-1">退阶</p>
+              <p className="text-xs text-gray-500">{exercise.regression}</p>
             </div>
           )}
 
