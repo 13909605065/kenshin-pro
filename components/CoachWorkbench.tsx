@@ -82,16 +82,14 @@ const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
   pitch: [
     { id: 'strength', label: '自重基础力量' }, { id: 'power', label: '场地爆发力' },
     { id: 'speed', label: '直线加速速度' }, { id: 'mas_endurance', label: '专项间歇耐力' },
-  ],
-};
+  ] };
 
 const DURATIONS = [30, 45, 60, 75, 90];
 const ADDON_DURATIONS = [15, 20, 25, 30];
 
 // ── goal/scene label lookups ──
 const GOAL_LABELS: Record<string, string> = {
-  strength: '力量', power: '爆发力', speed: '速度', agility: '灵敏', mas_endurance: '耐力',
-};
+  strength: '力量', power: '爆发力', speed: '速度', agility: '灵敏', mas_endurance: '耐力' };
 const SCENE_LABELS: Record<string, string> = { gym: '力量房', pitch: '外场' };
 
 // ── roster types ──
@@ -105,8 +103,7 @@ function mapPosition(cn: string): Position {
     '中后卫': 'defender', '左后卫': 'wingback', '右后卫': 'wingback',
     '后腰': 'midfielder', '中前卫': 'midfielder', '前腰': 'midfielder',
     '中锋': 'center_forward', '影锋': 'forward', '边锋': 'winger',
-    '左边翼卫': 'wingback', '右边翼卫': 'wingback',
-  };
+    '左边翼卫': 'wingback', '右边翼卫': 'wingback' };
   return map[cn] || 'midfielder';
 }
 
@@ -141,8 +138,7 @@ const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInf
     [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
     [2]:  { icon: '⚽', label: '外场常规', scene: 'pitch' },
     [3]:  { icon: '🏋️', label: '唯一力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场大课', scene: 'pitch' },
-  },
+    [4]:  { icon: '⚽', label: '外场大课', scene: 'pitch' } },
   preseason_build: {
     [-2]: { icon: '⚽', label: '外场磨合', scene: 'pitch' },
     [-1]: { icon: '🔥', label: '激活', scene: 'pitch' },
@@ -150,8 +146,7 @@ const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInf
     [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
     [2]:  { icon: '🏋️', label: '力量①', scene: 'gym' },
     [3]:  { icon: '⚽', label: '外场体能', scene: 'pitch' },
-    [4]:  { icon: '🏋️', label: '力量②', scene: 'gym' },
-  },
+    [4]:  { icon: '🏋️', label: '力量②', scene: 'gym' } },
   offseason: {
     [-2]: { icon: '🏋️', label: '力量轻负荷', scene: 'gym' },
     [-1]: { icon: '🏃', label: '活动', scene: 'pitch' },
@@ -159,8 +154,7 @@ const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInf
     [1]:  { icon: '🏋️', label: '恢复力量', scene: 'gym' },
     [2]:  { icon: '🏋️', label: '主力力量①', scene: 'gym' },
     [3]:  { icon: '🏋️', label: '主力力量②', scene: 'gym' },
-    [4]:  { icon: '🏋️', label: '主力力量③', scene: 'gym' },
-  },
+    [4]:  { icon: '🏋️', label: '主力力量③', scene: 'gym' } },
   playoffs: {
     [-2]: { icon: '⚽', label: '外场激活·压负荷', scene: 'pitch' },
     [-1]: { icon: '🧘', label: '最低负荷', scene: 'pitch' },
@@ -168,23 +162,19 @@ const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInf
     [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
     [2]:  { icon: '⚽', label: '外场纠错', scene: 'pitch' },
     [3]:  { icon: '🏋️', label: '轻量维持力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场对抗', scene: 'pitch' },
-  },
-};
+    [4]:  { icon: '⚽', label: '外场对抗', scene: 'pitch' } } };
 
 const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
   regular_season: 1,
   preseason_build: 2,
   offseason: 3,
-  playoffs: 1,
-};
+  playoffs: 1 };
 
 const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
   regular_season: { label: '常规赛季', icon: '⚽', color: '#992828', defaultMode: 'football' },
   preseason_build: { label: '季前备战', icon: '🏋️', color: '#166534', defaultMode: 'football' },
   offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
-  playoffs: { label: '附加赛', icon: '🏆', color: '#992828', defaultMode: 'football' },
-};
+  playoffs: { label: '附加赛', icon: '🏆', color: '#992828', defaultMode: 'football' } };
 
 function getMicrocycleDay(phaseKey: CalendarPhaseKey, dayOffset: number): MicrocycleDayInfo {
   const rules = MICROCYCLE_RULES[phaseKey];
@@ -392,8 +382,7 @@ export default function CoachWorkbench() {
   const { greens, yellows, reds } = useMemo(() => ({
     greens: players.filter(p => p.status === 'green').length,
     yellows: players.filter(p => p.status === 'yellow').length,
-    reds: players.filter(p => p.status === 'red').length,
-  }), [players]);
+    reds: players.filter(p => p.status === 'red').length }), [players]);
   const atRiskReasons = useMemo(() => players.filter(p => p.status !== 'green'), [players]);
 
   // ── batch player selection ──
@@ -434,8 +423,7 @@ export default function CoachWorkbench() {
       muscleSoreness: null,
       stressLevel: null,
       acwr: teamACWR?.acwr ?? null,
-      hoursSinceLastSession: null,
-    };
+      hoursSinceLastSession: null };
     return calcRecoveryScore(input);
   }, [teamACWR]);
 
@@ -472,8 +460,7 @@ export default function CoachWorkbench() {
           weakness: addonTheme ? `加练主题: ${addonTheme} | 场景: ${SCENE_LABELS[sceneForAddon]}` : '',
           coachCert: coachCert as any, coachRole: coachRole as any, leagueTag: leagueTag as any,
           tacticalThemes: [], equipmentAvailable: [],
-          trainingDuration: duration, playerCount: selectedRosterPlayers.length,
-        };
+          trainingDuration: duration, playerCount: selectedRosterPlayers.length };
       }
     }
 
@@ -493,8 +480,7 @@ export default function CoachWorkbench() {
       injurySites: [], weakness: '',
       coachCert: coachCert as any, coachRole: coachRole as any, leagueTag: leagueTag as any,
       tacticalThemes: [], equipmentAvailable: [],
-      trainingDuration: duration, playerCount,
-    };
+      trainingDuration: duration, playerCount };
   }, [players, goal, phase, coachCert, coachRole, leagueTag, duration, playerCount, selectedPlayers, planMode, addonTheme, addonScene]);
 
   // ── generate ──
@@ -585,8 +571,7 @@ export default function CoachWorkbench() {
         duration,
         goal,
         phase,
-        savedAt: new Date().toISOString(),
-      });
+        savedAt: new Date().toISOString() });
     }
   }, [generating, modules.length]);
 
@@ -685,8 +670,7 @@ export default function CoachWorkbench() {
       duration,
       goal,
       phase,
-      savedAt: new Date().toISOString(),
-    });
+      savedAt: new Date().toISOString() });
 
     setEditState(null);
   }, [editState, loadModules, buildFormData, matchDate, activeDayOffset, scene, duration, goal, phase]);
@@ -1100,127 +1084,6 @@ export default function CoachWorkbench() {
       )}
 
       {/* ═══════════════════════════════════════════════
-          ADVANCED SETTINGS (collapsible)
-          ═══════════════════════════════════════════════ */}
-      <details className="bg-[#141414] border border-[#2c2c2c] rounded-xl" open={showAdvanced}
-        onToggle={e => setShowAdvanced((e.target as HTMLDetailsElement).open)}>
-        <summary className="cursor-pointer text-[10px] text-[#888] p-3 hover:text-[#aaa] select-none">
-          高级设置: {SCENE_LABELS[scene]} · {GOAL_LABELS[goal] || goal} · {duration}min · {PHASE_LABELS[phase]}
-        </summary>
-        <div className="px-3 pb-3 space-y-3">
-
-          {/* Scene + Goal selectors */}
-          <div>
-            <div className="grid grid-cols-1 gap-3 mb-3">
-              {SCENES.filter(s => s.id === 'pitch').map(s => (
-                <button key={s.id} onClick={() => { setScene(s.id); setGoal(SCENE_GOALS[s.id][0].id); }}
-                  className={`p-4 rounded-xl border text-left transition ${
-                    scene === s.id ? 'border-[#992828] bg-[#992828]/5' : 'border-[#2c2c2c] bg-[#111] hover:border-[#3d3d3d]'
-                  }`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{s.icon}</span>
-                    <span className={`text-sm font-bold ${scene === s.id ? 'text-[#992828]' : 'text-[#F1F1F1]'}`}>{s.label}</span>
-                  </div>
-                  <p className="text-[10px] text-[#888]">{s.desc}</p>
-                  <p className="text-[9px] text-gray-600 mt-1">{s.hint}</p>
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] text-gray-500">目标</span>
-              <div className="flex gap-1">
-                {(SCENE_GOALS[scene] || []).map(g => (
-                  <button key={g.id} onClick={() => setGoal(g.id)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${
-                      goal === g.id ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
-                    }`}>{g.label}</button>
-                ))}
-              </div>
-              <span className="text-[10px] text-gray-500 ml-3">时长</span>
-              <div className="flex gap-1">
-                {(planMode === 'individual' ? ADDON_DURATIONS : DURATIONS).map(d => (
-                  <button key={d} onClick={() => setDuration(d)}
-                    className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${duration === d ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888]'}`}>{d}min</button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Match date */}
-          <div className="flex items-center gap-2">
-            <label className="text-[10px] text-gray-500">比赛日</label>
-            <input type="date" value={matchDate} onChange={e => setMatchDate(e.target.value)}
-              className="bg-[#1a1a1a] border border-[#333] rounded-lg px-2 py-1 text-xs text-white" />
-          </div>
-
-          {/* Periodization live params */}
-          {(() => {
-            const pp = getPhaseParams(phase);
-            const gp = getGoalParams(goal);
-            return (
-              <div className="bg-[#111] border border-[#2c2c2c] rounded-xl p-3 text-[10px]">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#888]">
-                  <span className="text-[#999]">周期化参考</span>
-                  <span><b className="text-[#F1F1F1]">{pp.labelCn}</b>: {pp.intensityPercent[0]}-{pp.intensityPercent[1]}%1RM · {pp.repsRange[0]}-{pp.repsRange[1]}次 · {pp.setsRange[0]}-{pp.setsRange[1]}组 · 间歇{pp.restBetweenSets[0]}-{pp.restBetweenSets[1]}s</span>
-                  {gp && (
-                    <span className="text-[#992828]">🎯 {gp.labelCn}: {gp.percent1RM[0]}-{gp.percent1RM[1]}%1RM · {gp.setsReps} · 间歇{gp.rest} · 节奏{gp.tempo}</span>
-                  )}
-                  <span className="text-[#777]">每周{pp.weeklyFrequency}次 · {pp.volumeTrend === 'increasing' ? '↑增量' : pp.volumeTrend === 'tapering' ? '↓减量' : '→维持'}</span>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Player status details (team mode) */}
-          {planMode === 'team' && (
-          <div className="bg-[#111] border border-[#2c2c2c] rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs text-[#ccc] font-semibold">球员状态管理</span>
-              {players.length > 0 && (
-                <>
-                  <button onClick={selectAllHealthy} className="text-[10px] text-[#888] hover:text-white transition">全选健康</button>
-                  <button onClick={() => setSelectedPlayers(new Set())} className="text-[10px] text-[#888] hover:text-white transition">清空</button>
-                  {selectedPlayers.size > 0 && <span className="text-[10px] text-[#992828]">已选{selectedPlayers.size}人</span>}
-                </>
-              )}
-            </div>
-            {players.length === 0 ? (
-              <p className="text-[10px] text-[#888]">暂无花名册数据 · <a href="/roster" className="text-[#992828] hover:underline">去录入球员</a></p>
-            ) : (
-              <div className="flex flex-wrap gap-1">
-                {players.map(p => (
-                  <button key={p.name} onClick={() => togglePlayerSelect(p.name)}
-                    className={`text-[10px] px-2 py-1 rounded transition ${
-                      selectedPlayers.has(p.name) ? 'bg-[#992828]/15 text-[#992828] ring-1 ring-[#992828]/40' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
-                    }`}>
-                    {p.name} {p.status !== 'green' && (p.status === 'red' ? '🔴' : '🟡')}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          )}
-
-          {/* Coach settings */}
-          <div className="bg-[#111] border border-[#2c2c2c] rounded-xl p-3 text-[10px]">
-            <div className="text-[#888] mb-2">教练档案 · 队员{playerCount}人 · {leagueTag}</div>
-            <div className="flex flex-wrap gap-2">
-              <select value={coachCert} onChange={e => setCoachCert(e.target.value)} className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">
-                <option value="pro">PRO职业级</option><option value="a">A级</option><option value="b">B级</option><option value="c">C级</option><option value="d">D级</option><option value="none">无证</option>
-              </select>
-              <select value={coachRole} onChange={e => setCoachRole(e.target.value)} className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">
-                <option value="pro">职业教练</option><option value="semi_pro">半职业</option><option value="amateur">业余</option><option value="youth">青训</option><option value="campus">校园</option>
-              </select>
-              <select value={leagueTag} onChange={e => setLeagueTag(e.target.value)} className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white">
-                <option value="chinese_super_league">中超</option><option value="china_league_one">中甲</option><option value="china_league_two">中乙</option><option value="amateur_team">业余队</option>
-              </select>
-              <input type="number" value={playerCount} onChange={e => setPlayerCount(Number(e.target.value))} min={8} max={35}
-                className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-xs text-white w-16" placeholder="人数" />
-            </div>
-          </div>
-
-        </div>
-      </details>
 
       {/* ── 功能入口 ── */}
       <div className="space-y-3">
@@ -1541,8 +1404,7 @@ export default function CoachWorkbench() {
                   playerName: planMode === 'individual' && selectedPlayers.size > 0 ? Array.from(selectedPlayers).join('/') : undefined,
                   exercises,
                   summary,
-                  createdAt: new Date().toISOString(),
-                };
+                  createdAt: new Date().toISOString() };
                 saveSessionLog(log);
               } catch {}
 
@@ -1566,8 +1428,7 @@ export default function CoachWorkbench() {
             reps: typeof editState.exercise?.reps === 'number' ? editState.exercise.reps : Array.isArray(editState.exercise?.reps) ? editState.exercise.reps[0] : 10,
             load: editState.exercise?.load || 'BW',
             rest: editState.exercise?.rest || 90,
-            rpe: editState.exercise?.rpe || 7,
-          }}
+            rpe: editState.exercise?.rpe || 7 }}
           onSave={handleSaveExercise}
           onCancel={() => setEditState(null)}
         />

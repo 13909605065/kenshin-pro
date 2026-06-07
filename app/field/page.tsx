@@ -801,30 +801,7 @@ export default function FieldPage() {
               场地战术训练监控
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={addWaterBreak}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-400/10 text-blue-400 hover:bg-blue-400/20 transition"
-              title="记录补水"
-            >
-              <Droplets className="w-3.5 h-3.5" />
-              补水 ({session.waterBreakCount})
-            </button>
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1e1e1e] text-gray-300 hover:bg-[#2a2a2a] transition"
-            >
-              <History className="w-3.5 h-3.5" />
-              历史
-            </button>
-            <button
-              onClick={() => setExportOpen(!exportOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#1e1e1e] text-gray-300 hover:bg-[#2a2a2a] transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              导出
-            </button>
-          </div>
+          
         </div>
       </header>
 
