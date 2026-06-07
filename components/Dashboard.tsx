@@ -700,23 +700,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                 </div>
               )}
 
-              {/* Scene selector — athlete picks scene FIRST before goals */}
-              {!isCoach && !isFitness && (
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] text-gray-500 mr-1">训练场景：</span>
-                  <button onClick={() => setScene("pitch")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "pitch" ? "bg-[#992828] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
-                    <MapPin className="w-3.5 h-3.5" /> 球场
-                  </button>
-                  <button onClick={() => setScene("gym")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${scene === "gym" ? "bg-[#992828] text-white" : "bg-[#1e1e1e] text-[#777] border border-[#222] hover:border-[#444]"}`}>
-                    <Dumbbell className="w-3.5 h-3.5" /> 体能房
-                  </button>
-                  <span className="text-[10px] text-gray-600 ml-2">
-                    {scene === "pitch" ? "有球训练 · 速度/灵敏" : "体能训练 · 力量/对抗"}
-                  </span>
-                </div>
-              )}
 
               {/* Gym scene — show gym-specific panel instead of goals */}
               {!isCoach && !isFitness && scene === "gym" ? (
@@ -1018,24 +1001,7 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                         }}
                         className="flex flex-col items-center justify-center gap-1 w-full"
                       >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          {n === "标志盘" && <ellipse cx="12" cy="14" rx="9" ry="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                          {n === "标志桶" && <polygon points="12,4 5,20 19,20" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                          {n === "标志杆" && <><rect x="10" y="5" width="4" height="16" rx="2" fill={iconColor} opacity={act ? 1 : 0.7} /><circle cx="12" cy="4" r="3" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                          {n === "号坎" && <path d="M8 3L16 3L17 7L14 8L12 6.5L10 8L7 7ZM7 7L7 21L10 21L10 12L12 13.5L14 12L14 21L17 21L17 7" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                          {n === "足球" && <><circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.25} stroke={iconColor} strokeWidth="1.5" /><path d="M12 3L14 7L12 9L10 7ZM12 21L14 17L12 15L10 17ZM3 12L7 10L9 12L7 14ZM21 12L17 10L15 12L17 14Z" fill={iconColor} opacity={act ? 1 : 0.8} /></>}
-                          {n === "小球门" && <><rect x="2" y="10" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="2" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="19" y="10" width="3" height="12" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                          {n === "标准门" && <><rect x="1" y="3" width="22" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="1" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="20" y="3" width="3" height="19" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                          {n === "小栏架" && <><rect x="2" y="7" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="10" width="3" height="12" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                          {n === "高栏架" && <><rect x="2" y="4" width="20" height="3" rx="1.5" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="3" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /><rect x="18" y="7" width="3" height="15" rx="1" fill={iconColor} opacity={act ? 1 : 0.7} /></>}
-                          {n === "绳梯" && <><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="9" x2="21" y2="9" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /><line x1="3" y1="14" x2="21" y2="14" stroke={iconColor} strokeWidth="1.5" opacity={act ? 1 : 0.7} /></>}
-                          {n === "敏捷圈" && <circle cx="12" cy="12" r="7" fill="none" stroke={iconColor} strokeWidth="2.5" opacity={act ? 1 : 0.7} />}
-                          {n === "弹力带" && <path d="M4 18 C8 6, 16 18, 20 6" fill="none" stroke={iconColor} strokeWidth="2.5" strokeLinecap="round" opacity={act ? 1 : 0.7} />}
-                          {n === "药球" && <circle cx="12" cy="13" r="8" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                          {n === "瑜伽球" && <circle cx="12" cy="12" r="9" fill={iconColor} opacity={act ? 1 : 0.2} stroke={iconColor} strokeWidth="2" />}
-                          {n === "泡沫轴" && <rect x="4" y="7" width="16" height="10" rx="5" fill={iconColor} opacity={act ? 1 : 0.7} />}
-                        </svg>
-                        <span className={`text-[10px] font-medium ${act ? "text-[#992828]" : "text-[#777]"}`}>{n}</span>
+                        <span className={`text-[11px] font-medium ${act ? "text-[#992828]" : "text-[#777]"}`}>{n}</span>
                       </button>
                       {/* Count controls — only shown when selected */}
                       {act && (
