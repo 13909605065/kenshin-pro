@@ -4,20 +4,16 @@ import { useState, useEffect } from "react";
 
 export function UpdateBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    const sw = navigator.serviceWorker;
+    // When new SW takes control (skipWaiting: true), auto-refresh to show new version
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      window.location.reload();
+    });
 
-    sw.ready.then((reg) => {
-      // Check if there is already a waiting worker
-      if (reg.waiting) {
-        setUpdateAvailable(true);
-        setWaitingWorker(reg.waiting);
-      }
-
+    navigator.serviceWorker.ready.then((reg) => {
       // Listen for new worker updates
       reg.addEventListener("updatefound", () => {
         const newWorker = reg.installing;
@@ -25,8 +21,10 @@ export function UpdateBanner() {
 
         newWorker.addEventListener("statechange", () => {
           if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            // New SW installed — with skipWaiting:true it activates immediately.
+            // controllerchange will fire next, triggering auto-reload.
+            // Show banner briefly as a visual cue before the reload.
             setUpdateAvailable(true);
-            setWaitingWorker(newWorker);
           }
         });
       });
@@ -34,9 +32,6 @@ export function UpdateBanner() {
   }, []);
 
   const handleUpdate = () => {
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: "SKIP_WAITING" });
-    }
     window.location.reload();
   };
 
