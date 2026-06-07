@@ -8,6 +8,71 @@ import WeeklyLoadBar from "@/components/WeeklyLoadBar";
 
 const WEEKDAY = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
+function GPSImportButton() {
+  const [show, setShow] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    try { setCount(JSON.parse(localStorage.getItem("kenshin_gps_data") || "[]").length); } catch {}
+  }, []);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const text = await f.text();
+    const { parseGPSCSV, saveGPSData } = await import("@/lib/gps-import");
+    const r = parseGPSCSV(text);
+    if (r.errors.length > 0) { setMsg(r.errors[0]); setTimeout(() => setMsg(""), 3000); return; }
+    saveGPSData(r.records);
+    setMsg(`✅ 导入 ${r.success} 条 (${r.skipped} 条跳过)`);
+    setCount(prev => prev + r.success);
+    window.dispatchEvent(new Event("training-log-updated"));
+    setTimeout(() => setMsg(""), 3000);
+  };
+
+  const downloadTemplate = async () => {
+    const { generateGPSTemplate } = await import("@/lib/gps-import");
+    const csv = generateGPSTemplate();
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "GPS数据模板.csv";
+    a.click();
+  };
+
+  return (
+    <>
+      <button onClick={() => setShow(!show)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white hover:border-[#555] transition">
+        <Activity className="w-3.5 h-3.5" />
+        GPS数据 {count > 0 && <span className="text-[#992828]">({count})</span>}
+      </button>
+      {show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setShow(false)}>
+          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl w-[420px] p-6" onClick={e => e.stopPropagation()}>
+            <h3 className="text-white font-bold mb-2">GPS 数据背心导入</h3>
+            <p className="text-xs text-gray-500 mb-4">支持 Catapult / SportsCode / 标准 CSV 格式</p>
+            <div className="space-y-2">
+              <button onClick={downloadTemplate}
+                className="w-full py-2.5 bg-[#111] border border-[#333] rounded-lg text-xs text-gray-300 hover:text-white hover:border-[#555] transition">
+                📥 下载模板 CSV
+              </button>
+              <label className="w-full py-2.5 bg-[#992828] hover:bg-[#7a1e1e] rounded-lg text-xs text-white font-bold flex items-center justify-center gap-2 cursor-pointer transition">
+                📤 导入 GPS 数据
+                <input type="file" accept=".csv" onChange={handleFile} className="hidden" />
+              </label>
+            </div>
+            {msg && <p className={`text-xs mt-3 ${msg.includes("✅") ? "text-green-400" : "text-[#992828]"}`}>{msg}</p>}
+            <p className="text-[9px] text-gray-600 mt-4 leading-relaxed">
+              导入后自动接入负荷监控（TRIMP/ACWR）
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 type PhaseKey = 'offseason' | 'preseason_build' | 'regular_season' | 'playoffs';
 
 const PHASE_INFO: Record<PhaseKey, { label: string; icon: string; color: string; weekCap: number; dayCap: number; matchWeekCap: number }> = {
@@ -547,10 +612,13 @@ export default function LoadPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">负荷管理</h1>
-        {info && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: info.color + '30', color: '#fff' }}>{info.icon} {info.label}</span>}
+        {info && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: info.color + '30', color: '#fff' }}>{info.label}</span>}
+        <div className="ml-auto">
+          <GPSImportButton />
+        </div>
       </div>
 
       {/* ═══ LOAD CAPACITY CARD ═══ */}
