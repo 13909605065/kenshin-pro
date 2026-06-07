@@ -926,7 +926,9 @@ export default function SeasonCalendar() {
                           if (!cell) return <div key={"e"+i} className="aspect-square" />;
                           const hasEvent = cell.events.length > 0;
                           const cfg = hasEvent ? EVENT_CONFIG[cell.events[0].type] : null;
-                          const bg = cfg ? cfg.color + "30" : "transparent";
+                          const phase = getPhaseForDate(cell.date);
+                          const phaseColor = phase ? PHASE_COLORS[phase] : null;
+                          const bg = cfg ? cfg.color + "30" : phaseColor ? phaseColor + "15" : "transparent";
                           return (
                             <button key={cell.date}
                               onClick={() => setShowEventEditor({ date: cell.date, event: cell.events[0] || null })}
