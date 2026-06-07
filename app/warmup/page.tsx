@@ -331,6 +331,58 @@ export default function WarmupDesignPage() {
           热身设计
         </h1>
 
+        <div className="flex-1" />
+
+        {/* RAMP 参考面板切换 */}
+        <button
+          onClick={() => setShowRampPanel(!showRampPanel)}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: showRampPanel ? "#fff" : TAC_THEME.textDim, backgroundColor: showRampPanel ? TAC_THEME.accent : "transparent" }}
+          title="RAMP 参考">
+          <span className="hidden sm:inline">RAMP</span>
+        </button>
+
+        {/* 快速模板 */}
+        <button
+          onClick={hQuickWarmupOutline}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
+          style={{ color: TAC_THEME.textDim }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
+          title="快速热身模板">
+          <span className="hidden sm:inline">快速模板</span>
+        </button>
+
+        {/* 保存到热身库 */}
+        <button onClick={hSaveToLibrary}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: '#fff', backgroundColor: '#22c55e' }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="保存到热身库">
+          <span className="hidden sm:inline">保存</span>
+        </button>
+
+        {/* 热身库 */}
+        <button onClick={hOpenLibrary}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: '#fff', backgroundColor: '#3B82F6' }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="热身库">
+          <span className="hidden sm:inline">热身库</span>
+        </button>
+
+        {/* 导出 PNG */}
+        <button onClick={hExport}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: TAC_THEME.accent, border: `1px solid ${TAC_THEME.accent}` }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="导出PNG">
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">导出PNG</span>
+        </button>
       </nav>
 
       {/* ─── RAMP 参考面板 ─── */}
