@@ -70,27 +70,7 @@ function getMicrocyclePlan(matchDate: string, dayOffset: number): MicrocyclePlan
 
 // ── scene config ──
 const SCENES = [
-  { id: 'gym' as const, label: '力量房', icon: '🏋️', desc: '抗阻力量 · 爆发力 · 协调灵敏 · 肌耐力', hint: '全无球热身 · FIFA 11+' },
-  { id: 'pitch' as const, label: '外场', icon: '⚽', desc: '自重力量 · 场地爆发力 · 直线速度 · 专项耐力', hint: '无球/有球热身二选一' },
-];
-
-const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
-  gym: [
-    { id: 'strength', label: '基础抗阻力量' }, { id: 'power', label: 'SSC爆发力' },
-    { id: 'agility', label: '神经协调灵敏' }, { id: 'mas_endurance', label: '局部肌肉耐力' },
-  ],
-  pitch: [
-    { id: 'strength', label: '自重基础力量' }, { id: 'power', label: '场地爆发力' },
-    { id: 'speed', label: '直线加速速度' }, { id: 'mas_endurance', label: '专项间歇耐力' },
-  ] };
-
-const DURATIONS = [30, 45, 60, 75, 90];
-const ADDON_DURATIONS = [15, 20, 25, 30];
-
-// ── goal/scene label lookups ──
-const GOAL_LABELS: Record<string, string> = {
-  strength: '力量', power: '爆发力', speed: '速度', agility: '灵敏', mas_endurance: '耐力' };
-const SCENE_LABELS: Record<string, string> = { gym: '力量房', pitch: '外场' };
+  { id: 'gym' as const, label: '力量房', pitch: '外场' };
 
 // ── roster types ──
 interface RosterPlayer { id: string; name: string; position: string; number: string; age: number | null; height: number | null; weight: number | null; injuryStatus: 'healthy' | 'minor' | 'out'; injuryNote: string; injuryHistory?: string; disabledExercises?: string[]; }
@@ -131,72 +111,7 @@ interface MicrocycleDayInfo {
 
 const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInfo>> = {
   regular_season: {
-    [-2]: { icon: '⚽', label: '外场·赛前激活', scene: 'pitch' },
-    [-1]: { icon: '⚽', label: '外场·微调', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '比赛日', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场常规', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '唯一力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场大课', scene: 'pitch' } },
-  preseason_build: {
-    [-2]: { icon: '⚽', label: '外场磨合', scene: 'pitch' },
-    [-1]: { icon: '🔥', label: '激活', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '教学赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '🏋️', label: '力量①', scene: 'gym' },
-    [3]:  { icon: '⚽', label: '外场体能', scene: 'pitch' },
-    [4]:  { icon: '🏋️', label: '力量②', scene: 'gym' } },
-  offseason: {
-    [-2]: { icon: '🏋️', label: '力量轻负荷', scene: 'gym' },
-    [-1]: { icon: '🏃', label: '活动', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '热身赛', scene: 'match' },
-    [1]:  { icon: '🏋️', label: '恢复力量', scene: 'gym' },
-    [2]:  { icon: '🏋️', label: '主力力量①', scene: 'gym' },
-    [3]:  { icon: '🏋️', label: '主力力量②', scene: 'gym' },
-    [4]:  { icon: '🏋️', label: '主力力量③', scene: 'gym' } },
-  playoffs: {
-    [-2]: { icon: '⚽', label: '外场激活·压负荷', scene: 'pitch' },
-    [-1]: { icon: '🧘', label: '最低负荷', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '关键赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场纠错', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '轻量维持力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场对抗', scene: 'pitch' } } };
-
-const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
-  regular_season: 1,
-  preseason_build: 2,
-  offseason: 3,
-  playoffs: 1 };
-
-const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; color: string; defaultMode: 'gym' | 'football' }> = {
-  regular_season: { label: '常规赛季', icon: '⚽', color: '#992828', defaultMode: 'football' },
-  preseason_build: { label: '季前备战', icon: '🏋️', color: '#166534', defaultMode: 'football' },
-  offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
-  playoffs: { label: '附加赛', icon: '🏆', color: '#992828', defaultMode: 'football' } };
-
-function getMicrocycleDay(phaseKey: CalendarPhaseKey, dayOffset: number): MicrocycleDayInfo {
-  const rules = MICROCYCLE_RULES[phaseKey];
-  if (rules[dayOffset]) return rules[dayOffset];
-  // fallback
-  if (dayOffset === 0) return { icon: '⚽', label: '比赛日', scene: 'match' };
-  if (dayOffset < 0) return { icon: '⚽', label: '外场训练', scene: 'pitch' };
-  return { icon: '🏋️', label: '训练', scene: 'gym' };
-}
-
-// ── edit modal state ──
-interface EditState {
-  moduleType: string;
-  category: string;
-  index: number;
-  exercise: any;
-}
-
-
-export default function CoachWorkbench() {
-  const { modules, planId, generate, loadModules, isOffline } = useTraining();
-  const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
-  const [trainDate, setTrainDate] = useState(() => new Date().toISOString().slice(0, 10));
+    [-2]: { setTrainDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [timeSlot, setTimeSlot] = useState<'morning' | 'afternoon'>(new Date().getHours() < 12 ? 'morning' : 'afternoon');
   const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
   const [goal, setGoal] = useState('strength');
