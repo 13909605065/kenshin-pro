@@ -187,14 +187,33 @@ export async function POST(request: NextRequest) {
   const isCoach = formData.role === "coach";
   const systemPrompt = buildSystemPrompt(formData, scene);
 
-  // ── Knowledge base context ──
+  // ── Knowledge base deep search ──
   const { getKnowledgeContext } = await import("@/lib/knowledge-base");
-  const kbContext = getKnowledgeContext(
-    isCoach ? "足球训练 周期安排" : `${formData.position || ""} ${formData.goal || ""}`,
-    formData.position,
-    formData.phase
-  );
-  const enrichedSystemPrompt = systemPrompt + kbContext;
+
+  // Build rich search queries from all form data
+  const searchTopics: string[] = [];
+  if (formData.position) searchTopics.push(`${formData.position} 训练`);
+  if (formData.goal) searchTopics.push(formData.goal);
+  if (formData.phase) searchTopics.push(`${formData.phase} 训练 周期`);
+  if (formData.age) searchTopics.push(`${formData.age}岁 训练`);
+  if (scene === "gym") searchTopics.push("力量训练 负荷 组数 次数");
+  if (scene === "pitch") searchTopics.push("场地训练 足球 速度 灵敏");
+  if (scene === "rehab") searchTopics.push("伤病 康复 恢复 训练");
+  if (isCoach) searchTopics.push("教练 团队 训练计划 周期安排");
+  searchTopics.push("足球体能 运动科学");
+
+  // Search all topics and deduplicate
+  let kbContext = "";
+  const seenPassages = new Set<string>();
+  for (const topic of searchTopics) {
+    const ctx = getKnowledgeContext(topic, formData.position, formData.phase);
+    if (ctx && !seenPassages.has(ctx.slice(0, 50))) {
+      seenPassages.add(ctx.slice(0, 50));
+      kbContext += ctx;
+    }
+  }
+
+  const enrichedSystemPrompt = systemPrompt + (kbContext || "");
 
   const weather = await getWeather().catch(() => null);
 
