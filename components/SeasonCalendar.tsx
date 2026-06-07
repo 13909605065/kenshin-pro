@@ -873,50 +873,83 @@ export default function SeasonCalendar() {
                 return (
                   <span key={key} className="flex items-center gap-1 text-[9px]" style={{ opacity: 0.85 }}>
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[key] }} />
-                    <span style={{ color: PHASE_COLORS[key] }}>{cfg.icon} {cfg.label}</span>
+                    <span style={{ color: PHASE_COLORS[key] }}>{cfg.label}</span>
                   </span>
                 );
               })}
             </div>
           )}
 
-          {/* ═══ SEASON VIEW ═══ */}
-          {viewMode === 'season' && (
-            <div className="p-3 overflow-x-auto">
-              <div className="flex gap-3" style={{ minWidth: `${monthColumns.length * 100}px` }}>
-                {monthColumns.map(col => (
-                  <div key={col.month} className="flex-1 min-w-[90px] max-w-[140px]">
-                    {/* Month header */}
-                    <button
-                      onClick={() => { setFocusedMonth(col.month); setViewMode('month'); }}
-                      className="w-full text-center py-1.5 mb-1 rounded hover:bg-[#1a1a1a] transition"
-                    >
-                      <span className="text-xs font-bold text-[#992828] block">
-                        {MONTH_LABELS[SEASON_MONTHS.indexOf(col.month)]}
-                      </span>
-                      <span className="text-[8px] text-gray-600">{col.year}</span>
-                    </button>
-
-                    {/* Weekday headers */}
-                    <div className="flex gap-1 mb-1 px-0.5">
-                      {['一','二','三','四','五','六','日'].map((w, i) => (
-                        <span key={i} className="w-8 text-center text-[8px] text-gray-500 leading-none">
-                          {w}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Weeks */}
-                    <div className="space-y-0.5">
-                      {col.weeks.map(w => renderWeekStrip(w, col.month))}
-                    </div>
-                  </div>
+          {/* ═══ SEASON VIEW — 3×4 grid ═══ */}
+          {viewMode === "season" && (
+            <div className="p-4">
+              {/* Weekday headers — once at top */}
+              <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
+                {["一","二","三","四","五","六","日"].map(w => (
+                  <div key={w} className="text-center text-[9px] text-gray-600">{w}</div>
                 ))}
+              </div>
+
+              {/* 3×4 month grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {monthColumns.map(col => {
+                  const isCurrentMonth = col.month === (new Date().getMonth()+1);
+                  // Build 6×7 grid for this month
+                  const firstDay = new Date(col.year, col.month-1, 1).getDay() || 7; // Mon=1..Sun=7
+                  const daysInMonth = new Date(col.year, col.month, 0).getDate();
+                  const cells = [];
+                  // Empty cells before first day
+                  for (let i=1; i<firstDay; i++) cells.push(null);
+                  // Actual days
+                  for (let d=1; d<=daysInMonth; d++) {
+                    const dateIso = col.year + "-" + String(col.month).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+                    const evts = getEventsForDate(dateIso);
+                    cells.push({ day: d, date: dateIso, events: evts, isToday: dateIso===today });
+                  }
+                  // Fill to 42 cells (6×7)
+                  while (cells.length < 42) cells.push(null);
+
+                  return (
+                    <div key={col.month}
+                      className={"rounded-lg border p-1.5 transition hover:border-[#555] hover:bg-[#0d0d0d] " +
+                        (isCurrentMonth ? "border-[#992828]/30 bg-[#992828]/5" : "border-[#222] bg-[#0a0a0a]")}>
+                      {/* Month label */}
+                      <button onClick={() => { setFocusedMonth(col.month); setViewMode("month"); }}
+                        className={"w-full text-center py-0.5 mb-1 rounded text-[10px] font-bold " +
+                          (isCurrentMonth ? "text-[#992828]" : "text-gray-500 hover:text-gray-300")}>
+                        {MONTH_LABELS[col.month-1]}
+                      </button>
+
+                      {/* 6×7 grid */}
+                      <div className="grid grid-cols-7 gap-px">
+                        {cells.map((cell, i) => {
+                          if (!cell) return <div key={"e"+i} className="aspect-square" />;
+                          const hasEvent = cell.events.length > 0;
+                          const bg = hasEvent ? EVENT_CONFIG[cell.events[0].type].color + "20" : "transparent";
+                          return (
+                            <button key={cell.date}
+                              onClick={() => setShowEventEditor({ date: cell.date, event: cell.events[0] || null })}
+                              className={"aspect-square flex items-center justify-center rounded-sm text-[9px] transition " +
+                                (cell.isToday ? "ring-1 ring-[#992828] " : "") +
+                                (hasEvent ? " font-bold" : "")}
+                              style={{ backgroundColor: bg }}
+                              title={hasEvent ? cell.events.map(e => EVENT_CONFIG[e.type].label).join(", ") : cell.date}>
+                              <span className={cell.isToday ? "text-[#992828] font-bold"
+                                : hasEvent ? "text-gray-200" : "text-gray-600"}>
+                                {cell.day}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* ═══ MONTH VIEW ═══ */}
+          {/* ═══ MONTH VIEW ═══ */}{/* ═══ MONTH VIEW ═══ */}
           {viewMode === 'month' && (
             <div className="p-3">
               {/* Month navigator */}
@@ -1062,7 +1095,7 @@ export default function SeasonCalendar() {
             </div>
           )}
 
-          {/* ═══ SUMMARY STATS BAR ═══ */}
+          {/* ═══ SUMMARY STATS ═══ */}
           <div className="px-4 py-2 border-t border-[#222] bg-[#0a0a0a]">
             <button onClick={e => { e.stopPropagation(); setOverviewOpen(!overviewOpen); }}
               className="flex items-center gap-1 text-[10px] text-gray-500 font-medium hover:text-gray-300 mb-1">
@@ -1070,23 +1103,33 @@ export default function SeasonCalendar() {
               赛季概览
             </button>
             {overviewOpen && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-              {data.phaseRanges.length > 0 ? (
-                data.phaseRanges.map(range => {
-                  const cfg = PHASE_CONFIG[range.phase];
-                  const startM = range.startDate.slice(5); // MM-DD
-                  const endM = range.endDate.slice(5);
-                  return (
-                    <span key={range.id} className="text-gray-400 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[range.phase] }} />
-                      {cfg.icon} {cfg.label}
-                      <span className="text-gray-600 ml-0.5">{startM}→{endM}</span>
-                    </span>
-                  );
-                })
-              ) : (
-                <span className="text-gray-500">总{autoStats.totalWeeks}周 · {autoStats.totalMatches || 0}场比赛</span>
-              )}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">总周数</p>
+                <p className="text-xs font-bold text-gray-300">{autoStats.totalWeeks}</p>
+              </div>
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">联赛</p>
+                <p className="text-xs font-bold text-[#ef4444]">{autoStats.leagueCount || data.events.filter(e=>e.type==="league_match").length}</p>
+              </div>
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">杯赛</p>
+                <p className="text-xs font-bold text-[#f97316]">{autoStats.cupCount || data.events.filter(e=>e.type==="cup_match").length}</p>
+              </div>
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">附加赛</p>
+                <p className="text-xs font-bold text-[#dc2626]">{autoStats.playoffCount || data.events.filter(e=>e.type==="playoff_match").length}</p>
+              </div>
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">体测</p>
+                <p className="text-xs font-bold text-[#a855f7]">{autoStats.testCount || data.events.filter(e=>e.type==="fitness_test").length}</p>
+              </div>
+              <div className="bg-[#111] rounded-lg px-2 py-1.5">
+                <p className="text-[8px] text-gray-600">恢复/减量</p>
+                <p className="text-xs font-bold text-gray-400">
+                  {(autoStats.recoveryWeeks||0) + (autoStats.deloadWeeks||0)}
+                </p>
+              </div>
             </div>
             )}
           </div>
