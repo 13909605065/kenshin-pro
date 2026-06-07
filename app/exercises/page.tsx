@@ -380,14 +380,6 @@ export default function ExercisesPage() {
           <h1 className="text-lg font-bold text-[#d1d1d1]">动作库</h1>
         </div>
 
-        {/* ═══ Library Mode Toggle ═══ */}
-        <div className="mb-4 flex bg-[#1e1e1e] border border-[#222] rounded-xl p-0.5">
-          <div className="flex-1 py-2 rounded-lg text-sm font-bold text-[#992828] flex items-center justify-center gap-1.5">
-            ⚽ 足球体能
-          </div>
-        </div>
-
-        {/* Delete toast */}
         {deleteToast && (
           <div className="mb-3 px-4 py-2 bg-[#992828]/10 border border-[#992828]/30 rounded-lg text-sm text-[#992828] animate-pulse">
             {deleteToast}
@@ -483,11 +475,6 @@ export default function ExercisesPage() {
           </div>
         </div>
 
-        {/* Hint */}
-        <div className="text-[11px] text-gray-400 mb-4 flex items-center gap-1.5 bg-[#1e1e1e] border border-[#222] rounded-lg px-3 py-2">
-          <span className="text-[#992828] text-lg leading-none">⚽</span>
-          <span>足球体能库 — 按身体分区、器械、训练类型筛选</span>
-        </div>
 
         {/* Select All / Deselect All */}
         {filtered.length > 0 && (
