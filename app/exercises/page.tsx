@@ -610,12 +610,6 @@ function ExerciseCard({
             ))}
           </ul>
         )}
-        {(exercise.progression || exercise.regression) && (
-          <div className="text-[10px] text-gray-600 border-t border-[#222] pt-2 mt-1 space-y-0.5">
-            {exercise.progression && <p><span className="text-gray-500">进阶:</span> {exercise.progression}</p>}
-            {exercise.regression && <p><span className="text-gray-500">退阶:</span> {exercise.regression}</p>}
-          </div>
-        )}
         {exercise.isCustom && (
           <div className="flex gap-1 mt-2" onClick={e => e.stopPropagation()}>
             {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
