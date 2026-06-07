@@ -1090,7 +1090,6 @@ export default function CoachWorkbench() {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <h3 className="text-sm font-bold text-[#F1F1F1] group-hover:text-white transition">热身设计</h3>
-              <p className="text-[10px] text-[#888] mt-0.5">RAMP系统 · FIFA 11+ · 有球/无球</p>
             </div>
             <span className="text-[#555] group-hover:text-[#999] text-lg transition">&rarr;</span>
           </div>
@@ -1099,7 +1098,6 @@ export default function CoachWorkbench() {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <h3 className="text-sm font-bold text-[#992828] group-hover:text-[#b53a3a] transition">场地训练监控</h3>
-              <p className="text-[10px] text-[#888] mt-0.5">SSG强度估算 · TRIMP · 战术录入</p>
             </div>
             <span className="text-[#555] group-hover:text-[#992828] text-lg transition">&rarr;</span>
           </div>
