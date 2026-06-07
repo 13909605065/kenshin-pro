@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 
-// Build version — bump to force all clients to refresh
-const BUILD_ID = "2026-06-07-v2";
+// Build version — auto-generated from deploy timestamp, injected at build time
+const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_TIME || String(Date.now());
 
 export function UpdateBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);

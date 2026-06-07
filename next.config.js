@@ -34,6 +34,9 @@ const nextConfig = {
   trailingSlash: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: String(Date.now()),
+  },
   async rewrites() {
     return [
       {
