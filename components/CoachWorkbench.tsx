@@ -125,7 +125,6 @@ type CalendarPhaseKey = 'regular_season' | 'preseason_build' | 'offseason' | 'pl
 const MICROCYCLE_DAYS = [-2, -1, 0, 1, 2, 3, 4] as const;
 
 interface MicrocycleDayInfo {
-  icon: string;
   label: string;
   scene: 'pitch' | 'gym' | 'match' | 'recovery';
 }
@@ -170,7 +169,7 @@ const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
   offseason: 3,
   playoffs: 1 };
 
-const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; icon: string; color: string; defaultMode: 'gym' | 'football' }> = {
+const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; color: string; defaultMode: 'gym' | 'football' }> = {
   regular_season: { label: '常规赛季', icon: '⚽', color: '#992828', defaultMode: 'football' },
   preseason_build: { label: '季前备战', icon: '🏋️', color: '#166534', defaultMode: 'football' },
   offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },

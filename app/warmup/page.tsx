@@ -333,14 +333,8 @@ export default function WarmupDesignPage() {
 
         <div className="flex-1" />
 
-        {/* RAMP 参考面板切换 */}
-        <button
-          onClick={() => setShowRampPanel(!showRampPanel)}
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
-          style={{ color: showRampPanel ? "#fff" : TAC_THEME.textDim, backgroundColor: showRampPanel ? TAC_THEME.accent : "transparent" }}
-          title="RAMP 参考">
-          <span className="hidden sm:inline">RAMP</span>
-        </button>
+
+
 
         {/* 快速模板 */}
         <button

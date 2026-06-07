@@ -848,7 +848,7 @@ export default function FieldPage() {
         <div className="fixed inset-0 z-50" onClick={() => setShowHistory(false)}>
           <div className="absolute top-14 right-20 mt-2 w-72 bg-[#1e1e1e] border border-[#333] rounded-xl shadow-xl p-3 max-h-80 overflow-y-auto"
             onClick={e => e.stopPropagation()}>
-            <p className="text-xs text-gray-400 mb-2">最近战术关键词（点击快速填入）</p>
+            
             {tacticalHistory.length === 0 && (
               <p className="text-xs text-gray-500 py-4 text-center">暂无历史记录</p>
             )}
@@ -935,7 +935,7 @@ export default function FieldPage() {
             </div>
 
             <div className="text-center">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wider">总TRIMP</p>
+              
               <p className="text-lg font-bold text-[#992828]">{sessionTotals.totalTRIMP}</p>
             </div>
           </div>
@@ -946,7 +946,7 @@ export default function FieldPage() {
             ═══════════════════════════════════════ */}
         <div className="glass-card p-4 mb-4">
           <div className="flex flex-col gap-3">
-            <label className="text-xs text-gray-400 font-medium">本阶段战术内容（自由输入）</label>
+            
             <div className="relative">
               <input
                 type="text"
@@ -969,7 +969,7 @@ export default function FieldPage() {
             {tacticalInput.trim() && (
               <div className="flex items-center gap-3 px-3 py-2 bg-[#121212] rounded-lg">
                 <Brain className="w-4 h-4 text-purple-400 shrink-0" />
-                <span className="text-xs text-gray-400">AI强度预估:</span>
+                
                 {(() => {
                   const preview = estimateIntensity(tacticalInput, groupSize);
                   return (
