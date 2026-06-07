@@ -196,11 +196,25 @@ interface EditState {
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
   const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
-  const [trainDate, setTrainDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [trainDate, setTrainDate] = useState(() => {
+    try { return localStorage.getItem("kenshin_coach_trainDate") || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }
+  });
   const [timeSlot, setTimeSlot] = useState<'morning' | 'afternoon'>(new Date().getHours() < 12 ? 'morning' : 'afternoon');
-  const [scene, setScene] = useState<'gym' | 'pitch'>('gym');
-  const [goal, setGoal] = useState('strength');
-  const [duration, setDuration] = useState(60);
+  const [scene, setScene] = useState<'gym' | 'pitch'>(() => {
+    try { return (localStorage.getItem("kenshin_coach_scene") as 'gym'|'pitch') || 'gym'; } catch { return 'gym'; }
+  });
+  const [goal, setGoal] = useState(() => {
+    try { return localStorage.getItem("kenshin_coach_goal") || 'strength'; } catch { return 'strength'; }
+  });
+  const [duration, setDuration] = useState(() => {
+    try { return parseInt(localStorage.getItem("kenshin_coach_duration") || "60"); } catch { return 60; }
+  });
+
+  // Auto-persist form state
+  useEffect(() => { localStorage.setItem("kenshin_coach_trainDate", trainDate); }, [trainDate]);
+  useEffect(() => { localStorage.setItem("kenshin_coach_scene", scene); }, [scene]);
+  useEffect(() => { localStorage.setItem("kenshin_coach_goal", goal); }, [goal]);
+  useEffect(() => { localStorage.setItem("kenshin_coach_duration", String(duration)); }, [duration]);
   const [phase, setPhase] = useState<SeasonPhase>(() => {
     if (typeof window === 'undefined') return 'competition';
     return (localStorage.getItem('kenshin_coach_phase') as SeasonPhase) || 'competition';
