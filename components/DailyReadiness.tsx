@@ -158,13 +158,7 @@ export function DailyReadiness({ onReadinessChange }: Props) {
   const enteredCount = Object.keys(scores).length;
   const avgScore = enteredCount > 0 ? Math.round(Object.values(scores).reduce((a,b)=>a+b,0) / enteredCount) : null;
 
-  if (players.length === 0) {
-    return (
-      <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 text-center">
-        <p className="text-xs text-gray-500">暂无球员数据，请先在花名册添加球员</p>
-      </div>
-    );
-  }
+  if (players.length === 0) return null;
 
   return (
     <div className="bg-[#1a1a1a] border border-[#222] rounded-xl p-4 space-y-3">
