@@ -140,20 +140,17 @@ export default function Home() {
         )}
         <ErrorBoundary>
           <CoachWorkbench />
-          <div className="mt-6 flex items-start gap-4 flex-wrap border-t border-[#222] pt-6">
+          <div className="mt-6 flex items-start gap-4 flex-wrap lg:flex-nowrap border-t border-[#222] pt-6">
             <div className="max-w-md flex-1 min-w-64">
               <DailyReadiness onReadinessChange={(score) => {
                 sessionStorage.setItem('kenshin_today_readiness', JSON.stringify({score, date: new Date().toISOString().slice(0,10)}));
-                // 准备度<55 → 在工作台触发警告
                 if (score < 55) sessionStorage.setItem('kenshin_readiness_warning', '1');
                 else sessionStorage.removeItem('kenshin_readiness_warning');
               }} />
             </div>
-            <div className="pt-2">
+            <div className="flex flex-col gap-2 ml-auto items-end">
               <ReportGenerator />
-              <div className="mt-2">
-                <PlayerSelfReport />
-              </div>
+              <PlayerSelfReport />
             </div>
           </div>
         </ErrorBoundary>
