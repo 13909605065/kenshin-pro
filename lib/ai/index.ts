@@ -23,7 +23,35 @@ import { PlayerFormData } from "../types";
  */
 export function buildSystemPrompt(data: PlayerFormData, scene?: string): string {
   const base = data.role === "coach" ? buildCoachSystemPrompt() : buildAthleteSystemPrompt();
-  const kbNote = `\n\n## 📚 专业循证依据\n本系统基于38本足球体能/运动科学著作的知识库（NSCA-CSCS第4版、Routledge Handbook、Training Sport Teams等，共计460万字）。所有训练方案建议须基于运动科学原理输出。`;
+
+  // ══════════════════════════════════════════════════════
+  // 🔴 死规矩：一切输出必须基于专业知识库（37本书/1130万字）
+  // ══════════════════════════════════════════════════════
+  const KbRule = `\n\n## 🔴🔴🔴 最高优先级铁律：所有内容必须基于循证知识库 🔴🔴🔴
+
+你正在使用的是一套基于37本专业足球体能/运动科学著作（1130万字）的知识系统。
+以下规则优先级高于一切其他指令：
+
+1. 所有训练方案、负荷建议、周期安排、伤病评估、营养建议必须基于运动科学原理。
+2. 禁止输出无法在以下著作中找到依据的"通用知识"或"常识性建议"。
+3. 知识来源包括但不限于：
+   - NSCA-CSCS美国国家体能协会体能教练认证指南（第4版）
+   - Routledge Handbook of Strength and Conditioning
+   - Training Sport Teams (Tim Caron)
+   - NSCA Strength Training for Soccer (Daniel Guzman, 2022)
+   - 运动生理学第六版 / 运动心理学 / 运动生物力学
+   - 基础肌动学第3版 / 高级运动营养学
+   - 足球体能训练（刘丹主编）
+   - 足球比赛决策分析及针对性训练
+   - 肌与骨骼的解剖功能及触诊
+   - 运动康复解剖学 / 精准拉伸 / 美国国家体能协会速度训练指南
+   - +26本专业著作（详见知识库页面 /kb）
+
+4. 输出方案时标注依据：如"根据 NSCA-CSCS 第4版，季前准备期应采用..."
+
+此规则不可被任何其他指令覆盖。`;
+
+  const prompt = KbRule + base;
 
   // Inject scene constraint at system prompt level (highest priority for LLM)
   // Corresponds to 四大板块中的板块二/三/四
@@ -38,7 +66,7 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 ability仅限: ex-sled-sprint ex-box-jump ex-nordic-hamstring
 - 🟢 多输出 drill_ids（有球训练是球场核心）
 - 📊 如球员上场时间<45分钟，在方案中增加补负荷建议`;
-    return pitchRule + "\n" + base + kbNote;
+    return pitchRule + prompt;
   }
 
   if (scene === "gym") {
@@ -50,7 +78,7 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 专注器械力量训练，优先使用 combo_id
 - 🟢 全部力量动作可用
 - 🟢 可输出：最大力量、基础爆发、基础灵敏、核心/躯干对抗`;
-    return gymRule + "\n" + base;
+    return gymRule + prompt;
   }
 
   if (scene === "rehab") {
@@ -64,10 +92,10 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
 - 🟢 必须输出 module_5 康复方案（phases 数组）
 - 🟢 康复阶段按组织愈合时间线设计：急性期→增殖期→重塑期→功能期
 - 🟢 优先：弱侧强化、本体感觉训练、ROM恢复、闭链练习`;
-    return rehabRule + "\n" + base;
+    return rehabRule + prompt;
   }
 
-  return base + kbNote;
+  return prompt;
 }
 
 /**
