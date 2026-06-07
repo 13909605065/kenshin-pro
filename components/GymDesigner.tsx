@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { GymLayout } from "@/components/GymLayout";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
-import { WorkoutOptimizer } from "@/components/WorkoutOptimizer";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import {
@@ -1336,10 +1335,33 @@ export function GymDesigner() {
                 <button
                   onClick={handleSaveToLibrary}
                   disabled={selectedIds.length === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#992828] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-3.5 h-3.5" />
                   保存到资料库
+                </button>
+                <button
+                  onClick={() => {
+                    const now = new Date();
+                    const d = now.toISOString().split("T")[0];
+                    const exs = selectedIds.map(id => EXERCISE_LIBRARY.find(e => e.id === id)?.name || id);
+                    const log = {
+                      id: "gym_" + Date.now(), date: d, planId: workoutName || "力量方案",
+                      scene: "gym", goal, duration: selectedIds.length * 8, matchDay: "",
+                      exercises: exs.map(n => ({ name: n, plannedSets: 3, plannedReps: 8, plannedLoad: "", completed: true, actualSets: 3, actualReps: 8, actualRPE: 7 })),
+                      summary: { totalExercises: selectedIds.length, completedExercises: selectedIds.length, completionRate: 100, averageRPE: 7, totalVolumeLoad: selectedIds.length * 24 },
+                    };
+                    const logs = JSON.parse(localStorage.getItem("kenshin_training_logs") || "[]");
+                    logs.unshift(log);
+                    localStorage.setItem("kenshin_training_logs", JSON.stringify(logs.slice(0, 100)));
+                    setSaveMessage("✅ 训练设计完成，已写入训练日志");
+                    setTimeout(() => setSaveMessage(null), 3000);
+                  }}
+                  disabled={selectedIds.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-[#992828] text-white text-xs font-semibold rounded-lg hover:bg-[#b91c1c] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  完成设计
                 </button>
                 <button
                   onClick={() => setDayPickerOpen(true)}
@@ -1358,18 +1380,6 @@ export function GymDesigner() {
           </div>
         )}
       </main>
-
-      {/* Workout Optimization Suggestions */}
-      {selectedIds.length > 0 && (
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 pb-6">
-          <WorkoutOptimizer
-            exerciseNames={selectedIds.map(id => EXERCISE_LIBRARY.find(e => e.id === id)?.name || id)}
-            bodyParts={selectedIds.map(id => EXERCISE_LIBRARY.find(e => e.id === id)?.body_part || "")}
-            phase={phase}
-            goal={goal}
-          />
-        </div>
-      )}
 
       {/* Day Picker Modal */}
       <DayPickerModal

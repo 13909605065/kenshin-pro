@@ -726,16 +726,6 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
 
       {/* Bottom bar — mobile only */}
       <div className="lg:hidden sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
-        <div className="flex gap-2">
-          <button onClick={() => setShowMobileMode(true)}
-            className="flex-1 py-3 bg-[#992828] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]">
-            📱 手机跟练
-          </button>
-          <button onClick={() => setShowTimer(true)}
-            className="px-4 py-3 bg-[#1e1e1e] border border-[#333] text-gray-400 rounded-xl text-xs hover:bg-[#222] transition flex items-center gap-1">
-            <span>▶</span> 计时
-          </button>
-        </div>
         <ActionBar
           modules={editableModules}
           formData={formData}
@@ -746,16 +736,6 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
 
       {/* Desktop bottom bar — without feedback (it's in the sidebar) */}
       <div className="hidden lg:block sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
-        <div className="flex gap-2">
-          <button onClick={() => setShowMobileMode(true)}
-            className="flex-1 py-3 bg-[#992828] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]">
-            📱 手机跟练
-          </button>
-          <button onClick={() => setShowTimer(true)}
-            className="px-4 py-3 bg-[#1e1e1e] border border-[#333] text-gray-400 rounded-xl text-xs hover:bg-[#222] transition flex items-center gap-1">
-            <span>▶</span> 计时
-          </button>
-        </div>
         <ActionBar
           modules={editableModules}
           formData={formData}

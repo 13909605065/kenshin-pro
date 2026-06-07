@@ -78,6 +78,7 @@ export function RosterInjuryCheck({ exercises }: Props) {
   }, [injuredPlayers, exercises]);
 
   if (players.length === 0) return null;
+  if (injuredPlayers.length === 0) return null;
 
   const totalInjured = injuredPlayers.length;
   const totalConflicts = Array.from(conflictMap.values()).reduce((s, c) => s + c.length, 0);
