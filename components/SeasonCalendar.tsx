@@ -623,77 +623,65 @@ export default function SeasonCalendar() {
   }, [data.matchDates]);
 
   // ── Render a mini day cell (season view) ──
-  const renderMiniDay = useCallback((d: string, isToday: boolean, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return <div key={d} className="w-9 h-9" />;
+  const renderMiniDay = useCallback((d, isToday, isCurrentMonth) => {
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();
     const matchDay = isMatchDay(d);
     const phase = getPhaseForDate(d);
     const phaseBg = phase ? PHASE_COLORS[phase] : undefined;
+    const hasEvent = events.length > 0;
+
+    if (showOnlyMarked && !hasEvent) return <div key={d} className="w-8 h-8" />;
 
     return (
-      <button
-        key={d}
-        onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
-        className="relative flex items-center justify-center rounded transition cursor-pointer w-9 h-9 text-[11px]"
-        style={{ backgroundColor: phaseBg || (matchDay ? '#99282820' : 'transparent') }}
-        title={events.map(e => EVENT_CONFIG[e.type].label).join(', ') || d}
+      <button key={d} onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
+        className="relative flex items-center justify-center rounded transition cursor-pointer w-8 h-8 text-[10px]"
+        style={{ backgroundColor: phaseBg || (matchDay ? "#99282820" : "transparent") }}
+        title={hasEvent ? events.map(e => EVENT_CONFIG[e.type].label).join(", ") : d}
       >
-        <span className={`font-medium leading-none ${
-          isToday ? 'text-[#992828] font-bold' : matchDay ? 'text-white font-bold' : 'text-gray-400'
-        }`}>{dayNum}</span>
-        {events.length > 0 && (
-          <span className="absolute -bottom-0.5 text-[8px]">{EVENT_CONFIG[events[0].type].emoji}</span>
+        <span className={"font-medium leading-none " + (
+          isToday ? "text-[#992828] font-bold"
+            : matchDay ? "text-white font-bold"
+            : hasEvent ? "text-gray-300"
+            : isCurrentMonth ? "text-gray-500"
+            : "text-gray-700"
+        )}>{dayNum}</span>
+        {hasEvent && (
+          <span className="absolute bottom-0.5 w-1 h-1 rounded-full" style={{ backgroundColor: EVENT_CONFIG[events[0].type].color }} />
         )}
       </button>
     );
-  }, [getEventsForDate, isMatchDay, getPhaseForDate]);
+  }, [getEventsForDate, isMatchDay, getPhaseForDate, showOnlyMarked]);
 
   // ── Render a full day cell (month/week view) ──
-  const renderFullDay = useCallback((d: string, isToday: boolean) => {
+  const renderFullDay = useCallback((d, isToday) => {
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();
-    const weekday = WEEKDAY_CN[parsed.getDay()];
     const matchDay = isMatchDay(d);
     const isWeekend = parsed.getDay() === 0 || parsed.getDay() === 6;
 
     return (
-      <button
-        key={d}
-        onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
-        className={`relative rounded-lg p-1.5 border transition cursor-pointer text-left flex flex-col min-h-[72px]
-          ${isToday ? 'ring-1 ring-[#992828]' : ''}
-          ${matchDay ? 'border-[#992828]/40 bg-[#992828]/5' : 'border-[#222] bg-[#111] hover:border-[#444]'}
-          ${isWeekend ? 'opacity-70' : ''}
-        `}
+      <button key={d} onClick={() => setShowEventEditor({ date: d, event: events[0] || null })}
+        className={"relative rounded-lg p-1.5 border transition cursor-pointer text-left flex flex-col min-h-[56px] " +
+          (isToday ? "ring-1 ring-[#992828] " : "") +
+          (matchDay ? "border-[#992828]/40 bg-[#992828]/5 " : "border-[#222] bg-[#111] hover:border-[#444] ") +
+          (isWeekend ? "opacity-70" : "")}
       >
-        {/* Date + Weekday */}
-        <div className="flex items-center justify-between mb-1">
-          <span className={`text-[10px] font-bold ${isToday ? 'text-[#992828]' : matchDay ? 'text-white' : 'text-gray-400'}`}>
-            {dayNum}
-          </span>
-          <span className="text-[7px] text-gray-600">{weekday}</span>
-        </div>
-
-        {/* Event badges */}
+        <span className={"text-[11px] font-bold mb-1 " + (isToday ? "text-[#992828]" : matchDay ? "text-white" : "text-gray-400")}>
+          {dayNum}
+        </span>
         <div className="flex-1 space-y-0.5">
           {events.map(evt => {
             const cfg = EVENT_CONFIG[evt.type];
             return (
-              <div
-                key={evt.id}
-                className="text-[7px] px-1 py-0.5 rounded truncate font-medium"
-                style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
-              >
-                {cfg.emoji} {cfg.label}
+              <div key={evt.id} className="text-[7px] px-1 py-0.5 rounded truncate font-medium"
+                style={{ backgroundColor: cfg.color + "20", color: cfg.color }}>
+                {cfg.label}
               </div>
             );
           })}
-          {events.length === 0 && (
-            <span className="text-[7px] text-gray-700">—</span>
-          )}
         </div>
       </button>
     );
