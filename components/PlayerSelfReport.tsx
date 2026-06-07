@@ -76,14 +76,19 @@ export function PlayerSelfReport() {
     e.target.value = "";
   };
 
-  const handleExportTemplate = () => {
-    const csv = "姓名,RPE(1-10),疲劳度(1-5),肌肉酸痛(1-5),备注\n张三,7,3,2,\n李四,4,5,4,抽筋\n王五,2,1,1,感觉良好";
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "球员自评模板.csv";
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportTemplate = async () => {
+    const XLSX = await import("xlsx");
+    const data = [
+      ["姓名", "RPE(1-10)", "疲劳度(1-5)", "肌肉酸痛(1-5)", "备注"],
+      ["张三", 7, 3, 2, ""],
+      ["李四", 4, 5, 4, "抽筋"],
+      ["王五", 2, 1, 1, "感觉良好"],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws["!cols"] = [{wch:10},{wch:12},{wch:12},{wch:14},{wch:20}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "球员自评");
+    XLSX.writeFile(wb, "球员自评模板.xlsx");
   };
 
   return (

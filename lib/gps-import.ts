@@ -229,8 +229,9 @@ export function calcGPS_TRIMP(record: GPSRecord, maxHR: number = 200, restingHR:
   return { trimp, intensity };
 }
 
-/** Generate template CSV for download */
+/** Generate template XLSX for download */
 export function generateGPSTemplate(): string {
+  // Returns CSV for the import flow. Export as XLSX handled in UI.
   return [
     "Athlete,Date,Total Distance(m),HSR Distance(m),Sprint Distance(m),Max Speed(km/h),Accelerations,Decelerations,Player Load,HR Avg,HR Max",
     "张三,2026-06-01,8500,1200,200,32.5,45,38,650,145,185",
