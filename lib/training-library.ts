@@ -476,6 +476,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["杠铃置斜方肌", "膝与脚尖同向", "底部大腿与地面平行", "重心在足中"],
     progression: "1.5倍深蹲（底部停顿后起至半程再下蹲）",
     regression: "自重深蹲（无负重，注重动作模式）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-back-squat-front.gif",
     scene: "gym", injury_contraindications: ["knee", "waist"],
   },
   "ex-barbell-front-squat": {
@@ -485,6 +486,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["杠铃置锁骨前三角肌", "肘部抬高", "躯干直立", "膝与脚尖同向"],
     progression: "停顿前蹲（底部停顿2秒）",
     regression: "高脚杯深蹲（壶铃置胸前，减轻腰椎压力）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-front-squat-front.gif",
     scene: "gym", injury_contraindications: ["knee", "waist", "wrist"],
   },
   "ex-barbell-rdl": {
@@ -494,6 +496,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["微屈膝", "髋部后移", "杠铃贴腿", "背部平直"],
     progression: "单腿RDL",
     regression: "徒手单腿RDL（减负荷，提升单侧稳定性）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-romanian-deadlift-front.gif",
     scene: "gym", injury_contraindications: ["waist", "hamstring"],
   },
   "ex-barbell-hip-thrust": {
@@ -503,6 +506,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["肩胛骨靠凳", "杠铃置髋部", "臀部上推至水平", "顶部停顿1秒"],
     progression: "单腿臀冲",
     regression: "徒手臀桥（无负重，激活臀肌感知）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-hip-thrust-front.gif",
     scene: "gym", injury_contraindications: ["waist"],
   },
 
@@ -514,6 +518,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["壶铃架于胸前", "躯干直立", "深度至大腿平行地面", "肘部内收"],
     progression: "双壶铃前蹲",
     regression: "自重深蹲（无负重，先掌握动作模式）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-front-squat-front.gif",
     scene: "gym",
   },
   "ex-kb-rdl": {
@@ -523,6 +528,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["微屈膝", "髋部后移", "壶铃贴腿下放", "感受腘绳肌拉伸"],
     progression: "单腿壶铃RDL",
     regression: "徒手髋铰链练习（减负荷，感受腘绳肌拉伸）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-single-leg-deadlift-front.gif",
     scene: "gym", injury_contraindications: ["waist"],
   },
   "ex-kb-goblet-squat": {
@@ -532,6 +538,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["壶铃托于胸前", "肘部贴膝内侧", "躯干直立", "底部肘触膝"],
     progression: "双壶铃高脚杯深蹲",
     regression: "自重深蹲（无负重，建立基础活动度）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-goblet-squat-front.gif",
     scene: "gym",
   },
   "ex-kb-lunge-walk": {
@@ -541,6 +548,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["双壶铃体侧悬挂", "前膝不超脚尖", "后膝近地", "躯干直立前行"],
     progression: "过顶壶铃弓步走",
     regression: "自重弓步（无负重，稳定后再加重）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-lunge-front.gif",
     scene: "gym",
   },
   "ex-kb-split-squat": {
@@ -550,6 +558,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["分腿站姿", "双壶铃体侧", "后膝下沉", "前腿发力推起"],
     progression: "后脚抬高壶铃分腿蹲",
     regression: "自重分腿蹲（无负重，降低膝髋压力）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-bulgarian-split-squat-front.gif",
     scene: "gym", injury_contraindications: ["knee"],
   },
 
@@ -561,6 +570,8 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["肩胛骨收紧", "五点接触（头肩臀双脚）", "杠铃触胸", "直线上推"],
     progression: "暂停卧推（底部停顿2秒）",
     regression: "俯卧撑（自体重，降低肩关节压力）",
+    image_url: "https://musclewiki.com/media/uploads/male-dumbbell-bench-press-front.gif",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-bench-press-front.gif",
     scene: "gym", injury_contraindications: ["shoulder", "elbow"],
   },
   "ex-barbell-strict-press": {
@@ -570,6 +581,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["杠铃架于锁骨前", "核心收紧", "直线上推", "头部前伸锁定"],
     progression: "借力推举",
     regression: "哑铃坐姿肩推（有靠背支撑，减少核心需求）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-overhead-press-front.gif",
     scene: "gym", injury_contraindications: ["shoulder", "waist"],
   },
   "ex-barbell-row": {
@@ -579,6 +591,8 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["髋部后移", "背部平直", "杠铃拉至下腹", "肩胛骨收缩"],
     progression: "潘德勒划船（每下触地）",
     regression: "弹力带划船（减负荷，更易控制）",
+    image_url: "https://musclewiki.com/media/uploads/male-dumbbell-one-arm-row-front.gif",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-bent-over-row-front.gif",
     scene: "gym", injury_contraindications: ["waist"],
   },
 
@@ -610,6 +624,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["正握略宽于肩", "肩胛骨下沉", "下巴过杠", "控制下放"],
     progression: "负重引体向上",
     regression: "弹力带辅助引体",
+    image_url: "https://musclewiki.com/media/uploads/male-bodyweight-chinup-front.gif",
     scene: "gym",
   },
 
@@ -621,6 +636,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["杠铃贴腿上拉", "髋膝踝三关节伸展", "快速翻腕接铃", "前架位稳定"],
     progression: "悬垂高翻",
     regression: "壶铃高翻（单侧减负，降低技术要求）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-power-clean-front.gif",
     scene: "gym", injury_contraindications: ["wrist", "shoulder", "waist"],
   },
   "ex-barbell-high-pull": {
@@ -630,6 +646,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["杠铃贴腿", "爆发性耸肩", "肘部向上向外拉", "杠铃至胸高度"],
     progression: "高翻（接杠）",
     regression: "哑铃耸肩（减负荷，降低协调要求）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-high-pull-front.gif",
     scene: "gym", injury_contraindications: ["shoulder"],
   },
   "ex-barbell-jerk": {
@@ -639,6 +656,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["前架位起始", "预蹲后爆发上推", "分腿下蹲接铃", "收腿锁定"],
     progression: "半挺（不分腿）",
     regression: "哑铃火箭推（减负荷，降低肩腕压力）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-jerk-front.gif",
     scene: "gym", injury_contraindications: ["shoulder", "wrist", "knee"],
   },
   "ex-barbell-snatch": {
@@ -648,6 +666,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["宽握距", "杠铃贴身上拉", "快速下蹲接铃", "过顶锁定"],
     progression: "悬垂抓举",
     regression: "壶铃抓举（单侧减负，降低技术要求）",
+    image_url: "https://musclewiki.com/media/uploads/male-barbell-snatch-front.gif",
     scene: "gym", injury_contraindications: ["shoulder", "wrist", "waist"],
   },
 
@@ -659,6 +678,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["壶铃后摆启动", "髋部爆发伸展", "壶铃翻至架位", "手腕中立"],
     progression: "双壶铃高翻",
     regression: "轻壶铃高翻（减重量，先掌握动作节奏）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-clean-front.gif",
     scene: "gym", injury_contraindications: ["wrist"],
   },
   "ex-kb-swing": {
@@ -668,6 +688,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["髋部铰链发力", "臀肌收缩推壶铃", "手臂仅做杠杆", "壶铃至胸高度"],
     progression: "单臂壶铃甩摆",
     regression: "轻壶铃甩摆（减重量，感受髋部发力）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-swing-front.gif",
     scene: "gym", injury_contraindications: ["waist"],
   },
   "ex-kb-snatch": {
@@ -677,6 +698,7 @@ export const STRENGTH_LIBRARY: Record<string, ExerciseRef> = {
     cue_points: ["壶铃后摆启动", "髋部爆发+直臂上拉", "手腕穿入壶铃", "过顶锁定"],
     progression: "双壶铃抓举",
     regression: "轻壶铃抓举（减重量，逐步建立过顶稳定）",
+    image_url: "https://musclewiki.com/media/uploads/male-kettlebell-snatch-front.gif",
     scene: "gym", injury_contraindications: ["shoulder", "wrist"],
   },
 };
