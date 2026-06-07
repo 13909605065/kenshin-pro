@@ -11,6 +11,65 @@ import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/lib/trimp";
 import { saveSessionLog } from "@/lib/training-log";
 import { POSITION_LABELS } from "@/lib/constants";
+import { loadGPSData, calcGPS_TRIMP, type GPSRecord } from "@/lib/gps-import";
+
+/* ───────────────────────────────────────────
+   GPS 实时监控面板
+   ─────────────────────────────────────────── */
+
+function GPSLivePanel() {
+  const [gpsData, setGpsData] = useState<GPSRecord[]>([]);
+  const today = new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    const all = loadGPSData().filter(r => r.date === today);
+    setGpsData(all);
+    const timer = setInterval(() => {
+      const fresh = loadGPSData().filter(r => r.date === today);
+      setGpsData(fresh);
+    }, 30000); // refresh every 30s
+    return () => clearInterval(timer);
+  }, []);
+
+  if (gpsData.length === 0) return null;
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 pb-6">
+      <div className="bg-[#0d0d0d] border border-[#992828]/20 rounded-xl overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-[#222] flex items-center justify-between">
+          <span className="text-sm font-bold text-[#992828] flex items-center gap-2">
+            <Activity className="w-4 h-4" /> GPS 实时负荷
+          </span>
+          <span className="text-[10px] text-gray-500">{gpsData.length}名球员 · {today}</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 p-3">
+          {gpsData.map(r => {
+            const { trimp, intensity } = calcGPS_TRIMP(r);
+            const color = intensity === "very_high" ? "#dc2626" : intensity === "high" ? "#f97316" : intensity === "moderate" ? "#eab308" : "#22c55e";
+            const label = intensity === "very_high" ? "停" : intensity === "high" ? "减量" : intensity === "moderate" ? "注意" : "OK";
+            return (
+              <div key={r.id} className="bg-[#111] rounded-lg p-2.5 border border-[#222]" style={{ borderLeftColor: color, borderLeftWidth: 3 }}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-white truncate">{r.athlete}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ backgroundColor: color + "20", color }}>{label}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[9px]">
+                  <span className="text-gray-500">距离</span><span className="text-gray-300 text-right">{r.totalDistance > 0 ? (r.totalDistance/1000).toFixed(1)+"km" : "—"}</span>
+                  <span className="text-gray-500">高速跑</span><span className="text-gray-300 text-right">{r.hsrDistance > 0 ? r.hsrDistance+"m" : "—"}</span>
+                  <span className="text-gray-500">冲刺</span><span className="text-gray-300 text-right">{r.sprintDistance > 0 ? r.sprintDistance+"m" : "—"}</span>
+                  <span className="text-gray-500">TRIMP</span><span className="text-[#992828] text-right font-bold">{trimp}</span>
+                </div>
+                <div className="mt-1.5 h-1 bg-[#222] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: Math.min(100, (trimp/200)*100) + "%", backgroundColor: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ───────────────────────────────────────────
    Types
@@ -1378,6 +1437,8 @@ export default function FieldPage() {
             </div>
           );
         })()}
+      {/* ═══ GPS 实时负荷监控 ═══ */}
+      <GPSLivePanel />
       </main>
     </div>
   );
