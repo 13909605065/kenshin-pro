@@ -562,8 +562,31 @@ function ExerciseLibraryPanel({
   selectedIds: string[];
   onAddExercise: (id: string) => void;
 }) {
+  // Merge custom exercises from localStorage
+  const allExercises = useMemo(() => {
+    const builtIn = [...EXERCISE_LIBRARY];
+    try {
+      const custom = JSON.parse(localStorage.getItem("kenshin_custom_exercises") || "[]");
+      custom.forEach((ce: any) => {
+        builtIn.push({
+          id: ce.id,
+          name: ce.name,
+          body_part: ce.body_part || "全身",
+          equipment: ce.equipment === "悬吊" ? "cable" : ce.equipment === "其他" ? "other" : ce.equipment || "bodyweight",
+          type: "力量",
+          description: ce.description || "",
+          cue_points: ce.cue_points || [],
+          progression: ce.progression || "",
+          regression: ce.regression || "",
+          image_url: ce.image_url || undefined,
+        });
+      });
+    } catch {}
+    return builtIn;
+  }, []);
+
   const filtered = useMemo(() => {
-    return EXERCISE_LIBRARY.filter((ex) => {
+    return allExercises.filter((ex) => {
       if (bodyPartFilter !== "all" && ex.body_part !== bodyPartFilter) return false;
       if (equipmentFilter !== "all" && ex.equipment !== equipmentFilter) return false;
       if (searchQuery.trim()) {
@@ -586,7 +609,7 @@ function ExerciseLibraryPanel({
         <div className="flex items-center gap-2 mb-2">
           <Dumbbell className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">动作库</span>
-          <span className="text-[10px] text-gray-500 ml-auto">{EXERCISE_LIBRARY.length}个动作</span>
+          <span className="text-[10px] text-gray-500 ml-auto">{allExercises.length}个动作</span>
         </div>
         {/* Search */}
         <div className="relative">
@@ -1290,55 +1313,21 @@ export function GymDesigner() {
                 />
               </div>
 
-              {/* Phase selector */}
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-gray-500">周期:</span>
-                <div className="flex bg-[#121212] rounded-lg p-0.5">
-                  {PHASES.map((p) => (
-                    <button
-                      key={p.value}
-                      onClick={() => setPhase(p.value)}
-                      className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
-                        phase === p.value
-                          ? "bg-[#992828] text-white"
-                          : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Phase + Goal dropdowns */}
+              <select value={phase} onChange={e => setPhase(e.target.value)}
+                className="bg-[#121212] border border-[#333] rounded-lg px-2 py-1.5 text-[10px] text-gray-300 focus:outline-none focus:border-[#992828] cursor-pointer">
+                {PHASES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+              </select>
+              <select value={goal} onChange={e => setGoal(e.target.value)}
+                className="bg-[#121212] border border-[#333] rounded-lg px-2 py-1.5 text-[10px] text-gray-300 focus:outline-none focus:border-[#992828] cursor-pointer">
+                {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+              </select>
 
-              {/* Goal selector */}
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] text-gray-500">目标:</span>
-                <div className="flex bg-[#121212] rounded-lg p-0.5">
-                  {GOALS.map((g) => (
-                    <button
-                      key={g.value}
-                      onClick={() => setGoal(g.value)}
-                      className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition ${
-                        goal === g.value
-                          ? "bg-[#992828] text-white"
-                          : "text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      {g.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={handleSaveToLibrary}
-                  disabled={selectedIds.length === 0}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-[#1e1e1e] border border-[#333] text-gray-300 text-xs font-semibold rounded-lg hover:bg-[#252525] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  保存到资料库
+              {/* Core actions */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={handleSaveToLibrary} disabled={selectedIds.length === 0}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-[#1e1e1e] border border-[#333] text-gray-300 text-[10px] rounded-lg hover:bg-[#252525] transition disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Save className="w-3 h-3" />保存
                 </button>
                 <button
                   onClick={() => {
