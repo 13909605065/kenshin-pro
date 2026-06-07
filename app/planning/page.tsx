@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
+import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import type { SeasonPhase } from "@/lib/types";
 import { saveTrainingPlan, loadTrainingPlans, deleteTrainingPlan } from "@/lib/training-log";
 import { getPlayers } from "@/lib/roster-utils";
@@ -378,6 +379,11 @@ export default function PlanningPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
+      {/* Roster Injury Overview */}
+      <div className="mb-4">
+        <RosterInjuryCheck />
+      </div>
+
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">训练周期编排</h1>
