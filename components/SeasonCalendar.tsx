@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, X, Download, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Download, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { notifyChange } from "@/lib/data-events";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -377,7 +378,7 @@ export default function SeasonCalendar() {
   const updateData = useCallback((updater: (prev: SeasonCalendarData) => SeasonCalendarData) => {
     setData(prev => {
       const next = updater(prev);
-      saveData(next);
+      saveData(next); notifyChange("season-calendar-updated");
       return next;
     });
   }, []);

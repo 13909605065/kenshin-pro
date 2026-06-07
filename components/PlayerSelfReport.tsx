@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Upload, Download, X, FileSpreadsheet } from "lucide-react";
+import { notifyChange } from "@/lib/data-events";
 import * as XLSX from "xlsx";
 
 interface SelfReport {
@@ -72,7 +73,7 @@ export function PlayerSelfReport() {
 
     const merged = [...reports.filter(r => r.date !== today), ...imported];
     setReports(merged);
-    saveReports(merged);
+    saveReports(merged); notifyChange("self-report-updated");
     e.target.value = "";
   };
 

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { GymLayout } from "@/components/GymLayout";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
+import { notifyChange } from "@/lib/data-events";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import {
@@ -1206,6 +1207,8 @@ export function GymDesigner() {
 
     // Dispatch event for library refresh
     window.dispatchEvent(new Event("gym-library-refresh"));
+    notifyChange("gym-workout-updated");
+    notifyChange("load-data-changed");
   }, [selectedIds, workoutName, phase, goal]);
 
   // Bind to calendar

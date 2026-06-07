@@ -10,6 +10,7 @@ import {
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/lib/trimp";
 import { saveSessionLog } from "@/lib/training-log";
+import { notifyChange } from '@/lib/data-events';
 import { POSITION_LABELS } from "@/lib/constants";
 import { loadGPSData, calcGPS_TRIMP, type GPSRecord } from "@/lib/gps-import";
 import { parseText } from "@/lib/field-validator";
@@ -615,7 +616,7 @@ export default function FieldPage() {
 
     setSession(prev => {
       const updated = { ...prev, phases: [...prev.phases, phase] };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
 
@@ -633,7 +634,7 @@ export default function FieldPage() {
   const removePhase = useCallback((id: string) => {
     setSession(prev => {
       const updated = { ...prev, phases: prev.phases.filter(p => p.id !== id) };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
     if (activePhaseId === id) {
@@ -653,7 +654,7 @@ export default function FieldPage() {
           p.id === id ? { ...p, startedAt: p.startedAt || new Date().toISOString() } : p
         ),
       };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
   }, []);
@@ -669,7 +670,7 @@ export default function FieldPage() {
             : p
         ),
       };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
     setElapsedSec(0);
@@ -721,7 +722,7 @@ export default function FieldPage() {
           return updatedPhase;
         }),
       };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
   }, []);
@@ -823,7 +824,7 @@ export default function FieldPage() {
   const addWaterBreak = useCallback(() => {
     setSession(prev => {
       const updated = { ...prev, waterBreakCount: prev.waterBreakCount + 1 };
-      saveSessions([updated]);
+      saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed");
       return updated;
     });
   }, []);
@@ -959,7 +960,7 @@ export default function FieldPage() {
                   value={session.warmupMin}
                   onChange={e => {
                     const v = Math.max(0, parseInt(e.target.value) || 0);
-                    setSession(prev => { const updated = { ...prev, warmupMin: v }; saveSessions([updated]); return updated; });
+                    setSession(prev => { const updated = { ...prev, warmupMin: v }; saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed"); return updated; });
                   }}
                   className="w-12 text-center bg-transparent border-b border-[#333] text-sm text-white focus:border-[#992828] outline-none"
                   min={0}
@@ -989,7 +990,7 @@ export default function FieldPage() {
                   <button
                     key={n}
                     onClick={() => {
-                      setSession(prev => { const updated = { ...prev, avgTeamRPE: n }; saveSessions([updated]); return updated; });
+                      setSession(prev => { const updated = { ...prev, avgTeamRPE: n }; saveSessions([updated]); notifyChange("field-session-updated"); notifyChange("load-data-changed"); return updated; });
                     }}
                     className={`w-5 h-5 rounded text-[9px] font-medium transition ${
                       n <= session.avgTeamRPE

@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
+import { notifyChange } from '@/lib/data-events';
 import { MobileNav } from "@/components/MobileNav";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
 
@@ -26,7 +27,7 @@ function GPSImportButton() {
     saveGPSData(r.records);
     setMsg(`✅ 导入 ${r.success} 条 (${r.skipped} 条跳过)`);
     setCount(prev => prev + r.success);
-    window.dispatchEvent(new Event("training-log-updated"));
+    window.dispatchEvent(new Event("training-log-updated")); notifyChange("gps-data-updated"); notifyChange("load-data-changed");
     setTimeout(() => setMsg(""), 3000);
   };
 
