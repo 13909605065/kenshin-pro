@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Search, X, GripVertical, ChevronRight, CheckCircle2,
   XCircle, AlertTriangle, Dumbbell, Save, Calendar,
@@ -1096,10 +1096,21 @@ export function GymDesigner() {
   const [bodyPartFilter, setBodyPartFilter] = useState<BodyPart | "all">("all");
   const [equipmentFilter, setEquipmentFilter] = useState<Equipment | "all">("all");
 
-  // Workout state
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [exerciseParams, setExerciseParams] = useState<Record<string, {sets:number,reps:number,rest:number}>>({});
-  const [workoutName, setWorkoutName] = useState("");
+  // Workout state — restore from localStorage on mount
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("kenshin_gym_draft_ids") || "[]"); } catch { return []; }
+  });
+  const [exerciseParams, setExerciseParams] = useState<Record<string, {sets:number,reps:number,rest:number}>>(() => {
+    try { return JSON.parse(localStorage.getItem("kenshin_gym_draft_params") || "{}"); } catch { return {}; }
+  });
+  const [workoutName, setWorkoutName] = useState(() => {
+    try { return localStorage.getItem("kenshin_gym_draft_name") || ""; } catch { return ""; }
+  });
+
+  // Auto-save draft on every change
+  useEffect(() => { localStorage.setItem("kenshin_gym_draft_ids", JSON.stringify(selectedIds)); }, [selectedIds]);
+  useEffect(() => { localStorage.setItem("kenshin_gym_draft_params", JSON.stringify(exerciseParams)); }, [exerciseParams]);
+  useEffect(() => { localStorage.setItem("kenshin_gym_draft_name", workoutName); }, [workoutName]);
   const [phase, setPhase] = useState<string>("preseason");
   const [goal, setGoal] = useState<string>("strength");
   // Read actual injury data from localStorage roster and injury reports
