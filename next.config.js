@@ -5,7 +5,7 @@ const withPWA = require("next-pwa")({
   register: true,
   skipWaiting: true,   // ✅ 新 SW 安装完立即激活，不等 tab 关闭
   clientsClaim: true,  // ✅ 新 SW 激活后立即接管所有页面
-  disable: true, // temporarily disabled to kill old SW
+  disable: process.env.NODE_ENV === "development",
   runtimeCaching: [
     // API proxy (/api/supabase) — Network First
     { urlPattern: /\/api\/supabase\/.*/i, handler: "NetworkFirst", options: { cacheName: "api-supabase-proxy", networkTimeoutSeconds: 10, expiration: { maxEntries: 100, maxAgeSeconds: 60 * 30 } } },
