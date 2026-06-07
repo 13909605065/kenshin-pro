@@ -186,6 +186,16 @@ export async function POST(request: NextRequest) {
 
   const isCoach = formData.role === "coach";
   const systemPrompt = buildSystemPrompt(formData, scene);
+
+  // ── Knowledge base context ──
+  const { getKnowledgeContext } = await import("@/lib/knowledge-base");
+  const kbContext = getKnowledgeContext(
+    isCoach ? "足球训练 周期安排" : `${formData.position || ""} ${formData.goal || ""}`,
+    formData.position,
+    formData.phase
+  );
+  const enrichedSystemPrompt = systemPrompt + kbContext;
+
   const weather = await getWeather().catch(() => null);
 
   // ── Scene hint for AI ──
@@ -253,7 +263,7 @@ ${JSON.stringify(fitnessData, null, 1)}
             body: JSON.stringify({
               model: prov.model,
               messages: [
-                { role: "system", content: systemPrompt },
+                { role: "system", content: enrichedSystemPrompt },
                 { role: "user", content: userMessage },
               ],
               max_tokens: MAX_TOKENS,
