@@ -22,7 +22,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use getSession() instead of getUser() — reads from cookie, instant, no network request
+  // This prevents the redirect flash on page refresh
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   const isLoginPage = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/login/";
   const isAuthCallback = request.nextUrl.pathname.startsWith("/auth/") || request.nextUrl.pathname.startsWith("/auth");
