@@ -12,6 +12,7 @@ import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/li
 import { saveSessionLog } from "@/lib/training-log";
 import { POSITION_LABELS } from "@/lib/constants";
 import { loadGPSData, calcGPS_TRIMP, type GPSRecord } from "@/lib/gps-import";
+import { parseText } from "@/lib/field-validator";
 
 /* ───────────────────────────────────────────
    GPS 实时监控面板
@@ -690,10 +691,19 @@ export default function FieldPage() {
 
           // Recalculate intensity if text or groupSize changed
           if (field === "text" || field === "groupSize") {
-            const intensity = estimateIntensity(
-              field === "text" ? String(value) : p.text,
-              field === "groupSize" ? String(value) : p.groupSize,
-            );
+            const actualText = field === "text" ? String(value) : p.text;
+            const actualGroup = field === "groupSize" ? String(value) : p.groupSize;
+
+            // ── TEXT PARSING: auto-sync structured params from text ──
+            if (field === "text") {
+              const parsed = parseText(actualText);
+              if (parsed.groupSize) updatedPhase.groupSize = parsed.groupSize;
+              if (parsed.sets) updatedPhase.setsPlanned = parsed.sets;
+              if (parsed.durationMin) updatedPhase.durationMin = parsed.durationMin;
+              if (parsed.restSec) updatedPhase.restSec = parsed.restSec;
+            }
+
+            const intensity = estimateIntensity(actualText, actualGroup);
             updatedPhase.intensityLabel = intensity.label;
             updatedPhase.intensityPercent = intensity.percent;
             updatedPhase.trimpCoefficient = intensity.coefficient;
