@@ -367,6 +367,13 @@ export default function ExercisesPage() {
         <div className="flex items-center gap-3 mb-5">
           <a href="/" className="text-gray-400 hover:text-white text-sm transition-colors duration-150 touch-target min-w-[44px] min-h-[44px] flex items-center justify-center">←</a>
           <h1 className="text-lg font-bold text-[#d1d1d1]">动作库</h1>
+          <button
+            onClick={() => { setEditingCustom(null); setModalOpen(true); }}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-[#992828] text-white hover:bg-[#7a1e1e] transition ml-auto"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            添加动作
+          </button>
         </div>
 
         {deleteToast && (
