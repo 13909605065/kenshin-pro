@@ -968,7 +968,6 @@ export function Dashboard({ supabaseProfile, userId }: { supabaseProfile?: Supab
                   { n:"标志桶",  color:"#e8780a" },
                   { n:"标志杆",  color:"#e8c800" },
                   { n:"号坎",    color:"#4a90d9" },
-                  { n:"足球",    color:"#ffffff" },
                   { n:"小球门",  color:"#ffffff" },
                   { n:"标准门",  color:"#ffffff" },
                   { n:"小栏架",  color:"#e8780a" },
