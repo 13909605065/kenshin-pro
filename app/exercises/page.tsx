@@ -11,12 +11,12 @@ import { StickFigure } from "@/components/StickFigure";
 // ═══════════════════════════════════════════════
 
 type BodyPart = "all" | "上半身" | "下半身" | "全身";
-type Equipment = "all" | "杠铃" | "哑铃" | "悬吊" | "自重" | "弹力带" | "药球" | "波速球" | "跳箱";
+type Equipment = "all" | "杠铃" | "哑铃" | "壶铃" | "悬吊" | "自重" | "弹力带" | "药球" | "波速球" | "跳箱";
 type Difficulty = "基础" | "中级" | "进阶";
 type ExerciseType = "all" | "力量" | "步伐" | "跳跃" | "拉伸" | "爆发" | "核心";
 
 const BODY_PARTS: BodyPart[] = ["all", "上半身", "下半身", "全身"];
-const EQUIPMENTS: Equipment[] = ["all", "杠铃", "哑铃", "悬吊", "自重", "弹力带", "药球", "波速球", "跳箱"];
+const EQUIPMENTS: Equipment[] = ["all", "杠铃", "哑铃", "壶铃", "悬吊", "自重", "弹力带", "药球", "波速球", "跳箱"];
 const EXERCISE_TYPES: ExerciseType[] = ["all", "力量", "步伐", "跳跃", "拉伸", "爆发", "核心"];
 
 // ═══════════════════════════════════════════════
@@ -63,6 +63,7 @@ interface UnifiedExercise {
 
 function detectEquipment(id: string): Equipment {
   if (id.startsWith("ex-db-")) return "哑铃";
+  if (id.startsWith("ex-kb-")) return "壶铃";
   if (id.startsWith("ex-sus-")) return "悬吊";
   if (id.startsWith("ex-band-") || id.includes("band")) return "弹力带";
   if (id.startsWith("ex-mb-") || id.startsWith("ex-med-ball")) return "药球";
@@ -196,13 +197,12 @@ function buildUnifiedExercises(): UnifiedExercise[] {
 
   for (const [id, ex] of Object.entries(STRENGTH_LIBRARY)) {
     const name = ex.name;
-    const detectedType = detectExerciseType(id, name);
     list.push({
       id,
       name,
-      bodyPart: detectBodyPart(id),
-      equipment: detectEquipment(id),
-      type: detectedType,
+      bodyPart: ex.bodyPart || detectBodyPart(id),
+      equipment: ex.equipment || detectEquipment(id),
+      type: ex.exerciseType || detectExerciseType(id, name),
       sets: ex.sets,
       reps: ex.reps,
       load_default: ex.load_default,
