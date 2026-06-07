@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { MobileNav } from "@/components/MobileNav";
 
 const DailyReadiness = dynamic(() => import("@/components/DailyReadiness").then(m => ({ default: m.DailyReadiness })), { ssr: false });
+const PlayerSelfReport = dynamic(() => import("@/components/PlayerSelfReport").then(m => ({ default: m.PlayerSelfReport })), { ssr: false });
 const ReportGenerator = dynamic(() => import("@/components/ReportGenerator").then(m => ({ default: m.ReportGenerator })), { ssr: false });
 import { useState, useEffect, Component } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
@@ -150,6 +151,9 @@ export default function Home() {
             </div>
             <div className="pt-2">
               <ReportGenerator />
+              <div className="mt-2">
+                <PlayerSelfReport />
+              </div>
             </div>
           </div>
         </ErrorBoundary>
