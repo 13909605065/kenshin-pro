@@ -2,38 +2,53 @@
 
 import { useState, useEffect } from "react";
 
+// Build version — bump to force all clients to refresh
+const BUILD_ID = "2026-06-07-v2";
+
 export function UpdateBanner() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    // When new SW takes control (skipWaiting: true), auto-refresh to show new version
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      window.location.reload();
-    });
+    // ── Aggressive: unregister old SW, then register fresh ──
+    async function forceCleanSW() {
+      const lastBuild = localStorage.getItem("kenshin_build_id");
+      if (lastBuild !== BUILD_ID) {
+        // New build detected — nuke old SW first
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+          if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+          await reg.unregister();
+        }
+      }
+      localStorage.setItem("kenshin_build_id", BUILD_ID);
+    }
 
-    navigator.serviceWorker.ready.then((reg) => {
-      // Listen for new worker updates
-      reg.addEventListener("updatefound", () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
+    forceCleanSW().then(() => {
+      // Listen for new SW taking control → auto-reload
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        window.location.reload();
+      });
 
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            // New SW installed — with skipWaiting:true it activates immediately.
-            // controllerchange will fire next, triggering auto-reload.
-            // Show banner briefly as a visual cue before the reload.
-            setUpdateAvailable(true);
-          }
+      navigator.serviceWorker.ready.then((reg) => {
+        // Poll for updates every 60s
+        setInterval(() => { try { reg.update(); } catch {} }, 60000);
+
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              setUpdateAvailable(true);
+            }
+          });
         });
       });
     });
   }, []);
 
-  const handleUpdate = () => {
-    window.location.reload();
-  };
+  const handleUpdate = () => window.location.reload();
 
   if (!updateAvailable) return null;
 
