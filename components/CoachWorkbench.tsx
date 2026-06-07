@@ -70,8 +70,8 @@ function getMicrocyclePlan(matchDate: string, dayOffset: number): MicrocyclePlan
 
 // ── scene config ──
 const SCENES = [
-  { id: 'gym' as const, label: '力量房', icon: '🏋️', desc: '抗阻力量 · 爆发力 · 协调灵敏 · 肌耐力', hint: '全无球热身 · FIFA 11+' },
-  { id: 'pitch' as const, label: '外场', icon: '⚽', desc: '自重力量 · 场地爆发力 · 直线速度 · 专项耐力', hint: '无球/有球热身二选一' },
+  { id: 'gym' as const, label: '力量房', desc: '抗阻力量 · 爆发力 · 协调灵敏 · 肌耐力', hint: '全无球热身 · FIFA 11+' },
+  { id: 'pitch' as const, label: '外场', desc: '自重力量 · 场地爆发力 · 直线速度 · 专项耐力', hint: '无球/有球热身二选一' },
 ];
 
 const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
@@ -131,37 +131,37 @@ interface MicrocycleDayInfo {
 
 const MICROCYCLE_RULES: Record<CalendarPhaseKey, Record<number, MicrocycleDayInfo>> = {
   regular_season: {
-    [-2]: { icon: '⚽', label: '外场·赛前激活', scene: 'pitch' },
-    [-1]: { icon: '⚽', label: '外场·微调', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '比赛日', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场常规', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '唯一力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场大课', scene: 'pitch' } },
+    [-2]: { label: '外场·赛前激活', scene: 'pitch' },
+    [-1]: { label: '外场·微调', scene: 'pitch' },
+    [0]:  { label: '比赛日', scene: 'match' },
+    [1]:  { label: '恢复', scene: 'recovery' },
+    [2]:  { label: '外场常规', scene: 'pitch' },
+    [3]:  { label: '唯一力量', scene: 'gym' },
+    [4]:  { label: '外场大课', scene: 'pitch' } },
   preseason_build: {
-    [-2]: { icon: '⚽', label: '外场磨合', scene: 'pitch' },
-    [-1]: { icon: '🔥', label: '激活', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '教学赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '🏋️', label: '力量①', scene: 'gym' },
-    [3]:  { icon: '⚽', label: '外场体能', scene: 'pitch' },
-    [4]:  { icon: '🏋️', label: '力量②', scene: 'gym' } },
+    [-2]: { label: '外场磨合', scene: 'pitch' },
+    [-1]: { label: '激活', scene: 'pitch' },
+    [0]:  { label: '教学赛', scene: 'match' },
+    [1]:  { label: '恢复', scene: 'recovery' },
+    [2]:  { label: '力量①', scene: 'gym' },
+    [3]:  { label: '外场体能', scene: 'pitch' },
+    [4]:  { label: '力量②', scene: 'gym' } },
   offseason: {
-    [-2]: { icon: '🏋️', label: '力量轻负荷', scene: 'gym' },
-    [-1]: { icon: '🏃', label: '活动', scene: 'pitch' },
-    [0]:  { icon: '📋', label: '热身赛', scene: 'match' },
-    [1]:  { icon: '🏋️', label: '恢复力量', scene: 'gym' },
-    [2]:  { icon: '🏋️', label: '主力力量①', scene: 'gym' },
-    [3]:  { icon: '🏋️', label: '主力力量②', scene: 'gym' },
-    [4]:  { icon: '🏋️', label: '主力力量③', scene: 'gym' } },
+    [-2]: { label: '力量轻负荷', scene: 'gym' },
+    [-1]: { label: '活动', scene: 'pitch' },
+    [0]:  { label: '热身赛', scene: 'match' },
+    [1]:  { label: '恢复力量', scene: 'gym' },
+    [2]:  { label: '主力力量①', scene: 'gym' },
+    [3]:  { label: '主力力量②', scene: 'gym' },
+    [4]:  { label: '主力力量③', scene: 'gym' } },
   playoffs: {
-    [-2]: { icon: '⚽', label: '外场激活·压负荷', scene: 'pitch' },
-    [-1]: { icon: '🧘', label: '最低负荷', scene: 'pitch' },
-    [0]:  { icon: '🏆', label: '关键赛', scene: 'match' },
-    [1]:  { icon: '💆', label: '恢复', scene: 'recovery' },
-    [2]:  { icon: '⚽', label: '外场纠错', scene: 'pitch' },
-    [3]:  { icon: '🏋️', label: '轻量维持力量', scene: 'gym' },
-    [4]:  { icon: '⚽', label: '外场对抗', scene: 'pitch' } } };
+    [-2]: { label: '外场激活·压负荷', scene: 'pitch' },
+    [-1]: { label: '最低负荷', scene: 'pitch' },
+    [0]:  { label: '关键赛', scene: 'match' },
+    [1]:  { label: '恢复', scene: 'recovery' },
+    [2]:  { label: '外场纠错', scene: 'pitch' },
+    [3]:  { label: '轻量维持力量', scene: 'gym' },
+    [4]:  { label: '外场对抗', scene: 'pitch' } } };
 
 const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
   regular_season: 1,
@@ -170,18 +170,18 @@ const WEEKLY_STRENGTH_LIMIT: Record<CalendarPhaseKey, number> = {
   playoffs: 1 };
 
 const CALENDAR_PHASE_META: Record<CalendarPhaseKey, { label: string; color: string; defaultMode: 'gym' | 'football' }> = {
-  regular_season: { label: '常规赛季', icon: '⚽', color: '#992828', defaultMode: 'football' },
-  preseason_build: { label: '季前备战', icon: '🏋️', color: '#166534', defaultMode: 'football' },
-  offseason: { label: '休赛期', icon: '🧊', color: '#374151', defaultMode: 'gym' },
-  playoffs: { label: '附加赛', icon: '🏆', color: '#992828', defaultMode: 'football' } };
+  regular_season: { label: '常规赛季', color: '#992828', defaultMode: 'football' },
+  preseason_build: { label: '季前备战', color: '#166534', defaultMode: 'football' },
+  offseason: { label: '休赛期', color: '#374151', defaultMode: 'gym' },
+  playoffs: { label: '附加赛', color: '#992828', defaultMode: 'football' } };
 
 function getMicrocycleDay(phaseKey: CalendarPhaseKey, dayOffset: number): MicrocycleDayInfo {
   const rules = MICROCYCLE_RULES[phaseKey];
   if (rules[dayOffset]) return rules[dayOffset];
   // fallback
-  if (dayOffset === 0) return { icon: '⚽', label: '比赛日', scene: 'match' };
-  if (dayOffset < 0) return { icon: '⚽', label: '外场训练', scene: 'pitch' };
-  return { icon: '🏋️', label: '训练', scene: 'gym' };
+  if (dayOffset === 0) return { label: '比赛日', scene: 'match' };
+  if (dayOffset < 0) return { label: '外场训练', scene: 'pitch' };
+  return { label: '训练', scene: 'gym' };
 }
 
 // ── edit modal state ──
