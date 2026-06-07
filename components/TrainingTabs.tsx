@@ -13,6 +13,8 @@ import { CoachSessionTable } from "./CoachSessionTable";
 import { AthleteCategoryView } from "./AthleteTrainingView";
 import { CoachTacticalBriefing } from "./CoachTacticalBriefing";
 import AIAssistant from "./AIAssistant";
+import { Printer, Plus, ThumbsUp, ThumbsDown } from "lucide-react";
+import { createClient } from "@/lib/supabase/supabase-client";
 import MobileTrainingMode from "./MobileTrainingMode";
 import { ExerciseEditor } from "./ExerciseEditor";
 import type { EditableExercise } from "./ExerciseEditor";
@@ -444,6 +446,35 @@ function CoachMicrocycleView({ module: m }: { module: Microcycle }) {
   );
 }
 
+
+function FeedbackInline({ planId }: { planId: string | null }) {
+  const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const supabase = createClient();
+  const sendFeedback = async (rating: "up" | "down") => {
+    if (feedback === rating || !planId) return;
+    setFeedback(rating);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("feedback").upsert({ plan_id: planId, user_id: user.id, rating });
+  };
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <button onClick={() => sendFeedback("up")}
+        className={`p-2 rounded-lg transition ${
+          feedback === "up" ? "bg-[#992828]/20 text-[#992828]" : "text-gray-400 hover:text-gray-300 hover:bg-[#222]"
+        }`}>
+        <ThumbsUp className="w-4 h-4" />
+      </button>
+      <button onClick={() => sendFeedback("down")}
+        className={`p-2 rounded-lg transition ${
+          feedback === "down" ? "bg-red-500/20 text-red-400" : "text-gray-400 hover:text-gray-300 hover:bg-[#222]"
+        }`}>
+        <ThumbsDown className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launchTimer, onLaunchTimer }: Props) {
   const router = useRouter();
   const isCoach = formData.role === "coach";
@@ -544,7 +575,10 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const posModule = editableModules.find(m => m.module === "position_training") as import("@/lib/types").PositionTraining | undefined;
 
   return (
-    <div className="flex flex-col">
+    <div className="lg:grid lg:grid-cols-[1fr_180px] lg:gap-4">
+
+      {/* ===== LEFT COLUMN: Main Content ===== */}
+      <div className="flex flex-col min-w-0">
       {/* Top: Summary Card */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center gap-3 flex-wrap">
@@ -690,8 +724,8 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
       </div>
       </>
 
-      {/* Bottom: Training Actions + Action Bar */}
-      <div className="sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
+      {/* Bottom bar — mobile only */}
+      <div className="lg:hidden sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
         <div className="flex gap-2">
           <button onClick={() => setShowMobileMode(true)}
             className="flex-1 py-3 bg-[#992828] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]">
@@ -710,40 +744,84 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
         />
       </div>
 
-      {/* Full-screen Workout Timer overlay */}
-      {showTimer && (
-        <WorkoutTimer
+      {/* Desktop bottom bar — without feedback (it's in the sidebar) */}
+      <div className="hidden lg:block sticky bottom-0 bg-[#121212]/95 backdrop-blur pt-3 border-t border-[#1e1e1e] mt-4 space-y-2">
+        <div className="flex gap-2">
+          <button onClick={() => setShowMobileMode(true)}
+            className="flex-1 py-3 bg-[#992828] text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-[#b91d1d] transition active:scale-[0.98]">
+            📱 手机跟练
+          </button>
+          <button onClick={() => setShowTimer(true)}
+            className="px-4 py-3 bg-[#1e1e1e] border border-[#333] text-gray-400 rounded-xl text-xs hover:bg-[#222] transition flex items-center gap-1">
+            <span>▶</span> 计时
+          </button>
+        </div>
+        <ActionBar
           modules={editableModules}
-          planId={planId || undefined}
-          onClose={() => setShowTimer(false)}
-        />
-      )}
-      {showMobileMode && (
-        <MobileTrainingMode
-          modules={editableModules}
+          formData={formData}
           planId={planId}
-          onClose={() => setShowMobileMode(false)}
+          onSaveTemplate={onSaveTemplate}
+          hideFeedback
         />
-      )}
-
-      {/* Exercise Editor Modal */}
-      {editingExercise && (
-        <ExerciseEditor
-          exercise={editingExercise.exercise}
-          onSave={(updated) => {
-            handleUpdateExercise(
-              editingExercise.moduleType,
-              editingExercise.category,
-              editingExercise.index,
-              updated
-            );
-            setEditingExercise(null);
-          }}
-          onCancel={() => setEditingExercise(null)}
-        />
-      )}
-
-      <AIAssistant />
+      </div>
     </div>
+
+    {/* ===== RIGHT COLUMN: Desktop Feedback Sidebar ===== */}
+    <div className="hidden lg:block">
+      <div className="sticky top-20 space-y-3">
+        {/* Feedback Card */}
+        <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-4 text-center">
+          <p className="text-[11px] text-gray-400 mb-3">方案评价</p>
+          <FeedbackInline planId={planId} />
+          <p className="text-[9px] text-gray-600 mt-3 leading-relaxed">你的反馈会帮助<br/>AI 为你优化方案</p>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-[#1e1e1e] border border-[#222] rounded-xl p-3 flex flex-col gap-1.5">
+          <button onClick={() => window.print()} className="w-full text-[11px] py-2 px-3 rounded-lg bg-[#121212] border border-[#222] text-gray-400 hover:text-white hover:border-[#555] transition flex items-center gap-2">
+            <Printer className="w-3.5 h-3.5" /> 导出PDF
+          </button>
+          <button onClick={() => window.location.reload()} className="w-full text-[11px] py-2 px-3 rounded-lg bg-[#992828] text-white font-medium hover:bg-[#7a1e1e] transition flex items-center gap-2">
+            <Plus className="w-3.5 h-3.5" /> 新方案
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Full-screen Workout Timer overlay */}
+  {showTimer && (
+    <WorkoutTimer
+      modules={editableModules}
+      planId={planId || undefined}
+      onClose={() => setShowTimer(false)}
+    />
+  )}
+  {showMobileMode && (
+    <MobileTrainingMode
+      modules={editableModules}
+      planId={planId}
+      onClose={() => setShowMobileMode(false)}
+    />
+  )}
+
+  {/* Exercise Editor Modal */}
+  {editingExercise && (
+    <ExerciseEditor
+      exercise={editingExercise.exercise}
+      onSave={(updated) => {
+        handleUpdateExercise(
+          editingExercise.moduleType,
+          editingExercise.category,
+          editingExercise.index,
+          updated
+        );
+        setEditingExercise(null);
+      }}
+      onCancel={() => setEditingExercise(null)}
+    />
+  )}
+
+  <AIAssistant />
   );
 }

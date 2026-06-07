@@ -12,9 +12,10 @@ interface Props {
   formData: PlayerFormData;
   planId: string | null;
   onSaveTemplate?: () => void;
+  hideFeedback?: boolean;
 }
 
-export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) {
+export function ActionBar({ modules, formData, planId, onSaveTemplate, hideFeedback }: Props) {
   const [copyAllDone, setCopyAllDone] = useState(false);
   const [shareDone, setShareDone] = useState(false);
   const [shareFailed, setShareFailed] = useState(false);
@@ -227,7 +228,8 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
         </button>
       </div>
 
-      {/* ── Feedback ── */}
+      {/* ── Feedback (hidden on desktop when sidebar has it) ── */}
+      {!hideFeedback && (
       <div className="flex items-center gap-1">
         <span className="text-[10px] text-gray-600 mr-2">有帮助吗？</span>
         <button
@@ -251,6 +253,7 @@ export function ActionBar({ modules, formData, planId, onSaveTemplate }: Props) 
           <ThumbsDown className="w-3.5 h-3.5" />
         </button>
       </div>
+      )}
 
       {/* Share Card Modal */}
       {showShareCard && (
