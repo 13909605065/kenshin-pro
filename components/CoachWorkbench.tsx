@@ -788,7 +788,13 @@ export default function CoachWorkbench() {
           className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:border-[#992828] outline-none" />
         <span className="text-xs font-bold text-[#F1F1F1]">{workbenchMode === 'football' ? '外场' : '力量房'}</span>
         <span className="text-[#555]">|</span>
-        <a href="/planning" className="text-[10px] px-2 py-1 rounded bg-[#1a1a1a] border border-[#333] text-[#888] hover:text-white no-underline">提前排课</a>
+        {trainDate === dateStr(new Date()) ? (
+          <span className="text-[10px] text-[#992828] font-medium">今日训练</span>
+        ) : trainDate > dateStr(new Date()) ? (
+          <span className="text-[10px] text-yellow-500 font-medium">备课模式</span>
+        ) : (
+          <span className="text-[10px] text-gray-500">回顾</span>
+        )}
         <button onClick={() => setTimeSlot('morning')}
           className={`px-2 py-1 rounded text-[10px] font-medium transition ${timeSlot === 'morning' ? 'bg-[#1e3a5f] text-[#7eb8da] border border-[#2d5a8e]/50' : 'bg-[#1a1a1a] text-[#888] hover:text-white'}`}>上午</button>
         <button onClick={() => setTimeSlot('afternoon')}
