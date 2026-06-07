@@ -11,6 +11,7 @@ import { useStrengthPlan } from "@/hooks/useStrengthPlan";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import { ArrowLeft, Dumbbell, Zap } from "lucide-react";
+import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 
 type Tab = "library" | "free";
 
@@ -52,6 +53,12 @@ export default function StrengthPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+
+        {/* Roster Injury Overview */}
+        <div className="mb-4">
+          <RosterInjuryCheck />
+        </div>
+
         {/* ===== Tab 1: Exercise Library ===== */}
         {activeTab === "library" && (
           <div className="space-y-6">

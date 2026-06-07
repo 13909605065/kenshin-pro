@@ -7,6 +7,7 @@ import {
   Shuffle, MapPin, Edit3,
 } from "lucide-react";
 import { GymLayout } from "@/components/GymLayout";
+import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
 import {
@@ -1205,6 +1206,12 @@ export function GymDesigner() {
 
       {/* Main content: 3-panel layout */}
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 pb-24 lg:pb-4">
+
+        {/* Roster Injury Overview */}
+        <div className="mb-3">
+          <RosterInjuryCheck />
+        </div>
+
         <div className={`flex flex-col lg:flex-row gap-3 ${
           activeTab === "layout"
             ? "h-[400px] lg:h-[350px]"
