@@ -131,11 +131,11 @@ function validateData(raw: any): SeasonCalendarData | null {
   if (!Array.isArray(raw.matchDates)) return null;
   // Validate each event has required fields
   for (const ev of raw.events) {
-    if (!ev.id || !ev.date || !ev.label) return null;
+    if (!ev.id || !ev.date || !ev.type) return null;
   }
   // Validate each phase range
   for (const pr of raw.phaseRanges) {
-    if (!pr.id || !pr.phaseType) return null;
+    if (!pr.id || !pr.phase) return null;
   }
   return raw as SeasonCalendarData;
 }
