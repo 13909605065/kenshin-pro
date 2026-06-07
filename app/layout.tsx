@@ -52,6 +52,27 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            }).then(function() {
+              if (window.caches) {
+                caches.keys().then(function(names) {
+                  names.forEach(function(n) { caches.delete(n); });
+                });
+              }
+            }).finally(function() {
+              var reloaded = sessionStorage.getItem('sw_reloaded');
+              if (!reloaded) {
+                sessionStorage.setItem('sw_reloaded', '1');
+                window.location.reload();
+              } else {
+                sessionStorage.removeItem('sw_reloaded');
+              }
+            });
+          }
+        `}} />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
