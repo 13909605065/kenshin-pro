@@ -10,10 +10,11 @@ import { GymLayout } from "@/components/GymLayout";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import { notifyChange } from "@/lib/data-events";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
-import type { ExerciseLibItem, BodyPart, Equipment } from "@/lib/strength-types";
+import type { BodyPart, Equipment } from "@/lib/strength-types";
 import {
   BODY_PART_LABELS, EQUIPMENT_LABELS,
 } from "@/lib/exercise-data";
+import { getDefaultParams, type TrainGoal } from "@/lib/strength-rules";
 
 /* ───────────────────────────────────────────
    Constants
@@ -712,13 +713,14 @@ function ExerciseLibraryPanel({
 /** Center Panel: Current Workout */
 function WorkoutPanel({
   selectedIds, exerciseParams, onUpdateParams,
-  onRemoveExercise, onReorder,
+  onRemoveExercise, onReorder, onAutoSort,
 }: {
   selectedIds: string[];
   exerciseParams: Record<string, {sets:number,reps:number,rest:number}>;
   onUpdateParams: (id: string, field: string, value: number) => void;
   onRemoveExercise: (id: string) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
+  onAutoSort: () => void;
 }) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -771,6 +773,15 @@ function WorkoutPanel({
           <Shuffle className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">当前训练方案</span>
           <span className="text-[10px] text-gray-500 ml-auto">{selectedIds.length}个动作</span>
+          {selectedIds.length >= 2 && (
+            <button
+              onClick={onAutoSort}
+              className="text-[9px] px-1.5 py-0.5 rounded bg-[#992828]/10 text-[#992828] hover:bg-[#992828]/20 transition"
+              title="按足球专项编排规则自动排序"
+            >
+              自动排序
+            </button>
+          )}
         </div>
       </div>
 
@@ -1231,13 +1242,77 @@ export function GymDesigner() {
   const [dayPickerOpen, setDayPickerOpen] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  // Add exercise from library
+  // ── Auto-sort by pattern priority ──
+  const EXERCISE_PATTERN: Record<string, number> = {
+    // Hip hinge (priority 1)
+    "deadlift": 1, "romanian-deadlift": 1, "single-leg-rdl": 1,
+    "kettlebell-single-leg-rdl": 1, "barbell-hip-thrust": 1, "weighted-glute-bridge": 1,
+    "single-leg-glute-bridge": 1, "kneeling-hip-extension": 1, "rapid-hip-thrust": 1,
+    "hamstring-glute-bridge": 1, "kettlebell-swing": 1,
+    "bent-over-row": 1, "cable-row": 1, "dumbbell-row": 1, "inverted-row": 1, "trx-row": 1,
+    // Unilateral (priority 2, ≥40%)
+    "bulgarian-split-squat": 2, "split-squat": 2, "cossack-squat": 2,
+    "walking-lunge": 2, "lateral-lunge": 2, "dumbbell-lunges": 2,
+    "kettlebell-goblet-split-squat": 2,
+    // Squat compound (priority 3)
+    "barbell-back-squat": 3, "front-squat": 3, "goblet-squat": 3,
+    "sumo-squat": 3, "leg-press": 3, "lunge-squat": 3,
+    "barbell-squat-jump": 3, "box-jump": 3, "squat-to-sprint": 3,
+    // Push (priority 4)
+    "bench-press": 4, "dumbbell-bench-press": 4, "push-up": 4,
+    "dynamic-pushup": 4, "wide-pushup": 4, "single-leg-db-bench-press": 4,
+    "lying-med-ball-chest-push": 4, "overhead-press": 4, "dumbbell-shoulder-press": 4,
+    "single-arm-kettlebell-press": 4, "med-ball-overhead-slam": 4,
+    // Pull (priority 4, but拉>推)
+    "pull-up": 4, "lat-pulldown": 4, "face-pull": 4, "band-face-pull": 4,
+    // Anti-rotation core (priority 5)
+    "pallof-press": 5, "plank": 5, "dead-bug": 5, "bird-dog": 5,
+    "copenhagen-plank": 5, "russian-twist": 5, "bosu-russian-twist": 5,
+    "v-up": 5, "opposite-arm-leg-raise": 5, "side-plank": 5,
+    "hollow-body-hold": 5, "plank-shoulder-tap": 5, "saw-plank": 5,
+    "banded-plank-variation": 5, "sit-up": 5, "adductor-raise": 5,
+    "cable-chest-fly": 5, "farmers-walk": 5,
+    // Isolation (priority 6, last)
+    "nordic-hamstring-curl": 6, "seated-calf-raise": 6, "standing-calf-raise": 6,
+    "rapid-calf-raise": 6, "tricep-pushdown": 6,
+  };
+
+  const sortByIds = useCallback((ids: string[]): string[] => {
+    return [...ids].sort((a, b) => {
+      const pa = EXERCISE_PATTERN[a] ?? 5;
+      const pb = EXERCISE_PATTERN[b] ?? 5;
+      return pa - pb;
+    });
+  }, []);
+
+  // Add exercise from library (auto-sort by pattern)
   const handleAddExercise = useCallback((id: string) => {
     setSelectedIds((prev) => {
       if (prev.includes(id)) return prev;
-      return [...prev, id];
+      // Set smart defaults based on goal
+      const defaults = getDefaultParams(goal as TrainGoal);
+      setExerciseParams(existing => ({
+        ...existing,
+        [id]: existing[id] || { sets: defaults.sets, reps: defaults.reps, rest: defaults.rest },
+      }));
+      return sortByIds([...prev, id]);
+    });
+  }, [goal, sortByIds]);
+
+  // Reorder: also apply auto-sort hint
+  const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
+    setSelectedIds((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
     });
   }, []);
+
+  // Auto-sort all button
+  const handleAutoSort = useCallback(() => {
+    setSelectedIds(prev => sortByIds(prev));
+  }, [sortByIds]);
 
   // Remove exercise from workout
   const handleRemoveExercise = useCallback((id: string) => {
@@ -1250,15 +1325,6 @@ export function GymDesigner() {
       ...prev,
       [id]: { ...(prev[id] || {sets:3,reps:8,rest:90}), [field]: value }
     }));
-  }, []);
-
-  const handleReorder = useCallback((fromIndex: number, toIndex: number) => {
-    setSelectedIds((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
-      return next;
-    });
   }, []);
 
   // Save to library
@@ -1379,6 +1445,7 @@ export function GymDesigner() {
               onUpdateParams={handleUpdateParams}
               onRemoveExercise={handleRemoveExercise}
               onReorder={handleReorder}
+              onAutoSort={handleAutoSort}
             />
           </div>
 

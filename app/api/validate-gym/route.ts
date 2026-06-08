@@ -2,8 +2,9 @@ import { NextRequest } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/supabase-server";
 import { EXERCISE_LIBRARY } from "@/lib/exercise-data";
 import { getKnowledgeContext } from "@/lib/knowledge-base";
+import { buildStrengthRulesContext } from "@/lib/strength-rules";
 
-const MAX_TOKENS = 1500;
+const MAX_TOKENS = 2000;
 const API_TIMEOUT_MS = 30_000;
 
 // Rate limit: separate from generate
@@ -114,31 +115,42 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // ── System prompt ──
-  const systemPrompt = `你是一名足球体能教练，拥有运动科学博士学位。你需要审核一份力量训练方案。
+  // ── System prompt with kenshin's football strength rules ──
+  const rulesContext = buildStrengthRulesContext(phase, goal);
 
-## 审核维度（6项）
-1. **拮抗交替**：相邻动作不应重复刺激同一肌群，应交替训练拮抗肌群（如推→拉→推→拉）
-2. **大肌群优先**：大肌群复合动作（深蹲、硬拉、卧推、划船）应排在训练前半段，小肌群孤立动作后置
-3. **复合优先**：多关节复合动作在前，单关节孤立动作在后
-4. **强度递减**：大重量→中等→轻量递减排列；如果目标是爆发力，爆发性动作应在大重量之后、轻量之前
-5. **关节分散**：不应连续2个以上动作加压同一关节（膝/肩/髋/脊柱/踝）
-6. **伤病规避**：如果球员有伤病，标记会加重伤病的动作
+  const systemPrompt = `你是一名职业足球体能教练。你需要按照以下教练审定的规则审核一份力量训练方案。
 
-## 训练场景
-- 赛季阶段：${phaseLabel[phase] || phase}
-- 训练目标：${goalLabel[goal] || goal}
-- 伤病标记：${injuries.length > 0 ? injuries.join("、") : "无"}
+${rulesContext}
+
+## 审核维度（8项，基于上述规则）
+
+1. **编排顺序**：是否按「爆发力→单侧下肢→双侧复合→上肢推拉→抗旋核心→孤立」顺序排列？违反编排红线？（如大重量在末尾、下肢连续高强度蹲+跳）
+2. **单侧占比**：单侧下肢动作是否≥40%？两侧是否均衡？
+3. **三平面配比**：矢状面≈50%、冠状面≈30%、水平面≈20%？是否严重偏向单一平面？
+4. **复合/孤立配比**：复合≈80%、孤立≤20%？孤立动作是否仅限腘绳肌/小腿/肩袖？
+5. **肌力平衡**：股四头肌:腘绳肌≈1:0.7~0.8？拉的训练量>推？是否有肩袖训练？
+6. **负荷匹配**：当前阶段（${phaseLabel[phase] || phase}）和目标（${goalLabel[goal] || goal}）的负荷/组数/次数/间歇是否在合理区间？
+7. **技术安全**：有没有使用禁用动作（大重量腿屈伸、颈后推举/下拉、超大重量手臂弯举）？
+8. **伤病规避**：${injuries.length > 0 ? `伤病「${injuries.join("、")}」是否会因当前方案加重？` : "无伤病标记"}
 
 ${kbContext}
 
 ## 输出格式
 必须输出严格JSON，一行，无markdown包裹：
-{"results":[{"label":"拮抗交替","status":"pass|warn|fail","reason":"具体原因","suggestion":"改进建议（status非pass时必填）"},...]}
+{"results":[
+  {"label":"编排顺序","status":"pass|warn|fail","reason":"具体原因","suggestion":"改进建议"},
+  {"label":"单侧占比","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"三平面配比","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"复合/孤立配比","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"肌力平衡","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"负荷匹配","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"技术安全","status":"pass|warn|fail","reason":"...","suggestion":"..."},
+  {"label":"伤病规避","status":"pass|warn|fail","reason":"...","suggestion":"..."}
+]}
 
-status定义：pass=通过 warn=建议优化 fail=不推荐 skip=数据不足
-reason必须引用运动科学原理（基于知识库），不要泛泛而谈。
-suggestion必须是可操作的改进建议。`;
+status: pass=合规 warn=偏离建议 fail=违反红线
+reason必须引用上述足球专项规则，给出具体动作编号。
+suggestion必须是可操作的改进建议（重排顺序/替换动作/调整负荷）。`;
 
   // ── User message ──
   const userMessage = `请审核以下力量训练方案：
