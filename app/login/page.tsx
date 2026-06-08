@@ -18,12 +18,14 @@ export default function LoginPage() {
 
   const supabase = createClient();
 
-  // Auto-login: check existing session on mount
+  // Auto-login: check existing session on mount, respect redirect param
   useEffect(() => {
     const check = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
-        router.replace("/");
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get("redirect") || "/";
+        window.location.href = redirectTo;
         return;
       }
       setChecking(false);
