@@ -169,6 +169,34 @@ export default function LoadPage() {
   // Auto-refresh when training/match data changes
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // ── KB-powered load guidelines ──
+  const [kbGuidelines, setKbGuidelines] = useState<any>(null);
+  useEffect(() => {
+    const phase = (() => {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const raw = localStorage.getItem("kenshin_season_calendar");
+        if (!raw) return "regular_season";
+        const ranges = JSON.parse(raw).phaseRanges || [];
+        const p = ranges.find((r: any) => today >= r.startDate && today <= r.endDate);
+        return p?.phase || "regular_season";
+      } catch { return "regular_season"; }
+    })();
+
+    fetch(`/api/load-guidelines?phase=${phase}`)
+      .then(r => r.json())
+      .then(data => setKbGuidelines(data))
+      .catch(() => {});
+  }, [refreshKey]);
+
+  // Merge KB guidelines over hardcoded defaults
+  const trimpPitch = kbGuidelines?.trimp?.pitchCoefficient ?? 2.5;
+  const trimpGym = kbGuidelines?.trimp?.gymCoefficient ?? 2.0;
+  const acwrSafeLow = kbGuidelines?.acwr?.safeLow ?? 0.8;
+  const acwrWarnHigh = kbGuidelines?.acwr?.warningHigh ?? 1.3;
+  const acwrDangerHigh = kbGuidelines?.acwr?.dangerHigh ?? 1.5;
+  const weatherReduction = kbGuidelines?.weather?.rainReduction ?? 0.10;
+
   useEffect(() => {
     const handler = () => setRefreshKey(k => k + 1);
     window.addEventListener('training-log-updated', handler);
@@ -224,8 +252,8 @@ export default function LoadPage() {
     } catch { return null; }
   }, [refreshKey]);
   const weatherLabel = todayWeather === 'rain' ? '🌧️ 雨天' : todayWeather === 'cloud' ? '⛅ 阴天' : todayWeather === 'sun' ? '☀️ 晴天' : '';
-  const weatherAdjustedDayCap = todayWeather === 'rain' ? Math.round(dayCap * 0.9) : dayCap;
-  const weatherAdjustedWeekCap = todayWeather === 'rain' ? Math.round(weekCap * 0.9) : weekCap;
+  const weatherAdjustedDayCap = todayWeather === 'rain' ? Math.round(dayCap * (1 - weatherReduction)) : dayCap;
+  const weatherAdjustedWeekCap = todayWeather === 'rain' ? Math.round(weekCap * (1 - weatherReduction)) : weekCap;
 
   // Read logs
   const logs = useMemo(() => {
@@ -246,7 +274,7 @@ export default function LoadPage() {
       const ds = d.toISOString().slice(0, 10);
       const log = logs.find((l: any) => l.date === ds);
       const isRest = log?.timeSlot === 'rest';
-      const estTRIMP = log && !isRest ? Math.round(log.duration * (log.trainType === 'pitch' ? 2.5 : 2.0)) : 0;
+      const estTRIMP = log && !isRest ? Math.round(log.duration * (log.trainType === 'pitch' ? trimpPitch : trimpGym)) : 0;
       const matchTRIMP = (() => {
         if (mdDay !== 0) return 0;
         try {
@@ -497,13 +525,13 @@ export default function LoadPage() {
 
     let acwrStatus: 'safe' | 'warning' | 'danger' = 'safe';
     let acwrMessage = '';
-    if (acwr > 1.5) {
+    if (acwr > acwrDangerHigh) {
       acwrStatus = 'danger';
       acwrMessage = `ACWR=${acwr.toFixed(1)}，受伤风险显著升高，建议减量`;
-    } else if (acwr > 1.3) {
+    } else if (acwr > acwrWarnHigh) {
       acwrStatus = 'warning';
       acwrMessage = `ACWR=${acwr.toFixed(1)}，负荷偏高，关注恢复`;
-    } else if (acwr < 0.8) {
+    } else if (acwr < acwrSafeLow) {
       acwrStatus = 'warning';
       acwrMessage = `ACWR=${acwr.toFixed(1)}，训练量可能不足`;
     } else {
@@ -1157,6 +1185,23 @@ export default function LoadPage() {
           </>
         )}
       </div>
+
+      {/* ── KB Evidence Footer ── */}
+      {kbGuidelines?.citations?.length > 0 && (
+        <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-3 mb-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] text-gray-500">📚 负荷参数依据：</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#992828]/10 text-[#992828]">基于知识库</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {kbGuidelines.citations.slice(0, 6).map((c: string, i: number) => (
+              <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-[#1a1a1a] text-gray-500 border border-[#222]">
+                {c.slice(0, 40)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <MobileNav />
     </div>

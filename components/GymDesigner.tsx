@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   Search, X, GripVertical, ChevronRight, CheckCircle2,
   XCircle, AlertTriangle, Dumbbell, Save, Calendar,
@@ -876,18 +876,63 @@ function WorkoutPanel({
   );
 }
 
-/** Right Panel: AI Validation */
+/** Right Panel: AI Validation (real KB-powered) */
 function ValidationPanel({
   selectedIds,
+  exerciseParams,
+  phase,
+  goal,
   injuries,
 }: {
   selectedIds: string[];
+  exerciseParams: Record<string, {sets:number,reps:number,rest:number}>;
+  phase: string;
+  goal: string;
   injuries: string[];
 }) {
-  const results = useMemo(
-    () => runValidation(selectedIds, injuries),
-    [selectedIds, injuries],
-  );
+  const [results, setResults] = useState<ValidationResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (selectedIds.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    // Debounce 800ms to avoid spamming while user edits params
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setLoading(true);
+      setError(null);
+
+      fetch("/api/validate-gym", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exerciseIds: selectedIds, exerciseParams, phase, goal, injuries }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || "校验服务暂不可用");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          setResults(data.results || []);
+          setLoading(false);
+        })
+        .catch((e) => {
+          setError(e.message);
+          setLoading(false);
+        });
+    }, 800);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [selectedIds, exerciseParams, phase, goal, injuries]);
 
   const passCount = results.filter((r) => r.status === 'pass').length;
   const warnCount = results.filter((r) => r.status === 'warn').length;
@@ -926,18 +971,19 @@ function ValidationPanel({
     }
   };
 
-  if (selectedIds.length < 3) {
+  if (selectedIds.length < 2) {
     return (
       <div className="flex flex-col h-full bg-[#1a1a1a] border border-[#222] rounded-xl overflow-hidden">
         <div className="p-3 border-b border-[#222]">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-[#992828]" />
             <span className="text-sm font-bold text-white">AI 校验</span>
+            <span className="text-[9px] text-gray-500 ml-auto">基于知识库</span>
           </div>
         </div>
         <div className="flex-1 flex items-center justify-center p-4">
           <p className="text-xs text-gray-500 text-center">
-            添加至少3个动作用启用校验<br />
+            添加至少2个动作用启用校验<br />
             <span className="text-[10px]">当前已选 {selectedIds.length} 个</span>
           </p>
         </div>
@@ -951,14 +997,49 @@ function ValidationPanel({
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-[#992828]" />
           <span className="text-sm font-bold text-white">AI 校验</span>
-          <span className="text-[10px] text-gray-500 ml-auto">
-            {passCount}通过 {warnCount > 0 ? `/ ${warnCount}建议` : ''} {failCount > 0 ? `/ ${failCount}不推荐` : ''}
-          </span>
+          <span className="text-[9px] text-gray-500 ml-auto">基于知识库</span>
         </div>
+        {!loading && !error && results.length > 0 && (
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-[10px] text-green-400">{passCount} 通过</span>
+            {warnCount > 0 && <span className="text-[10px] text-yellow-400">/ {warnCount} 建议</span>}
+            {failCount > 0 && <span className="text-[10px] text-[#992828]">/ {failCount} 不推荐</span>}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-        {results.map((r, i) => {
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <div className="w-5 h-5 border-2 border-[#992828]/30 border-t-[#992828] rounded-full animate-spin" />
+            <p className="text-[10px] text-gray-500">AI 正在检索知识库并分析...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-3 rounded-lg border border-[#992828]/20 bg-[#992828]/5 text-xs text-[#992828]">
+            {error}
+            <button
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                fetch("/api/validate-gym", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ exerciseIds: selectedIds, exerciseParams, phase, goal, injuries }),
+                })
+                  .then(r => r.json())
+                  .then(d => { setResults(d.results || []); setLoading(false); })
+                  .catch(e => { setError(e.message); setLoading(false); });
+              }}
+              className="block mt-1 text-[10px] underline hover:text-white"
+            >
+              点击重试
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && results.map((r, i) => {
           const c = statusColor(r.status);
           return (
           <div
@@ -1305,6 +1386,9 @@ export function GymDesigner() {
           <div className="w-full lg:w-56 xl:w-64 flex-shrink-0 h-[400px] lg:h-full">
             <ValidationPanel
               selectedIds={selectedIds}
+              exerciseParams={exerciseParams}
+              phase={phase}
+              goal={goal}
               injuries={injuries}
             />
           </div>
