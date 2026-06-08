@@ -1264,7 +1264,7 @@ export function GymDesigner() {
       )}
 
       {/* Main content: 3-panel layout */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 pb-24 lg:pb-4">
+      <main className="max-w-[90rem] mx-auto px-2 sm:px-4 py-4 pb-24 lg:pb-4">
 
         {/* Roster Injury Overview */}
         <div className="mb-3">
@@ -1277,7 +1277,7 @@ export function GymDesigner() {
             : "h-[calc(100vh-140px)]"
         }`}>
           {/* Left Panel: Exercise Library */}
-          <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 h-[400px] lg:h-full">
+          <div className="w-full lg:w-56 xl:w-64 flex-shrink-0 h-[400px] lg:h-full">
             <ExerciseLibraryPanel
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -1302,7 +1302,7 @@ export function GymDesigner() {
           </div>
 
           {/* Right Panel: AI Validation */}
-          <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 h-[400px] lg:h-full">
+          <div className="w-full lg:w-56 xl:w-64 flex-shrink-0 h-[400px] lg:h-full">
             <ValidationPanel
               selectedIds={selectedIds}
               injuries={injuries}
