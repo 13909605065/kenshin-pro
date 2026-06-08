@@ -5,7 +5,7 @@ import { getKnowledgeContext } from "@/lib/knowledge-base";
 import { buildStrengthRulesContext } from "@/lib/strength-rules";
 
 const MAX_TOKENS = 2000;
-const API_TIMEOUT_MS = 30_000;
+const API_TIMEOUT_MS = 20_000;
 
 // Rate limit: separate from generate
 const rateLimitMap = new Map<string, number>();
@@ -199,7 +199,6 @@ ${exerciseDetails}
           max_tokens: MAX_TOKENS,
           stream: false,
           temperature: 0.3,
-          thinking: { type: "disabled" },
         }),
         signal: ac.signal,
       });
@@ -237,11 +236,18 @@ ${exerciseDetails}
       ],
     });
   } catch (e: any) {
-    console.error("Gym validation error:", e);
+    console.error("Gym validation error:", e.message || e);
     return Response.json({
       results: [
-        { status: "skip", label: "AI 校验", reason: "AI 服务暂时不可用，请稍后重试" },
+        { status: "skip", label: "编排顺序", reason: "AI 服务暂不可用，请稍后重试" },
+        { status: "skip", label: "单侧占比", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "三平面配比", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "复合/孤立配比", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "肌力平衡", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "负荷匹配", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "技术安全", reason: "AI 服务暂不可用" },
+        { status: "skip", label: "伤病规避", reason: "AI 服务暂不可用" },
       ],
-    }, { status: 500 });
+    });
   }
 }

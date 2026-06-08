@@ -792,10 +792,11 @@ function WorkoutPanel({
             <p className="text-xs">从左侧动作库点击添加动作</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col gap-2">
             {selectedIds.map((id, idx) => {
               const ex = EXERCISE_LIBRARY.find((e) => e.id === id);
               const isDragOver = dragOverIndex === idx;
+              const p = exerciseParams[id] || { sets: 3, reps: 8, rest: 90 };
 
               return (
                 <div
@@ -806,7 +807,7 @@ function WorkoutPanel({
                   onDragOver={(e) => handleDragOver(e, idx)}
                   onDragLeave={() => setDragOverIndex(null)}
                   onDrop={(e) => handleDrop(e, idx)}
-                  className={`flex items-center gap-3 p-3 rounded-lg bg-[#121212] border transition group ${
+                  className={`flex items-center gap-3 p-4 rounded-xl bg-[#121212] border transition group ${
                     isDragOver
                       ? "border-[#992828] bg-[#992828]/5"
                       : dragIndex === idx
@@ -815,59 +816,69 @@ function WorkoutPanel({
                   }`}
                 >
                   {/* Drag handle */}
-                  <div className="cursor-grab active:cursor-grabbing text-gray-600 hover:text-gray-300 shrink-0">
+                  <div className="cursor-grab active:cursor-grabbing text-gray-600 hover:text-gray-400 shrink-0 self-start mt-0.5">
                     <GripVertical className="w-4 h-4" />
                   </div>
 
                   {/* Order number */}
-                  <span className="text-[10px] text-gray-500 font-mono w-5 text-center shrink-0">
+                  <span className="text-[11px] text-gray-600 font-mono w-5 text-center shrink-0 self-start mt-0.5">
                     {idx + 1}
                   </span>
 
                   {/* Exercise info */}
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium text-white block leading-snug">
+                    <span className="text-sm font-bold text-white block leading-snug">
                       {ex?.name || id}
                     </span>
-                    {/* Editable params with custom +/- */}
-                    <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-gray-500">
+
+                    {/* Editable params — three clear columns */}
+                    <div className="flex items-center gap-4 mt-2.5">
                       {/* 组数 */}
-                      <button onClick={() => onUpdateParams(id, "sets", Math.max(1, (exerciseParams[id]?.sets || 3) - 1))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">−</button>
-                      <input type="text" inputMode="numeric" pattern="[0-9]*" size={2}
-                        value={exerciseParams[id]?.sets ?? 3}
-                        onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1 && v <= 10) onUpdateParams(id, "sets", v); }}
-                        className="w-8 px-0.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
-                        title="组数" /><span className="shrink-0">组</span>
-                      <button onClick={() => onUpdateParams(id, "sets", Math.min(10, (exerciseParams[id]?.sets || 3) + 1))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">+</button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => onUpdateParams(id, "sets", Math.max(1, p.sets - 1))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">−</button>
+                        <input type="text" inputMode="numeric" pattern="[0-9]*" size={2}
+                          value={p.sets}
+                          onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1 && v <= 10) onUpdateParams(id, "sets", v); }}
+                          className="w-9 py-1.5 bg-[#0a0a0a] border border-[#333] rounded text-xs text-center text-gray-200 focus:border-[#992828] outline-none font-medium"
+                          title="组数" />
+                        <button onClick={() => onUpdateParams(id, "sets", Math.min(10, p.sets + 1))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">+</button>
+                        <span className="text-[10px] text-gray-600 ml-0.5">组</span>
+                      </div>
 
                       {/* 次数 */}
-                      <button onClick={() => onUpdateParams(id, "reps", Math.max(1, (exerciseParams[id]?.reps || 8) - 1))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">−</button>
-                      <input type="text" inputMode="numeric" pattern="[0-9]*" size={2}
-                        value={exerciseParams[id]?.reps ?? 8}
-                        onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1 && v <= 30) onUpdateParams(id, "reps", v); }}
-                        className="w-8 px-0.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
-                        title="次数" /><span className="shrink-0">次</span>
-                      <button onClick={() => onUpdateParams(id, "reps", Math.min(30, (exerciseParams[id]?.reps || 8) + 1))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">+</button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => onUpdateParams(id, "reps", Math.max(1, p.reps - 1))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">−</button>
+                        <input type="text" inputMode="numeric" pattern="[0-9]*" size={2}
+                          value={p.reps}
+                          onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1 && v <= 30) onUpdateParams(id, "reps", v); }}
+                          className="w-9 py-1.5 bg-[#0a0a0a] border border-[#333] rounded text-xs text-center text-gray-200 focus:border-[#992828] outline-none font-medium"
+                          title="次数" />
+                        <button onClick={() => onUpdateParams(id, "reps", Math.min(30, p.reps + 1))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">+</button>
+                        <span className="text-[10px] text-gray-600 ml-0.5">次</span>
+                      </div>
 
                       {/* 间歇 */}
-                      <button onClick={() => onUpdateParams(id, "rest", Math.max(0, (exerciseParams[id]?.rest || 90) - 15))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">−</button>
-                      <input type="text" inputMode="numeric" pattern="[0-9]*" size={3}
-                        value={exerciseParams[id]?.rest ?? 90}
-                        onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 0 && v <= 300) onUpdateParams(id, "rest", v); }}
-                        className="w-10 px-0.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
-                        title="间歇(秒)" /><span className="shrink-0">s</span>
-                      <button onClick={() => onUpdateParams(id, "rest", Math.min(300, (exerciseParams[id]?.rest || 90) + 15))}
-                        className="w-4 h-4 flex items-center justify-center rounded bg-[#222] text-gray-400 hover:text-white hover:bg-[#333] text-[10px] leading-none shrink-0">+</button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => onUpdateParams(id, "rest", Math.max(0, p.rest - 15))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">−</button>
+                        <input type="text" inputMode="numeric" pattern="[0-9]*" size={3}
+                          value={p.rest}
+                          onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 0 && v <= 300) onUpdateParams(id, "rest", v); }}
+                          className="w-11 py-1.5 bg-[#0a0a0a] border border-[#333] rounded text-xs text-center text-gray-200 focus:border-[#992828] outline-none font-medium"
+                          title="间歇(秒)" />
+                        <button onClick={() => onUpdateParams(id, "rest", Math.min(300, p.rest + 15))}
+                          className="w-5 h-5 flex items-center justify-center rounded bg-[#1e1e1e] border border-[#2a2a2a] text-gray-400 hover:text-white hover:border-[#444] text-xs leading-none shrink-0 transition">+</button>
+                        <span className="text-[10px] text-gray-600 ml-0.5">s</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Move buttons */}
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition shrink-0">
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition shrink-0 self-start mt-0.5">
                     <button
                       onClick={() => moveUp(idx)}
                       disabled={idx === 0}
