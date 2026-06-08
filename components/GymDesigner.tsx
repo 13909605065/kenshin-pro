@@ -795,7 +795,7 @@ function WorkoutPanel({
                   onDragOver={(e) => handleDragOver(e, idx)}
                   onDragLeave={() => setDragOverIndex(null)}
                   onDrop={(e) => handleDrop(e, idx)}
-                  className={`flex items-center gap-2 p-2 rounded-lg bg-[#121212] border transition group ${
+                  className={`flex items-center gap-3 p-3 rounded-lg bg-[#121212] border transition group ${
                     isDragOver
                       ? "border-[#992828] bg-[#992828]/5"
                       : dragIndex === idx
@@ -819,21 +819,21 @@ function WorkoutPanel({
                       {ex?.name || id}
                     </span>
                     {/* Editable params */}
-                    <div className="flex items-center gap-1.5 mt-1 text-[9px] text-gray-500">
+                    <div className="flex items-center gap-2.5 mt-1.5 text-[10px] text-gray-500">
                       <input type="number" min={1} max={10}
                         value={exerciseParams[id]?.sets || 3}
                         onChange={e => onUpdateParams(id, "sets", parseInt(e.target.value)||1)}
-                        className="w-9 px-1 py-0.5 bg-[#0a0a0a] border border-[#333] rounded text-[10px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        className="w-12 px-1.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
                         title="组数" /><span>组</span>
                       <input type="number" min={1} max={30}
                         value={exerciseParams[id]?.reps || 8}
                         onChange={e => onUpdateParams(id, "reps", parseInt(e.target.value)||1)}
-                        className="w-9 px-1 py-0.5 bg-[#0a0a0a] border border-[#333] rounded text-[10px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        className="w-12 px-1.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
                         title="次数" /><span>次</span>
                       <input type="number" min={0} max={300}
                         value={exerciseParams[id]?.rest || 90}
                         onChange={e => onUpdateParams(id, "rest", parseInt(e.target.value)||0)}
-                        className="w-11 px-1 py-0.5 bg-[#0a0a0a] border border-[#333] rounded text-[10px] text-center text-gray-300 focus:border-[#992828] outline-none"
+                        className="w-14 px-1.5 py-1 bg-[#0a0a0a] border border-[#333] rounded text-[11px] text-center text-gray-300 focus:border-[#992828] outline-none"
                         title="间歇(秒)" /><span>s</span>
                     </div>
                   </div>
