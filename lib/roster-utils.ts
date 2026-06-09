@@ -17,7 +17,81 @@ export interface PlayerRecord {
   notes: string;
 }
 
-const STORAGE_KEY = "roster_players";
+// ---------------------------------------------------------------------------
+// Team management
+// ---------------------------------------------------------------------------
+
+export interface Team {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+const TEAMS_KEY = "kenshin_teams";
+const ACTIVE_TEAM_KEY = "kenshin_active_team_id";
+
+export function getTeams(): Team[] {
+  try { return JSON.parse(localStorage.getItem(TEAMS_KEY) || "[]"); } catch { return []; }
+}
+
+function saveTeams(teams: Team[]): void {
+  localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+}
+
+export function getActiveTeamId(): string {
+  try {
+    const stored = localStorage.getItem(ACTIVE_TEAM_KEY);
+    if (stored) return stored;
+  } catch {}
+  // Fallback: first team or create default
+  const teams = getTeams();
+  if (teams.length > 0) {
+    setActiveTeamId(teams[0].id);
+    return teams[0].id;
+  }
+  // Auto-create default team
+  const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+  saveTeams([{ id, name: "我的球队", createdAt: new Date().toISOString() }]);
+  setActiveTeamId(id);
+  return id;
+}
+
+export function setActiveTeamId(id: string): void {
+  localStorage.setItem(ACTIVE_TEAM_KEY, id);
+}
+
+export function addTeam(name: string): Team {
+  const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+  const team: Team = { id, name: name.trim(), createdAt: new Date().toISOString() };
+  saveTeams([...getTeams(), team]);
+  return team;
+}
+
+export function renameTeam(id: string, name: string): void {
+  saveTeams(getTeams().map(t => t.id === id ? { ...t, name: name.trim() } : t));
+}
+
+export function deleteTeam(id: string): void {
+  const teams = getTeams().filter(t => t.id !== id);
+  saveTeams(teams);
+  // Clear that team's roster data
+  try { localStorage.removeItem(`roster_players_${id}`); } catch {}
+  // If deleted active team, switch to another
+  if (getActiveTeamId() === id) {
+    if (teams.length > 0) {
+      setActiveTeamId(teams[0].id);
+    } else {
+      // Last team deleted, recreate default
+      const newId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+      saveTeams([{ id: newId, name: "我的球队", createdAt: new Date().toISOString() }]);
+      setActiveTeamId(newId);
+    }
+  }
+}
+
+function getStorageKey(teamId?: string): string {
+  return `roster_players_${teamId || getActiveTeamId()}`;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers: camelCase (JS) <-> snake_case (Supabase)
@@ -83,7 +157,7 @@ async function getUserId(): Promise<string | null> {
 
 function getLocalPlayers(): PlayerRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]") as PlayerRecord[];
+    return JSON.parse(localStorage.getItem(getStorageKey()) || "[]") as PlayerRecord[];
   } catch {
     return [];
   }
@@ -91,7 +165,7 @@ function getLocalPlayers(): PlayerRecord[] {
 
 function saveLocalPlayers(players: PlayerRecord[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+    localStorage.setItem(getStorageKey(), JSON.stringify(players));
   } catch {
     // quota exceeded or disabled — swallow silently
   }

@@ -10,6 +10,13 @@ import {
   parseExcelData,
   type ParseResult,
   type PlayerRecord,
+  getTeams,
+  getActiveTeamId,
+  setActiveTeamId,
+  addTeam,
+  renameTeam,
+  deleteTeam,
+  type Team,
 } from "@/lib/roster-utils";
 import {
   getFitnessProfile,
@@ -82,6 +89,49 @@ export default function RosterPage() {
   } | null>(null);
 
   const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
+
+  // Team management
+  const [teams, setTeams] = useState<Team[]>(getTeams);
+  const [activeTeamId, setActiveTeam] = useState<string>(getActiveTeamId);
+  const [showTeamManager, setShowTeamManager] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [renamingTeam, setRenamingTeam] = useState<{id: string; name: string} | null>(null);
+
+  const switchTeam = (teamId: string) => {
+    setActiveTeamId(teamId);
+    setActiveTeam(teamId);
+    refreshPlayers();
+  };
+
+  const handleAddTeam = () => {
+    if (!newTeamName.trim()) return;
+    const team = addTeam(newTeamName.trim());
+    setTeams(getTeams());
+    setNewTeamName("");
+    switchTeam(team.id);
+  };
+
+  const handleRenameTeam = () => {
+    if (!renamingTeam || !renamingTeam.name.trim()) return;
+    renameTeam(renamingTeam.id, renamingTeam.name.trim());
+    setTeams(getTeams());
+    setRenamingTeam(null);
+  };
+
+  const handleDeleteTeam = (teamId: string) => {
+    const t = getTeams();
+    if (t.length <= 1) return; // Must keep at least one team
+    deleteTeam(teamId);
+    setTeams(getTeams());
+    if (activeTeamId === teamId) {
+      const remaining = getTeams();
+      const newActiveId = remaining[0]?.id || getActiveTeamId();
+      setActiveTeamId(newActiveId);
+      setActiveTeam(newActiveId);
+    }
+    refreshPlayers();
+  };
+
   const filtered = filter === "all" ? players : players.filter((p) => p.injuryStatus === filter);
 
   // Fitness panel state — which player's fitness panel is open
@@ -245,6 +295,28 @@ export default function RosterPage() {
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">球队花名册</h1>
+
+        {/* Team selector */}
+        <div className="relative">
+          <select
+            value={activeTeamId}
+            onChange={(e) => switchTeam(e.target.value)}
+            className="bg-[#1e1e1e] border border-[#333] rounded-lg px-2.5 py-1.5 text-sm text-white appearance-none cursor-pointer pr-7 focus:outline-none focus:border-[#992828]/50"
+          >
+            {teams.map(t => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+          <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+        </div>
+
+        <button
+          onClick={() => setShowTeamManager(true)}
+          className="text-[10px] text-gray-500 hover:text-gray-300 transition"
+        >
+          管理
+        </button>
+
         <span className="text-xs text-gray-400">{players.length}名球员</span>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
@@ -729,6 +801,68 @@ export default function RosterPage() {
           </div>
         );
       })()}
+
+      {/* Team Management Modal */}
+      {showTeamManager && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowTeamManager(false)}>
+          <div className="glass-card p-5 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-bold text-sm">管理球队</h2>
+              <button onClick={() => { setShowTeamManager(false); setRenamingTeam(null); }} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
+            </div>
+
+            {/* Add team */}
+            <div className="flex gap-2">
+              <input
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddTeam()}
+                placeholder="新球队名称"
+                className="flex-1 bg-[#121212] border border-[#222] rounded px-2.5 py-1.5 text-xs text-gray-300 placeholder-gray-600"
+              />
+              <button onClick={handleAddTeam} disabled={!newTeamName.trim()}
+                className="px-3 py-1.5 bg-[#992828] text-white rounded text-xs font-bold disabled:opacity-40">
+                新建
+              </button>
+            </div>
+
+            {/* Team list */}
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {teams.map(t => (
+                <div key={t.id} className="flex items-center gap-2 bg-[#121212] rounded-lg px-3 py-2 border border-[#222]">
+                  {renamingTeam?.id === t.id ? (
+                    <>
+                      <input
+                        value={renamingTeam.name}
+                        onChange={(e) => setRenamingTeam({ id: t.id, name: e.target.value })}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleRenameTeam(); if (e.key === 'Escape') setRenamingTeam(null); }}
+                        className="flex-1 bg-[#1e1e1e] border border-[#333] rounded px-2 py-1 text-xs text-gray-300"
+                        autoFocus
+                      />
+                      <button onClick={handleRenameTeam} className="text-[10px] text-[#30D158] px-1">保存</button>
+                      <button onClick={() => setRenamingTeam(null)} className="text-[10px] text-gray-500 px-1">取消</button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-xs text-gray-300 truncate">{t.name}</span>
+                      {t.id === activeTeamId && <span className="text-[9px] text-[#992828]">当前</span>}
+                      <button onClick={() => setRenamingTeam({ id: t.id, name: t.name })} className="text-[10px] text-gray-500 hover:text-gray-300">改名</button>
+                      <button
+                        onClick={() => handleDeleteTeam(t.id)}
+                        disabled={teams.length <= 1}
+                        className="text-[10px] text-red-500/60 hover:text-red-400 disabled:opacity-30"
+                      >
+                        删除
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <MobileNav />
     </div>
   );
