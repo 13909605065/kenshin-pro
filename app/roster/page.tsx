@@ -90,9 +90,15 @@ export default function RosterPage() {
 
   const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
 
-  // Team management
-  const [teams, setTeams] = useState<Team[]>(getTeams);
-  const [activeTeamId, setActiveTeam] = useState<string>(getActiveTeamId);
+  // Team management (lazy init to avoid SSR localStorage access)
+  const [teams, setTeams] = useState<Team[]>(() => {
+    if (typeof window === 'undefined') return [];
+    return getTeams();
+  });
+  const [activeTeamId, setActiveTeam] = useState<string>(() => {
+    if (typeof window === 'undefined') return '_ssr_';
+    return getActiveTeamId();
+  });
   const [showTeamManager, setShowTeamManager] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [renamingTeam, setRenamingTeam] = useState<{id: string; name: string} | null>(null);

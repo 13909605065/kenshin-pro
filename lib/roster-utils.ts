@@ -30,26 +30,29 @@ export interface Team {
 const TEAMS_KEY = "kenshin_teams";
 const ACTIVE_TEAM_KEY = "kenshin_active_team_id";
 
+const isBrowser = typeof window !== "undefined";
+
 export function getTeams(): Team[] {
+  if (!isBrowser) return [];
   try { return JSON.parse(localStorage.getItem(TEAMS_KEY) || "[]"); } catch { return []; }
 }
 
 function saveTeams(teams: Team[]): void {
+  if (!isBrowser) return;
   localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
 }
 
 export function getActiveTeamId(): string {
+  if (!isBrowser) return "_server_";
   try {
     const stored = localStorage.getItem(ACTIVE_TEAM_KEY);
     if (stored) return stored;
   } catch {}
-  // Fallback: first team or create default
   const teams = getTeams();
   if (teams.length > 0) {
     setActiveTeamId(teams[0].id);
     return teams[0].id;
   }
-  // Auto-create default team
   const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
   saveTeams([{ id, name: "我的球队", createdAt: new Date().toISOString() }]);
   setActiveTeamId(id);
@@ -57,31 +60,32 @@ export function getActiveTeamId(): string {
 }
 
 export function setActiveTeamId(id: string): void {
+  if (!isBrowser) return;
   localStorage.setItem(ACTIVE_TEAM_KEY, id);
 }
 
 export function addTeam(name: string): Team {
   const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
   const team: Team = { id, name: name.trim(), createdAt: new Date().toISOString() };
+  if (!isBrowser) return team;
   saveTeams([...getTeams(), team]);
   return team;
 }
 
 export function renameTeam(id: string, name: string): void {
+  if (!isBrowser) return;
   saveTeams(getTeams().map(t => t.id === id ? { ...t, name: name.trim() } : t));
 }
 
 export function deleteTeam(id: string): void {
+  if (!isBrowser) return;
   const teams = getTeams().filter(t => t.id !== id);
   saveTeams(teams);
-  // Clear that team's roster data
   try { localStorage.removeItem(`roster_players_${id}`); } catch {}
-  // If deleted active team, switch to another
   if (getActiveTeamId() === id) {
     if (teams.length > 0) {
       setActiveTeamId(teams[0].id);
     } else {
-      // Last team deleted, recreate default
       const newId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
       saveTeams([{ id: newId, name: "我的球队", createdAt: new Date().toISOString() }]);
       setActiveTeamId(newId);
