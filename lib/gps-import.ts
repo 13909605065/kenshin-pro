@@ -9,6 +9,8 @@
  * Data feeds into: TRIMP calculation, ACWR monitoring, weekly load reports
  */
 
+import { teamGet, teamSet } from "@/lib/team-storage";
+
 export interface GPSRecord {
   id: string;
   athlete: string;
@@ -177,7 +179,7 @@ function parseDate(val: string): string {
 /** Load all GPS records */
 export function loadGPSData(): GPSRecord[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return JSON.parse(teamGet(STORAGE_KEY) || "[]");
   } catch {
     return [];
   }
@@ -197,7 +199,7 @@ export function saveGPSData(records: GPSRecord[]): void {
 
   // Keep last 5000 records
   const trimmed = existing.slice(-5000);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+  teamSet(STORAGE_KEY, JSON.stringify(trimmed));
 }
 
 /** Get GPS data for a specific date range */

@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/supabase-client";
+import { teamGet, teamSet } from "@/lib/team-storage";
 
 // ═══════════════════════════════════════════
 // 训练执行日志（原有，localStorage）
@@ -44,11 +45,11 @@ const LOG_KEY = 'kenshin_training_logs';
 const MAX_LOGS = 50;
 
 export function getLogs(): TrainingSessionLog[] {
-  try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch { return []; }
+  try { return JSON.parse(teamGet(LOG_KEY) || '[]'); } catch { return []; }
 }
 
 function saveLogs(logs: TrainingSessionLog[]) {
-  try { localStorage.setItem(LOG_KEY, JSON.stringify(logs.slice(0, MAX_LOGS))); } catch {}
+  try { teamSet(LOG_KEY, JSON.stringify(logs.slice(0, MAX_LOGS))); } catch {}
 }
 
 export function saveSessionLog(log: TrainingSessionLog) {

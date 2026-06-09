@@ -38,14 +38,16 @@ export interface FitnessProfile {
   notes?: string;           // 备注
 }
 
+import { teamGet, teamSet } from "@/lib/team-storage";
+
 const FITNESS_KEY = 'kenshin_fitness_profiles';
 
 export function getFitnessProfiles(): Record<string, FitnessProfile> {
-  try { return JSON.parse(localStorage.getItem(FITNESS_KEY) || '{}'); } catch { return {}; }
+  try { return JSON.parse(teamGet(FITNESS_KEY) || '{}'); } catch { return {}; }
 }
 
 function save(profiles: Record<string, FitnessProfile>) {
-  try { localStorage.setItem(FITNESS_KEY, JSON.stringify(profiles)); } catch {}
+  try { teamSet(FITNESS_KEY, JSON.stringify(profiles)); } catch {}
 }
 
 export function getFitnessProfile(playerId: string): FitnessProfile {

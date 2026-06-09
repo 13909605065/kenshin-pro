@@ -1,3 +1,4 @@
+import { teamGet, teamSet } from "@/lib/team-storage";
 import { TrainingHistoryItem, TrainingModule } from "./types";
 
 const HISTORY_KEY = "kenshin_history";
@@ -7,7 +8,7 @@ export function saveToLocal(item: TrainingHistoryItem): void {
   try {
     const existing = getLocalHistory();
     const updated = [item, ...existing].slice(0, MAX_LOCAL_ITEMS);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    teamSet(HISTORY_KEY, JSON.stringify(updated));
   } catch (e) {
     console.warn("localStorage write failed, storage may be full", e);
   }
@@ -15,7 +16,7 @@ export function saveToLocal(item: TrainingHistoryItem): void {
 
 export function getLocalHistory(): TrainingHistoryItem[] {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    const raw = teamGet(HISTORY_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -24,13 +25,13 @@ export function getLocalHistory(): TrainingHistoryItem[] {
 
 export function cacheModules(modules: TrainingModule[]): void {
   try {
-    localStorage.setItem("kenshin_cached_modules", JSON.stringify(modules));
+    teamSet("kenshin_cached_modules", JSON.stringify(modules));
   } catch {}
 }
 
 export function getCachedModules(): TrainingModule[] {
   try {
-    const raw = localStorage.getItem("kenshin_cached_modules");
+    const raw = teamGet("kenshin_cached_modules");
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];

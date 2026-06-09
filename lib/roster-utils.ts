@@ -18,83 +18,23 @@ export interface PlayerRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Team management
+// Team management — re-exported from team-storage
 // ---------------------------------------------------------------------------
 
-export interface Team {
-  id: string;
-  name: string;
-  createdAt: string;
-}
+export {
+  getTeams,
+  getActiveTeamId,
+  setActiveTeamId,
+  addTeam,
+  renameTeam,
+  deleteTeam,
+  type Team,
+} from "@/lib/team-storage";
 
-const TEAMS_KEY = "kenshin_teams";
-const ACTIVE_TEAM_KEY = "kenshin_active_team_id";
+import { teamKey } from "@/lib/team-storage";
 
-const isBrowser = typeof window !== "undefined";
-
-export function getTeams(): Team[] {
-  if (!isBrowser) return [];
-  try { return JSON.parse(localStorage.getItem(TEAMS_KEY) || "[]"); } catch { return []; }
-}
-
-function saveTeams(teams: Team[]): void {
-  if (!isBrowser) return;
-  localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
-}
-
-export function getActiveTeamId(): string {
-  if (!isBrowser) return "_server_";
-  try {
-    const stored = localStorage.getItem(ACTIVE_TEAM_KEY);
-    if (stored) return stored;
-  } catch {}
-  const teams = getTeams();
-  if (teams.length > 0) {
-    setActiveTeamId(teams[0].id);
-    return teams[0].id;
-  }
-  const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
-  saveTeams([{ id, name: "我的球队", createdAt: new Date().toISOString() }]);
-  setActiveTeamId(id);
-  return id;
-}
-
-export function setActiveTeamId(id: string): void {
-  if (!isBrowser) return;
-  localStorage.setItem(ACTIVE_TEAM_KEY, id);
-}
-
-export function addTeam(name: string): Team {
-  const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
-  const team: Team = { id, name: name.trim(), createdAt: new Date().toISOString() };
-  if (!isBrowser) return team;
-  saveTeams([...getTeams(), team]);
-  return team;
-}
-
-export function renameTeam(id: string, name: string): void {
-  if (!isBrowser) return;
-  saveTeams(getTeams().map(t => t.id === id ? { ...t, name: name.trim() } : t));
-}
-
-export function deleteTeam(id: string): void {
-  if (!isBrowser) return;
-  const teams = getTeams().filter(t => t.id !== id);
-  saveTeams(teams);
-  try { localStorage.removeItem(`roster_players_${id}`); } catch {}
-  if (getActiveTeamId() === id) {
-    if (teams.length > 0) {
-      setActiveTeamId(teams[0].id);
-    } else {
-      const newId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
-      saveTeams([{ id: newId, name: "我的球队", createdAt: new Date().toISOString() }]);
-      setActiveTeamId(newId);
-    }
-  }
-}
-
-function getStorageKey(teamId?: string): string {
-  return `roster_players_${teamId || getActiveTeamId()}`;
+function getStorageKey(): string {
+  return teamKey("roster_players");
 }
 
 // ---------------------------------------------------------------------------

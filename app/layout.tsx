@@ -3,6 +3,7 @@ import { Providers } from "@/components/Providers";
 import { ErrorCatcher } from "@/components/ErrorCatcher";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { UpdateBanner } from "@/components/UpdateBanner";
+import { TeamBar } from "@/components/TeamBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -63,7 +64,10 @@ export default function RootLayout({
         <OfflineBanner />
         <UpdateBanner />
         <ErrorCatcher>
-          <Providers>{children}</Providers>
+          <Providers>
+            <TeamBar />
+            {children}
+          </Providers>
         </ErrorCatcher>
       </body>
     </html>

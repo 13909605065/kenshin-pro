@@ -4,6 +4,7 @@
  * 预设PR + 自定义PR + 破纪录检测 + 时间线趋势
  */
 
+import { teamGet, teamSet } from "@/lib/team-storage";
 import type { PersonalRecord } from '@/lib/types';
 
 const STORAGE_KEY = 'kenshin_pr_data';
@@ -56,7 +57,7 @@ export const PR_CATEGORIES = [
 
 function loadPRs(): PersonalRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = teamGet(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -64,7 +65,7 @@ function loadPRs(): PersonalRecord[] {
 }
 
 function savePRs(prs: PersonalRecord[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prs));
+  teamSet(STORAGE_KEY, JSON.stringify(prs));
 }
 
 /**

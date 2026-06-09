@@ -4,6 +4,7 @@
  * 15+徽章 + 连续训练天数 + 里程统计
  */
 
+import { teamGet, teamSet } from "@/lib/team-storage";
 import type { Badge, MotivationStats } from '@/lib/types';
 
 const STORAGE_KEY = 'kenshin_motivation';
@@ -51,7 +52,7 @@ const BADGE_DEFINITIONS: Omit<Badge, 'earnedAt' | 'progress'>[] = [
 
 function loadStats(): MotivationStats {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = teamGet(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
       // 合并徽章（支持新徽章添加）
@@ -72,7 +73,7 @@ function loadStats(): MotivationStats {
 }
 
 function saveStats(stats: MotivationStats): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+  teamSet(STORAGE_KEY, JSON.stringify(stats));
 }
 
 // ═══════════════════════════════════════════

@@ -17,6 +17,8 @@ export interface PlayerLoadData {
   [playerName: string]: LoadEntry[];
 }
 
+import { teamGet, teamSet, teamRemove } from "@/lib/team-storage";
+
 const LOAD_KEY = "kenshin_load_data";
 
 /**
@@ -57,7 +59,7 @@ export function calcACWR(recentLoads: LoadEntry[]): ACWRResult {
 /** Read all load data from localStorage */
 export function getLoadData(): PlayerLoadData {
   try {
-    const raw = localStorage.getItem(LOAD_KEY);
+    const raw = teamGet(LOAD_KEY);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -67,7 +69,7 @@ export function getLoadData(): PlayerLoadData {
 /** Save all load data to localStorage */
 export function saveLoadData(data: PlayerLoadData): void {
   try {
-    localStorage.setItem(LOAD_KEY, JSON.stringify(data));
+    teamSet(LOAD_KEY, JSON.stringify(data));
   } catch (e) {
     console.warn("localStorage write failed for load data", e);
   }
@@ -124,6 +126,6 @@ export function deletePlayerLoadData(playerName: string): void {
 /** Clear all load data */
 export function clearAllLoadData(): void {
   try {
-    localStorage.removeItem(LOAD_KEY);
+    teamRemove(LOAD_KEY);
   } catch {}
 }
