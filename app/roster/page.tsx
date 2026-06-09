@@ -583,7 +583,20 @@ export default function RosterPage() {
               {preview.parsed.players.length === 0 && (
                 <div className="bg-[#992828]/10 border border-[#992828]/30 rounded-lg p-3">
                   <p className="text-[10px] text-[#992828] font-medium mb-1">未识别到球员数据</p>
-                  <p className="text-[9px] text-gray-400">请检查列映射是否正确，或下载模板参照格式</p>
+                  <p className="text-[9px] text-gray-400 mb-2">请检查：①列名是否匹配 ②数据是否从第2行开始 ③姓名列是否有内容</p>
+                  {/* Show first data row raw */}
+                  {preview.rawRows.length > 1 && (
+                    <div className="bg-[#121212] rounded p-2 border border-[#222]">
+                      <p className="text-[8px] text-gray-500 mb-1">第2行原始数据（共{preview.rawRows[0]?.length || 0}列）：</p>
+                      <div className="flex flex-wrap gap-0.5">
+                        {(preview.rawRows[1] || []).map((c, i) => (
+                          <span key={i} className="px-1 py-0.5 bg-[#1e1e1e] rounded text-[9px] text-gray-300">
+                            [{i}] {c != null && String(c).trim() !== "" ? String(c).slice(0, 12) : "(空)"}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -605,6 +618,20 @@ export default function RosterPage() {
               {/* Column mapping */}
               <div>
                 <h3 className="text-xs text-gray-400 mb-2">列映射检测</h3>
+
+                {/* Raw headers for comparison */}
+                <div className="bg-[#121212] rounded-lg p-2.5 mb-2 border border-[#222]">
+                  <p className="text-[9px] text-gray-500 mb-1.5">你的文件表头（原始值）：</p>
+                  <div className="flex flex-wrap gap-1">
+                    {headers.map((h, i) => (
+                      <span key={i} className="px-1.5 py-0.5 bg-[#1e1e1e] rounded text-[10px] text-gray-300 border border-[#333]">
+                        [{i}] {h || "(空)"}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[8px] text-gray-600 mt-1.5">预期表头：姓名 / 位置 / 号码 / 年龄 / 身高 / 体重 / 伤病 / 备注</p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-1 text-xs">
                   {mapping.map((m) => (
                     <div key={m.field} className="flex items-center gap-1.5 bg-[#1e1e1e] rounded px-2 py-1">
