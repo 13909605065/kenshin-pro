@@ -41,6 +41,7 @@ function statusLabel(rpe: number, fatigue: number, soreness: number): string {
 export function PlayerSelfReport() {
   const [show, setShow] = useState(false);
   const [reports, setReports] = useState<SelfReport[]>(loadReports);
+  const [importMsg, setImportMsg] = useState<{type: 'success'|'error'; text: string} | null>(null);
   const latest = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
     return reports.filter(r => r.date === today);
@@ -53,27 +54,59 @@ export function PlayerSelfReport() {
     const wb = XLSX.read(data);
     const sheet = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1 });
-    if (rows.length < 2) return;
+    if (rows.length < 2) {
+      setImportMsg({type:'error', text:'文件为空或只有表头'}); setTimeout(()=>setImportMsg(null),4000);
+      return;
+    }
 
     const today = new Date().toISOString().slice(0, 10);
     const imported: SelfReport[] = [];
+    const warns: string[] = [];
 
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i];
-      if (!r[0]) continue;
+      const name = String(r[0] || "").trim();
+      if (!name) {
+        warns.push(`第${i+1}行缺少姓名，已跳过`);
+        continue;
+      }
+
+      const rpe = Number(r[1]);
+      const fatigue = Number(r[2]);
+      const soreness = Number(r[3]);
+
+      // Validate ranges
+      if (isNaN(rpe) || rpe < 1 || rpe > 10) {
+        warns.push(`${name}: RPE 应为 1-10，当前值 "${String(r[1] || '').slice(0,10)}" 无效，已置0`);
+      }
+      if (isNaN(fatigue) || fatigue < 1 || fatigue > 5) {
+        warns.push(`${name}: 疲劳度应为 1-5，当前值 "${String(r[2] || '').slice(0,10)}" 无效，已置0`);
+      }
+      if (isNaN(soreness) || soreness < 1 || soreness > 5) {
+        warns.push(`${name}: 肌肉酸痛应为 1-5，当前值 "${String(r[3] || '').slice(0,10)}" 无效，已置0`);
+      }
+
       imported.push({
-        name: String(r[0] || "").trim(),
-        rpe: Number(r[1]) || 0,
-        fatigue: Number(r[2]) || 0,
-        soreness: Number(r[3]) || 0,
+        name,
+        rpe: (rpe >= 1 && rpe <= 10) ? rpe : 0,
+        fatigue: (fatigue >= 1 && fatigue <= 5) ? fatigue : 0,
+        soreness: (soreness >= 1 && soreness <= 5) ? soreness : 0,
         note: String(r[4] || "").trim(),
         date: today,
       });
     }
 
+    if (imported.length === 0) {
+      setImportMsg({type:'error', text: warns[0] || '未识别到有效数据'}); setTimeout(()=>setImportMsg(null),4000);
+      return;
+    }
+
     const merged = [...reports.filter(r => r.date !== today), ...imported];
     setReports(merged);
     saveReports(merged); notifyChange("self-report-updated");
+    setImportMsg({type:'success', text: `导入 ${imported.length} 人${warns.length > 0 ? `，${warns.length} 条警告` : ''}`});
+    setTimeout(()=>setImportMsg(null),warns.length>0?6000:3000);
+    if (warns.length > 0) console.warn('自评导入警告:', warns);
     e.target.value = "";
   };
 
@@ -118,6 +151,13 @@ export function PlayerSelfReport() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Import message */}
+            {importMsg && (
+              <div className={`mx-4 mt-2 px-3 py-1.5 rounded text-[10px] ${importMsg.type==='success'?'bg-green-500/10 border border-green-500/20 text-green-400':'bg-[#992828]/10 border border-[#992828]/20 text-[#992828]'}`}>
+                {importMsg.text}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex items-center gap-2 px-4 py-2 border-b border-[#222]">

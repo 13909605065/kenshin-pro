@@ -229,13 +229,18 @@ export function calcGPS_TRIMP(record: GPSRecord, maxHR: number = 200, restingHR:
   return { trimp, intensity };
 }
 
-/** Generate template XLSX for download */
+/** Template data shared across GPS import UIs. Use with xlsx to write file. */
+export const GPS_TEMPLATE_HEADERS = [
+  "Athlete","Date","Total Distance(m)","HSR Distance(m)","Sprint Distance(m)","Max Speed(km/h)","Accelerations","Decelerations","Player Load","HR Avg","HR Max"
+];
+
+export const GPS_TEMPLATE_ROWS = [
+  ["张三","2026-06-01",8500,1200,200,32.5,45,38,650,145,185],
+  ["李四","2026-06-01",9200,1500,350,34.2,52,42,720,150,190],
+  ["王五","2026-06-01",7800,800,100,30.1,38,35,580,140,178],
+];
+
+/** @deprecated Use GPS_TEMPLATE_HEADERS + GPS_TEMPLATE_ROWS with xlsx library instead */
 export function generateGPSTemplate(): string {
-  // Returns CSV for the import flow. Export as XLSX handled in UI.
-  return [
-    "Athlete,Date,Total Distance(m),HSR Distance(m),Sprint Distance(m),Max Speed(km/h),Accelerations,Decelerations,Player Load,HR Avg,HR Max",
-    "张三,2026-06-01,8500,1200,200,32.5,45,38,650,145,185",
-    "李四,2026-06-01,9200,1500,350,34.2,52,42,720,150,190",
-    "王五,2026-06-01,7800,800,100,30.1,38,35,580,140,178",
-  ].join("\n");
+  return [GPS_TEMPLATE_HEADERS.join(","), ...GPS_TEMPLATE_ROWS.map(r => r.join(","))].join("\n");
 }

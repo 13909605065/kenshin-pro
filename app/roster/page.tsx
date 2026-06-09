@@ -8,12 +8,12 @@ import {
   updatePlayer,
   deletePlayer,
   parseExcelData,
+  type ParseResult,
   type PlayerRecord,
 } from "@/lib/roster-utils";
 import {
   getFitnessProfile,
   updateFitnessProfile,
-  fitnessSummary,
   strengthAssessment,
   speedAssessment,
   enduranceAssessment,
@@ -77,7 +77,7 @@ export default function RosterPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<{
     rawRows: (string | number | null)[][];
-    parsed: Omit<PlayerRecord, "id">[];
+    parsed: ParseResult;
     fileName: string;
   } | null>(null);
 
@@ -100,22 +100,53 @@ export default function RosterPage() {
       const XLSX = await import("xlsx");
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }) as (string | number | null)[][];
+      const sheetName = wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" }) as (string | number | null)[][];
+
+      // Dump raw parse info for debugging
+      console.log("=== 花名册导入诊断 ===");
+      console.log("文件名:", file.name, "大小:", file.size, "bytes");
+      console.log("Sheet:", sheetName, "总行数:", rows.length);
+      if (rows.length > 0) console.log("表头:", rows[0]);
+      if (rows.length > 1) { console.log("第1行数据:", rows[1]); console.log("第2行数据:", rows[2] || "(无)"); }
+      console.log("===================");
+
+      if (rows.length < 2) {
+        setImportToast({type:'error',msg:`文件只有 ${rows.length} 行（需要至少表头+1行数据），请检查文件内容`});
+        setTimeout(()=>setImportToast(null),6000);
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+
       const parsed = parseExcelData(rows);
-      if (parsed.length === 0) { setImportToast({type:'error',msg:"未识别到球员数据，请检查 Excel 格式"}); setTimeout(()=>setImportToast(null),4000); return; }
+      console.log("解析结果:", parsed.players.length, "球员,", parsed.warnings.length, "警告", parsed.warnings);
+
+      // ALWAYS show preview so user can see what happened
       setPreview({ rawRows: rows, parsed, fileName: file.name });
-    } catch { setImportToast({type:'error',msg:"Excel 解析失败，请检查文件格式"}); setTimeout(()=>setImportToast(null),4000); }
+
+      if (parsed.players.length === 0) {
+        const detail = parsed.warnings.length > 0
+          ? parsed.warnings.slice(0, 3).join("；")
+          : `检测到 ${rows.length - 1} 行数据但无法识别球员姓名列`;
+        setImportToast({type:'error',msg: `未识别到球员：${detail}`});
+        setTimeout(()=>setImportToast(null),6000);
+      }
+    } catch (err) {
+      console.error("Excel 解析异常:", err);
+      setImportToast({type:'error',msg:`Excel 解析失败: ${err instanceof Error ? err.message : '未知错误'}`});
+      setTimeout(()=>setImportToast(null),6000);
+    }
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleConfirmImport = () => {
     if (!preview) return;
     const existing = getPlayers();
-    const merged = [...existing, ...preview.parsed.map((p) => ({ ...p, id: (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2)) }))];
+    const merged = [...existing, ...preview.parsed.players.map((p) => ({ ...p, id: (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2)) }))];
     savePlayers(merged as PlayerRecord[]);
     setPlayers(merged as PlayerRecord[]);
-    setImportToast({type:'success',msg:`成功导入 ${preview.parsed.length} 名球员`}); setTimeout(()=>setImportToast(null),3000);
+    setImportToast({type:'success',msg:`成功导入 ${preview.parsed.players.length} 名球员`}); setTimeout(()=>setImportToast(null),3000);
     setPreview(null);
   };
 
@@ -217,7 +248,7 @@ export default function RosterPage() {
         <span className="text-xs text-gray-400">{players.length}名球员</span>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
-        <a href="/花名册模板.xlsx" download
+        <a href="/花名册模板.xlsx" download="花名册模板.xlsx"
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
           下载模板
         </a>
@@ -528,7 +559,7 @@ export default function RosterPage() {
           { field: "伤病", header: headers[headerLower.findIndex((h) => h.includes("伤病") || h.includes("injury"))] || "", found: headerLower.some((h) => h.includes("伤病") || h.includes("injury")) },
           { field: "备注", header: headers[headerLower.findIndex((h) => h.includes("备注") || h.includes("notes"))] || "", found: headerLower.some((h) => h.includes("备注") || h.includes("notes")) },
         ];
-        const previewRows = preview.parsed.slice(0, 3);
+        const previewRows = preview.parsed.players.slice(0, 3);
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -538,7 +569,38 @@ export default function RosterPage() {
                 <button onClick={handleCancelImport} className="text-gray-400 hover:text-white"><X className="w-4 h-4" /></button>
               </div>
 
-              <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span>，共 <span className="text-[#992828] font-bold">{preview.parsed.length}</span> 名球员</p>
+              <div className="flex items-center gap-3">
+                <p className="text-xs text-gray-400">文件：<span className="text-gray-200">{preview.fileName}</span></p>
+                <p className="text-xs text-gray-400">
+                  {preview.rawRows.length - 1} 行数据 →
+                  <span className={preview.parsed.players.length > 0 ? "text-[#30D158] font-bold ml-1" : "text-[#992828] font-bold ml-1"}>
+                    {preview.parsed.players.length} 名球员
+                  </span>
+                </p>
+              </div>
+
+              {/* Zero players error */}
+              {preview.parsed.players.length === 0 && (
+                <div className="bg-[#992828]/10 border border-[#992828]/30 rounded-lg p-3">
+                  <p className="text-[10px] text-[#992828] font-medium mb-1">未识别到球员数据</p>
+                  <p className="text-[9px] text-gray-400">请检查列映射是否正确，或下载模板参照格式</p>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {preview.parsed.warnings.length > 0 && (
+                <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-lg p-3">
+                  <p className="text-[10px] text-yellow-400 font-medium mb-1.5">⚠ 解析警告（{preview.parsed.warnings.length}条）</p>
+                  <ul className="space-y-0.5 max-h-24 overflow-y-auto">
+                    {preview.parsed.warnings.slice(0, 10).map((w, i) => (
+                      <li key={i} className="text-[9px] text-yellow-500/70">{w}</li>
+                    ))}
+                    {preview.parsed.warnings.length > 10 && (
+                      <li className="text-[9px] text-gray-500">...还有 {preview.parsed.warnings.length - 10} 条警告</li>
+                    )}
+                  </ul>
+                </div>
+              )}
 
               {/* Column mapping */}
               <div>
@@ -593,9 +655,15 @@ export default function RosterPage() {
                   className="flex-1 py-2 bg-[#1e1e1e] hover:bg-[#222] text-gray-300 rounded-lg text-sm transition">
                   取消
                 </button>
-                <button onClick={handleConfirmImport}
-                  className="flex-1 py-2 bg-[#992828] hover:bg-[#992828]/90 text-black font-bold rounded-lg text-sm transition">
-                  确认导入 {preview.parsed.length} 名球员
+                <button
+                  onClick={handleConfirmImport}
+                  disabled={preview.parsed.players.length === 0}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${
+                    preview.parsed.players.length === 0
+                      ? "bg-[#333] text-gray-500 cursor-not-allowed"
+                      : "bg-[#992828] hover:bg-[#992828]/90 text-black"
+                  }`}>
+                  确认导入 {preview.parsed.players.length} 名球员
                 </button>
               </div>
             </div>

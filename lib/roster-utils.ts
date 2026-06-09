@@ -155,11 +155,41 @@ export function deletePlayer(id: string): void {
 // Excel parsing (unchanged — pure, no I/O)
 // ---------------------------------------------------------------------------
 
-/** Parse Excel .xlsx data into PlayerRecord array */
+export interface ParseResult {
+  players: Omit<PlayerRecord, "id">[];
+  warnings: string[];
+}
+
+/** Validate a numeric field and return a warning if out of bounds */
+function validateNum(
+  value: unknown,
+  field: string,
+  rowIdx: number,
+  min: number,
+  max: number
+): { num: number | null; warning: string | null } {
+  if (value == null || value === "") return { num: null, warning: null };
+  const n = Number(value);
+  if (isNaN(n)) {
+    return { num: null, warning: `第${rowIdx}行「${field}」不是有效数字: "${String(value).slice(0, 20)}"，已忽略` };
+  }
+  if (n < min || n > max) {
+    return { num: null, warning: `第${rowIdx}行「${field}」超出合理范围 (${min}-${max}): ${n}，已忽略` };
+  }
+  return { num: n, warning: null };
+}
+
+/**
+ * Parse Excel .xlsx / CSV data into PlayerRecord array.
+ * Falls back to position-based mapping when header detection fails.
+ */
 export function parseExcelData(
   rows: (string | number | null)[][]
-): Omit<PlayerRecord, "id">[] {
-  if (rows.length < 2) return [];
+): ParseResult {
+  const warnings: string[] = [];
+  if (rows.length < 2) {
+    return { players: [], warnings: ["文件为空或只有表头，无数据行"] };
+  }
 
   // Try to detect header row
   const header = rows[0].map((h) => String(h || "").trim().toLowerCase());
@@ -184,20 +214,85 @@ export function parseExcelData(
     (h) => h.includes("备注") || h.includes("notes")
   );
 
-  return rows
-    .slice(1)
-    .map((row) => ({
-      name: String(row[nameIdx] || "").trim(),
-      position: String(row[posIdx] || "").trim(),
-      number: String(row[numIdx] || "").trim(),
-      age: row[ageIdx] ? Number(row[ageIdx]) || null : null,
-      height: row[heightIdx] ? Number(row[heightIdx]) || null : null,
-      weight: row[weightIdx] ? Number(row[weightIdx]) || null : null,
+  // If no name column detected at all, fall back to position-based mapping
+  const useFallback = nameIdx === -1;
+  if (useFallback) {
+    warnings.push("未检测到「姓名」列，将按位置解析：第1列=姓名, 第2列=位置, 第3列=号码, 第4列=年龄, 第5列=身高, 第6列=体重, 第7列=伤病, 第8列=备注");
+  }
+
+  const players: Omit<PlayerRecord, "id">[] = [];
+  let emptyRowCount = 0;
+
+  if (typeof console !== "undefined") {
+    console.log("[roster-utils] parseExcelData input:", rows.length, "rows, header:", rows[0]);
+  }
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    // Skip completely empty rows
+    if (!row || row.every((c) => c == null || String(c).trim() === "")) {
+      emptyRowCount++;
+      continue;
+    }
+
+    const rowNum = i + 1; // 1-based for user-facing messages, account for header
+
+    const name = String(
+      useFallback ? (row[0] || "") : (row[nameIdx] || "")
+    ).trim();
+    if (!name) {
+      warnings.push(`第${rowNum}行缺少姓名，已跳过`);
+      continue;
+    }
+
+    // Validate numeric fields
+    const ageRaw = useFallback ? row[3] : row[ageIdx];
+    const ageResult = validateNum(ageRaw, "年龄", rowNum, 10, 65);
+
+    const heightRaw = useFallback ? row[4] : row[heightIdx];
+    const heightResult = validateNum(heightRaw, "身高", rowNum, 130, 250);
+
+    const weightRaw = useFallback ? row[5] : row[weightIdx];
+    const weightResult = validateNum(weightRaw, "体重", rowNum, 30, 150);
+
+    if (ageResult.warning) warnings.push(ageResult.warning);
+    if (heightResult.warning) warnings.push(heightResult.warning);
+    if (weightResult.warning) warnings.push(weightResult.warning);
+
+    players.push({
+      name,
+      position: String(
+        useFallback ? (row[1] || "") : (row[posIdx] || "")
+      ).trim(),
+      number: String(
+        useFallback ? (row[2] || "") : (row[numIdx] || "")
+      ).trim(),
+      age: ageResult.num,
+      height: heightResult.num,
+      weight: weightResult.num,
       injuryStatus: "healthy" as const,
-      injuryNote: String(row[injuryIdx] || "").trim(),
+      injuryNote: String(
+        useFallback ? (row[6] || "") : (row[injuryIdx] || "")
+      ).trim(),
       injuryHistory: "",
       disabledExercises: [] as string[],
-      notes: String(row[notesIdx] || "").trim(),
-    }))
-    .filter((p) => p.name);
+      notes: String(
+        useFallback ? (row[7] || "") : (row[notesIdx] || "")
+      ).trim(),
+    });
+  }
+
+  if (emptyRowCount > 0 && players.length === 0) {
+    warnings.push(`${emptyRowCount} 行数据均为空，请检查 Excel 内容`);
+  }
+
+  if (players.length === 0 && warnings.length === 0) {
+    warnings.push("未识别到有效球员数据，请检查 Excel 格式");
+  }
+
+  if (typeof console !== "undefined") {
+    console.log("[roster-utils] parseExcelData result:", players.length, "players,", warnings.length, "warnings");
+  }
+
+  return { players, warnings };
 }

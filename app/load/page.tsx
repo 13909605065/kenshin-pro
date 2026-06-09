@@ -32,13 +32,11 @@ function GPSImportButton() {
   };
 
   const downloadTemplate = async () => {
-    const XLSX = await import("xlsx");
-    const data = [
-      ["Athlete","Date","Total Distance(m)","HSR Distance(m)","Sprint Distance(m)","Max Speed(km/h)","Accelerations","Decelerations","Player Load","HR Avg","HR Max"],
-      ["张三","2026-06-01",8500,1200,200,32.5,45,38,650,145,185],
-      ["李四","2026-06-01",9200,1500,350,34.2,52,42,720,150,190],
-      ["王五","2026-06-01",7800,800,100,30.1,38,35,580,140,178],
-    ];
+    const [{ GPS_TEMPLATE_HEADERS, GPS_TEMPLATE_ROWS }, XLSX] = await Promise.all([
+      import("@/lib/gps-import"),
+      import("xlsx"),
+    ]);
+    const data = [GPS_TEMPLATE_HEADERS, ...GPS_TEMPLATE_ROWS];
     const ws = XLSX.utils.aoa_to_sheet(data);
     ws["!cols"] = data[0].map(() => ({wch:14}));
     const wb = XLSX.utils.book_new();
