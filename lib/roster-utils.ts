@@ -314,9 +314,72 @@ function parseInjuryStatus(raw: string): { status: PlayerRecord["injuryStatus"];
 }
 
 /**
- * Parse Excel .xlsx / CSV data into PlayerRecord array.
- * Smart detection: header matching → content-based inference → position fallback.
+ * Check if a row looks like a title/merged-cell row rather than a header.
+ * Title row: ≤2 non-empty cells, or cells contain title keywords.
  */
+function isTitleRow(row: (string | number | null)[]): boolean {
+  if (!row) return true;
+  const filled = row.filter((c) => c != null && String(c).trim() !== "");
+  if (filled.length <= 2) return true;
+  // If row has exactly 1 column filled with title-like text
+  const text = filled.map(c => String(c).trim().toLowerCase()).join(" ");
+  if (/模板|名单|花名册|球员表|导入|template|roster/i.test(text) && filled.length <= 3) return true;
+  return false;
+}
+
+/** Count how many expected field keywords match in a row — high score = likely header */
+function headerScore(row: (string | number | null)[]): number {
+  let score = 0;
+  for (const cell of row) {
+    const s = String(cell ?? "").trim().toLowerCase();
+    if (FIELD_KEYWORDS.name.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.position.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.number.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.age.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.height.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.weight.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.injury.some(k => s.includes(k))) score++;
+    if (FIELD_KEYWORDS.notes.some(k => s.includes(k))) score++;
+  }
+  return score;
+}
+
+/**
+ * Find the real header row index, skipping title rows.
+ * Scans first 5 rows, returns index of best-matching header row.
+ */
+function findHeaderRow(rows: (string | number | null)[][]): { headerRowIdx: number; skippedTitle: boolean } {
+  let bestIdx = 0;
+  let bestScore = headerScore(rows[0] || []);
+  let skippedTitle = false;
+
+  for (let i = 1; i < Math.min(rows.length, 5); i++) {
+    const row = rows[i];
+    if (!row) continue;
+    const score = headerScore(row);
+    if (score > bestScore) {
+      // Check if previous best was a title row
+      if (bestScore <= 1 && isTitleRow(rows[bestIdx] || [])) {
+        skippedTitle = true;
+      }
+      bestIdx = i;
+      bestScore = score;
+    }
+    // Stop early if we found a strong header match
+    if (score >= 3) break;
+  }
+
+  // If best row is still likely a title, try row 0 as fallback
+  if (bestScore <= 1 && isTitleRow(rows[bestIdx] || [])) {
+    // Try the row after the title
+    const nextRow = bestIdx + 1;
+    if (nextRow < rows.length && headerScore(rows[nextRow] || []) > 0) {
+      return { headerRowIdx: nextRow, skippedTitle: true };
+    }
+  }
+
+  return { headerRowIdx: bestIdx, skippedTitle };
+}
 export function parseExcelData(
   rows: (string | number | null)[][]
 ): ParseResult {
@@ -326,11 +389,18 @@ export function parseExcelData(
   }
 
   if (typeof console !== "undefined") {
-    console.log("[roster-utils] parseExcelData input:", rows.length, "rows, header:", rows[0]);
+    console.log("[roster-utils] parseExcelData input:", rows.length, "rows, row[0]:", rows[0]);
   }
 
+  // Step 0: Find real header row (skip title row like "花名册模板")
+  const { headerRowIdx, skippedTitle } = findHeaderRow(rows);
+  if (skippedTitle) {
+    warnings.push(`检测到第1行为标题（如「花名册模板」），已自动跳过，使用第${headerRowIdx + 1}行作为表头`);
+  }
+  console.log("[roster-utils] headerRowIdx:", headerRowIdx, "skippedTitle:", skippedTitle);
+
   // Step 1: Try header-based detection
-  const header = rows[0].map((h) => String(h || "").trim().toLowerCase());
+  const header = (rows[headerRowIdx] || []).map((h) => String(h || "").trim().toLowerCase());
   let nameIdx = findFieldIdx(header, "name");
   let posIdx = findFieldIdx(header, "position");
   let numIdx = findFieldIdx(header, "number");
@@ -375,11 +445,11 @@ export function parseExcelData(
     inferredFields: Object.keys(inferred),
   });
 
-  // Step 4: Parse data rows
+  // Step 4: Parse data rows (start after header row)
   const players: Omit<PlayerRecord, "id">[] = [];
   let emptyRowCount = 0;
 
-  for (let i = 1; i < rows.length; i++) {
+  for (let i = headerRowIdx + 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row || row.every((c) => c == null || String(c).trim() === "")) {
       emptyRowCount++;

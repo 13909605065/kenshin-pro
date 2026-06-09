@@ -547,7 +547,35 @@ export default function RosterPage() {
 
       {/* Preview Import Dialog */}
       {preview && (() => {
-        const headers = (preview.rawRows[0] || []).map((h) => String(h || "").trim());
+        // Auto-detect real header row (skip title rows like "花名册模板")
+        const KW = {
+          name: ["姓名","名字","球员","name","player","athlete"],
+          position: ["位置","position","pos"],
+          number: ["号码","编号","背号","number","jersey","num"],
+          age: ["年龄","age"],
+          height: ["身高","高度","height"],
+          weight: ["体重","重量","weight"],
+          injury: ["伤病","伤情","受伤","injury","status"],
+          notes: ["备注","说明","notes","remark"],
+        };
+        function rowScore(r: (string|number|null)[]): number {
+          let s = 0;
+          for (const c of r) {
+            const t = String(c||"").trim().toLowerCase();
+            for (const ks of Object.values(KW)) if (ks.some(k => t.includes(k))) { s++; break; }
+          }
+          return s;
+        }
+        let hIdx = 0; let hBest = rowScore(preview.rawRows[0]||[]);
+        // Also check if row 0 has only 1-2 cells filled (title row pattern)
+        const row0Filled = (preview.rawRows[0]||[]).filter(c => c!=null && String(c).trim()!=='');
+        const isTitleRow = row0Filled.length <= 2;
+        for (let i = 1; i < Math.min(preview.rawRows.length, 5); i++) {
+          const s = rowScore(preview.rawRows[i]||[]);
+          if (s > hBest) { hIdx = i; hBest = s; if (s >= 3) break; }
+        }
+
+        const headers = (preview.rawRows[hIdx] || []).map((h) => String(h || "").trim());
         const headerLower = headers.map((h) => h.toLowerCase());
         const mapping: { field: string; header: string; found: boolean }[] = [
           { field: "姓名", header: headers[headerLower.findIndex((h) => h.includes("姓名") || h.includes("name"))] || "", found: headerLower.some((h) => h.includes("姓名") || h.includes("name")) },
@@ -585,11 +613,11 @@ export default function RosterPage() {
                   <p className="text-[10px] text-[#992828] font-medium mb-1">未识别到球员数据</p>
                   <p className="text-[9px] text-gray-400 mb-2">请检查：①列名是否匹配 ②数据是否从第2行开始 ③姓名列是否有内容</p>
                   {/* Show first data row raw */}
-                  {preview.rawRows.length > 1 && (
+                  {preview.rawRows.length > hIdx + 1 && (
                     <div className="bg-[#121212] rounded p-2 border border-[#222]">
-                      <p className="text-[8px] text-gray-500 mb-1">第2行原始数据（共{preview.rawRows[0]?.length || 0}列）：</p>
+                      <p className="text-[8px] text-gray-500 mb-1">第{hIdx + 2}行原始数据（共{headers.length}列）：</p>
                       <div className="flex flex-wrap gap-0.5">
-                        {(preview.rawRows[1] || []).map((c, i) => (
+                        {(preview.rawRows[hIdx + 1] || []).map((c, i) => (
                           <span key={i} className="px-1 py-0.5 bg-[#1e1e1e] rounded text-[9px] text-gray-300">
                             [{i}] {c != null && String(c).trim() !== "" ? String(c).slice(0, 12) : "(空)"}
                           </span>
@@ -621,7 +649,11 @@ export default function RosterPage() {
 
                 {/* Raw headers for comparison */}
                 <div className="bg-[#121212] rounded-lg p-2.5 mb-2 border border-[#222]">
-                  <p className="text-[9px] text-gray-500 mb-1.5">你的文件表头（原始值）：</p>
+                  <p className="text-[9px] text-gray-500 mb-1.5">
+                    检测到表头（第{hIdx + 1}行）
+                    {isTitleRow && hIdx > 0 ? <span className="text-yellow-500 ml-1">· 已跳过标题行</span> : null}
+                    ：
+                  </p>
                   <div className="flex flex-wrap gap-1">
                     {headers.map((h, i) => (
                       <span key={i} className="px-1.5 py-0.5 bg-[#1e1e1e] rounded text-[10px] text-gray-300 border border-[#333]">
