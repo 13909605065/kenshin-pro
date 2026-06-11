@@ -17,13 +17,14 @@ export function BackHeader({ title, subtitle, backTo }: BackHeaderProps) {
       <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => backTo ? router.push(backTo) : router.back()}
-          className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#1a1a1a] border border-[#333] text-gray-400 hover:text-white hover:border-[#555] transition shrink-0"
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#992828]/20 border border-[#992828]/40 text-[#992828] hover:bg-[#992828]/40 hover:text-white transition shrink-0"
+          aria-label="返回"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-white">{title}</h1>
-          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+          <h1 className="text-base font-bold text-white">{title}</h1>
+          {subtitle && <p className="text-[10px] text-gray-500">{subtitle}</p>}
         </div>
       </div>
     </div>
