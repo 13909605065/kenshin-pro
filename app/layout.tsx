@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
 import { ErrorCatcher } from "@/components/ErrorCatcher";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { SyncInitializer } from "@/components/SyncInitializer";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { TeamBar } from "@/components/TeamBar";
-import { DesktopNav } from "@/components/DesktopNav";
 import { MobileNav } from "@/components/MobileNav";
 import "./globals.css";
 
@@ -64,11 +64,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen">
         <OfflineBanner />
+        <SyncInitializer />
         <UpdateBanner />
         <ErrorCatcher>
           <Providers>
             <TeamBar />
-            <DesktopNav />
             {children}
             <MobileNav />
           </Providers>

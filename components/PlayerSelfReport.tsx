@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Upload, Download, X, FileSpreadsheet } from "lucide-react";
 import { notifyChange } from "@/lib/data-events";
+import { saveSRPEEntries, saveHealthQuestionnaires } from "@/lib/monitoring-client";
 import * as XLSX from "xlsx";
 
 interface SelfReport {
@@ -104,6 +105,20 @@ export function PlayerSelfReport() {
     const merged = [...reports.filter(r => r.date !== today), ...imported];
     setReports(merged);
     saveReports(merged); notifyChange("self-report-updated");
+
+    // ☁️ Sync to Supabase (fire-and-forget)
+    const srpeEntries = imported.filter(r => r.rpe > 0).map(r => ({
+      player_name: r.name, session_date: today,
+      session_type: "training" as const, rpe_score: r.rpe, duration_min: 90,
+    }));
+    const healthEntries = imported.filter(r => r.fatigue > 0 || r.soreness > 0).map(r => ({
+      player_name: r.name, record_date: today,
+      sleep_score: 3, fatigue_score: r.fatigue || 3,
+      soreness_score: r.soreness || 2, stress_score: 2, mood_score: 3,
+    }));
+    if (srpeEntries.length > 0) saveSRPEEntries(srpeEntries).catch(() => {});
+    if (healthEntries.length > 0) saveHealthQuestionnaires(healthEntries).catch(() => {});
+
     setImportMsg({type:'success', text: `导入 ${imported.length} 人${warns.length > 0 ? `，${warns.length} 条警告` : ''}`});
     setTimeout(()=>setImportMsg(null),warns.length>0?6000:3000);
     if (warns.length > 0) console.warn('自评导入警告:', warns);

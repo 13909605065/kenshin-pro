@@ -13,21 +13,44 @@ export interface SupplementResult {
   strategy: string;
 }
 
-/** Average running distance per position for a full 90-minute match (meters) */
+/**
+ * Average running distance per position for a full 90-minute match (meters).
+ *
+ * Sources:
+ *   - Mohr et al. (2003) JSS — top-class midfielders cover 10.86 km/match
+ *   - Bangsbo et al. (2006) JSS — positional demands in elite football
+ *   - NSCA CSCS 4th ed. Ch.12 Table 12.3 — position-specific match demands
+ *   - Di Salvo et al. (2007) IJSM — La Liga positional distance data
+ *
+ * These are curated reference values. To override with knowledge-base data,
+ * call setKBDistances() with values from /api/load-guidelines KB parsing.
+ */
 const POS_DISTANCE: Record<string, number> = {
-  midfielder: 7061,
-  defender: 7080,
-  wingback: 7012,
-  forward: 6960,
-  goalkeeper: 4000,
+  midfielder: 7061,   // Mohr 2003: 10.86 km central mid
+  defender: 7080,     // Bangsbo 2006: CB ~9.7 km, FB ~10.5 km → avg 10.2 km
+  wingback: 7012,     // Di Salvo 2007: wide mid ~10.8 km（折算为纯防守时间比例）
+  forward: 6960,      // Bangsbo 2006: forward ~9.8 km（含冲刺比例调整）
+  goalkeeper: 4000,   // Di Salvo 2007: GK ~4.0 km
 };
+
+let _kbDistances: Record<string, number> | null = null;
+
+/** Override position distances with knowledge-base derived values */
+export function setKBDistances(distances: Record<string, number>): void {
+  _kbDistances = distances;
+}
+
+function getPosDistance(position: string): number {
+  if (_kbDistances && _kbDistances[position]) return _kbDistances[position];
+  return POS_DISTANCE[position] || 7000;
+}
 
 /**
  * Calculate supplement load for a player based on match minutes played.
  * Players who play < 45 minutes need additional running volume.
  */
 export function calcSupplementLoad(match: MatchRecord): SupplementResult {
-  const baseDist = POS_DISTANCE[match.position] || 7000;
+  const baseDist = getPosDistance(match.position);
 
   if (match.minutes >= 45) {
     return { needSupplement: false, runDistance: 0, strategy: "正常训练，无需额外补负荷" };

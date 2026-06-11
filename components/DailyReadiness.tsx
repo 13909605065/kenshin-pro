@@ -10,6 +10,7 @@ import {
 } from "@/lib/player-status";
 import { notifyChange } from "@/lib/data-events";
 import { addLoadEntry } from "@/lib/acwr";
+import { saveSRPEEntries, saveHealthQuestionnaires } from "@/lib/monitoring-client";
 import * as XLSX from "xlsx";
 
 // ── Types ──
@@ -220,6 +221,19 @@ export function DailyReadiness({ onReadinessChange }: Props) {
         addLoadEntry(r.name, { date: today, sRPE: r.rpe, duration: 90 });
       }
     }
+
+    // ☁️ Sync to Supabase (fire-and-forget)
+    const srpeEntries = imported.filter(r => r.rpe > 0).map(r => ({
+      player_name: r.name, session_date: today,
+      session_type: "training" as const, rpe_score: r.rpe, duration_min: 90,
+    }));
+    const healthEntries = imported.filter(r => r.fatigue > 0 || r.soreness > 0).map(r => ({
+      player_name: r.name, record_date: today,
+      sleep_score: 3, fatigue_score: r.fatigue || 3,
+      soreness_score: r.soreness || 2, stress_score: 2, mood_score: 3,
+    }));
+    if (srpeEntries.length > 0) saveSRPEEntries(srpeEntries).catch(() => {});
+    if (healthEntries.length > 0) saveHealthQuestionnaires(healthEntries).catch(() => {});
 
     notifyChange("self-report-updated");
     notifyChange("load-data-changed");

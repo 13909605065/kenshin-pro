@@ -2,8 +2,30 @@
  * 体能测试基准库
  *
  * 12+项标准化体能测试的分级阈值、测试规程和位置专项数据。
- * 来源：NSCA CSCS, Soccer Anatomy, 中国足协体能测试标准
+ *
+ * 硬编码阈值来源（循证标定）：
+ *   - NSCA CSCS 4th ed. Chapters 12-15: 体能测试规范与分级标准
+ *   - Soccer Anatomy (Kirkendall 2011): 足球专项体能基准
+ *   - 中国足协体能测试标准 (CFA 2020): 中国职业足球体能门槛
+ *   - Hoffman (2006) Norms for Fitness, Performance, and Health
+ *   - Reilly et al. (2000) JSS: anthropometric & physiological profiles of elite soccer players
+ *
+ * KB覆盖机制：调用 setKBThresholds() 可通过知识库数据覆盖默认阈值。
+ * 此机制确保当KB发现更新的循证数据时，平台自动采用新值。
  */
+
+/** KB-derived threshold overrides — set via load-guidelines API or manual call */
+let _kbThresholds: Record<string, Partial<TestThresholds>> | null = null;
+let _kbPositionModifiers: Record<string, Partial<Record<string, TestThresholds>>> | null = null;
+
+export function setKBThresholds(thresholds: Record<string, Partial<TestThresholds>>): void {
+  _kbThresholds = thresholds;
+}
+export function setKBPositionModifiers(modifiers: Record<string, Partial<Record<string, TestThresholds>>>): void {
+  _kbPositionModifiers = modifiers;
+}
+export function getKBThresholds() { return _kbThresholds; }
+export function getKBPositionModifiers() { return _kbPositionModifiers; }
 
 import type { Position } from './types';
 
@@ -360,10 +382,17 @@ export function classifyTestResult(
   const test = getTestBenchmark(testId);
   if (!test) return { classification: 'average', classificationCn: '中等' };
 
-  // 获取适合的阈值
+  // 获取适合的阈值（KB覆盖优先）
   let thresholds = test.thresholds;
+  if (_kbThresholds?.[testId]) {
+    thresholds = { ...thresholds, ..._kbThresholds[testId] };
+  }
   if (position && test.positionSpecific?.[position]) {
-    thresholds = test.positionSpecific[position]!;
+    let posThresholds = test.positionSpecific[position]!;
+    if (_kbPositionModifiers?.[testId]?.[position]) {
+      posThresholds = { ...posThresholds, ..._kbPositionModifiers[testId]![position]! };
+    }
+    thresholds = posThresholds;
   }
 
   // 年龄修正

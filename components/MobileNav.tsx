@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Ellipsis, Dumbbell, Users, X, Zap, Activity, BarChart3, Gauge, Trophy, Settings } from "lucide-react";
+import { Home, Ellipsis, Dumbbell, Users, X, Zap, Activity, BarChart3, Gauge, Trophy, Settings, Footprints, ClipboardCheck } from "lucide-react";
 import { useLang } from "@/components/providers/LanguageProvider";
 
 // ═══════════════════════════════════════════════
@@ -20,6 +20,8 @@ export const MORE_TABS = [
   { id: "field",    label: "场地训练", icon: Activity,   path: "/field" },
   { id: "warmup",   label: "热身设计", icon: Zap,        path: "/warmup" },
   { id: "load",     label: "负荷管理", icon: BarChart3,  path: "/load" },
+  { id: "cmj",      label: "CMJ",      icon: Footprints, path: "/cmj" },
+  { id: "health",   label: "晨间问卷", icon: ClipboardCheck, path: "/health" },
   { id: "fitness",  label: "体测",     icon: Gauge,      path: "/fitness" },
   { id: "roster",   label: "花名册",   icon: Users,      path: "/roster" },
   { id: "status",   label: "状态录入", icon: Activity,   path: "/status" },

@@ -25,6 +25,19 @@ function GPSImportButton() {
     const r = parseGPSCSV(text);
     if (r.errors.length > 0) { setMsg(r.errors[0]); setTimeout(() => setMsg(""), 3000); return; }
     saveGPSData(r.records);
+
+    // ☁️ Sync GPS → Supabase sRPE (player_load as RPE proxy, duration from records)
+    const { saveSRPEEntries } = await import("@/lib/monitoring-client");
+    const srpeEntries = r.records.map(rec => ({
+      player_name: rec.athlete,
+      session_date: rec.date,
+      session_type: "training" as const,
+      rpe_score: Math.min(10, Math.max(1, Math.round((rec.playerLoad || 300) / 100))),
+      duration_min: 90,
+      notes: `GPS: ${rec.totalDistance}m, HSR:${rec.hsrDistance}m, MaxSpeed:${rec.maxSpeed}km/h`,
+    }));
+    saveSRPEEntries(srpeEntries).catch(() => {});
+
     setMsg(`✅ 导入 ${r.success} 条 (${r.skipped} 条跳过)`);
     setCount(prev => prev + r.success);
     window.dispatchEvent(new Event("training-log-updated")); notifyChange("gps-data-updated"); notifyChange("load-data-changed");
@@ -166,6 +179,26 @@ export default function LoadPage() {
 
   // Auto-refresh when training/match data changes
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // ── Supabase migration: push localStorage data to cloud on first load ──
+  const [migrationDone, setMigrationDone] = useState(false);
+  const [migrationMsg, setMigrationMsg] = useState("");
+  useEffect(() => {
+    const run = async () => {
+      try {
+        const { migrateLocalStorageToSupabase } = await import("@/lib/monitoring-client");
+        const result = await migrateLocalStorageToSupabase();
+        if (result.srpe > 0 || result.gps > 0) {
+          setMigrationMsg(`☁️ 已同步 ${result.srpe} 条sRPE记录到云端`);
+        }
+        if (result.errors.length > 0) {
+          console.warn("Migration errors:", result.errors);
+        }
+      } catch {}
+      setMigrationDone(true);
+    };
+    run();
+  }, []);
 
   // ── KB-powered load guidelines ──
   const [kbGuidelines, setKbGuidelines] = useState<any>(null);

@@ -129,3 +129,47 @@ export function clearAllLoadData(): void {
     teamRemove(LOAD_KEY);
   } catch {}
 }
+
+// ═══════════════════════════════════════
+// Supabase-backed data layer (2026-06-11)
+// These replace localStorage functions above.
+// Old functions kept for backward compatibility during migration.
+// ═══════════════════════════════════════
+
+import { getSRPEEntries, type SRPEEntry } from "./monitoring-client";
+
+/** Convert Supabase sRPE entries to LoadEntry[] for ACWR calculation */
+export function srpeToLoadEntries(entries: SRPEEntry[]): LoadEntry[] {
+  return entries.map(e => ({
+    date: e.session_date,
+    sRPE: e.rpe_score,
+    duration: e.duration_min,
+  })).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/** Get ACWR for a specific player from Supabase (async) */
+export async function getPlayerACWRSupabase(playerName: string): Promise<ACWRResult> {
+  const entries = await getSRPEEntries({ player: playerName });
+  const loads = srpeToLoadEntries(entries);
+  return calcACWR(loads);
+}
+
+/** Get all players who have ACWR warning or danger status from Supabase */
+export async function getAtRiskPlayersSupabase(): Promise<{ name: string; result: ACWRResult }[]> {
+  const entries = await getSRPEEntries();
+  // Group by player
+  const byPlayer: Record<string, SRPEEntry[]> = {};
+  for (const e of entries) {
+    if (!byPlayer[e.player_name]) byPlayer[e.player_name] = [];
+    byPlayer[e.player_name].push(e);
+  }
+  const atRisk: { name: string; result: ACWRResult }[] = [];
+  for (const [name, playerEntries] of Object.entries(byPlayer)) {
+    const loads = srpeToLoadEntries(playerEntries);
+    const result = calcACWR(loads);
+    if (result.status === "warning" || result.status === "danger") {
+      atRisk.push({ name, result });
+    }
+  }
+  return atRisk;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Canvas, Circle, FabricImage } from "fabric";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
@@ -8,18 +8,8 @@ import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { ArrowLeft, Menu, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TAC_THEME } from "@/lib/tactical-theme";
-import { warmupPresetDescription } from "@/lib/warmup-presets";
-
 // ─── Constants ────────────────────────────────────────────
 const AUTOSAVE_KEY = "warmup_autosave";
-
-// RAMP 四阶段参考
-const RAMP_PHASES = [
-  { phase: 1, label: "Raise 提升", color: "#22c55e" },
-  { phase: 2, label: "Activate 激活", color: "#3B82F6" },
-  { phase: 3, label: "Mobilize 动员", color: "#eab308" },
-  { phase: 4, label: "Potentiate 增强", color: "#992828" },
-];
 
 // ─── Dynamic import (Fabric.js 仅客户端) ──────────────────
 const FabricBoardDynamic = dynamic(
@@ -49,15 +39,8 @@ export default function WarmupDesignPage() {
   const [autoSaveTs, setAutoSaveTs] = useState<string | null>(() => {
     try { const d = localStorage.getItem(AUTOSAVE_KEY); return d ? JSON.parse(d).ts : null; } catch { return null; }
   });
-  const [showRampPanel, setShowRampPanel] = useState(false);
-  const [warmupPresetText, setWarmupPresetText] = useState("");
   const [showLibrary, setShowLibrary] = useState(false);
   const [libraryEntries, setLibraryEntries] = useState<{ id: string; name: string; createdAt: string; canvasJSON: string }[]>([]);
-
-  // 加载热身预设说明
-  useEffect(() => {
-    setWarmupPresetText(warmupPresetDescription("pitch"));
-  }, []);
 
   // ─── Auto-save ──────────────────────────────────────────
   const autoSave = useCallback(() => {
@@ -255,39 +238,6 @@ export default function WarmupDesignPage() {
     setEditPop(null);
   };
 
-  // ─── Quick warmup templates ─────────────────────────────
-  const hQuickWarmupOutline = () => {
-    const c = boardRef.current; if (!c) return;
-    c.getObjects().filter((o: any) => !o._isFieldBg).forEach((o: any) => c.remove(o));
-    if ((c as any)._setFieldImage) (c as any)._setFieldImage("default");
-
-    // Place a few marker cones roughly along the field to represent warmup stations
-    const stations = [
-      { x: 100, y: 340, name: "起点", color: "#22c55e" },
-      { x: 300, y: 200, name: "绳梯", color: "#3B82F6" },
-      { x: 500, y: 340, name: "栏架", color: "#eab308" },
-      { x: 700, y: 200, name: "冲刺", color: "#992828" },
-      { x: 900, y: 340, name: "终点", color: "#992828" },
-    ];
-
-    stations.forEach((st) => {
-      FabricImage.fromURL("/equipment/标志盘（红）.png").then((img) => {
-        img.set({
-          left: st.x - 35, top: st.y - 35,
-          scaleX: 0.3, scaleY: 0.3,
-          lockUniScaling: true, selectable: true, evented: true,
-        });
-        (img as any).name = st.name;
-        c.add(img);
-      });
-    });
-
-    // Phase labels — removed for minimal UI
-
-    c.requestRenderAll();
-    autoSave();
-  };
-
   const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
@@ -336,17 +286,6 @@ export default function WarmupDesignPage() {
 
 
 
-        {/* 快速模板 */}
-        <button
-          onClick={hQuickWarmupOutline}
-          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors touch-target"
-          style={{ color: TAC_THEME.textDim }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = TAC_THEME.textMain; e.currentTarget.style.backgroundColor = TAC_THEME.bgHover; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = TAC_THEME.textDim; e.currentTarget.style.backgroundColor = "transparent"; }}
-          title="快速热身模板">
-          <span className="hidden sm:inline">快速模板</span>
-        </button>
-
         {/* 保存到热身库 */}
         <button onClick={hSaveToLibrary}
           className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
@@ -378,29 +317,6 @@ export default function WarmupDesignPage() {
           <span className="hidden sm:inline">导出PNG</span>
         </button>
       </nav>
-
-      {/* ─── RAMP 参考面板 ─── */}
-      {showRampPanel && (
-        <div className="flex-shrink-0 px-4 py-3 space-y-2"
-          style={{ backgroundColor: TAC_THEME.bgCard, borderBottom: `1px solid ${TAC_THEME.border}` }}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold" style={{ color: TAC_THEME.textMain }}>
-              RAMP 热身系统参考（Ian Jeffreys）
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {RAMP_PHASES.map((p) => (
-              <div key={p.phase} className="flex items-center gap-1.5 px-2 py-1">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                <span className="text-[11px] font-medium" style={{ color: p.color }}>{p.label}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] leading-relaxed" style={{ color: TAC_THEME.textDim }}>
-            {warmupPresetText}
-          </p>
-        </div>
-      )}
 
       {/* ─── Player number editor bar ─── */}
       {selObj && (selObj as any)._isPlayer && !editPop && (
