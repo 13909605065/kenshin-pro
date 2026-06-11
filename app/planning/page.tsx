@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { BackHeader } from "@/components/BackHeader";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import type { SeasonPhase } from "@/lib/types";
@@ -378,15 +379,12 @@ export default function PlanningPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] p-4 pb-20">
+    <div className="min-h-screen bg-[#121212] pb-20">
+      <BackHeader title="训练周期编排" subtitle={currentPhase ? `当前: ${PHASE_PRESETS[currentPhase.phase].label}` : "赛季周期规划"} backTo="/" />
+      <div className="px-4 max-w-5xl mx-auto">
       {/* Roster Injury Overview */}
       <div className="mb-4">
         <RosterInjuryCheck />
-      </div>
-
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-white font-bold text-lg">训练周期编排</h1>
-        {currentPhase && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: PHASE_PRESETS[currentPhase.phase].color, color: '#fff' }}>当前: {PHASE_PRESETS[currentPhase.phase].label}</span>}
       </div>
 
       {/* ═══ SEASON PHASE STATUS ═══ */}
@@ -584,6 +582,7 @@ export default function PlanningPage() {
         </ErrBoundary>
       </section>
 
+      </div>{/* close px-4 wrapper */}
       <MobileNav />
     </div>
   );

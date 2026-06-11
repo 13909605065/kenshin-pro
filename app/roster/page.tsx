@@ -292,15 +292,15 @@ export default function RosterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] p-4 pb-20">
+    <div className="min-h-screen bg-[#121212] pb-20">
+      <BackHeader title="球队花名册" subtitle={`${players.length}名球员`} backTo="/" />
       {/* Import toast */}
       {importToast && (
         <div className={`mb-3 px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#992828]/10 border border-[#992828]/30 text-[#992828]'}`}>
           {importToast.msg}
         </div>
       )}
-      <BackHeader title="球队花名册" subtitle={`${players.length}名球员`} backTo="/" />
-      <div className="flex items-center gap-3 mb-6 px-4 max-w-5xl mx-auto">
+      <div className="flex items-center gap-3 mb-6 px-4 max-w-5xl mx-auto mt-4">
 
         {/* Team selector */}
         <div className="relative">
