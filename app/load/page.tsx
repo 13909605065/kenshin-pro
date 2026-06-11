@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
 import { notifyChange } from '@/lib/data-events';
 import { MobileNav } from "@/components/MobileNav";
-import { BackHeader } from "@/components/BackHeader";
+import { ArrowLeft } from "lucide-react";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
 
 const WEEKDAY = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -678,7 +678,14 @@ export default function LoadPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] pb-20">
-      <BackHeader title="负荷管理" subtitle={info ? info.label : "ACWR · TRIMP · GPS"} backTo="/" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-white font-bold text-sm">负荷管理</span>
+        </div>
+      </header>
       <div className="flex items-center gap-3 mb-4 flex-wrap px-4 max-w-5xl mx-auto mt-4">
         {info && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: info.color + '30', color: '#fff' }}>{info.label}</span>}
         <div className="ml-auto">

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/supabase-client";
 import { useTheme, THEME_LABELS } from "@/components/providers/ThemeProvider";
 import { Save, Camera, Download, AlertTriangle, Upload, Shield } from "lucide-react";
 import { exportAsJSON, exportAsCSV, exportAllData, DataStats, previewImport, executeImport, type ImportPreview } from "@/lib/data-export";
-import { BackHeader } from "@/components/BackHeader";
+import { ArrowLeft } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -108,7 +108,14 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-[#121212]">
-      <BackHeader title="个人设置" backTo="/" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-white font-bold text-sm">个人设置</span>
+        </div>
+      </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         {/* ── Backup Reminder Banner ── */}

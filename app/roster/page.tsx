@@ -31,7 +31,7 @@ import {
 import { Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
-import { BackHeader } from "@/components/BackHeader";
+import { ArrowLeft } from "lucide-react";
 import { calcSupplementLoad, type SupplementResult } from "@/lib/supplement-load";
 
 const POSITION_OPTIONS = [
@@ -293,7 +293,15 @@ export default function RosterPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] pb-20">
-      <BackHeader title="球队花名册" subtitle={`${players.length}名球员`} backTo="/" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-white font-bold text-sm">球队花名册</span>
+          <span className="text-[10px] text-gray-500">{players.length}名球员</span>
+        </div>
+      </header>
       {/* Import toast */}
       {importToast && (
         <div className={`mb-3 px-4 py-2 rounded-lg text-sm ${importToast.type==='success'?'bg-[#30D158]/10 border border-[#30D158]/30 text-[#30D158]':'bg-[#992828]/10 border border-[#992828]/30 text-[#992828]'}`}>

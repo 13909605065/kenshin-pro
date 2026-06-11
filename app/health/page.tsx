@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { AlertTriangle, CheckCircle2, Plus, Trash2, Moon, BatteryFull, Activity, Brain, Smile } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { BackHeader } from "@/components/BackHeader";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import {
   getHealthQuestionnaires, saveHealthQuestionnaires, deleteHealthQuestionnaire,
   calcHealthTotal, type HealthQuestionnaire,
@@ -20,6 +21,7 @@ const SCORE_LABELS: { key: string; label: string; icon: any; labels: string[] }[
 ];
 
 export default function HealthPage() {
+  const router = useRouter();
   const [records, setRecords] = useState<HealthQuestionnaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -93,7 +95,15 @@ export default function HealthPage() {
 
   return (
     <div className="min-h-screen bg-[#111] text-white pb-20">
-      <BackHeader title="晨间健康问卷" subtitle="Hooper & Mackinnon (1995) · 五项五分制 · 总分&gt;15预警" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-white font-bold text-sm">晨间健康问卷</span>
+          <span className="text-[10px] text-gray-500">Hooper & Mackinnon (1995) · 五项五分制 · 总分&gt;15预警</span>
+        </div>
+      </header>
       <div className="max-w-5xl mx-auto px-4 py-2 flex justify-end">
         <button onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold transition">

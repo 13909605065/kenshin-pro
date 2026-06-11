@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Download, TrendingUp, TrendingDown, Minus, Trash2, Plus, Activity } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { BackHeader } from "@/components/BackHeader";
+import { ArrowLeft } from "lucide-react";
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import type { Position } from "@/lib/types";
 
@@ -174,7 +174,14 @@ export default function FitnessPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] pb-20">
-      <BackHeader title="体能测试追踪" subtitle="12项标准化测试 · 趋势追踪" backTo="/" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-white font-bold text-sm">体能测试追踪</span>
+        </div>
+      </header>
 
       <div className="flex items-center gap-1 bg-[#1a1a1a] rounded-lg p-0.5 w-fit mb-4">
         {(["table","input","trends"] as const).map(v => (

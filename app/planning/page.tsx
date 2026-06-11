@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { BackHeader } from "@/components/BackHeader";
+import { ArrowLeft } from "lucide-react";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import type { SeasonPhase } from "@/lib/types";
@@ -380,7 +380,17 @@ export default function PlanningPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] pb-20">
-      <BackHeader title="训练周期编排" subtitle={currentPhase ? `当前: ${PHASE_PRESETS[currentPhase.phase].label}` : "赛季周期规划"} backTo="/" />
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
+        <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-4">
+          <button onClick={() => router.push("/")} className="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-[#1e1e1e]">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <span className="text-white font-bold text-sm">训练周期编排</span>
+            {currentPhase && <span className="text-[10px] text-gray-500 ml-2">当前: {PHASE_PRESETS[currentPhase.phase].label}</span>}
+          </div>
+        </div>
+      </header>
       <div className="px-4 max-w-5xl mx-auto">
       {/* Roster Injury Overview */}
       <div className="mb-4">
