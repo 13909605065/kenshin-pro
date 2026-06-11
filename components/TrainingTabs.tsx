@@ -575,6 +575,7 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   const posModule = editableModules.find(m => m.module === "position_training") as import("@/lib/types").PositionTraining | undefined;
 
   return (
+    <>
     <div className="lg:grid lg:grid-cols-[1fr_180px] lg:gap-4">
 
       {/* ===== LEFT COLUMN: Main Content ===== */}
@@ -803,5 +804,6 @@ export function TrainingTabs({ modules, formData, planId, onSaveTemplate, launch
   )}
 
   <AIAssistant />
-  );
+  </>
+);
 }

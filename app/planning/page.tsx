@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
+import { Loader2, Save, Plus, Trash2, GripVertical, ChevronRight } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import SeasonCalendar, { type PhaseRange, type PhaseType } from "@/components/SeasonCalendar";
 import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
@@ -385,7 +385,6 @@ export default function PlanningPage() {
       </div>
 
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">训练周期编排</h1>
         {currentPhase && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: PHASE_PRESETS[currentPhase.phase].color, color: '#fff' }}>当前: {PHASE_PRESETS[currentPhase.phase].label}</span>}
       </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useTheme, THEME_LABELS } from "@/components/providers/ThemeProvider";
-import { ArrowLeft, Save, Camera, Download, AlertTriangle, Upload, Shield } from "lucide-react";
+import { Save, Camera, Download, AlertTriangle, Upload, Shield } from "lucide-react";
 import { exportAsJSON, exportAsCSV, exportAllData, DataStats, previewImport, executeImport, type ImportPreview } from "@/lib/data-export";
 
 export default function SettingsPage() {
@@ -107,11 +107,8 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-[#121212]">
-      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#1e1e1e]">
+      <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
-          <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
           <h1 className="text-lg font-bold text-white">个人设置</h1>
           {message && <span className={`text-xs ${message.includes('✅') ? 'text-green-400' : 'text-[#992828]'}`}>{message}</span>}
         </div>

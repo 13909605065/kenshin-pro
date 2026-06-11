@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, BookOpen, Database, ArrowLeft } from "lucide-react";
+import { Search, BookOpen, Database } from "lucide-react";
 
 interface Book {
   name: string;
@@ -51,9 +51,6 @@ export default function KnowledgeBasePage() {
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <a href="/" className="text-gray-400 hover:text-white transition">
-            <ArrowLeft className="w-5 h-5" />
-          </a>
           <h1 className="text-xl font-bold text-[#d1d1d1] flex items-center gap-2">
             <Database className="w-5 h-5 text-[#992828]" />
             专业知识库

@@ -712,7 +712,7 @@ export default function MatchPage() {
   if (!state || state.phase === "pre_match") {
     return (
       <div className="min-h-screen bg-[#0d0d0d] pb-10">
-        <div className="sticky top-0 z-10 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-4 py-3">
+        <div className=" px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div>
               <a href="/" className="text-gray-400 hover:text-white text-xs transition-colors">← 返回</a>
@@ -936,7 +936,7 @@ export default function MatchPage() {
 
     return (
       <div className="min-h-screen bg-[#0d0d0d] pb-10">
-        <div className="sticky top-0 z-10 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-4 py-3">
+        <div className=" px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div>
               <a href="/" className="text-gray-400 hover:text-white text-xs transition-colors">← 返回</a>
@@ -1165,7 +1165,7 @@ export default function MatchPage() {
   if (showHalfReport && halfTimeReport && state.phase === "half_time") {
     return (
       <div className="min-h-screen bg-[#0d0d0d] pb-10">
-        <div className="sticky top-0 z-10 bg-[#0d0d0d]/95 backdrop-blur border-b border-[#222] px-4 py-3">
+        <div className=" px-4 py-3">
           <div className="max-w-lg mx-auto flex items-center justify-between">
             <div>
               <h1 className="text-sm font-bold text-white">中场报告</h1>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
+import { Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
 import { notifyChange } from '@/lib/data-events';
 import { MobileNav } from "@/components/MobileNav";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
@@ -645,7 +645,6 @@ export default function LoadPage() {
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
       <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">负荷管理</h1>
         {info && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: info.color + '30', color: '#fff' }}>{info.label}</span>}
         <div className="ml-auto">

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Canvas, Circle, FabricText, FabricImage } from "fabric";
+import { Canvas, Circle, FabricImage } from "fabric";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
 import { ArrowLeft, Menu, Download } from "lucide-react";
@@ -428,6 +428,8 @@ export default function WarmupDesignPage() {
       <div className="flex flex-1 overflow-hidden relative pb-12">
         <EquipmentPalette
           activeTool={activeTool}
+          onToolChange={setActiveTool}
+          onColorChange={setActiveColor}
           onFieldSelect={hField}
           onPlaceEquipment={hPlaceEquipment}
           collapsed={paletteCollapsed}

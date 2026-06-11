@@ -205,6 +205,8 @@ function Chevron({ open }: { open: boolean }) {
 
 interface Props {
   activeTool?: string;
+  onToolChange?: (tool: string) => void;
+  onColorChange?: (color: string) => void;
   onFieldSelect?: (filename: string) => void;
   onPlaceEquipment?: (filename: string, name: string) => void;
   /** External control: when provided, internal collapsed state is ignored */
@@ -212,7 +214,7 @@ interface Props {
   onToggleCollapsed?: () => void;
 }
 
-export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: externalCollapsed, onToggleCollapsed: externalToggle }: Props) {
+export function EquipmentPalette({ onToolChange, onColorChange, onFieldSelect, onPlaceEquipment, collapsed: externalCollapsed, onToggleCollapsed: externalToggle }: Props) {
   const [internalCollapsed, setInternalCollapsed] = useState(false);
 
   // Use external state if provided, otherwise use internal
@@ -488,8 +490,8 @@ export function EquipmentPalette({ onFieldSelect, onPlaceEquipment, collapsed: e
                     }}
                     title={TAC_THEME.accent}
                     onClick={() => {
-                      const toolbarColorBtn = document.querySelector(`[title="${TAC_THEME.accent}"]`) as HTMLButtonElement;
-                      if (toolbarColorBtn) toolbarColorBtn.click();
+                      onColorChange?.(TAC_THEME.accent);
+                      onToolChange?.("place_player");
                     }}
                   >
                     <span className="text-[10px] font-bold" style={{ color: TAC_THEME.accent }}>球员</span>

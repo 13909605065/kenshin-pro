@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, Download, TrendingUp, TrendingDown, Minus, Trash2, Plus, Activity } from "lucide-react";
+import { Upload, Download, TrendingUp, TrendingDown, Minus, Trash2, Plus, Activity } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import type { Position } from "@/lib/types";
@@ -174,7 +174,6 @@ export default function FitnessPage() {
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">体能测试追踪</h1>
       </div>
 

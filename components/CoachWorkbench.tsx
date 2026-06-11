@@ -18,6 +18,7 @@ import { getPhaseParams, getGoalParams } from '@/lib/periodization';
 import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment } from '@/lib/fitness-store';
 import { getAtRiskPlayers, calcACWR, getLoadData, type LoadEntry } from '@/lib/acwr';
 import { calcRecoveryScore, getRecoveryEmoji, type RecoveryInput } from '@/lib/recovery-score';
+import { buildRecoveryInputFromStatus, getPlayerSelfReports, getCoachScores } from '@/lib/player-status';
 
 // ── helpers ──
 const today = new Date();
@@ -424,16 +425,17 @@ export default function CoachWorkbench() {
     return calcACWR(allEntries.slice(0, 28));
   }, []);
 
-  // ── Team recovery score ──
+  // ── Team recovery score (uses player self-report data) ──
   const recoveryScore = useMemo(() => {
+    const statusData = buildRecoveryInputFromStatus();
     const input: RecoveryInput = {
-      lastSessionRPE: null,
+      lastSessionRPE: statusData.lastSessionRPE,
       lastSessionDate: null,
       sleepHours: null,
       sleepQuality: null,
       morningHR: null,
       restingHR: null,
-      muscleSoreness: null,
+      muscleSoreness: statusData.muscleSoreness,
       stressLevel: null,
       acwr: teamACWR?.acwr ?? null,
       hoursSinceLastSession: null };
@@ -485,10 +487,30 @@ export default function CoachWorkbench() {
     const acwrWarnings = relevantPlayers.filter(p => p.status === 'yellow').map(p => p.reason);
     const allDisabled = Array.from(new Set(relevantPlayers.flatMap(p => p.disabledExercises || [])));
     const playerLabel = selectedPlayers.size > 0 ? `已选${selectedPlayers.size}人` : `全队${players.length}人`;
+
+    // 闭环：球员自评数据注入 AI 上下文
+    const todaySelfReports = getPlayerSelfReports();
+    const todayCoachScores = getCoachScores();
+    let selfReportCtx = '';
+    if (todaySelfReports.length > 0) {
+      const highFatigue = todaySelfReports.filter(r => r.fatigue >= 4 || r.soreness >= 4);
+      const avgRPE = Math.round(todaySelfReports.reduce((a, r) => a + r.rpe, 0) / todaySelfReports.length * 10) / 10;
+      selfReportCtx = `球员自评: ${todaySelfReports.length}人已评, 均RPE=${avgRPE}`;
+      if (highFatigue.length > 0) {
+        selfReportCtx += `, 高疲劳/酸痛: ${highFatigue.map(r => r.name).join('、')}`;
+      }
+      if (Object.keys(todayCoachScores).length > 0) {
+        selfReportCtx += `, 教练已评${Object.keys(todayCoachScores).length}人`;
+      }
+    }
+
     return {
       role: 'coach', name: '', gender: 'male', position: null,
       age: null, height: null, weight: null, years: null,
-      injuryHistory: `${playerLabel}: ${injuryList.join('、')} | 禁用动作: ${allDisabled.join(',')} | ACWR预警: ${acwrWarnings.join('; ')}`,
+      injuryHistory: [
+        `${playerLabel}: ${injuryList.join('、')} | 禁用动作: ${allDisabled.join(',')} | ACWR预警: ${acwrWarnings.join('; ')}`,
+        selfReportCtx
+      ].filter(Boolean).join('\n'),
       goal: goal as TrainingGoal, phase,
       injurySites: [], weakness: '',
       coachCert: coachCert as any, coachRole: coachRole as any, leagueTag: leagueTag as any,

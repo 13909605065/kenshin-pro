@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   getPlayers,
+  loadPlayers,
   savePlayers,
   addPlayer,
   updatePlayer,
@@ -27,7 +28,7 @@ import {
   positionBenchmark,
   type FitnessProfile,
 } from "@/lib/fitness-store";
-import { ArrowLeft, Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
+import { Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
 import { calcSupplementLoad, type SupplementResult } from "@/lib/supplement-load";
@@ -74,7 +75,7 @@ export default function RosterPage() {
   const router = useRouter();
   const [players, setPlayers] = useState<PlayerRecord[]>([]);
   useEffect(() => {
-    setPlayers(getPlayers());
+    loadPlayers().then((data) => setPlayers(data));
   }, []);
 
   const refreshPlayers = () => { setPlayers(getPlayers()); };
@@ -299,7 +300,6 @@ export default function RosterPage() {
       )}
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.push("/")} className="text-gray-400 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
         <h1 className="text-white font-bold text-lg">球队花名册</h1>
 
         {/* Team selector */}

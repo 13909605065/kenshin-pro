@@ -121,16 +121,25 @@ function saveLocalPlayers(players: PlayerRecord[]): void {
 
 /* Pull from cloud on first load */
 let cloudPulled = false;
+let pullPromise: Promise<void> | null = null;
 async function pullFromCloud() {
-  if (cloudPulled) return;
+  if (cloudPulled) return pullPromise;
   cloudPulled = true;
-  try {
-    const userId = await getUserId();
-    if (!userId) return;
-    const supabase = createClient();
-    const { data } = await supabase.from("roster_players").select("*").eq("user_id", userId).order("created_at", { ascending: true });
-    if (data?.length) saveLocalPlayers(data.map(mapRowToPlayer));
-  } catch {}
+  pullPromise = (async () => {
+    try {
+      const userId = await getUserId();
+      if (!userId) return;
+      const supabase = createClient();
+      const { data } = await supabase.from("roster_players").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+      if (data?.length) saveLocalPlayers(data.map(mapRowToPlayer));
+    } catch {}
+  })();
+  return pullPromise;
+}
+
+export async function loadPlayers(): Promise<PlayerRecord[]> {
+  await pullFromCloud();
+  return getLocalPlayers();
 }
 
 /** Sync read — localStorage primary for instant UI */

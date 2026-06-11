@@ -4,6 +4,8 @@ import { ErrorCatcher } from "@/components/ErrorCatcher";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { TeamBar } from "@/components/TeamBar";
+import { DesktopNav } from "@/components/DesktopNav";
+import { MobileNav } from "@/components/MobileNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -66,7 +68,9 @@ export default function RootLayout({
         <ErrorCatcher>
           <Providers>
             <TeamBar />
+            <DesktopNav />
             {children}
+            <MobileNav />
           </Providers>
         </ErrorCatcher>
       </body>

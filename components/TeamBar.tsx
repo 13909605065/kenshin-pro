@@ -13,7 +13,7 @@ export function TeamBar() {
 
   return (
     <>
-      <div className="bg-[#121212] border-b border-[#1e1e1e] px-3 py-1.5 flex items-center justify-between">
+      <div className="lg:hidden bg-[#121212] border-b border-[#1e1e1e] px-3 py-1.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-gray-500">球队</span>
           <div className="relative">
