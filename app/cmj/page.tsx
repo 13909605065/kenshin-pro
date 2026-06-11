@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { BackHeader } from "@/components/BackHeader";
 import {
   getCMJRecords, saveCMJRecords, deleteCMJRecord,
   calcCMJBaseline, type CMJRecord,
@@ -115,19 +116,13 @@ export default function CMJPage() {
 
   return (
     <div className="min-h-screen bg-[#111] text-white pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#111]/95 backdrop-blur border-b border-[#222]">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold">CMJ 反向跳</h1>
-            <p className="text-xs text-gray-500">每周一次 · MyJump 2 · 3跳取最佳</p>
-          </div>
-          <button onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold transition">
-            <Plus className="w-3.5 h-3.5" />
-            记录
-          </button>
-        </div>
+      <BackHeader title="CMJ 反向跳" subtitle="每周一次 · MyJump 2 · 3跳取最佳" />
+      <div className="max-w-5xl mx-auto px-4 py-2 flex justify-end">
+        <button onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-[#992828] hover:bg-[#7a1e1e] text-white font-bold transition">
+          <Plus className="w-3.5 h-3.5" />
+          记录
+        </button>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-4">

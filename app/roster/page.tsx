@@ -31,6 +31,7 @@ import {
 import { Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
+import { BackHeader } from "@/components/BackHeader";
 import { calcSupplementLoad, type SupplementResult } from "@/lib/supplement-load";
 
 const POSITION_OPTIONS = [
@@ -298,9 +299,8 @@ export default function RosterPage() {
           {importToast.msg}
         </div>
       )}
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-white font-bold text-lg">球队花名册</h1>
+      <BackHeader title="球队花名册" subtitle={`${players.length}名球员`} backTo="/" />
+      <div className="flex items-center gap-3 mb-6 px-4 max-w-5xl mx-auto">
 
         {/* Team selector */}
         <div className="relative">

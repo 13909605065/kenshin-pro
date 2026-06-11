@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Download, TrendingUp, TrendingDown, Minus, Trash2, Plus, Activity } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { BackHeader } from "@/components/BackHeader";
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import type { Position } from "@/lib/types";
 
@@ -172,10 +173,8 @@ export default function FitnessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] p-4 pb-20">
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-white font-bold text-lg">体能测试追踪</h1>
-      </div>
+    <div className="min-h-screen bg-[#121212] pb-20">
+      <BackHeader title="体能测试追踪" subtitle="12项标准化测试 · 趋势追踪" backTo="/" />
 
       <div className="flex items-center gap-1 bg-[#1a1a1a] rounded-lg p-0.5 w-fit mb-4">
         {(["table","input","trends"] as const).map(v => (

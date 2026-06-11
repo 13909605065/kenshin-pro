@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
 import { notifyChange } from '@/lib/data-events';
 import { MobileNav } from "@/components/MobileNav";
+import { BackHeader } from "@/components/BackHeader";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
 
 const WEEKDAY = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -677,8 +678,8 @@ export default function LoadPage() {
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 pb-20">
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <h1 className="text-white font-bold text-lg">负荷管理</h1>
+      <BackHeader title="负荷管理" subtitle={info ? info.label : "ACWR · TRIMP · GPS"} backTo="/" />
+      <div className="flex items-center gap-3 mb-4 flex-wrap px-4 max-w-5xl mx-auto">
         {info && <span className="text-[10px] px-2 py-0.5 rounded" style={{ backgroundColor: info.color + '30', color: '#fff' }}>{info.label}</span>}
         <div className="ml-auto">
           <GPSImportButton />
