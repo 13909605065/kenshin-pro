@@ -17,8 +17,9 @@ const withPWA = require("next-pwa")({
     { urlPattern: /\/_next\/static\/.*/i, handler: "StaleWhileRevalidate", options: { cacheName: "static-assets", expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 } } },
     // Next.js data (RSC payloads) — Network First, 5min cache
     { urlPattern: /\/_next\/data\/.*/i, handler: "NetworkFirst", options: { cacheName: "next-data", networkTimeoutSeconds: 5, expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 } } },
-    // All app pages — Network First, 1h cache (deploy 后 1 小时内自动刷新)
-    { urlPattern: /\/(exercises|planning|roster|settings|tactics|offline|field|gym|warmup|strength|checkin|match|share|load|login|fitness)\/.*/i, handler: "NetworkFirst", options: { cacheName: "app-pages", networkTimeoutSeconds: 3, expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 } } },
+    // All app pages — Network First, 1h cache (deploy 后自动刷新)
+    // ⚠️ 中国用户访问 Vercel 较慢，networkTimeout 设为 10s 防止缓存误兜底
+    { urlPattern: /\/(exercises|planning|roster|settings|tactics|offline|field|gym|warmup|strength|checkin|match|share|load|login|fitness|cmj|health|status)\/.*/i, handler: "NetworkFirst", options: { cacheName: "app-pages", networkTimeoutSeconds: 10, expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 } } },
     // Images — StaleWhileRevalidate, 7 days
     { urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i, handler: "StaleWhileRevalidate", options: { cacheName: "images", expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 7 } } },
     // Fonts — StaleWhileRevalidate, 30 days
