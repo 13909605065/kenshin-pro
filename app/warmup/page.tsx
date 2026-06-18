@@ -175,12 +175,14 @@ export default function WarmupDesignPage() {
     const cnt = (eqCountRef.current[filename] || 0) + 1;
     eqCountRef.current[filename] = cnt;
 
+    const EQUIP_SIZE = 70;
     const cx = 525 + ((cnt - 1) % 5) * 25;
     const cy = 340 + Math.floor((cnt - 1) / 5) * 25;
 
     if (name === "圆形环" || name === "敏捷环") {
+      const R = EQUIP_SIZE / 2;
       const ring = new Circle({
-        left: cx - 20, top: cy - 20, radius: 20,
+        left: cx - R, top: cy - R, radius: R,
         fill: "transparent", stroke: "#000", strokeWidth: 3,
         selectable: true, evented: true, lockUniScaling: true,
       });
@@ -191,8 +193,11 @@ export default function WarmupDesignPage() {
     }
 
     FabricImage.fromURL(`/equipment/${filename}.png`).then((img) => {
+      const nw = img.width || 200, nh = img.height || 200;
+      const s = EQUIP_SIZE / Math.max(nw, nh);
       img.set({
-        left: cx - 35, top: cy - 35, scaleX: 0.3, scaleY: 0.3,
+        left: cx - (nw * s) / 2, top: cy - (nh * s) / 2,
+        scaleX: s, scaleY: s,
         lockUniScaling: true, selectable: true, evented: true,
       });
       (img as any).name = name;

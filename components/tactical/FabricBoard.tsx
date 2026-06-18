@@ -7,6 +7,8 @@ import { TAC_THEME } from "@/lib/tactical-theme";
 
 const FW = 1050;
 const FH = 680;
+const EQUIPMENT_SIZE = 70;   // uniform display size for all equipment icons
+const SNAP_THRESHOLD = 8;    // px threshold for alignment snap
 
 /**
  * 以画布几何中心为基准缩放，保证上下左右留白完全均等。
@@ -58,6 +60,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const touchCountRef = useRef<number>(0);
   const lastTouchRef = useRef<number>(0);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clipboardRef = useRef<any>(null);              // copy/paste
+  const alignGuidesRef = useRef<any[]>([]);             // alignment snap guides
 
   const debouncedAutoSave = useCallback(() => {
     if (!onCanvasChange) return;
@@ -196,6 +200,111 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
     });
 
+    // ─── Keyboard: Copy / Paste / Delete ───
+    const onKeyDown = (e: KeyboardEvent) => {
+      const active = canvas.getActiveObject();
+      // Don't intercept when editing IText
+      if (active && (active as any).isEditing) return;
+
+      const mod = e.metaKey || e.ctrlKey;
+
+      // Ctrl/Cmd + C: Copy
+      if (mod && e.key === "c" && active) {
+        e.preventDefault();
+        (active as any).clone().then((cloned: any) => {
+          clipboardRef.current = cloned;
+        });
+        return;
+      }
+
+      // Ctrl/Cmd + V: Paste
+      if (mod && e.key === "v" && clipboardRef.current) {
+        e.preventDefault();
+        (clipboardRef.current as any).clone().then((cloned: any) => {
+          cloned.set({ left: (cloned.left || 0) + 30, top: (cloned.top || 0) + 30 });
+          canvas.add(cloned);
+          canvas.setActiveObject(cloned);
+          canvas.requestRenderAll();
+          save(); debouncedAutoSave();
+        });
+        return;
+      }
+
+      // Delete / Backspace: Remove selected
+      if ((e.key === "Delete" || e.key === "Backspace") && active) {
+        e.preventDefault();
+        canvas.remove(active);
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+        save(); debouncedAutoSave();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    // ─── Snap-to-guide: horizontal & vertical alignment ───
+    const clearGuides = () => {
+      alignGuidesRef.current.forEach(g => canvas.remove(g));
+      alignGuidesRef.current = [];
+    };
+
+    canvas.on("object:moving", (opt: any) => {
+      const obj = opt.target;
+      if (!obj || obj._isFieldBg) { clearGuides(); return; }
+      clearGuides();
+
+      const objCenter = obj.getCenterPoint();
+      const others = canvas.getObjects().filter((o: any) =>
+        o !== obj && !o._isFieldBg && !o._isRouteArrow
+      );
+
+      let snappedY: number | null = null;
+      let snappedX: number | null = null;
+
+      for (const other of others) {
+        const oc = other.getCenterPoint();
+        // Horizontal alignment (center Y)
+        if (snappedY === null && Math.abs(objCenter.y - oc.y) < SNAP_THRESHOLD) {
+          snappedY = oc.y;
+        }
+        // Vertical alignment (center X)
+        if (snappedX === null && Math.abs(objCenter.x - oc.x) < SNAP_THRESHOLD) {
+          snappedX = oc.x;
+        }
+        if (snappedY !== null && snappedX !== null) break;
+      }
+
+      if (snappedY !== null) {
+        const dy = snappedY - objCenter.y;
+        obj.set({ top: (obj.top || 0) + dy });
+        // Draw horizontal guide line
+        const guide = new Line(
+          [0, snappedY, FW, snappedY],
+          { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
+            selectable: false, evented: false, opacity: 0.7 }
+        );
+        canvas.add(guide);
+        alignGuidesRef.current.push(guide);
+      }
+
+      if (snappedX !== null) {
+        const dx = snappedX - objCenter.x;
+        obj.set({ left: (obj.left || 0) + dx });
+        // Draw vertical guide line
+        const guide = new Line(
+          [snappedX, 0, snappedX, FH],
+          { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
+            selectable: false, evented: false, opacity: 0.7 }
+        );
+        canvas.add(guide);
+        alignGuidesRef.current.push(guide);
+      }
+
+      canvas.requestRenderAll();
+    });
+
+    canvas.on("object:modified", () => clearGuides());
+    canvas.on("selection:cleared", () => clearGuides());
+
     // Default: vector field with dark muted green grass
     drawVectorField(canvas);
 
@@ -233,12 +342,13 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         return;
       }
 
-      // Handle wall (人墙) — load PNG with lockUniScaling
-      // Handle cones (标志盘) — load PNG with lockUniScaling
+      // Handle wall (人墙) / cones (标志盘) / all equipment — uniform size
       FabricImage.fromURL(src).then((img) => {
+        const nw = img.width || 200, nh = img.height || 200;
+        const s = EQUIPMENT_SIZE / Math.max(nw, nh);
         img.set({
-          left: x - 35, top: y - 35,
-          scaleX: 0.3, scaleY: 0.3,
+          left: x - (nw * s) / 2, top: y - (nh * s) / 2,
+          scaleX: s, scaleY: s,
           lockUniScaling: true,
           selectable: true,
           evented: true,
@@ -264,6 +374,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     ro.observe(container);
 
     return () => {
+      window.removeEventListener("keydown", onKeyDown);
       ro.disconnect();
       container.removeEventListener("drop", onDrop);
       el.removeEventListener("touchstart", onTouchStart);
