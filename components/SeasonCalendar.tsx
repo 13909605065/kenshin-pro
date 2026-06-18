@@ -513,30 +513,39 @@ export default function SeasonCalendar() {
     return eventsByDate[d] || [];
   }, [eventsByDate]);
 
-  // ── Batch planning ──
-  const handleBatchPlan = useCallback(() => {
-    if (!batchStartDate || !batchEndDate) return;
+  // ── Sequential phase planning: phases cascade, start = previous phase end + 1 day ──
+  const phaseOrder: PhaseType[] = ['offseason', 'preseason_build', 'regular_season', 'playoffs'];
+
+  const handleSequentialPlan = useCallback(() => {
     updateData(prev => {
-      const newRange: PhaseRange = {
-        id: genId(),
-        startDate: batchStartDate,
-        endDate: batchEndDate,
-        phase: batchPhase,
-        notes: batchNotes || PHASE_CONFIG[batchPhase].label };
-
-      // Remove overlapping ranges of same phase
-      const ranges = prev.phaseRanges.filter(
-        r => !(r.phase === batchPhase && r.startDate >= batchStartDate && r.endDate <= batchEndDate)
+      const newRanges: PhaseRange[] = [];
+      let cursor = batchStartDate || prev.seasonStart;
+      for (const phase of phaseOrder) {
+        const existingEnd = (document.getElementById(`phase-end-${phase}`) as HTMLInputElement)?.value;
+        const endDate = existingEnd || cursor; // fallback to cursor if not set
+        if (endDate && endDate >= cursor) {
+          // Remove old range for this phase, add new one
+          newRanges.push({
+            id: genId(),
+            startDate: cursor,
+            endDate: endDate,
+            phase,
+            notes: PHASE_CONFIG[phase].label,
+          });
+          // Next phase starts the day after this one ends
+          const d = parseDate(endDate);
+          d.setDate(d.getDate() + 1);
+          cursor = dateStr(d);
+        }
+      }
+      // Keep ranges for phases not in the sequential plan (shouldn't exist, but be safe)
+      const otherRanges = prev.phaseRanges.filter(
+        r => !phaseOrder.includes(r.phase)
       );
-
-      return { ...prev, phaseRanges: [...ranges, newRange] };
+      return { ...prev, phaseRanges: [...otherRanges, ...newRanges] };
     });
-    // Clear inputs after apply so next phase starts fresh
-    setBatchStartDate('');
-    setBatchEndDate('');
-    setBatchNotes('');
     setShowBatchPanel(false);
-  }, [updateData, batchPhase, batchStartDate, batchEndDate, batchNotes]);
+  }, [updateData, batchStartDate, phaseOrder]);
 
   // ── Export JSON ──
   const handleExport = useCallback(() => {
@@ -842,67 +851,57 @@ export default function SeasonCalendar() {
             </div>
           )}
 
-          {/* ══ BATCH PLANNING PANEL ══ */}
+          {/* ══ SEQUENTIAL PHASE PLANNING ══ */}
           {showBatchPanel && (
             <div className="px-4 py-3 border-b border-[#222] bg-[#0a0a0a] space-y-3">
-              <span className="text-[10px] text-gray-500 font-medium">批量规划 — 选择日期范围并指定阶段类型</span>
-              <div className="flex flex-wrap items-start gap-4">
-                {/* Date inputs */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={batchStartDate}
-                    onChange={e => setBatchStartDate(e.target.value)}
-                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#555]"
-                  />
-                  <span className="text-[10px] text-gray-600">至</span>
-                  <input
-                    type="date"
-                    value={batchEndDate}
-                    onChange={e => setBatchEndDate(e.target.value)}
-                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#555]"
-                  />
-                </div>
-
-                {/* Phase buttons — vertical */}
-                <div className="flex flex-col gap-1">
-                  {(Object.entries(PHASE_CONFIG) as [PhaseType, typeof PHASE_CONFIG[PhaseType]][]).map(([key, cfg]) => (
-                    <button
-                      key={key}
-                      onClick={() => setBatchPhase(key)}
-                      className={`px-2.5 py-1 rounded text-[10px] text-left transition border ${
-                        batchPhase === key
-                          ? 'text-white'
-                          : 'border-[#222] text-gray-500 hover:text-gray-300 hover:border-[#333]'
-                      }`}
-                      style={batchPhase === key ? {
-                        backgroundColor: `${PHASE_COLORS[key]}40`,
-                        borderColor: `${PHASE_COLORS[key]}80` } : { backgroundColor: '#111' }}
-                    >
-                      <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: PHASE_COLORS[key] }} />
-                      {cfg.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Notes + Apply */}
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    value={batchNotes}
-                    onChange={e => setBatchNotes(e.target.value)}
-                    placeholder="备注（可选）"
-                    className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-gray-300 placeholder-gray-600 w-40 focus:outline-none focus:border-[#555]"
-                  />
-                  <button
-                    onClick={handleBatchPlan}
-                    disabled={!batchStartDate || !batchEndDate}
-                    className="px-3 py-1 bg-[#992828] hover:bg-[#7a1e1e] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
-                  >
-                    应用
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-gray-500 font-medium">阶段规划 — 设置每个阶段的结束日期，下阶段自动接续</span>
+                <span className="text-[9px] text-gray-600">赛季从 <input type="date" value={batchStartDate} onChange={e => setBatchStartDate(e.target.value)}
+                  className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555] w-[130px] inline" /> 开始</span>
               </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {phaseOrder.map((phase, i) => {
+                  const cfg = PHASE_CONFIG[phase];
+                  // Calculate start date from previous phase or season start
+                  let startHint = batchStartDate || data.seasonStart;
+                  if (i > 0) {
+                    // Try to read previous phase's input
+                    const prevInput = document.getElementById(`phase-end-${phaseOrder[i-1]}`) as HTMLInputElement;
+                    if (prevInput?.value) {
+                      const d = parseDate(prevInput.value);
+                      d.setDate(d.getDate() + 1);
+                      startHint = dateStr(d);
+                    }
+                  }
+                  const existingRange = data.phaseRanges.find(r => r.phase === phase);
+                  const defaultEnd = existingRange?.endDate || startHint;
+                  return (
+                    <div key={phase} className="flex flex-col gap-1 p-2 rounded border border-[#222] bg-[#111]">
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[phase] }} />
+                        <span className="text-[10px] font-medium text-gray-300">{cfg.label}</span>
+                      </div>
+                      <span className="text-[8px] text-gray-600">开始: {startHint}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-500">结束:</span>
+                        <input
+                          id={`phase-end-${phase}`}
+                          type="date"
+                          defaultValue={defaultEnd}
+                          className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555] flex-1"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                onClick={handleSequentialPlan}
+                disabled={!batchStartDate}
+                className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
+              >
+                全部应用
+              </button>
             </div>
           )}
 
