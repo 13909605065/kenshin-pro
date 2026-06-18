@@ -162,63 +162,48 @@ async function pullAllKVFromCloud(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 let lastSyncTime = 0;
-const SYNC_COOLDOWN = 3000; // 3s cooldown between syncs
+const SYNC_COOLDOWN = 5000;
 
-/** Call on every page load AND on window focus. Pulls ALL data from Supabase → localStorage. */
+/** Called on every page load + window focus. Pull from cloud, push local → cloud. */
 export async function initTeamSync(): Promise<void> {
   if (!isBrowser) return;
   const now = Date.now();
-  if (now - lastSyncTime < SYNC_COOLDOWN) return; // dedup rapid calls
+  if (now - lastSyncTime < SYNC_COOLDOWN) return;
   lastSyncTime = now;
 
-  console.log("[sync] initTeamSync: pulling all data from Supabase…");
+  // Step 1: Pull ALL KV from cloud (won't overwrite if cloud is empty)
+  await pullAllKVFromCloud();
 
-  // Pull all KV data first (covers all team-scoped + global data)
-  const kvCount = await pullAllKVFromCloud();
-  console.log("[sync] pulled KV keys:", kvCount);
-
+  // Step 2: Pull teams & active team
   const [teamsPulled, activePulled] = await Promise.all([
     pullTeamsFromCloud(),
     pullActiveTeamFromCloud(),
   ]);
-  console.log("[sync] teams pulled:", teamsPulled, "active pulled:", activePulled);
 
-  // If cloud has no teams but localStorage does, migrate local → cloud
+  // Step 3: Always push local → cloud (fills any gaps)
   if (!teamsPulled) {
     const localTeams = getTeams();
-    if (localTeams.length > 0) {
-      await pushTeamsToCloud(localTeams);
-      console.log("[sync] migrated teams → cloud:", localTeams.length);
-    }
+    if (localTeams.length > 0) await pushTeamsToCloud(localTeams);
   }
-
   if (!activePulled) {
     const localActive = localStorage.getItem(ACTIVE_TEAM_KEY);
-    if (localActive) {
-      await pushActiveTeamToCloud(localActive);
-      console.log("[sync] migrated active_team → cloud:", localActive);
-    }
+    if (localActive) await pushActiveTeamToCloud(localActive);
   }
-
-  // Migrate any local-only data to cloud
   await migrateLocalToCloud();
-  console.log("[sync] migrateLocalToCloud done");
 
-  // Validate: active team exists in teams list
+  // Step 4: Ensure active team is valid
   const teams = getTeams();
   const activeId = getActiveTeamId();
   if (teams.length > 0 && !teams.find(t => t.id === activeId)) {
     setActiveTeamId(teams[0].id);
-    console.log("[sync] fixed active team:", teams[0].id);
   }
-
-  console.log("[sync] initTeamSync complete");
 }
 
 /** Push any localStorage-only keys that aren't yet in Supabase. */
 async function migrateLocalToCloud() {
   if (!isBrowser) return;
-  // Push all known global keys
+
+  // Push ALL global keys we know about
   const globalKeys = [
     "kenshin_season_calendar",
     "kenshin_role", "kenshin_scene", "kenshin_theme", "kenshin_lang",
@@ -234,27 +219,37 @@ async function migrateLocalToCloud() {
     if (val) await pushKV(key, val);
   }
 
-  // Push team-scoped keys for ALL known teams (not just active)
-  const teams = getTeams();
-  const teamIds = teams.map(t => t.id);
-  // Also include active team (which might be from a different source)
-  const activeId = getActiveTeamId();
-  if (!teamIds.includes(activeId)) teamIds.push(activeId);
-
-  const teamKeys = [
+  // Discover ALL team IDs by scanning localStorage keys
+  const discoveredTeamIds = new Set<string>();
+  const teamBases = [
     "roster_players", "kenshin_fitness_profiles", "kenshin_history",
     "kenshin_cached_modules", "kenshin_load_data", "kenshin_training_logs",
     "kenshin_gps_data", "kenshin_pr_data", "kenshin_motivation",
   ];
 
-  for (const tid of teamIds) {
-    for (const base of teamKeys) {
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k) continue;
+    for (const base of teamBases) {
+      if (k.startsWith(base + "_")) {
+        const tid = k.slice(base.length + 1);
+        if (tid) discoveredTeamIds.add(tid);
+      }
+    }
+  }
+
+  // Also include known team IDs from teams list + active
+  const teams = getTeams();
+  for (const t of teams) discoveredTeamIds.add(t.id);
+  const activeId = getActiveTeamId();
+  if (activeId && activeId !== "_server_") discoveredTeamIds.add(activeId);
+
+  // Push ALL discovered team-scoped data
+  for (const tid of Array.from(discoveredTeamIds)) {
+    for (const base of teamBases) {
       const key = `${base}_${tid}`;
       const val = localStorage.getItem(key);
-      if (val) {
-        await pushKV(key, val);
-        console.log("[sync] migrated team key:", key);
-      }
+      if (val) await pushKV(key, val);
     }
   }
 }
