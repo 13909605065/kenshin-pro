@@ -162,6 +162,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     // Expose centered zoom API for external callers (warmup page, toolbar)
     (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
     (canvas as any)._getZoom = () => canvas.getZoom();
+    (canvas as any)._ensureFieldMarked = () => ensureFieldMarked();
     // Notify parent that canvas is ready (for pending auto-save restore etc.)
     onCanvasReady?.(canvas);
 
@@ -175,9 +176,22 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       historyIdx = history.length - 1;
       onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1);
     };
+    /** Re-mark the field group after JSON restore (custom props like _isFieldBg are lost) */
+    const ensureFieldMarked = () => {
+      const all = canvas.getObjects();
+      for (const o of all) {
+        if ((o as any).lockMovementX && (o as any).type === "group") {
+          (o as any)._isFieldBg = true;
+        }
+      }
+    };
     const load = (json: string) => {
       restoring = true;
-      canvas.loadFromJSON(JSON.parse(json)).then(() => { restoring = false; canvas.requestRenderAll(); });
+      canvas.loadFromJSON(JSON.parse(json)).then(() => {
+        ensureFieldMarked();
+        restoring = false;
+        canvas.requestRenderAll();
+      });
     };
     (canvas as any)._undo = () => { if (historyIdx <= 0) return; historyIdx--; load(history[historyIdx]); onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1); };
     (canvas as any)._redo = () => { if (historyIdx >= history.length - 1) return; historyIdx++; load(history[historyIdx]); onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1); };
@@ -894,7 +908,12 @@ export function drawVectorField(canvas: Canvas) {
     items.push(arc);
   });
 
-  const field = new Group(items, { left: 0, top: 0, selectable: false, evented: false });
+  const field = new Group(items, {
+    left: 0, top: 0,
+    selectable: false, evented: false,
+    lockMovementX: true, lockMovementY: true,
+    lockRotation: true, lockScalingX: true, lockScalingY: true,
+  });
   (field as any)._isFieldBg = true;
 
   const others = canvas.getObjects().filter((o: any) => !o._isFieldBg);

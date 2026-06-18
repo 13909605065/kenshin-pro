@@ -74,6 +74,8 @@ export default function WarmupDesignPage() {
   const doRestore = useCallback((c: Canvas, jsonStr: string) => {
     try {
       c.loadFromJSON(JSON.parse(jsonStr)).then(() => {
+        // Re-mark field objects (custom _isFieldBg is lost in serialization)
+        (c as any)._ensureFieldMarked?.();
         c.requestRenderAll();
         setAutoSaveTs(null);
         localStorage.removeItem(AUTOSAVE_KEY);
