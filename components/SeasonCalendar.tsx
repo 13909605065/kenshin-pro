@@ -513,39 +513,33 @@ export default function SeasonCalendar() {
     return eventsByDate[d] || [];
   }, [eventsByDate]);
 
-  // ── Sequential phase planning: phases cascade, start = previous phase end + 1 day ──
+  // ── Batch phase planning: each phase has independent start + end dates ──
   const phaseOrder: PhaseType[] = ['offseason', 'preseason_build', 'regular_season', 'playoffs'];
 
-  const handleSequentialPlan = useCallback(() => {
+  const handleBatchPlan = useCallback(() => {
     updateData(prev => {
       const newRanges: PhaseRange[] = [];
-      let cursor = batchStartDate || prev.seasonStart;
       for (const phase of phaseOrder) {
-        const existingEnd = (document.getElementById(`phase-end-${phase}`) as HTMLInputElement)?.value;
-        const endDate = existingEnd || cursor; // fallback to cursor if not set
-        if (endDate && endDate >= cursor) {
-          // Remove old range for this phase, add new one
+        const startEl = document.getElementById(`phase-start-${phase}`) as HTMLInputElement;
+        const endEl = document.getElementById(`phase-end-${phase}`) as HTMLInputElement;
+        const startDate = startEl?.value;
+        const endDate = endEl?.value;
+        if (startDate && endDate && endDate >= startDate) {
           newRanges.push({
             id: genId(),
-            startDate: cursor,
-            endDate: endDate,
+            startDate,
+            endDate,
             phase,
             notes: PHASE_CONFIG[phase].label,
           });
-          // Next phase starts the day after this one ends
-          const d = parseDate(endDate);
-          d.setDate(d.getDate() + 1);
-          cursor = dateStr(d);
         }
       }
-      // Keep ranges for phases not in the sequential plan (shouldn't exist, but be safe)
-      const otherRanges = prev.phaseRanges.filter(
-        r => !phaseOrder.includes(r.phase)
-      );
+      // Remove old ranges for the 4 phases, keep any others
+      const otherRanges = prev.phaseRanges.filter(r => !phaseOrder.includes(r.phase));
       return { ...prev, phaseRanges: [...otherRanges, ...newRanges] };
     });
     setShowBatchPanel(false);
-  }, [updateData, batchStartDate, phaseOrder]);
+  }, [updateData, phaseOrder]);
 
   // ── Export JSON ──
   const handleExport = useCallback(() => {
@@ -851,54 +845,42 @@ export default function SeasonCalendar() {
             </div>
           )}
 
-          {/* ══ SEQUENTIAL PHASE PLANNING ══ */}
+          {/* ══ BATCH PHASE PLANNING ══ */}
           {showBatchPanel && (
             <div className="px-4 py-3 border-b border-[#222] bg-[#0a0a0a] space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-medium">阶段规划 — 设置每个阶段的结束日期，下阶段自动接续</span>
-                <span className="text-[9px] text-gray-600">赛季从 <input type="date" value={batchStartDate} onChange={e => setBatchStartDate(e.target.value)}
-                  className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555] w-[130px] inline" /> 开始</span>
-              </div>
+              <span className="text-[10px] text-gray-500 font-medium">阶段规划 — 四个阶段独立设置开始和结束日期</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {phaseOrder.map((phase, i) => {
+                {phaseOrder.map(phase => {
                   const cfg = PHASE_CONFIG[phase];
-                  // Calculate start date from previous phase or season start
-                  let startHint = batchStartDate || data.seasonStart;
-                  if (i > 0) {
-                    // Try to read previous phase's input
-                    const prevInput = document.getElementById(`phase-end-${phaseOrder[i-1]}`) as HTMLInputElement;
-                    if (prevInput?.value) {
-                      const d = parseDate(prevInput.value);
-                      d.setDate(d.getDate() + 1);
-                      startHint = dateStr(d);
-                    }
-                  }
                   const existingRange = data.phaseRanges.find(r => r.phase === phase);
-                  const defaultEnd = existingRange?.endDate || startHint;
                   return (
                     <div key={phase} className="flex flex-col gap-1 p-2 rounded border border-[#222] bg-[#111]">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 mb-1">
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PHASE_COLORS[phase] }} />
                         <span className="text-[10px] font-medium text-gray-300">{cfg.label}</span>
                       </div>
-                      <span className="text-[8px] text-gray-600">开始: {startHint}</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[9px] text-gray-500">结束:</span>
-                        <input
-                          id={`phase-end-${phase}`}
-                          type="date"
-                          defaultValue={defaultEnd}
-                          className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555] flex-1"
-                        />
-                      </div>
+                      <input
+                        id={`phase-start-${phase}`}
+                        type="date"
+                        defaultValue={existingRange?.startDate || data.seasonStart}
+                        placeholder="开始"
+                        className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555]"
+                      />
+                      <span className="text-[8px] text-gray-600 text-center">至</span>
+                      <input
+                        id={`phase-end-${phase}`}
+                        type="date"
+                        defaultValue={existingRange?.endDate || data.seasonEnd}
+                        placeholder="结束"
+                        className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555]"
+                      />
                     </div>
                   );
                 })}
               </div>
               <button
-                onClick={handleSequentialPlan}
-                disabled={!batchStartDate}
-                className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded text-[10px] font-bold transition"
+                onClick={handleBatchPlan}
+                className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded text-[10px] font-bold transition"
               >
                 全部应用
               </button>
