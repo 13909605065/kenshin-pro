@@ -68,30 +68,8 @@ export default function WarmupDesignPage() {
     return () => window.removeEventListener("beforeunload", onUnload);
   }, []);
 
-  // Pending restore: canvas may not be ready when user clicks "继续"
-  const pendingRestoreRef = useRef<string | null>(null);
-
-  const doRestore = useCallback((c: Canvas, jsonStr: string) => {
-    try {
-      const obj = JSON.parse(jsonStr);
-      if (!obj || !obj.objects) {
-        console.warn("[warmup] restore: invalid JSON, clearing autosave");
-        localStorage.removeItem(AUTOSAVE_KEY);
-        setAutoSaveTs(null);
-        return;
-      }
-      console.log("[warmup] restore: loading", obj.objects.length, "objects");
-      // Use callback-based API (more reliable in Fabric 6.x)
-      c.loadFromJSON(obj, () => {
-        (c as any)._ensureFieldMarked?.();
-        c.requestRenderAll();
-        console.log("[warmup] restore: done");
-        setAutoSaveTs(null);
-        localStorage.removeItem(AUTOSAVE_KEY);
-        pendingRestoreRef.current = null;
-      });
-    } catch (e) { console.warn("[warmup] doRestore error:", e); }
-  }, []);
+  // Auto-save restore: pass JSON as prop to FabricBoard so it restores after canvas init
+  const [restoreJSON, setRestoreJSON] = useState<string | null>(null);
 
   const restoreAutoSave = useCallback(() => {
     try {
@@ -101,32 +79,48 @@ export default function WarmupDesignPage() {
       const jsonStr = data.json;
       if (!jsonStr) { setAutoSaveTs(null); return; }
 
-      const c = boardRef.current;
-      if (!c) {
-        // Canvas not ready yet — store for later
-        pendingRestoreRef.current = jsonStr;
+      // Validate it's a real canvas JSON
+      const obj = JSON.parse(jsonStr);
+      if (!obj || !obj.objects) {
+        localStorage.removeItem(AUTOSAVE_KEY);
         setAutoSaveTs(null);
         return;
       }
-      doRestore(c, jsonStr);
-    } catch (e) { console.warn("[warmup] restoreAutoSave error:", e); }
-  }, [doRestore]);
 
-  // FabricBoard calls this when canvas is fully initialized
+      // Set restore data — FabricBoard will apply it when canvas is ready
+      setRestoreJSON(jsonStr);
+      setAutoSaveTs(null);
+      localStorage.removeItem(AUTOSAVE_KEY);
+    } catch (e) { setAutoSaveTs(null); }
+  }, []);
+
+  // Use state to track canvas readiness (ref changes don't trigger re-renders)
+  const [canvasReady, setCanvasReady] = useState(false);
+
   const onCanvasReady = useCallback((c: Canvas) => {
     boardRef.current = c;
-    // If there's a pending restore, apply it now
-    if (pendingRestoreRef.current) {
-      const jsonStr = pendingRestoreRef.current;
-      pendingRestoreRef.current = null;
-      doRestore(c, jsonStr);
-    }
-  }, [doRestore]);
+    setCanvasReady(true);
+  }, []);
+
+  // Apply restore when both canvas is ready AND restoreJSON is set
+  useEffect(() => {
+    if (!canvasReady || !restoreJSON || !boardRef.current) return;
+    const c = boardRef.current;
+    const jsonStr = restoreJSON;
+    setRestoreJSON(null);
+    try {
+      const obj = JSON.parse(jsonStr);
+      c.loadFromJSON(obj, () => {
+        (c as any)._ensureFieldMarked?.();
+        c.requestRenderAll();
+      });
+    } catch (e) { console.warn("[warmup] restore failed:", e); }
+  }, [restoreJSON, canvasReady]);
 
   const dismissAutoSave = () => {
     localStorage.removeItem(AUTOSAVE_KEY);
     setAutoSaveTs(null);
-    pendingRestoreRef.current = null;
+    setRestoreJSON(null);
   };
 
   // ─── Canvas callbacks ───────────────────────────────────
@@ -228,14 +222,16 @@ export default function WarmupDesignPage() {
   };
   // ─── Equipment placement ────────────────────────────────
   const eqCountRef = useRef<Record<string, number>>({});
+  const lastTapRef = useRef<{ x: number; y: number }>({ x: 525, y: 340 });
   const hPlaceEquipment = useCallback((filename: string, name: string) => {
     const c = boardRef.current; if (!c) return;
     const cnt = (eqCountRef.current[filename] || 0) + 1;
     eqCountRef.current[filename] = cnt;
 
     const EQUIP_SIZE = 70;
-    const cx = 525 + ((cnt - 1) % 5) * 25;
-    const cy = 340 + Math.floor((cnt - 1) / 5) * 25;
+    // Use last tap position for placement (works for both click and drag)
+    const cx = lastTapRef.current.x + ((cnt - 1) % 3) * 30;
+    const cy = lastTapRef.current.y + Math.floor((cnt - 1) / 3) * 30;
 
     if (name === "圆形环" || name === "敏捷环") {
       const R = EQUIP_SIZE / 2;
@@ -304,7 +300,7 @@ export default function WarmupDesignPage() {
   const selName = selObj ? ((selObj as any).name || ((selObj as any)._isPlayer ? `球员#${(selObj as any).number}` : null)) : null;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: TAC_THEME.bg }}>
+    <div className="flex flex-col overflow-hidden" style={{ backgroundColor: TAC_THEME.bg, height: '100dvh', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {/* ─── Auto-save restore prompt ─── */}
       {autoSaveTs && (
         <div className="flex-shrink-0 px-3 py-2 flex items-center gap-3 text-xs"
