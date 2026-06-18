@@ -61,7 +61,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const touchCountRef = useRef<number>(0);
   const lastTouchRef = useRef<number>(0);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clipcanvasRef = useRef<any>(null);              // copy/paste
+  const clipboardRef = useRef<any>(null);              // copy/paste
   const alignGuidesRef = useRef<any[]>([]);             // alignment snap guides
 
   const debouncedAutoSave = useCallback(() => {
@@ -215,20 +215,22 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (mod && e.key === "c" && active) {
         e.preventDefault();
         (active as any).clone().then((cloned: any) => {
-          clipcanvasRef.current = cloned;
+          clipboardRef.current = cloned;
         });
         return;
       }
 
-      // Ctrl/Cmd + V: Paste
-      if (mod && e.key === "v" && clipcanvasRef.current) {
+      // Ctrl/Cmd + V: Paste (continuous — each paste offsets from the last)
+      if (mod && e.key === "v" && clipboardRef.current) {
         e.preventDefault();
-        (clipcanvasRef.current as any).clone().then((cloned: any) => {
-          cloned.set({ left: (cloned.left || 0) + 30, top: (cloned.top || 0) + 30 });
+        (clipboardRef.current as any).clone().then((cloned: any) => {
+          cloned.set({ left: (cloned.left || 0) + 35, top: (cloned.top || 0) + 35 });
           canvas.add(cloned);
           canvas.setActiveObject(cloned);
           canvas.requestRenderAll();
           save(); debouncedAutoSave();
+          // Update clipboard to the new copy → next paste offsets from here
+          (cloned as any).clone().then((next: any) => { clipboardRef.current = next; });
         });
         return;
       }
@@ -388,7 +390,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
 
       // ── Apply snaps & draw guides (magnetic pull, not hard lock) ──
-      const SNAP_STRENGTH = 0.55; // pull 55% toward guide per frame — strong hint, easy to break free
+      const SNAP_STRENGTH = 0.35; // gentle 35% pull — aligns without locking either axis
       if (snappedY !== null) {
         const dy = snappedY - objCenter.y;
         obj.set({ top: (obj.top || 0) + dy * SNAP_STRENGTH });
