@@ -238,6 +238,48 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         canvas.requestRenderAll();
         save(); debouncedAutoSave();
       }
+
+      // Ctrl+Shift+H: Distribute selected objects horizontally (equal spacing)
+      if (mod && e.shiftKey && e.key === "H") {
+        e.preventDefault();
+        const sel = canvas.getActiveObject();
+        if (sel && (sel as any)._objects) {
+          const items = [...(sel as any)._objects].filter((o: any) => !o._isFieldBg);
+          if (items.length >= 2) {
+            items.sort((a: any, b: any) => (a.getCenterPoint().x) - (b.getCenterPoint().x));
+            const first = items[0].getCenterPoint().x;
+            const last = items[items.length - 1].getCenterPoint().x;
+            const step = (last - first) / (items.length - 1);
+            items.slice(1, -1).forEach((o: any, i: number) => {
+              const targetX = first + step * (i + 1);
+              o.set({ left: targetX - (o.getBoundingRect().width / 2) });
+            });
+            canvas.requestRenderAll();
+            save(); debouncedAutoSave();
+          }
+        }
+      }
+
+      // Ctrl+Shift+V: Distribute selected objects vertically (equal spacing)
+      if (mod && e.shiftKey && e.key === "V") {
+        e.preventDefault();
+        const sel = canvas.getActiveObject();
+        if (sel && (sel as any)._objects) {
+          const items = [...(sel as any)._objects].filter((o: any) => !o._isFieldBg);
+          if (items.length >= 2) {
+            items.sort((a: any, b: any) => (a.getCenterPoint().y) - (b.getCenterPoint().y));
+            const first = items[0].getCenterPoint().y;
+            const last = items[items.length - 1].getCenterPoint().y;
+            const step = (last - first) / (items.length - 1);
+            items.slice(1, -1).forEach((o: any, i: number) => {
+              const targetY = first + step * (i + 1);
+              o.set({ top: targetY - (o.getBoundingRect().height / 2) });
+            });
+            canvas.requestRenderAll();
+            save(); debouncedAutoSave();
+          }
+        }
+      }
     };
     window.addEventListener("keydown", onKeyDown);
 
@@ -253,30 +295,99 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       clearGuides();
 
       const objCenter = obj.getCenterPoint();
+      const objBounds = obj.getBoundingRect();
       const others = canvas.getObjects().filter((o: any) =>
-        o !== obj && !o._isFieldBg && !o._isRouteArrow
+        o !== obj && !o._isFieldBg && !o._isRouteArrow && !o._isRoute
       );
 
       let snappedY: number | null = null;
       let snappedX: number | null = null;
 
+      // ── Collect centers & edges for all other objects ──
+      const centers: { x: number; y: number }[] = [];
+      const leftEdges: number[] = [];
+      const rightEdges: number[] = [];
+      const topEdges: number[] = [];
+      const bottomEdges: number[] = [];
+
       for (const other of others) {
         const oc = other.getCenterPoint();
-        // Horizontal alignment (center Y)
-        if (snappedY === null && Math.abs(objCenter.y - oc.y) < SNAP_THRESHOLD) {
-          snappedY = oc.y;
-        }
-        // Vertical alignment (center X)
-        if (snappedX === null && Math.abs(objCenter.x - oc.x) < SNAP_THRESHOLD) {
-          snappedX = oc.x;
-        }
+        centers.push(oc);
+        const ob = other.getBoundingRect();
+        leftEdges.push(ob.left);
+        rightEdges.push(ob.left + ob.width);
+        topEdges.push(ob.top);
+        bottomEdges.push(ob.top + ob.height);
+      }
+
+      // ── 1. Center alignment (horizontal / vertical) ──
+      for (const oc of centers) {
+        if (snappedY === null && Math.abs(objCenter.y - oc.y) < SNAP_THRESHOLD) snappedY = oc.y;
+        if (snappedX === null && Math.abs(objCenter.x - oc.x) < SNAP_THRESHOLD) snappedX = oc.x;
         if (snappedY !== null && snappedX !== null) break;
       }
 
+      // ── 2. Edge alignment ──
+      const objL = objBounds.left, objR = objBounds.left + objBounds.width;
+      const objT = objBounds.top, objB = objBounds.top + objBounds.height;
+
+      if (snappedX === null) {
+        for (const le of leftEdges) {
+          if (Math.abs(objL - le) < SNAP_THRESHOLD) { snappedX = le + (objR - objL) / 2; break; }
+        }
+      }
+      if (snappedX === null) {
+        for (const re of rightEdges) {
+          if (Math.abs(objR - re) < SNAP_THRESHOLD) { snappedX = re - (objR - objL) / 2; break; }
+        }
+      }
+      if (snappedY === null) {
+        for (const te of topEdges) {
+          if (Math.abs(objT - te) < SNAP_THRESHOLD) { snappedY = te + (objB - objT) / 2; break; }
+        }
+      }
+      if (snappedY === null) {
+        for (const be of bottomEdges) {
+          if (Math.abs(objB - be) < SNAP_THRESHOLD) { snappedY = be - (objB - objT) / 2; break; }
+        }
+      }
+
+      // ── 3. Equal spacing: snap to midpoint between two neighbors ──
+      if (snappedX === null && centers.length >= 2) {
+        // Find nearest center to the left and right
+        let leftNeighbor: { x: number; y: number } | null = null;
+        let rightNeighbor: { x: number; y: number } | null = null;
+        for (const oc of centers) {
+          if (Math.abs(oc.y - objCenter.y) < SNAP_THRESHOLD * 3) {
+            if (oc.x < objCenter.x && (!leftNeighbor || oc.x > leftNeighbor.x)) leftNeighbor = oc;
+            if (oc.x > objCenter.x && (!rightNeighbor || oc.x < rightNeighbor.x)) rightNeighbor = oc;
+          }
+        }
+        if (leftNeighbor && rightNeighbor) {
+          const midX = (leftNeighbor.x + rightNeighbor.x) / 2;
+          if (Math.abs(objCenter.x - midX) < SNAP_THRESHOLD * 2) snappedX = midX;
+        }
+      }
+
+      if (snappedY === null && centers.length >= 2) {
+        let topNeighbor: { x: number; y: number } | null = null;
+        let bottomNeighbor: { x: number; y: number } | null = null;
+        for (const oc of centers) {
+          if (Math.abs(oc.x - objCenter.x) < SNAP_THRESHOLD * 3) {
+            if (oc.y < objCenter.y && (!topNeighbor || oc.y > topNeighbor.y)) topNeighbor = oc;
+            if (oc.y > objCenter.y && (!bottomNeighbor || oc.y < bottomNeighbor.y)) bottomNeighbor = oc;
+          }
+        }
+        if (topNeighbor && bottomNeighbor) {
+          const midY = (topNeighbor.y + bottomNeighbor.y) / 2;
+          if (Math.abs(objCenter.y - midY) < SNAP_THRESHOLD * 2) snappedY = midY;
+        }
+      }
+
+      // ── Apply snaps & draw guides ──
       if (snappedY !== null) {
         const dy = snappedY - objCenter.y;
         obj.set({ top: (obj.top || 0) + dy });
-        // Draw horizontal guide line
         const guide = new Line(
           [0, snappedY, FW, snappedY],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
@@ -289,7 +400,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (snappedX !== null) {
         const dx = snappedX - objCenter.x;
         obj.set({ left: (obj.left || 0) + dx });
-        // Draw vertical guide line
         const guide = new Line(
           [snappedX, 0, snappedX, FH],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
