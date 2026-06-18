@@ -26,7 +26,21 @@ type DataEvent =
   | "match-data-updated"
   | "season-calendar-updated"
   | "load-data-changed"
-  | "knowledge-base-updated";
+  | "knowledge-base-updated"
+  | "sync-completed";
+
+import { useState, useEffect } from "react";
+
+/** Hook: returns a version number that increments after every cloud sync */
+export function useSyncVersion(): number {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    const h = () => setV(x => x + 1);
+    window.addEventListener("sync-completed", h);
+    return () => window.removeEventListener("sync-completed", h);
+  }, []);
+  return v;
+}
 
 /** Dispatch a data change event (cross-tab via storage event) */
 export function notifyChange(event: DataEvent): void {

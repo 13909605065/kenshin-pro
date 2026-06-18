@@ -10,6 +10,7 @@ import { RosterInjuryCheck } from "@/components/RosterInjuryCheck";
 import type { SeasonPhase } from "@/lib/types";
 import { saveTrainingPlan, loadTrainingPlans, deleteTrainingPlan } from "@/lib/training-log";
 import { getPlayers } from "@/lib/roster-utils";
+import { useSyncVersion } from "@/lib/data-events";
 
 // ── Phase prescriptions: auto-generated from season calendar ──
 interface PhasePreset {
@@ -310,7 +311,8 @@ export default function PlanningPage() {
   const [matchDayIndex, setMatchDayIndex] = useState(6);
 
   // ── Read season data and show detected phases ──
-  const seasonRanges = useMemo(() => loadSeasonPhaseRanges(), []);
+  const syncVersion = useSyncVersion();
+  const seasonRanges = useMemo(() => loadSeasonPhaseRanges(), [syncVersion]);
   const todayStr = new Date().toISOString().slice(0, 10);
   const currentPhase = seasonRanges.find(r => todayStr >= r.startDate && todayStr <= r.endDate);
 

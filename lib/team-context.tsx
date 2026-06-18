@@ -11,10 +11,12 @@ import {
   initTeamSync,
   type Team,
 } from "@/lib/team-storage";
+import { notifyChange } from "@/lib/data-events";
 
 interface TeamContextValue {
   teamId: string;
   teams: Team[];
+  syncVersion: number;
   switchTeam: (id: string) => void;
   addNewTeam: (name: string) => Team;
   renameExistingTeam: (id: string, name: string) => void;
@@ -26,11 +28,14 @@ const TeamContext = createContext<TeamContextValue | null>(null);
 export function TeamProvider({ children }: { children: ReactNode }) {
   const [teamId, setTeamId] = useState<string>("_loading_");
   const [teams, setTeams] = useState<Team[]>([]);
+  const [syncVersion, setSyncVersion] = useState(0);
 
   const doSync = useCallback(() => {
     initTeamSync().then(() => {
       setTeamId(getActiveTeamId());
       setTeams(getTeams());
+      setSyncVersion(v => v + 1);
+      notifyChange("sync-completed");
     });
   }, []);
 
@@ -78,7 +83,7 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   }, [teamId]);
 
   return (
-    <TeamContext.Provider value={{ teamId, teams, switchTeam, addNewTeam, renameExistingTeam, deleteExistingTeam }}>
+    <TeamContext.Provider value={{ teamId, teams, syncVersion, switchTeam, addNewTeam, renameExistingTeam, deleteExistingTeam }}>
       {children}
     </TeamContext.Provider>
   );

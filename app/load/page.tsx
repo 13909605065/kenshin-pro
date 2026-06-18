@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
-import { notifyChange } from '@/lib/data-events';
+import { notifyChange, useSyncVersion } from '@/lib/data-events';
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft } from "lucide-react";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
@@ -180,6 +180,7 @@ export default function LoadPage() {
 
   // Auto-refresh when training/match data changes
   const [refreshKey, setRefreshKey] = useState(0);
+  const syncVersion = useSyncVersion();
 
   // ── Supabase migration: push localStorage data to cloud on first load ──
   const [migrationDone, setMigrationDone] = useState(false);
@@ -263,7 +264,7 @@ export default function LoadPage() {
       if (p) return { startDate: p.startDate, endDate: p.endDate, phase: p.phase as PhaseKey };
     } catch {}
     return null;
-  }, [refreshKey]);
+  }, [refreshKey, syncVersion]);
 
   // MD calc
   const matchDate = (() => { try { return localStorage.getItem('kenshin_coach_matchDate') || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }})();
