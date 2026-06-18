@@ -64,8 +64,8 @@ const TOOLS: ToolDef[] = [
   { id: "draw_pass", label: "传球", iconFn: iconPass },
   { id: "draw_curve", label: "直线", iconFn: iconStraight },
   { id: "draw_dribble", label: "带球", iconFn: iconDribble },
-  { id: "draw_free", label: "绘图", icon: <Pen className="w-3.5 h-3.5" strokeWidth={1.5} /> },
   { id: "add_text", label: "文字", icon: <Type className="w-3.5 h-3.5" strokeWidth={1.5} /> },
+  { id: "draw_free", label: "绘图", icon: <Pen className="w-3.5 h-3.5" strokeWidth={1.5} /> },
   { id: "erase", label: "删除", icon: <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} /> },
 ];
 
@@ -221,8 +221,8 @@ export function BoardToolbar(p: Props) {
         {/* Divider */}
         <div className="w-px h-6 mx-0.5 flex-shrink-0" style={{ backgroundColor: BORDER }} />
 
-        {/* ── Group 3: [文字 | 删除] ── */}
-        {TOOLS.slice(6, 8).map((t) => {
+        {/* ── Group 3: [文字 | 绘图 | 删除] ── */}
+        {TOOLS.slice(6, 9).map((t) => {
           const isActive = p.activeTool === t.id;
           const icon = t.iconFn ? t.iconFn() : t.icon;
           return (
