@@ -24,6 +24,8 @@ export interface SeasonEvent {
   type: EventType;
   opponent: string;   // 对手球队名
   location: 'home' | 'away';  // 主场/客场
+  ourScore: number | null;
+  opponentScore: number | null;
   notes: string;
   createdAt: string;
 }
@@ -276,8 +278,9 @@ function EventEditorPopup({
   const [type, setType] = useState<EventType>(existingEvent?.type || 'league_match');
   const [opponent, setOpponent] = useState(existingEvent?.opponent || '');
   const [location, setLocation] = useState<'home' | 'away'>(existingEvent?.location || 'home');
+  const [ourScore, setOurScore] = useState<number | null>(existingEvent?.ourScore ?? null);
+  const [opponentScore, setOpponentScore] = useState<number | null>(existingEvent?.opponentScore ?? null);
   const [notes, setNotes] = useState(existingEvent?.notes || '');
-  const [showOpponentPicker, setShowOpponentPicker] = useState(false);
 
   const handleSave = () => {
     const evt: SeasonEvent = {
@@ -286,6 +289,8 @@ function EventEditorPopup({
       type,
       opponent,
       location,
+      ourScore,
+      opponentScore,
       notes,
       createdAt: existingEvent?.createdAt || new Date().toISOString() };
     onSave(evt);
@@ -380,6 +385,18 @@ function EventEditorPopup({
                       location === 'away' ? 'border-[#3B82F6] bg-[#3B82F6]/20 text-[#3B82F6]' : 'border-[#222] text-gray-500 hover:border-[#444]'
                     }`}
                   >✈️ 客场</button>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-500 block mb-1">比分</label>
+                <div className="flex items-center gap-1.5">
+                  <input type="number" min="0" value={ourScore ?? ''} onChange={e => setOurScore(e.target.value ? Number(e.target.value) : null)}
+                    placeholder="山西"
+                    className="w-12 bg-[#111] border border-[#222] rounded px-2 py-1 text-xs text-[#992828] text-center font-bold focus:outline-none focus:border-[#555]" />
+                  <span className="text-[10px] text-gray-600">-</span>
+                  <input type="number" min="0" value={opponentScore ?? ''} onChange={e => setOpponentScore(e.target.value ? Number(e.target.value) : null)}
+                    placeholder="客队"
+                    className="w-12 bg-[#111] border border-[#222] rounded px-2 py-1 text-xs text-[#3B82F6] text-center font-bold focus:outline-none focus:border-[#555]" />
                 </div>
               </div>
             </>
@@ -613,6 +630,8 @@ export default function SeasonCalendar() {
             type: eventType,
             opponent: '',
             location: 'home' as const,
+            ourScore: null,
+            opponentScore: null,
             notes: '',
             createdAt: new Date().toISOString(),
           });
@@ -1200,7 +1219,15 @@ export default function SeasonCalendar() {
                                   className="text-[8px] px-1.5 py-1 rounded font-medium"
                                   style={{ backgroundColor: `${cfg.color}20`, color: cfg.color }}
                                 >
-                                  {cfg.label}
+                                  <div className="flex items-center gap-1">
+                                    {cfg.label}
+                                    {evt.opponent ? <span className="opacity-70">{evt.location === 'home' ? 'vs' : '@'}{evt.opponent}</span> : null}
+                                  </div>
+                                  {evt.ourScore !== null && evt.opponentScore !== null && (
+                                    <div className="text-[7px] font-bold mt-0.5">
+                                      {evt.ourScore} - {evt.opponentScore}
+                                    </div>
+                                  )}
                                   {evt.notes && (
                                     <div className="text-[7px] opacity-70 mt-0.5 truncate">{evt.notes}</div>
                                   )}
