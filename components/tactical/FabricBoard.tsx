@@ -369,7 +369,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (bestX === null && centers.length >= 2) {
         let leftN: { x: number } | null = null, rightN: { x: number } | null = null;
         for (const oc of centers) {
-          if (Math.abs(oc.y - objCenter.y) < SNAP_THRESHOLD * 3) {
+          if (Math.abs(oc.y - objCenter.y) < SNAP_THRESHOLD * 6) { // wider row tolerance
             if (oc.x < objCenter.x && (!leftN || oc.x > leftN.x)) leftN = oc;
             if (oc.x > objCenter.x && (!rightN || oc.x < rightN.x)) rightN = oc;
           }
@@ -383,7 +383,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (bestY === null && centers.length >= 2) {
         let topN: { y: number } | null = null, bottomN: { y: number } | null = null;
         for (const oc of centers) {
-          if (Math.abs(oc.x - objCenter.x) < SNAP_THRESHOLD * 3) {
+          if (Math.abs(oc.x - objCenter.x) < SNAP_THRESHOLD * 6) { // wider column tolerance
             if (oc.y < objCenter.y && (!topN || oc.y > topN.y)) topN = oc;
             if (oc.y > objCenter.y && (!bottomN || oc.y < bottomN.y)) bottomN = oc;
           }
