@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Canvas, Circle, FabricImage } from "fabric";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
@@ -53,22 +53,69 @@ export default function WarmupDesignPage() {
     } catch {}
   }, []);
 
-  const restoreAutoSave = () => {
+  // Save immediately on page unload (before debounce timer fires)
+  useEffect(() => {
+    const onUnload = () => {
+      const c = boardRef.current; if (!c) return;
+      try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+          json: JSON.stringify(c.toJSON()),
+          ts: new Date().toISOString(),
+        }));
+      } catch {}
+    };
+    window.addEventListener("beforeunload", onUnload);
+    return () => window.removeEventListener("beforeunload", onUnload);
+  }, []);
+
+  // Pending restore: canvas may not be ready when user clicks "继续"
+  const pendingRestoreRef = useRef<string | null>(null);
+
+  const restoreAutoSave = useCallback(() => {
     try {
       const raw = localStorage.getItem(AUTOSAVE_KEY);
-      if (!raw) return;
+      if (!raw) { setAutoSaveTs(null); return; }
       const data = JSON.parse(raw);
-      const c = boardRef.current; if (!c) return;
-      c.loadFromJSON(JSON.parse(data.json)).then(() => {
+      const jsonStr = data.json;
+      if (!jsonStr) { setAutoSaveTs(null); return; }
+
+      const c = boardRef.current;
+      if (!c) {
+        // Canvas not ready yet — store for later, FabricBoard will pick it up
+        pendingRestoreRef.current = jsonStr;
+        setAutoSaveTs(null); // dismiss prompt, restore will happen when canvas mounts
+        return;
+      }
+      doRestore(c, jsonStr);
+    } catch (e) { console.warn("[warmup] restoreAutoSave error:", e); }
+  }, []);
+
+  const doRestore = (c: Canvas, jsonStr: string) => {
+    try {
+      c.loadFromJSON(JSON.parse(jsonStr)).then(() => {
         c.requestRenderAll();
         setAutoSaveTs(null);
+        localStorage.removeItem(AUTOSAVE_KEY);
+        pendingRestoreRef.current = null;
+      }).catch((err: any) => {
+        console.warn("[warmup] loadFromJSON failed:", err);
       });
-    } catch {}
+    } catch (e) { console.warn("[warmup] doRestore error:", e); }
   };
+
+  // Expose pending restore for FabricBoard to consume when canvas is ready
+  useEffect(() => {
+    if (boardRef.current && pendingRestoreRef.current) {
+      const jsonStr = pendingRestoreRef.current;
+      pendingRestoreRef.current = null;
+      doRestore(boardRef.current, jsonStr);
+    }
+  }, [boardRef.current]);
 
   const dismissAutoSave = () => {
     localStorage.removeItem(AUTOSAVE_KEY);
     setAutoSaveTs(null);
+    pendingRestoreRef.current = null;
   };
 
   // ─── Canvas callbacks ───────────────────────────────────
