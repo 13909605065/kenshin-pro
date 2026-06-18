@@ -522,22 +522,54 @@ export default function SeasonCalendar() {
   const handleApplyPhase = useCallback((phase: PhaseType) => {
     const startEl = document.getElementById(`phase-start-${phase}`) as HTMLInputElement;
     const endEl = document.getElementById(`phase-end-${phase}`) as HTMLInputElement;
+    const autoFillEl = document.getElementById(`phase-autofill-${phase}`) as HTMLInputElement;
     const startDate = startEl?.value;
     const endDate = endEl?.value;
     if (!startDate || !endDate || endDate < startDate) return;
 
     updateData(prev => {
       const ranges = prev.phaseRanges.filter(r => r.phase !== phase);
-      return {
-        ...prev,
-        phaseRanges: [...ranges, {
-          id: genId(),
-          startDate,
-          endDate,
-          phase,
-          notes: PHASE_CONFIG[phase].label,
-        }],
+      const newRange: PhaseRange = {
+        id: genId(),
+        startDate,
+        endDate,
+        phase,
+        notes: PHASE_CONFIG[phase].label,
       };
+
+      // Auto-fill events: every Saturday within the phase range
+      let newEvents = prev.events;
+      if (autoFillEl?.checked) {
+        // Remove old auto-generated events in this range
+        newEvents = prev.events.filter(e =>
+          !(e.date >= startDate && e.date <= endDate && e.type === PHASE_CONFIG[phase].defaultEvent)
+        );
+
+        const cursor = parseDate(startDate);
+        const end = parseDate(endDate);
+        // Find the first Saturday
+        while (cursor.getDay() !== 6) cursor.setDate(cursor.getDate() + 1);
+
+        const eventType = PHASE_CONFIG[phase].defaultEvent;
+        while (cursor <= end) {
+          newEvents.push({
+            id: genId(),
+            date: dateStr(cursor),
+            type: eventType,
+            notes: '',
+            createdAt: new Date().toISOString(),
+          });
+          cursor.setDate(cursor.getDate() + 7); // next Saturday
+        }
+      }
+
+      // Update matchDates
+      const matchDates = newEvents
+        .filter(e => e.type === 'league_match' || e.type === 'cup_match' || e.type === 'playoff_match')
+        .map(e => e.date)
+        .sort();
+
+      return { ...prev, phaseRanges: [...ranges, newRange], events: newEvents, matchDates };
     });
   }, [updateData]);
 
@@ -874,6 +906,10 @@ export default function SeasonCalendar() {
                         placeholder="结束日期"
                         className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555]"
                       />
+                      <label className="flex items-center gap-1 text-[8px] text-gray-500 cursor-pointer mt-1">
+                        <input id={`phase-autofill-${phase}`} type="checkbox" className="w-3 h-3 rounded accent-[#992828]" />
+                        每周六自动填事件
+                      </label>
                       <button
                         onClick={() => handleApplyPhase(phase)}
                         className="mt-1 px-2 py-1 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded text-[9px] font-bold transition"
