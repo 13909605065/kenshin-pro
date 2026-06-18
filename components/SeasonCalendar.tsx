@@ -22,9 +22,16 @@ export interface SeasonEvent {
   id: string;
   date: string; // ISO date
   type: EventType;
+  opponent: string;   // 对手球队名
+  location: 'home' | 'away';  // 主场/客场
   notes: string;
   createdAt: string;
 }
+
+// 中乙球队名单（待补充完整）
+export const CN_LEAGUE_TWO_TEAMS = [
+  "请把中乙球队名单发给我",
+];
 
 export type PhaseType = 'offseason' | 'preseason_build' | 'regular_season' | 'playoffs';
 
@@ -262,18 +269,25 @@ function EventEditorPopup({
   onClose: () => void;
 }) {
   const [type, setType] = useState<EventType>(existingEvent?.type || 'league_match');
+  const [opponent, setOpponent] = useState(existingEvent?.opponent || '');
+  const [location, setLocation] = useState<'home' | 'away'>(existingEvent?.location || 'home');
   const [notes, setNotes] = useState(existingEvent?.notes || '');
+  const [showOpponentPicker, setShowOpponentPicker] = useState(false);
 
   const handleSave = () => {
     const evt: SeasonEvent = {
       id: existingEvent?.id || genId(),
       date,
       type,
+      opponent,
+      location,
       notes,
       createdAt: existingEvent?.createdAt || new Date().toISOString() };
     onSave(evt);
     onClose();
   };
+
+  const isMatchEvent = type === 'league_match' || type === 'cup_match' || type === 'playoff_match' || type === 'preseason_friendly';
 
   return (
     <div
@@ -330,14 +344,50 @@ function EventEditorPopup({
             </div>
           </div>
 
+          {/* Opponent + Home/Away (only for match events) */}
+          {isMatchEvent && (
+            <>
+              <div>
+                <label className="text-[10px] text-gray-500 block mb-1">对手</label>
+                <input
+                  value={opponent}
+                  onChange={e => setOpponent(e.target.value)}
+                  placeholder="输入对手球队名"
+                  list="cn2-teams"
+                  className="w-full bg-[#111] border border-[#222] rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#444]"
+                />
+                <datalist id="cn2-teams">
+                  {CN_LEAGUE_TWO_TEAMS.map(t => <option key={t} value={t} />)}
+                </datalist>
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-500 block mb-2">主客场</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setLocation('home')}
+                    className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition border ${
+                      location === 'home' ? 'border-[#992828] bg-[#992828]/20 text-[#992828]' : 'border-[#222] text-gray-500 hover:border-[#444]'
+                    }`}
+                  >🏟️ 主场</button>
+                  <button
+                    onClick={() => setLocation('away')}
+                    className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition border ${
+                      location === 'away' ? 'border-[#3B82F6] bg-[#3B82F6]/20 text-[#3B82F6]' : 'border-[#222] text-gray-500 hover:border-[#444]'
+                    }`}
+                  >✈️ 客场</button>
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Notes */}
           <div>
             <label className="text-[10px] text-gray-500 block mb-1">备注</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="对手、场地、赛程说明..."
-              rows={3}
+              placeholder="场地、赛程说明..."
+              rows={2}
               className="w-full bg-[#111] border border-[#222] rounded-lg px-3 py-2 text-xs text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-[#444]"
             />
           </div>
@@ -556,6 +606,8 @@ export default function SeasonCalendar() {
             id: genId(),
             date: dateStr(cursor),
             type: eventType,
+            opponent: '',
+            location: 'home' as const,
             notes: '',
             createdAt: new Date().toISOString(),
           });
