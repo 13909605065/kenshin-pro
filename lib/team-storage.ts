@@ -167,6 +167,8 @@ const SYNC_COOLDOWN = 5000;
 /** Called on every page load + window focus. Pull from cloud, push local → cloud. */
 export async function initTeamSync(): Promise<void> {
   if (!isBrowser) return;
+  // Install global interceptor so ALL localStorage writes auto-sync to cloud
+  setupSyncInterceptor();
   const now = Date.now();
   if (now - lastSyncTime < SYNC_COOLDOWN) return;
   lastSyncTime = now;
@@ -427,4 +429,41 @@ export function userRemove(key: string): void {
     if (!userId) return;
     createClient().from("user_kv").delete().eq("user_id", userId).eq("key", key).then(() => {});
   }).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
+// Global localStorage interceptor — catches ALL writes automatically
+// ---------------------------------------------------------------------------
+
+let interceptorInstalled = false;
+
+export function setupSyncInterceptor() {
+  if (!isBrowser || interceptorInstalled) return;
+  interceptorInstalled = true;
+
+  const originalSetItem = localStorage.setItem.bind(localStorage);
+  const originalRemoveItem = localStorage.removeItem.bind(localStorage);
+
+  // Only intercept app keys (kenshin_*, coach_*, athlete_*, warmup_*)
+  const isAppKey = (key: string) =>
+    key.startsWith("kenshin_") || key.startsWith("coach_") ||
+    key.startsWith("athlete_") || key.startsWith("warmup_") ||
+    key.startsWith("roster_players_");
+
+  localStorage.setItem = function(key: string, value: string) {
+    originalSetItem(key, value);
+    if (isAppKey(key)) {
+      pushKV(key, value);
+    }
+  };
+
+  localStorage.removeItem = function(key: string) {
+    originalRemoveItem(key);
+    if (isAppKey(key)) {
+      getUserId().then(userId => {
+        if (!userId) return;
+        createClient().from("user_kv").delete().eq("user_id", userId).eq("key", key).then(() => {});
+      }).catch(() => {});
+    }
+  };
 }
