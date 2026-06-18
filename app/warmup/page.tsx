@@ -73,15 +73,22 @@ export default function WarmupDesignPage() {
 
   const doRestore = useCallback((c: Canvas, jsonStr: string) => {
     try {
-      c.loadFromJSON(JSON.parse(jsonStr)).then(() => {
-        // Re-mark field objects (custom _isFieldBg is lost in serialization)
+      const obj = JSON.parse(jsonStr);
+      if (!obj || !obj.objects) {
+        console.warn("[warmup] restore: invalid JSON, clearing autosave");
+        localStorage.removeItem(AUTOSAVE_KEY);
+        setAutoSaveTs(null);
+        return;
+      }
+      console.log("[warmup] restore: loading", obj.objects.length, "objects");
+      // Use callback-based API (more reliable in Fabric 6.x)
+      c.loadFromJSON(obj, () => {
         (c as any)._ensureFieldMarked?.();
         c.requestRenderAll();
+        console.log("[warmup] restore: done");
         setAutoSaveTs(null);
         localStorage.removeItem(AUTOSAVE_KEY);
         pendingRestoreRef.current = null;
-      }).catch((err: any) => {
-        console.warn("[warmup] loadFromJSON failed:", err);
       });
     } catch (e) { console.warn("[warmup] doRestore error:", e); }
   }, []);

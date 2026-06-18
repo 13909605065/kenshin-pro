@@ -187,7 +187,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     };
     const load = (json: string) => {
       restoring = true;
-      canvas.loadFromJSON(JSON.parse(json)).then(() => {
+      canvas.loadFromJSON(JSON.parse(json), () => {
         ensureFieldMarked();
         restoring = false;
         canvas.requestRenderAll();
