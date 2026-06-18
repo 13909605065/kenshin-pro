@@ -142,27 +142,34 @@ async function pullAllKVFromCloud(): Promise<number> {
 // Init — call once on app mount
 // ---------------------------------------------------------------------------
 
-let syncInitialized = false;
+let lastSyncTime = 0;
+const SYNC_COOLDOWN = 3000; // 3s cooldown between syncs
 
-/** Call once on app startup. Pulls ALL data from Supabase → localStorage. */
+/** Call on every page load AND on window focus. Pulls ALL data from Supabase → localStorage. */
 export async function initTeamSync(): Promise<void> {
-  if (!isBrowser || syncInitialized) return;
-  syncInitialized = true;
+  if (!isBrowser) return;
+  const now = Date.now();
+  if (now - lastSyncTime < SYNC_COOLDOWN) return; // dedup rapid calls
+  lastSyncTime = now;
+
+  console.log("[sync] initTeamSync: pulling all data from Supabase…");
 
   // Pull all KV data first (covers all team-scoped + global data)
   const kvCount = await pullAllKVFromCloud();
+  console.log("[sync] pulled KV keys:", kvCount);
 
   const [teamsPulled, activePulled] = await Promise.all([
     pullTeamsFromCloud(),
     pullActiveTeamFromCloud(),
   ]);
+  console.log("[sync] teams pulled:", teamsPulled, "active pulled:", activePulled);
 
-  // If cloud has data but localStorage was empty, we just synced everything
-  // If cloud is empty but localStorage has data, migrate local → cloud
+  // If cloud has no teams but localStorage does, migrate local → cloud
   if (!teamsPulled) {
     const localTeams = getTeams();
     if (localTeams.length > 0) {
       await pushTeamsToCloud(localTeams);
+      console.log("[sync] migrated teams → cloud:", localTeams.length);
     }
   }
 
@@ -170,23 +177,23 @@ export async function initTeamSync(): Promise<void> {
     const localActive = localStorage.getItem(ACTIVE_TEAM_KEY);
     if (localActive) {
       await pushActiveTeamToCloud(localActive);
+      console.log("[sync] migrated active_team → cloud:", localActive);
     }
   }
 
-  // If we pulled KV data from cloud but no teams/active_team locally yet
-  if (kvCount > 0 && !teamsPulled) {
-    // Cloud had data — localStorage already updated by pullAllKVFromCloud
-  }
-
   // Migrate any local-only data to cloud
-  migrateLocalToCloud();
+  await migrateLocalToCloud();
+  console.log("[sync] migrateLocalToCloud done");
 
   // Validate: active team exists in teams list
   const teams = getTeams();
   const activeId = getActiveTeamId();
   if (teams.length > 0 && !teams.find(t => t.id === activeId)) {
     setActiveTeamId(teams[0].id);
+    console.log("[sync] fixed active team:", teams[0].id);
   }
+
+  console.log("[sync] initTeamSync complete");
 }
 
 /** Push any localStorage-only keys that aren't yet in Supabase. */

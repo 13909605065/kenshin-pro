@@ -27,17 +27,26 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   const [teamId, setTeamId] = useState<string>("_loading_");
   const [teams, setTeams] = useState<Team[]>([]);
 
-  // Hydrate from localStorage on mount (avoids SSR mismatch),
-  // then sync from Supabase for cross-device consistency.
-  useEffect(() => {
-    setTeamId(getActiveTeamId());
-    setTeams(getTeams());
-    // Background: pull from Supabase, then refresh state
+  const doSync = useCallback(() => {
     initTeamSync().then(() => {
       setTeamId(getActiveTeamId());
       setTeams(getTeams());
     });
   }, []);
+
+  // Hydrate from localStorage on mount, then sync from Supabase.
+  useEffect(() => {
+    setTeamId(getActiveTeamId());
+    setTeams(getTeams());
+    doSync();
+  }, [doSync]);
+
+  // Re-sync when user switches back to this tab (cross-device updates)
+  useEffect(() => {
+    const onFocus = () => { doSync(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [doSync]);
 
   const switchTeam = useCallback((id: string) => {
     setActiveTeamId(id);
