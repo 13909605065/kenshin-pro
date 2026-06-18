@@ -85,11 +85,26 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       cornerColor: TAC_THEME.accent,
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
-      // Mobile touch optimizations
+      // Mobile touch optimizations — prevent any canvas panning
       allowTouchScrolling: false,
       stopContextMenu: true,
       fireRightClick: true,
     });
+
+    // Lock viewport: prevent panning, only allow pinch zoom
+    let savedZoom = canvas.getZoom();
+    canvas.on("mouse:down", () => { savedZoom = canvas.getZoom(); });
+    canvas.on("mouse:up", () => {
+      // Re-center after any mouse interaction (prevents pan drift)
+      if (canvas.getZoom() !== savedZoom) return; // zoom handled separately
+      centerAtZoom(canvas, canvas.getZoom());
+    });
+    // For touch: always re-center on touch end (prevent pan from any gesture)
+    const recenterOnTouchEnd = () => {
+      setTimeout(() => centerAtZoom(canvas, canvas.getZoom()), 50);
+    };
+    el.addEventListener("touchend", recenterOnTouchEnd);
+    el.addEventListener("touchcancel", recenterOnTouchEnd);
 
     // Mouse wheel zoom (desktop) — always centers after zoom
     canvas.on("mouse:wheel", (opt: any) => {
@@ -527,7 +542,9 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchend", recenterOnTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
+      el.removeEventListener("touchcancel", recenterOnTouchEnd);
       canvas.dispose();
       canvasRef.current = null;
     };
