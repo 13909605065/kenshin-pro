@@ -71,26 +71,7 @@ export default function WarmupDesignPage() {
   // Pending restore: canvas may not be ready when user clicks "继续"
   const pendingRestoreRef = useRef<string | null>(null);
 
-  const restoreAutoSave = useCallback(() => {
-    try {
-      const raw = localStorage.getItem(AUTOSAVE_KEY);
-      if (!raw) { setAutoSaveTs(null); return; }
-      const data = JSON.parse(raw);
-      const jsonStr = data.json;
-      if (!jsonStr) { setAutoSaveTs(null); return; }
-
-      const c = boardRef.current;
-      if (!c) {
-        // Canvas not ready yet — store for later, FabricBoard will pick it up
-        pendingRestoreRef.current = jsonStr;
-        setAutoSaveTs(null); // dismiss prompt, restore will happen when canvas mounts
-        return;
-      }
-      doRestore(c, jsonStr);
-    } catch (e) { console.warn("[warmup] restoreAutoSave error:", e); }
-  }, []);
-
-  const doRestore = (c: Canvas, jsonStr: string) => {
+  const doRestore = useCallback((c: Canvas, jsonStr: string) => {
     try {
       c.loadFromJSON(JSON.parse(jsonStr)).then(() => {
         c.requestRenderAll();
@@ -101,16 +82,37 @@ export default function WarmupDesignPage() {
         console.warn("[warmup] loadFromJSON failed:", err);
       });
     } catch (e) { console.warn("[warmup] doRestore error:", e); }
-  };
+  }, []);
 
-  // Expose pending restore for FabricBoard to consume when canvas is ready
-  useEffect(() => {
-    if (boardRef.current && pendingRestoreRef.current) {
+  const restoreAutoSave = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) { setAutoSaveTs(null); return; }
+      const data = JSON.parse(raw);
+      const jsonStr = data.json;
+      if (!jsonStr) { setAutoSaveTs(null); return; }
+
+      const c = boardRef.current;
+      if (!c) {
+        // Canvas not ready yet — store for later
+        pendingRestoreRef.current = jsonStr;
+        setAutoSaveTs(null);
+        return;
+      }
+      doRestore(c, jsonStr);
+    } catch (e) { console.warn("[warmup] restoreAutoSave error:", e); }
+  }, [doRestore]);
+
+  // FabricBoard calls this when canvas is fully initialized
+  const onCanvasReady = useCallback((c: Canvas) => {
+    boardRef.current = c;
+    // If there's a pending restore, apply it now
+    if (pendingRestoreRef.current) {
       const jsonStr = pendingRestoreRef.current;
       pendingRestoreRef.current = null;
-      doRestore(boardRef.current, jsonStr);
+      doRestore(c, jsonStr);
     }
-  }, [boardRef.current]);
+  }, [doRestore]);
 
   const dismissAutoSave = () => {
     localStorage.removeItem(AUTOSAVE_KEY);
@@ -409,7 +411,7 @@ export default function WarmupDesignPage() {
           onObjectSelected={setSelObj}
           onHistoryChange={uh}
           onCanvasChange={autoSave}
-          boardRef={boardRef}
+          onCanvasReady={onCanvasReady}
           onPlayerDoubleClick={hPlayerDoubleClick}
           lockPlayers={lockPlayers}
           lockRoutes={lockRoutes}

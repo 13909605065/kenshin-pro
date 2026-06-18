@@ -43,16 +43,17 @@ interface FabricBoardProps {
   onObjectSelected?: (obj: any) => void;
   onHistoryChange?: (canUndo: boolean, canRedo: boolean) => void;
   onCanvasChange?: () => void;
-  boardRef: React.MutableRefObject<Canvas | null>;
+  onCanvasReady?: (canvas: Canvas) => void;  // callback once canvas is initialized
   onPlayerDoubleClick?: (playerObj: any, screenX: number, screenY: number) => void;
   /** Layer lock states */
   lockPlayers?: boolean;
   lockRoutes?: boolean;
 }
 
-export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, onCanvasChange, boardRef, onPlayerDoubleClick, lockPlayers, lockRoutes }: FabricBoardProps) {
+export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHistoryChange, onCanvasChange, onCanvasReady, onPlayerDoubleClick, lockPlayers, lockRoutes }: FabricBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasElRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<Canvas | null>(null);
   const lineStartRef = useRef<{ x: number; y: number } | null>(null);
   const tempLineRef = useRef<Path | null>(null);
   // Touch gesture state
@@ -60,7 +61,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const touchCountRef = useRef<number>(0);
   const lastTouchRef = useRef<number>(0);
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clipboardRef = useRef<any>(null);              // copy/paste
+  const clipcanvasRef = useRef<any>(null);              // copy/paste
   const alignGuidesRef = useRef<any[]>([]);             // alignment snap guides
 
   const debouncedAutoSave = useCallback(() => {
@@ -72,7 +73,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, [onCanvasChange]);
 
   useEffect(() => {
-    if (!canvasElRef.current || boardRef.current) return;
+    if (!canvasElRef.current || canvasRef.current) return;
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
@@ -157,10 +158,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     el.addEventListener("touchend", onTouchEnd);
     el.addEventListener("touchcancel", onTouchEnd);
 
-    boardRef.current = canvas;
+    canvasRef.current = canvas;
     // Expose centered zoom API for external callers (warmup page, toolbar)
     (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
     (canvas as any)._getZoom = () => canvas.getZoom();
+    // Notify parent that canvas is ready (for pending auto-save restore etc.)
+    onCanvasReady?.(canvas);
 
     // History
     let history: string[] = [], historyIdx = -1, restoring = false;
@@ -212,15 +215,15 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       if (mod && e.key === "c" && active) {
         e.preventDefault();
         (active as any).clone().then((cloned: any) => {
-          clipboardRef.current = cloned;
+          clipcanvasRef.current = cloned;
         });
         return;
       }
 
       // Ctrl/Cmd + V: Paste
-      if (mod && e.key === "v" && clipboardRef.current) {
+      if (mod && e.key === "v" && clipcanvasRef.current) {
         e.preventDefault();
-        (clipboardRef.current as any).clone().then((cloned: any) => {
+        (clipcanvasRef.current as any).clone().then((cloned: any) => {
           cloned.set({ left: (cloned.left || 0) + 30, top: (cloned.top || 0) + 30 });
           canvas.add(cloned);
           canvas.setActiveObject(cloned);
@@ -492,7 +495,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       el.removeEventListener("touchend", onTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
       canvas.dispose();
-      boardRef.current = null;
+      canvasRef.current = null;
     };
   }, []);
 
@@ -516,7 +519,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, [activeTool, activeColor]);
 
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     c.isDrawingMode = false;
     c.selection = !isRouteTool;
 
@@ -601,7 +604,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   // Text tool
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     const h = (opt: any) => {
       if (activeTool !== "add_text") return;
       const t = new IText("文字", { left: opt.scenePoint.x, top: opt.scenePoint.y, fontSize: 22, fill: activeColor, fontFamily: "Arial", fontWeight: "bold" });
@@ -613,7 +616,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   // Place player — 8-point circular anchors, perfectly centered number
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     const h = (opt: any) => {
       if (activeTool !== "place_player") return;
       const players = c.getObjects().filter((o: any) => o._isPlayer);
@@ -675,7 +678,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   // Erase tool
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     const h = () => {
       if (activeTool !== "erase") return;
       const a = c.getActiveObject(); if (a) { c.remove(a); c.discardActiveObject(); c.requestRenderAll(); }
@@ -686,7 +689,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   // ─── Layer locking ───
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     if (lockPlayers === undefined && lockRoutes === undefined) return;
 
     const all = c.getObjects();
@@ -705,7 +708,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
   // Handle field selection from EquipmentPalette
   useEffect(() => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     (c as any)._setFieldImage = (fn: string) => {
       // Clear old field objects (both vector and image)
       c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
@@ -737,12 +740,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   }, []);
 
   const zoomIn = () => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     const z = Math.min(c.getZoom() * 1.15, 5);
     centerAtZoom(c, z);
   };
   const zoomOut = () => {
-    const c = boardRef.current; if (!c) return;
+    const c = canvasRef.current; if (!c) return;
     const z = Math.max(c.getZoom() / 1.15, 0.3);
     centerAtZoom(c, z);
   };
