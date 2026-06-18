@@ -37,3 +37,15 @@ CREATE POLICY "Owner access season_calendar" ON public.season_calendar FOR ALL U
 -- 4. Add missing columns to roster_players
 ALTER TABLE public.roster_players ADD COLUMN IF NOT EXISTS injury_history TEXT DEFAULT '';
 ALTER TABLE public.roster_players ADD COLUMN IF NOT EXISTS disabled_exercises JSONB DEFAULT '[]'::jsonb;
+
+-- 5. User KV — 通用键值同步表（全量数据跨设备同步）
+CREATE TABLE IF NOT EXISTS public.user_kv (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  value TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  PRIMARY KEY (user_id, key)
+);
+ALTER TABLE public.user_kv ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Owner access user_kv" ON public.user_kv;
+CREATE POLICY "Owner access user_kv" ON public.user_kv FOR ALL USING (auth.uid() = user_id);

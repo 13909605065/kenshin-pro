@@ -102,22 +102,63 @@ async function pushActiveTeamToCloud(teamId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// User KV — generic key-value sync for ALL data
+// ---------------------------------------------------------------------------
+
+/** Push a single KV pair to Supabase (fire-and-forget). */
+async function pushKV(key: string, value: string): Promise<void> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("user_kv").upsert({
+      user_id: userId, key, value,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id, key" });
+    if (error) console.warn("[team-storage] pushKV error:", error);
+  } catch (e) { /* silent */ }
+}
+
+/** Pull all KV pairs from Supabase → localStorage. Returns count of pulled keys. */
+async function pullAllKVFromCloud(): Promise<number> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return 0;
+    const supabase = createClient();
+    const { data, error } = await supabase.from("user_kv").select("key, value").eq("user_id", userId);
+    if (error || !data) return 0;
+    let count = 0;
+    for (const row of data) {
+      if (row.key && row.value !== undefined) {
+        localStorage.setItem(row.key, row.value);
+        count++;
+      }
+    }
+    return count;
+  } catch { return 0; }
+}
+
+// ---------------------------------------------------------------------------
 // Init — call once on app mount
 // ---------------------------------------------------------------------------
 
 let syncInitialized = false;
 
-/** Call once on app startup. Pulls teams + active team from Supabase. */
+/** Call once on app startup. Pulls ALL data from Supabase → localStorage. */
 export async function initTeamSync(): Promise<void> {
   if (!isBrowser || syncInitialized) return;
   syncInitialized = true;
+
+  // Pull all KV data first (covers all team-scoped + global data)
+  const kvCount = await pullAllKVFromCloud();
 
   const [teamsPulled, activePulled] = await Promise.all([
     pullTeamsFromCloud(),
     pullActiveTeamFromCloud(),
   ]);
 
-  // If cloud has no teams but localStorage does, migrate local → cloud
+  // If cloud has data but localStorage was empty, we just synced everything
+  // If cloud is empty but localStorage has data, migrate local → cloud
   if (!teamsPulled) {
     const localTeams = getTeams();
     if (localTeams.length > 0) {
@@ -125,7 +166,6 @@ export async function initTeamSync(): Promise<void> {
     }
   }
 
-  // If cloud has no active team but localStorage does, migrate
   if (!activePulled) {
     const localActive = localStorage.getItem(ACTIVE_TEAM_KEY);
     if (localActive) {
@@ -133,11 +173,51 @@ export async function initTeamSync(): Promise<void> {
     }
   }
 
+  // If we pulled KV data from cloud but no teams/active_team locally yet
+  if (kvCount > 0 && !teamsPulled) {
+    // Cloud had data — localStorage already updated by pullAllKVFromCloud
+  }
+
+  // Migrate any local-only data to cloud
+  migrateLocalToCloud();
+
   // Validate: active team exists in teams list
   const teams = getTeams();
   const activeId = getActiveTeamId();
   if (teams.length > 0 && !teams.find(t => t.id === activeId)) {
     setActiveTeamId(teams[0].id);
+  }
+}
+
+/** Push any localStorage-only keys that aren't yet in Supabase. */
+async function migrateLocalToCloud() {
+  if (!isBrowser) return;
+  // Push all known localStorage keys that aren't team-scoped
+  const globalKeys = [
+    "kenshin_season_calendar",
+    "kenshin_role", "kenshin_scene", "kenshin_theme", "kenshin_lang",
+    "kenshin_onboarding_done", "kenshin_dashboard_draft",
+    "coach_profile", "athlete_profile", "kenshin_coach_profile",
+    "kenshin_coach_phase", "kenshin_coach_matchDate",
+    "kenshin_coach_planMode", "kenshin_coach_weather",
+    "kenshin_injury_reports", "kenshin_player_self_reports",
+    "kenshin_team_readiness", "warmup_autosave", "kenshin_warmup_library",
+  ];
+  for (const key of globalKeys) {
+    const val = localStorage.getItem(key);
+    if (val) await pushKV(key, val);
+  }
+  // Also push team-scoped keys for active team
+  const activeTeamId = getActiveTeamId();
+  const teamKeys = [
+    "roster_players", "kenshin_fitness_profiles", "kenshin_history",
+    "kenshin_cached_modules", "kenshin_load_data", "kenshin_training_logs",
+    "kenshin_gps_data", "kenshin_pr_data", "kenshin_motivation",
+  ];
+  for (const base of teamKeys) {
+    const key = `${base}_${activeTeamId}`;
+    const val = localStorage.getItem(key);
+    if (val) await pushKV(key, val);
   }
 }
 
@@ -271,11 +351,47 @@ export function teamSet(baseKey: string, value: string): void {
   if (!isBrowser) return;
   const teamId = getActiveTeamId();
   migrateIfNeeded(baseKey, teamId);
-  localStorage.setItem(teamKey(baseKey, teamId), value);
+  const fullKey = teamKey(baseKey, teamId);
+  localStorage.setItem(fullKey, value);
+  // Background sync to Supabase (cross-device)
+  pushKV(fullKey, value);
 }
 
 export function teamRemove(baseKey: string): void {
   if (!isBrowser) return;
   const teamId = getActiveTeamId();
-  localStorage.removeItem(teamKey(baseKey, teamId));
+  const fullKey = teamKey(baseKey, teamId);
+  localStorage.removeItem(fullKey);
+  // Delete from cloud too
+  getUserId().then(userId => {
+    if (!userId) return;
+    createClient().from("user_kv").delete().eq("user_id", userId).eq("key", fullKey).then(() => {});
+  }).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
+// Global (non-team-scoped) key-value with Supabase sync
+// ---------------------------------------------------------------------------
+
+/** Set a global (non-team-scoped) value — localStorage + Supabase. */
+export function userSet(key: string, value: string): void {
+  if (!isBrowser) return;
+  localStorage.setItem(key, value);
+  pushKV(key, value);
+}
+
+/** Get a global (non-team-scoped) value from localStorage. */
+export function userGet(key: string): string | null {
+  if (!isBrowser) return null;
+  return localStorage.getItem(key);
+}
+
+/** Remove a global key. */
+export function userRemove(key: string): void {
+  if (!isBrowser) return;
+  localStorage.removeItem(key);
+  getUserId().then(userId => {
+    if (!userId) return;
+    createClient().from("user_kv").delete().eq("user_id", userId).eq("key", key).then(() => {});
+  }).catch(() => {});
 }
