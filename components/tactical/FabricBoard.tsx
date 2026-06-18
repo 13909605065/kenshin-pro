@@ -180,14 +180,23 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const ensureFieldMarked = () => {
       const all = canvas.getObjects();
       for (const o of all) {
-        if ((o as any).lockMovementX && (o as any).type === "group") {
+        if (o.type === "group" && ((o as any).lockMovementX || (o as any)._objects?.length > 5)) {
           (o as any)._isFieldBg = true;
-          // Re-apply full lock (some properties may be lost in serialization)
           o.set({
             selectable: false, evented: false,
             lockMovementX: true, lockMovementY: true,
             lockRotation: true, lockScalingX: true, lockScalingY: true,
           });
+          // Also lock all sub-objects
+          const sub = (o as any)._objects;
+          if (sub) {
+            for (const s of sub) {
+              s.set({
+                selectable: false, evented: false,
+                lockMovementX: true, lockMovementY: true,
+              });
+            }
+          }
         }
       }
     };
@@ -649,9 +658,22 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         c.freeDrawingBrush.color = activeColor;
         c.freeDrawingBrush.width = 3;
       }
+      // Prevent all existing objects from intercepting touch/draw
+      c.getObjects().forEach((o: any) => {
+        if (!o._isFieldBg) {
+          o.set({ selectable: false, evented: false });
+        }
+      });
     } else {
       c.isDrawingMode = false;
+      // Restore interactivity for non-field objects
+      c.getObjects().forEach((o: any) => {
+        if (!o._isFieldBg) {
+          o.set({ selectable: true, evented: true });
+        }
+      });
     }
+    return () => { c.isDrawingMode = false; };
   }, [activeTool, activeColor]);
 
   // Place player — 8-point circular anchors, perfectly centered number
