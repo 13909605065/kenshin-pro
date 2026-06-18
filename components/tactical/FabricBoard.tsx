@@ -174,6 +174,8 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     el.addEventListener("touchcancel", onTouchEnd);
 
     canvasRef.current = canvas;
+    // 🔒 Disable ALL canvas panning — field stays fixed, only zoom allowed
+    (canvas as any)._handleTouchPan = () => {}; // kill Fabric's built-in pan
     // Expose centered zoom API for external callers (warmup page, toolbar)
     (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
     (canvas as any)._getZoom = () => canvas.getZoom();
