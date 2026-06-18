@@ -531,6 +531,10 @@ export default function SeasonCalendar() {
 
       return { ...prev, phaseRanges: [...ranges, newRange] };
     });
+    // Clear inputs after apply so next phase starts fresh
+    setBatchStartDate('');
+    setBatchEndDate('');
+    setBatchNotes('');
     setShowBatchPanel(false);
   }, [updateData, batchPhase, batchStartDate, batchEndDate, batchNotes]);
 
