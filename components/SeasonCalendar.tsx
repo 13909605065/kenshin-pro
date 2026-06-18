@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X, Download, Calendar, ChevronDown, ChevronUp } from "lucide-react";
-import { notifyChange } from "@/lib/data-events";
+import { notifyChange, useSyncVersion } from "@/lib/data-events";
 import { createClient } from "@/lib/supabase/supabase-client";
 
 // ═══════════════════════════════════════════════
@@ -387,12 +387,23 @@ export default function SeasonCalendar() {
     return { events: [], phaseRanges: [], matchDates: [], seasonStart, seasonEnd };
   });
 
-  // On mount: pull season calendar from Supabase (cross-device sync)
+  const syncVersion = useSyncVersion();
+
+  // Pull season calendar from Supabase when sync completes
   useEffect(() => {
+    // First try dedicated season_calendar table, fall back to localStorage (synced via user_kv)
     pullSeasonFromCloud().then(cloudData => {
-      if (cloudData) setData(cloudData);
+      if (cloudData) {
+        setData(cloudData);
+      } else {
+        // Cloud table might be empty — try localStorage (populated by user_kv sync)
+        const local = loadData();
+        if (local.events.length > 0 || local.phaseRanges.length > 0) {
+          setData(local);
+        }
+      }
     });
-  }, []);
+  }, [syncVersion]);
 
   const [viewMode, setViewMode] = useState<ViewMode>('season');
   const [focusedMonth, setFocusedMonth] = useState<number>(() => new Date().getMonth() + 1);
