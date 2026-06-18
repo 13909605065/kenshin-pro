@@ -130,13 +130,28 @@ async function pullAllKVFromCloud(): Promise<number> {
     const supabase = createClient();
     const { data, error } = await supabase.from("user_kv").select("key, value").eq("user_id", userId);
     if (error || !data) return 0;
+
+    // Temporarily disable interceptor to avoid feedback loop
+    const wasInstalled = interceptorInstalled;
+    interceptorInstalled = false;
+
     let count = 0;
     for (const row of data) {
       if (row.key && row.value !== undefined) {
+        // NEVER overwrite non-empty local data with empty cloud data
+        const localVal = localStorage.getItem(row.key);
+        if (localVal && localVal !== "[]" && localVal !== "{}" && localVal !== '""') {
+          // Local has real data — cloud wins only if cloud also has real data
+          const cloudIsEmpty = row.value === "[]" || row.value === "{}" || row.value === '""' || row.value === "";
+          if (cloudIsEmpty) continue; // keep local data
+        }
         localStorage.setItem(row.key, row.value);
         count++;
       }
     }
+
+    // Re-enable interceptor
+    if (wasInstalled) interceptorInstalled = true;
     return count;
   } catch { return 0; }
 }
