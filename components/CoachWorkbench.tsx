@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useSyncVersion } from '@/lib/data-events';
 import { useTraining } from '@/hooks/useTraining';
 import { PhysicalTab } from './tabs/PhysicalTab';
 import { WorkoutTimer } from './WorkoutTimer';
@@ -196,6 +197,7 @@ interface EditState {
 
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
+  const syncVersion = useSyncVersion();
   const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
   const [trainDate, setTrainDate] = useState(() => {
     try { return localStorage.getItem("kenshin_coach_trainDate") || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }
@@ -271,7 +273,7 @@ export default function CoachWorkbench() {
       const todayStr = new Date().toISOString().slice(0, 10);
       return ranges.find((r: any) => todayStr >= r.startDate && todayStr <= r.endDate) || null;
     } catch { return null; }
-  }, []);
+  }, [syncVersion]);
   const calendarPhaseKey = (calendarPhase?.phase || 'regular_season') as CalendarPhaseKey;
   const calendarPhaseMeta = CALENDAR_PHASE_META[calendarPhaseKey];
 

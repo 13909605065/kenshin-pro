@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Activity, Save, ChevronDown, Download, Upload, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { useSyncVersion } from "@/lib/data-events";
 import { getPlayers } from "@/lib/roster-utils";
 import {
   getCoachScores, saveCoachScores,
@@ -77,7 +78,8 @@ function getRecommendation(score: number): { label: string; color: string; advic
 
 export function DailyReadiness({ onReadinessChange }: Props) {
   const today = new Date().toISOString().slice(0, 10);
-  const players = useMemo(() => getPlayers(), []);
+  const syncVersion = useSyncVersion();
+  const players = useMemo(() => getPlayers(), [syncVersion]);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [saved, setSaved] = useState(false);
   const [expanded, setExpanded] = useState(false);
