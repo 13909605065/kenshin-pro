@@ -49,7 +49,7 @@ async function pullTeamsFromCloud(): Promise<boolean> {
   } catch { return false; }
 }
 
-/** Pull active_team_id from Supabase → update localStorage. */
+/** Pull active_team_id from Supabase → update localStorage (only if local has no data or cloud is newer). */
 async function pullActiveTeamFromCloud(): Promise<boolean> {
   try {
     const userId = await getUserId();
@@ -57,7 +57,26 @@ async function pullActiveTeamFromCloud(): Promise<boolean> {
     const supabase = createClient();
     const { data, error } = await supabase.from("user_prefs").select("active_team_id").eq("user_id", userId).single();
     if (error || !data?.active_team_id) return false;
-    localStorage.setItem(ACTIVE_TEAM_KEY, data.active_team_id);
+
+    const cloudTeamId = data.active_team_id;
+    const localTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
+
+    // If same, nothing to do
+    if (localTeamId === cloudTeamId) return true;
+
+    // If local has roster data but cloud doesn't, keep local (don't lose data)
+    if (localTeamId) {
+      const localRoster = localStorage.getItem(`roster_players_${localTeamId}`);
+      const hasLocalData = localRoster && localRoster !== "[]";
+      if (hasLocalData) {
+        // Local has data — push local team ID to cloud instead
+        await pushActiveTeamToCloud(localTeamId);
+        return true;
+      }
+    }
+
+    // Cloud team wins — update localStorage
+    localStorage.setItem(ACTIVE_TEAM_KEY, cloudTeamId);
     return true;
   } catch { return false; }
 }
@@ -199,7 +218,7 @@ export async function initTeamSync(): Promise<void> {
 /** Push any localStorage-only keys that aren't yet in Supabase. */
 async function migrateLocalToCloud() {
   if (!isBrowser) return;
-  // Push all known localStorage keys that aren't team-scoped
+  // Push all known global keys
   const globalKeys = [
     "kenshin_season_calendar",
     "kenshin_role", "kenshin_scene", "kenshin_theme", "kenshin_lang",
@@ -214,17 +233,29 @@ async function migrateLocalToCloud() {
     const val = localStorage.getItem(key);
     if (val) await pushKV(key, val);
   }
-  // Also push team-scoped keys for active team
-  const activeTeamId = getActiveTeamId();
+
+  // Push team-scoped keys for ALL known teams (not just active)
+  const teams = getTeams();
+  const teamIds = teams.map(t => t.id);
+  // Also include active team (which might be from a different source)
+  const activeId = getActiveTeamId();
+  if (!teamIds.includes(activeId)) teamIds.push(activeId);
+
   const teamKeys = [
     "roster_players", "kenshin_fitness_profiles", "kenshin_history",
     "kenshin_cached_modules", "kenshin_load_data", "kenshin_training_logs",
     "kenshin_gps_data", "kenshin_pr_data", "kenshin_motivation",
   ];
-  for (const base of teamKeys) {
-    const key = `${base}_${activeTeamId}`;
-    const val = localStorage.getItem(key);
-    if (val) await pushKV(key, val);
+
+  for (const tid of teamIds) {
+    for (const base of teamKeys) {
+      const key = `${base}_${tid}`;
+      const val = localStorage.getItem(key);
+      if (val) {
+        await pushKV(key, val);
+        console.log("[sync] migrated team key:", key);
+      }
+    }
   }
 }
 
