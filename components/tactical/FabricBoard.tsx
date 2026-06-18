@@ -387,10 +387,11 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         }
       }
 
-      // ── Apply snaps & draw guides ──
+      // ── Apply snaps & draw guides (magnetic pull, not hard lock) ──
+      const SNAP_STRENGTH = 0.55; // pull 55% toward guide per frame — strong hint, easy to break free
       if (snappedY !== null) {
         const dy = snappedY - objCenter.y;
-        obj.set({ top: (obj.top || 0) + dy });
+        obj.set({ top: (obj.top || 0) + dy * SNAP_STRENGTH });
         const guide = new Line(
           [0, snappedY, FW, snappedY],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
@@ -402,7 +403,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
       if (snappedX !== null) {
         const dx = snappedX - objCenter.x;
-        obj.set({ left: (obj.left || 0) + dx });
+        obj.set({ left: (obj.left || 0) + dx * SNAP_STRENGTH });
         const guide = new Line(
           [snappedX, 0, snappedX, FH],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
