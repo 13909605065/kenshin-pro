@@ -1,10 +1,19 @@
 /**
- * Team-scoped localStorage utilities.
+ * Team-scoped localStorage + Supabase sync utilities.
+ *
+ * STRATEGY: localStorage is the FAST READ layer (synchronous, instant).
+ * Supabase is the SOURCE OF TRUTH for cross-device sync.
+ *
+ * - Reads: localStorage (instant) + background Supabase pull on init
+ * - Writes: localStorage (instant) + fire-and-forget Supabase push
+ * - On app init: pull teams + active_team_id from Supabase → update localStorage
  *
  * Every data key is automatically namespaced by the active team ID.
  * Switching teams in the UI changes getActiveTeamId() → all reads/writes
  * transparently target the new team's data.
  */
+
+import { createClient } from "@/lib/supabase/supabase-client";
 
 const TEAMS_KEY = "kenshin_teams";
 const ACTIVE_TEAM_KEY = "kenshin_active_team_id";
@@ -12,7 +21,128 @@ const ACTIVE_TEAM_KEY = "kenshin_active_team_id";
 const isBrowser = typeof window !== "undefined";
 
 // ---------------------------------------------------------------------------
-// Active team ID
+// Supabase helpers
+// ---------------------------------------------------------------------------
+
+async function getUserId(): Promise<string | null> {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch { return null; }
+}
+
+/** Pull teams from Supabase → update localStorage. Returns true if data was pulled. */
+async function pullTeamsFromCloud(): Promise<boolean> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return false;
+    const supabase = createClient();
+    const { data, error } = await supabase.from("teams").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+    if (error || !data) return false;
+    if (data.length > 0) {
+      const teams: Team[] = data.map(r => ({ id: r.id, name: r.name, createdAt: r.created_at }));
+      localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+      return true;
+    }
+    return false;
+  } catch { return false; }
+}
+
+/** Pull active_team_id from Supabase → update localStorage. */
+async function pullActiveTeamFromCloud(): Promise<boolean> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return false;
+    const supabase = createClient();
+    const { data, error } = await supabase.from("user_prefs").select("active_team_id").eq("user_id", userId).single();
+    if (error || !data?.active_team_id) return false;
+    localStorage.setItem(ACTIVE_TEAM_KEY, data.active_team_id);
+    return true;
+  } catch { return false; }
+}
+
+/** Push all teams to Supabase (upsert per team). */
+async function pushTeamsToCloud(teams: Team[]): Promise<void> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const supabase = createClient();
+    // Delete teams not in current list, then upsert current
+    const currentIds = teams.map(t => t.id);
+    // Get existing IDs from cloud
+    const { data: existing } = await supabase.from("teams").select("id").eq("user_id", userId);
+    if (existing) {
+      const existingIds = existing.map((r: any) => r.id);
+      const toDelete = existingIds.filter((id: string) => !currentIds.includes(id));
+      if (toDelete.length > 0) {
+        await supabase.from("teams").delete().in("id", toDelete).eq("user_id", userId);
+      }
+    }
+    // Upsert all current teams
+    const rows = teams.map(t => ({ id: t.id, user_id: userId, name: t.name, created_at: t.createdAt }));
+    const { error } = await supabase.from("teams").upsert(rows, { onConflict: "id" });
+    if (error) console.warn("[team-storage] pushTeamsToCloud error:", error);
+  } catch (e) { console.warn("[team-storage] pushTeamsToCloud failed:", e); }
+}
+
+/** Push active_team_id to Supabase. */
+async function pushActiveTeamToCloud(teamId: string): Promise<void> {
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("user_prefs").upsert({
+      user_id: userId,
+      active_team_id: teamId,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+    if (error) console.warn("[team-storage] pushActiveTeamToCloud error:", error);
+  } catch (e) { console.warn("[team-storage] pushActiveTeamToCloud failed:", e); }
+}
+
+// ---------------------------------------------------------------------------
+// Init — call once on app mount
+// ---------------------------------------------------------------------------
+
+let syncInitialized = false;
+
+/** Call once on app startup. Pulls teams + active team from Supabase. */
+export async function initTeamSync(): Promise<void> {
+  if (!isBrowser || syncInitialized) return;
+  syncInitialized = true;
+
+  const [teamsPulled, activePulled] = await Promise.all([
+    pullTeamsFromCloud(),
+    pullActiveTeamFromCloud(),
+  ]);
+
+  // If cloud has no teams but localStorage does, migrate local → cloud
+  if (!teamsPulled) {
+    const localTeams = getTeams();
+    if (localTeams.length > 0) {
+      await pushTeamsToCloud(localTeams);
+    }
+  }
+
+  // If cloud has no active team but localStorage does, migrate
+  if (!activePulled) {
+    const localActive = localStorage.getItem(ACTIVE_TEAM_KEY);
+    if (localActive) {
+      await pushActiveTeamToCloud(localActive);
+    }
+  }
+
+  // Validate: active team exists in teams list
+  const teams = getTeams();
+  const activeId = getActiveTeamId();
+  if (teams.length > 0 && !teams.find(t => t.id === activeId)) {
+    setActiveTeamId(teams[0].id);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Active team ID (synchronous, localStorage-backed)
 // ---------------------------------------------------------------------------
 
 export function getActiveTeamId(): string {
@@ -36,6 +166,8 @@ export function getActiveTeamId(): string {
 export function setActiveTeamId(id: string): void {
   if (!isBrowser) return;
   localStorage.setItem(ACTIVE_TEAM_KEY, id);
+  // Background sync to Supabase
+  pushActiveTeamToCloud(id);
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +188,8 @@ export function getTeams(): Team[] {
 function saveTeams(teams: Team[]): void {
   if (!isBrowser) return;
   localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+  // Background sync to Supabase
+  pushTeamsToCloud(teams);
 }
 
 export function addTeam(name: string): Team {
@@ -99,9 +233,6 @@ export function teamKey(baseKey: string, teamId?: string): string {
 
 /** Check if a key is already team-scoped (has `_teamId` suffix pattern) */
 function isAlreadyScoped(key: string): boolean {
-  // Team-scoped keys look like: something_uuid_or_timestamp
-  // Non-scoped keys are plain like: kenshin_gps_data
-  // Heuristic: if key ends with _ followed by 20+ alphanumeric chars, it's scoped
   return /_[a-z0-9_-]{20,}$/.test(key) || key.endsWith("_server_");
 }
 
@@ -110,26 +241,17 @@ const migratedKeys = new Set<string>();
 
 /**
  * Migrate old unscoped key to team-scoped key on first access.
- * Moves data from `baseKey` → `baseKey_teamId` so existing data isn't lost.
  */
 function migrateIfNeeded(baseKey: string, teamId: string): void {
   if (!isBrowser || migratedKeys.has(baseKey)) return;
   migratedKeys.add(baseKey);
-
-  // Already team-scoped? Skip.
   if (isAlreadyScoped(baseKey)) return;
-
   const scopedKey = teamKey(baseKey, teamId);
-  // Only migrate if scoped key doesn't exist AND unscoped key does
   if (localStorage.getItem(scopedKey) !== null) return;
-
   try {
     const old = localStorage.getItem(baseKey);
     if (old !== null) {
       localStorage.setItem(scopedKey, old);
-      // Don't delete old key — user might switch back to unscoped?
-      // Actually, delete it to avoid confusion after confirming migration works.
-      // But for safety, keep it for now (first deploy).
     }
   } catch {}
 }

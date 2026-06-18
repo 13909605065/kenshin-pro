@@ -116,66 +116,172 @@ function saveLocalPlayers(players: PlayerRecord[]): void {
 }
 
 // ---------------------------------------------------------------------------
-// Public API — Supabase-primary, localStorage-fallback
+// Public API — Supabase-primary, localStorage-cache
 // ---------------------------------------------------------------------------
 
-/* Pull from cloud on first load */
 let cloudPulled = false;
-let pullPromise: Promise<void> | null = null;
-async function pullFromCloud() {
-  if (cloudPulled) return pullPromise;
+let pullPromise: Promise<PlayerRecord[]> | null = null;
+
+/**
+ * Pull roster from Supabase, merge with localStorage for any offline-only data,
+ * then cache the merged result to localStorage.
+ * Returns the merged player list.
+ */
+async function pullFromCloud(): Promise<PlayerRecord[]> {
+  if (cloudPulled && pullPromise) return pullPromise;
   cloudPulled = true;
+
   pullPromise = (async () => {
     try {
       const userId = await getUserId();
-      if (!userId) return;
+      if (!userId) return getLocalPlayers();
+
       const supabase = createClient();
-      const { data } = await supabase.from("roster_players").select("*").eq("user_id", userId).order("created_at", { ascending: true });
-      if (data?.length) saveLocalPlayers(data.map(mapRowToPlayer));
-    } catch {}
+      const { data, error } = await supabase
+        .from("roster_players")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+
+      if (error || !data) return getLocalPlayers();
+
+      if (data.length > 0) {
+        // Supabase has data → it wins (source of truth)
+        const cloudPlayers = data.map(mapRowToPlayer);
+        saveLocalPlayers(cloudPlayers);
+        return cloudPlayers;
+      }
+
+      // Supabase is empty — migrate localStorage data to cloud
+      const local = getLocalPlayers();
+      if (local.length > 0) {
+        const rows = local.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
+        await supabase.from("roster_players").upsert(rows, { onConflict: "id" });
+      }
+      return local;
+    } catch {
+      return getLocalPlayers();
+    }
   })();
+
   return pullPromise;
 }
 
+/** Full async load — Supabase first, localStorage cache. Call from hooks/effects. */
 export async function loadPlayers(): Promise<PlayerRecord[]> {
-  await pullFromCloud();
-  return getLocalPlayers();
+  return pullFromCloud();
 }
 
-/** Sync read — localStorage primary for instant UI */
+/** Sync read — localStorage for instant UI, triggers background Supabase pull. */
 export function getPlayers(): PlayerRecord[] {
-  pullFromCloud();
+  pullFromCloud().catch(() => {});
   return getLocalPlayers();
 }
 
-/* Sync save + background cloud */
+/** Save full list — localStorage instant + robust Supabase push. */
+export async function savePlayersAsync(players: PlayerRecord[]): Promise<void> {
+  saveLocalPlayers(players);
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const supabase = createClient();
+    const rows = players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
+    const { error } = await supabase.from("roster_players").upsert(rows, { onConflict: "id" });
+    if (error) console.warn("[roster] savePlayers sync error:", error);
+  } catch (e) { console.warn("[roster] savePlayers failed:", e); }
+}
+
+/** Sync save (kept for backward compat — fire-and-forget) */
 export function savePlayers(players: PlayerRecord[]): void {
   saveLocalPlayers(players);
   getUserId().then(userId => {
     if (!userId) return;
-    createClient().from("roster_players").upsert(players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) })), { onConflict: "id" }).then(({ error }) => { if (error) console.warn("roster sync:", error); });
-  });
+    const rows = players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
+    createClient().from("roster_players").upsert(rows, { onConflict: "id" }).then(({ error }) => {
+      if (error) console.warn("[roster] savePlayers sync error:", error);
+    });
+  }).catch(() => {});
 }
 
-export function addPlayer(p: Omit<PlayerRecord, "id">): PlayerRecord {
-  const newId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString(36).slice(2);
+export async function addPlayerAsync(p: Omit<PlayerRecord, "id">): Promise<PlayerRecord> {
+  const newId = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString() + Math.random().toString(36).slice(2);
   const np: PlayerRecord = { ...p, id: newId };
   const local = getLocalPlayers();
   local.push(np);
   saveLocalPlayers(local);
-  getUserId().then(userId => { if (userId) createClient().from("roster_players").insert({ id: newId, user_id: userId, ...mapPlayerToRow(np) }).then(({ error }) => { if (error) console.warn("addPlayer sync:", error); }); });
+
+  try {
+    const userId = await getUserId();
+    if (userId) {
+      const { error } = await createClient().from("roster_players").insert({ id: newId, user_id: userId, ...mapPlayerToRow(np) });
+      if (error) console.warn("[roster] addPlayer sync error:", error);
+    }
+  } catch (e) { console.warn("[roster] addPlayer failed:", e); }
   return np;
+}
+
+export function addPlayer(p: Omit<PlayerRecord, "id">): PlayerRecord {
+  const newId = typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Date.now().toString() + Math.random().toString(36).slice(2);
+  const np: PlayerRecord = { ...p, id: newId };
+  const local = getLocalPlayers();
+  local.push(np);
+  saveLocalPlayers(local);
+  getUserId().then(userId => {
+    if (userId) {
+      createClient().from("roster_players").insert({ id: newId, user_id: userId, ...mapPlayerToRow(np) }).then(({ error }) => {
+        if (error) console.warn("[roster] addPlayer sync error:", error);
+      });
+    }
+  }).catch(() => {});
+  return np;
+}
+
+export async function updatePlayerAsync(id: string, updates: Partial<PlayerRecord>): Promise<void> {
+  const local = getLocalPlayers().map(p => p.id === id ? { ...p, ...updates } : p);
+  saveLocalPlayers(local);
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const { error } = await createClient().from("roster_players").update(mapPlayerToRow(updates)).eq("id", id).eq("user_id", userId);
+    if (error) console.warn("[roster] updatePlayer sync error:", error);
+  } catch (e) { console.warn("[roster] updatePlayer failed:", e); }
 }
 
 export function updatePlayer(id: string, updates: Partial<PlayerRecord>): void {
   const local = getLocalPlayers().map(p => p.id === id ? { ...p, ...updates } : p);
   saveLocalPlayers(local);
-  getUserId().then(userId => { if (userId) createClient().from("roster_players").update(mapPlayerToRow(updates)).eq("id", id).eq("user_id", userId).then(({ error }) => { if (error) console.warn("updatePlayer sync:", error); }); });
+  getUserId().then(userId => {
+    if (userId) {
+      createClient().from("roster_players").update(mapPlayerToRow(updates)).eq("id", id).eq("user_id", userId).then(({ error }) => {
+        if (error) console.warn("[roster] updatePlayer sync error:", error);
+      });
+    }
+  }).catch(() => {});
+}
+
+export async function deletePlayerAsync(id: string): Promise<void> {
+  saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const { error } = await createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId);
+    if (error) console.warn("[roster] deletePlayer sync error:", error);
+  } catch (e) { console.warn("[roster] deletePlayer failed:", e); }
 }
 
 export function deletePlayer(id: string): void {
   saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
-  getUserId().then(userId => { if (userId) createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId).then(({ error }) => { if (error) console.warn("deletePlayer sync:", error); }); });
+  getUserId().then(userId => {
+    if (userId) {
+      createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId).then(({ error }) => {
+        if (error) console.warn("[roster] deletePlayer sync error:", error);
+      });
+    }
+  }).catch(() => {});
 }
 
 // ---------------------------------------------------------------------------

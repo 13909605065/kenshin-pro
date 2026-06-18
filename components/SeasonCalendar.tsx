@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X, Download, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { notifyChange } from "@/lib/data-events";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -142,13 +143,13 @@ function validateData(raw: any): SeasonCalendarData | null {
 }
 
 function loadData(): SeasonCalendarData {
+  // First load: return default; async pull will update once Supabase responds
   try {
     const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
     if (!raw) return getDefaultData();
     const parsed = JSON.parse(raw);
     const validated = validateData(parsed);
     if (!validated) {
-      // Data corrupted — backup the bad data and reset
       try { localStorage.setItem(STORAGE_KEY + '_corrupted_backup', raw); } catch {}
       localStorage.removeItem(STORAGE_KEY);
       return getDefaultData();
@@ -159,23 +160,55 @@ function loadData(): SeasonCalendarData {
   }
 }
 
-function saveData(data: SeasonCalendarData) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
-  syncSeasonToSupabase(data); // fire-and-forget best-effort sync
+/**
+ * Pull season calendar from Supabase (source of truth).
+ * If cloud has data → cache to localStorage and return it.
+ * If cloud is empty but localStorage has data → migrate localStorage → cloud.
+ */
+async function pullSeasonFromCloud(): Promise<SeasonCalendarData | null> {
+  try {
+    const supabase = createClient();
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user?.id) return null;
+
+    const { data, error } = await supabase
+      .from("season_calendar")
+      .select("calendar_data")
+      .eq("user_id", session.session.user.id)
+      .single();
+
+    if (error || !data?.calendar_data) return null;
+
+    const validated = validateData(data.calendar_data);
+    if (validated) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validated));
+      return validated;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
-/** Sync season data to Supabase for cross-device access */
-async function syncSeasonToSupabase(data: SeasonCalendarData) {
+function saveData(data: SeasonCalendarData) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+  // Robust async push to Supabase
+  pushSeasonToCloud(data);
+}
+
+/** Push season calendar to Supabase (source of truth). */
+async function pushSeasonToCloud(data: SeasonCalendarData) {
   try {
-    const { createClient } = await import("@/lib/supabase/supabase-client");
     const supabase = createClient();
     const { data: session } = await supabase.auth.getSession();
     if (!session?.session?.user?.id) return;
-    await supabase.from("season_calendar").upsert({
+    const { error } = await supabase.from("season_calendar").upsert({
       user_id: session.session.user.id,
       calendar_data: data,
-      updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
-  } catch {}
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) console.warn("[season] pushSeasonToCloud error:", error);
+  } catch (e) { console.warn("[season] pushSeasonToCloud failed:", e); }
 }
 
 function getDefaultSeasonYear(): number {
@@ -353,6 +386,13 @@ export default function SeasonCalendar() {
     const seasonEnd = `${year}-12-31`;
     return { events: [], phaseRanges: [], matchDates: [], seasonStart, seasonEnd };
   });
+
+  // On mount: pull season calendar from Supabase (cross-device sync)
+  useEffect(() => {
+    pullSeasonFromCloud().then(cloudData => {
+      if (cloudData) setData(cloudData);
+    });
+  }, []);
 
   const [viewMode, setViewMode] = useState<ViewMode>('season');
   const [focusedMonth, setFocusedMonth] = useState<number>(() => new Date().getMonth() + 1);

@@ -8,6 +8,7 @@ import {
   addTeam,
   renameTeam,
   deleteTeam,
+  initTeamSync,
   type Team,
 } from "@/lib/team-storage";
 
@@ -26,10 +27,16 @@ export function TeamProvider({ children }: { children: ReactNode }) {
   const [teamId, setTeamId] = useState<string>("_loading_");
   const [teams, setTeams] = useState<Team[]>([]);
 
-  // Hydrate from localStorage on mount (avoids SSR mismatch)
+  // Hydrate from localStorage on mount (avoids SSR mismatch),
+  // then sync from Supabase for cross-device consistency.
   useEffect(() => {
     setTeamId(getActiveTeamId());
     setTeams(getTeams());
+    // Background: pull from Supabase, then refresh state
+    initTeamSync().then(() => {
+      setTeamId(getActiveTeamId());
+      setTeams(getTeams());
+    });
   }, []);
 
   const switchTeam = useCallback((id: string) => {
