@@ -31,13 +31,35 @@ type DataEvent =
 
 import { useState, useEffect } from "react";
 
-/** Hook: returns a version number that increments after every cloud sync */
+/** Hook: returns a version number that increments on cloud sync OR data change */
 export function useSyncVersion(): number {
   const [v, setV] = useState(0);
   useEffect(() => {
     const h = () => setV(x => x + 1);
     window.addEventListener("sync-completed", h);
-    return () => window.removeEventListener("sync-completed", h);
+    window.addEventListener("season-calendar-updated", h);
+    window.addEventListener("roster-updated", h);
+    window.addEventListener("training-log-updated", h);
+    window.addEventListener("gps-data-updated", h);
+    window.addEventListener("field-session-updated", h);
+    window.addEventListener("gym-workout-updated", h);
+    window.addEventListener("self-report-updated", h);
+    window.addEventListener("match-data-updated", h);
+    window.addEventListener("load-data-changed", h);
+    window.addEventListener("storage", h);
+    return () => {
+      window.removeEventListener("sync-completed", h);
+      window.removeEventListener("season-calendar-updated", h);
+      window.removeEventListener("roster-updated", h);
+      window.removeEventListener("training-log-updated", h);
+      window.removeEventListener("gps-data-updated", h);
+      window.removeEventListener("field-session-updated", h);
+      window.removeEventListener("gym-workout-updated", h);
+      window.removeEventListener("self-report-updated", h);
+      window.removeEventListener("match-data-updated", h);
+      window.removeEventListener("load-data-changed", h);
+      window.removeEventListener("storage", h);
+    };
   }, []);
   return v;
 }

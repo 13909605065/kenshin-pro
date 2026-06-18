@@ -29,6 +29,7 @@ import { POSITION_PROFILES, type PositionMetabolicProfile } from "@/lib/position
 import { POSITION_LABELS } from "@/lib/constants";
 import type { Position } from "@/lib/types";
 import type { PlayerRecord as RosterPlayer } from "@/lib/roster-utils";
+import { useSyncVersion } from "@/lib/data-events";
 import { getPlayers } from "@/lib/roster-utils";
 import { saveSessionLog, type TrainingSessionLog } from "@/lib/training-log";
 
@@ -220,6 +221,7 @@ function generateId(): string {
 // ═══════════════════════════════════════════
 
 export default function MatchPage() {
+  const syncVersion = useSyncVersion();
   const [state, setState] = useState<MatchState | null>(null);
   const [setupTab, setSetupTab] = useState<"squad" | "starting11">("squad");
   const [rosterPlayers, setRosterPlayers] = useState<RosterPlayer[]>([]);
@@ -234,11 +236,11 @@ export default function MatchPage() {
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load roster on mount
+  // Load roster on mount + on data change
   useEffect(() => {
     const players = getPlayers();
     setRosterPlayers(players);
-  }, []);
+  }, [syncVersion]);
 
   // Try to restore state from localStorage
   useEffect(() => {

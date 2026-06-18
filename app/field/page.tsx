@@ -10,7 +10,7 @@ import {
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/lib/trimp";
 import { saveSessionLog } from "@/lib/training-log";
-import { notifyChange } from '@/lib/data-events';
+import { notifyChange, useSyncVersion } from '@/lib/data-events';
 import { POSITION_LABELS } from "@/lib/constants";
 import { loadGPSData, calcGPS_TRIMP, type GPSRecord } from "@/lib/gps-import";
 import { parseText } from "@/lib/field-validator";
@@ -503,6 +503,7 @@ function generateId(): string {
    ─────────────────────────────────────────── */
 
 export default function FieldPage() {
+  const syncVersion = useSyncVersion();
   // ── State ──
   const [players, setPlayers] = useState<PlayerRecord[]>([]);
   const [session, setSession] = useState<FieldSession>(() => {
@@ -539,7 +540,7 @@ export default function FieldPage() {
   // ── Load players ──
   useEffect(() => {
     setPlayers(getPlayers());
-  }, []);
+  }, [syncVersion]);
 
   // ── Timer ──
   useEffect(() => {
