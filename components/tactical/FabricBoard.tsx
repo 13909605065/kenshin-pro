@@ -91,21 +91,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       fireRightClick: true,
     });
 
-    // Lock viewport: prevent panning, only allow pinch zoom
-    let savedZoom = canvas.getZoom();
-    canvas.on("mouse:down", () => { savedZoom = canvas.getZoom(); });
-    canvas.on("mouse:up", () => {
-      // Re-center after any mouse interaction (prevents pan drift)
-      if (canvas.getZoom() !== savedZoom) return; // zoom handled separately
-      centerAtZoom(canvas, canvas.getZoom());
-    });
-    // For touch: always re-center on touch end (prevent pan from any gesture)
-    const recenterOnTouchEnd = () => {
-      setTimeout(() => centerAtZoom(canvas, canvas.getZoom()), 50);
-    };
-    el.addEventListener("touchend", recenterOnTouchEnd);
-    el.addEventListener("touchcancel", recenterOnTouchEnd);
-
     // Mouse wheel zoom (desktop) — always centers after zoom
     canvas.on("mouse:wheel", (opt: any) => {
       const delta = opt.e.deltaY;
@@ -174,11 +159,31 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     el.addEventListener("touchcancel", onTouchEnd);
 
     canvasRef.current = canvas;
-    // 🔒 Disable ALL canvas panning — field stays fixed, only zoom allowed
-    (canvas as any)._handleTouchPan = () => {}; // kill Fabric's built-in pan
     // Expose centered zoom API for external callers (warmup page, toolbar)
     (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
     (canvas as any)._getZoom = () => canvas.getZoom();
+
+    // 🔒🔒🔒 NUCLEAR: 60fps loop forces viewport to stay centered
+    // Fabric's internal pan can't win against this
+    let lockZoom = canvas.getZoom();
+    let lockFrame: number;
+    const lockViewport = () => {
+      const vt = canvas.viewportTransform!;
+      const el = canvas.getElement();
+      const vpW = el.clientWidth;
+      const vpH = el.clientHeight;
+      const z = vt[0]; // current zoom
+      const correctTx = vpW / 2 - (FW / 2) * z;
+      const correctTy = vpH / 2 - (FH / 2) * z;
+      if (Math.abs(vt[4] - correctTx) > 0.5 || Math.abs(vt[5] - correctTy) > 0.5) {
+        vt[4] = correctTx;
+        vt[5] = correctTy;
+        canvas.requestRenderAll();
+      }
+      lockZoom = z;
+      lockFrame = requestAnimationFrame(lockViewport);
+    };
+    lockFrame = requestAnimationFrame(lockViewport);
     (canvas as any)._ensureFieldMarked = () => ensureFieldMarked();
     // Notify parent that canvas is ready (for pending auto-save restore etc.)
     onCanvasReady?.(canvas);
@@ -538,15 +543,14 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     ro.observe(container);
 
     return () => {
+      cancelAnimationFrame(lockFrame);
       window.removeEventListener("keydown", onKeyDown);
       ro.disconnect();
       container.removeEventListener("drop", onDrop);
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
       el.removeEventListener("touchend", onTouchEnd);
-      el.removeEventListener("touchend", recenterOnTouchEnd);
       el.removeEventListener("touchcancel", onTouchEnd);
-      el.removeEventListener("touchcancel", recenterOnTouchEnd);
       canvas.dispose();
       canvasRef.current = null;
     };
