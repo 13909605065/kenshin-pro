@@ -28,9 +28,14 @@ export interface SeasonEvent {
   createdAt: string;
 }
 
-// 中乙球队名单（待补充完整）
+// 中乙 2025 赛季球队名单
 export const CN_LEAGUE_TWO_TEAMS = [
-  "请把中乙球队名单发给我",
+  "长春喜都", "北京理工", "大连可为", "大连英博 B 队",
+  "山西崇德荣海", "兰州陇原竞技", "泰安天贶", "青岛红狮",
+  "山东泰山 B 队", "海门珂缔缘", "上海赛更达", "上海海港 B 队",
+  "湖北青年星", "武汉三镇 B 队", "成都蓉城 B 队", "杭州临平吴越",
+  "江西庐山", "温州 FC", "贵州贵阳竞技", "赣州瑞狮",
+  "厦门飞鹭", "广州蒲公英", "广东铭途", "深圳二零二八",
 ];
 
 export type PhaseType = 'offseason' | 'preseason_build' | 'regular_season' | 'playoffs';
