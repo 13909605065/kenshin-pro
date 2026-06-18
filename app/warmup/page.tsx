@@ -111,7 +111,6 @@ export default function WarmupDesignPage() {
     try {
       const obj = JSON.parse(jsonStr);
       c.loadFromJSON(obj, () => {
-        (c as any)._ensureFieldMarked?.();
         c.requestRenderAll();
       });
     } catch (e) { console.warn("[warmup] restore failed:", e); }

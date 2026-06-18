@@ -63,6 +63,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clipboardRef = useRef<any>(null);              // copy/paste
   const alignGuidesRef = useRef<any[]>([]);             // alignment snap guides
+  const fieldImgRef = useRef<HTMLImageElement>(null);    // static field background layer
 
   const debouncedAutoSave = useCallback(() => {
     if (!onCanvasChange) return;
@@ -77,7 +78,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     const el = canvasElRef.current;
     const canvas = new Canvas(el, {
       width: FW, height: FH,
-      backgroundColor: TAC_THEME.bg,
+      backgroundColor: "transparent",  // field is a static image behind this canvas
       selection: true,
       preserveObjectStacking: true,
       cornerStyle: "circle",
@@ -85,11 +86,29 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       cornerColor: TAC_THEME.accent,
       cornerStrokeColor: "#FFF",
       transparentCorners: false,
-      // Mobile touch optimizations — prevent any canvas panning
       allowTouchScrolling: false,
       stopContextMenu: true,
       fireRightClick: true,
     });
+
+    // ── Render static field background as separate image layer ──
+    const renderFieldToImage = () => {
+      // Create offscreen canvas to draw the vector field once
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = FW; offCanvas.height = FH;
+      const offFabric = new Canvas(offCanvas, { width: FW, height: FH, backgroundColor: TAC_THEME.bg });
+      drawVectorField(offFabric);
+      offFabric.renderAll();
+      // Convert to data URL and set as background image
+      setTimeout(() => {
+        const dataUrl = offCanvas.toDataURL("image/png");
+        if (fieldImgRef.current) {
+          fieldImgRef.current.src = dataUrl;
+        }
+        offFabric.dispose();
+      }, 200);
+    };
+    renderFieldToImage();
 
     // Mouse wheel zoom (desktop) — always centers after zoom
     canvas.on("mouse:wheel", (opt: any) => {
@@ -163,28 +182,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     (canvas as any)._centerAtZoom = (z: number) => centerAtZoom(canvas, z);
     (canvas as any)._getZoom = () => canvas.getZoom();
 
-    // 🔒🔒🔒 NUCLEAR: 60fps loop forces viewport to stay centered
-    // Fabric's internal pan can't win against this
-    let lockZoom = canvas.getZoom();
-    let lockFrame: number;
-    const lockViewport = () => {
-      const vt = canvas.viewportTransform!;
-      const el = canvas.getElement();
-      const vpW = el.clientWidth;
-      const vpH = el.clientHeight;
-      const z = vt[0]; // current zoom
-      const correctTx = vpW / 2 - (FW / 2) * z;
-      const correctTy = vpH / 2 - (FH / 2) * z;
-      if (Math.abs(vt[4] - correctTx) > 0.5 || Math.abs(vt[5] - correctTy) > 0.5) {
-        vt[4] = correctTx;
-        vt[5] = correctTy;
-        canvas.requestRenderAll();
-      }
-      lockZoom = z;
-      lockFrame = requestAnimationFrame(lockViewport);
-    };
-    lockFrame = requestAnimationFrame(lockViewport);
-    (canvas as any)._ensureFieldMarked = () => ensureFieldMarked();
     // Notify parent that canvas is ready (for pending auto-save restore etc.)
     onCanvasReady?.(canvas);
 
@@ -198,34 +195,9 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       historyIdx = history.length - 1;
       onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1);
     };
-    /** Re-mark and re-lock the field group after JSON restore */
-    const ensureFieldMarked = () => {
-      const all = canvas.getObjects();
-      for (const o of all) {
-        if (o.type === "group" && ((o as any).lockMovementX || (o as any)._objects?.length > 5)) {
-          (o as any)._isFieldBg = true;
-          o.set({
-            selectable: false, evented: false,
-            lockMovementX: true, lockMovementY: true,
-            lockRotation: true, lockScalingX: true, lockScalingY: true,
-          });
-          // Also lock all sub-objects
-          const sub = (o as any)._objects;
-          if (sub) {
-            for (const s of sub) {
-              s.set({
-                selectable: false, evented: false,
-                lockMovementX: true, lockMovementY: true,
-              });
-            }
-          }
-        }
-      }
-    };
     const load = (json: string) => {
       restoring = true;
       canvas.loadFromJSON(JSON.parse(json), () => {
-        ensureFieldMarked();
         restoring = false;
         canvas.requestRenderAll();
       });
@@ -300,7 +272,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         e.preventDefault();
         const sel = canvas.getActiveObject();
         if (sel && (sel as any)._objects) {
-          const items = [...(sel as any)._objects].filter((o: any) => !o._isFieldBg);
+          const items = [...(sel as any)._objects].filter((o: any) => true);
           if (items.length >= 2) {
             items.sort((a: any, b: any) => (a.getCenterPoint().x) - (b.getCenterPoint().x));
             const first = items[0].getCenterPoint().x;
@@ -321,7 +293,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         e.preventDefault();
         const sel = canvas.getActiveObject();
         if (sel && (sel as any)._objects) {
-          const items = [...(sel as any)._objects].filter((o: any) => !o._isFieldBg);
+          const items = [...(sel as any)._objects].filter((o: any) => true);
           if (items.length >= 2) {
             items.sort((a: any, b: any) => (a.getCenterPoint().y) - (b.getCenterPoint().y));
             const first = items[0].getCenterPoint().y;
@@ -351,7 +323,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     // During drag: only show guide lines, DON'T force position
     canvas.on("object:moving", (opt: any) => {
       const obj = opt.target;
-      if (!obj || obj._isFieldBg) { clearGuides(); pendingSnapX = null; pendingSnapY = null; return; }
+      if (!obj) { clearGuides(); pendingSnapX = null; pendingSnapY = null; return; }
       clearGuides();
       pendingSnapX = null;
       pendingSnapY = null;
@@ -359,7 +331,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       const objCenter = obj.getCenterPoint();
       const objBounds = obj.getBoundingRect();
       const others = canvas.getObjects().filter((o: any) =>
-        o !== obj && !o._isFieldBg && !o._isRouteArrow && !o._isRoute
+        o !== obj && true && !o._isRouteArrow && !o._isRoute
       );
 
       const objL = objBounds.left, objR = objBounds.left + objBounds.width;
@@ -474,9 +446,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
     canvas.on("selection:cleared", () => { clearGuides(); pendingSnapX = null; pendingSnapY = null; });
 
-    // Default: vector field with dark muted green grass
-    drawVectorField(canvas);
-
     // Drop handler — with proper scaling controls for all equipment
     const container = containerRef.current!;
     const onDrop = (e: DragEvent) => {
@@ -543,7 +512,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     ro.observe(container);
 
     return () => {
-      cancelAnimationFrame(lockFrame);
       window.removeEventListener("keydown", onKeyDown);
       ro.disconnect();
       container.removeEventListener("drop", onDrop);
@@ -683,7 +651,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       }
       // Prevent all existing objects from intercepting touch/draw
       c.getObjects().forEach((o: any) => {
-        if (!o._isFieldBg) {
+        if (true) {
           o.set({ selectable: false, evented: false });
         }
       });
@@ -691,7 +659,7 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       c.isDrawingMode = false;
       // Restore interactivity for non-field objects
       c.getObjects().forEach((o: any) => {
-        if (!o._isFieldBg) {
+        if (true) {
           o.set({ selectable: true, evented: true });
         }
       });
@@ -779,7 +747,6 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
 
     const all = c.getObjects();
     all.forEach((o: any) => {
-      if (o._isFieldBg) return; // field always unselectable
       if (o._isPlayer && lockPlayers !== undefined) {
         o.set({ selectable: !lockPlayers, evented: !lockPlayers });
       }
@@ -791,36 +758,43 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     c.requestRenderAll();
   }, [lockPlayers, lockRoutes]);
 
-  // Handle field selection from EquipmentPalette
+  // Handle field selection: regenerate background image layer
   useEffect(() => {
     const c = canvasRef.current; if (!c) return;
     (c as any)._setFieldImage = (fn: string) => {
-      // Clear old field objects (both vector and image)
-      c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-      // Default → dark muted green vector field
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = FW; offCanvas.height = FH;
+      const offFabric = new Canvas(offCanvas, { width: FW, height: FH, backgroundColor: TAC_THEME.bg });
+
       if (fn === "default" || !fn) {
-        drawVectorField(c);
+        drawVectorField(offFabric);
+      } else {
+        // Load field PNG as background
+        FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
+          const margin = 30;
+          const sw = (offCanvas.width - margin * 2) / img.width!;
+          const sh = (offCanvas.height - margin * 2) / img.height!;
+          const s = Math.min(sw, sh);
+          img.set({
+            left: (offCanvas.width - img.width! * s) / 2,
+            top: (offCanvas.height - img.height! * s) / 2,
+            scaleX: s, scaleY: s,
+          });
+          offFabric.add(img);
+          offFabric.renderAll();
+          setTimeout(() => {
+            if (fieldImgRef.current) fieldImgRef.current.src = offCanvas.toDataURL("image/png");
+            offFabric.dispose();
+          }, 200);
+        });
         return;
       }
-      // Load field PNG — fill canvas with tight margins
-      FabricImage.fromURL(`/equipment/${fn}.png`).then((img) => {
-        c.getObjects().filter((o: any) => o._isFieldBg).forEach((o: any) => c.remove(o));
-        const margin = 30;
-        const sw = (c.width! - margin * 2) / img.width!;
-        const sh = (c.height! - margin * 2) / img.height!;
-        const s = Math.min(sw, sh); // fit — center with equal margins
-        img.set({
-          left: (c.width! - img.width! * s) / 2,
-          top: (c.height! - img.height! * s) / 2,
-          scaleX: s, scaleY: s, selectable: false, evented: false,
-        });
-        (img as any)._isFieldBg = true;
-        const others = c.getObjects().filter((o: any) => !o._isFieldBg);
-        others.forEach((o: any) => c.remove(o));
-        c.add(img);
-        others.forEach((o: any) => c.add(o));
-        c.requestRenderAll();
-      });
+
+      offFabric.renderAll();
+      setTimeout(() => {
+        if (fieldImgRef.current) fieldImgRef.current.src = offCanvas.toDataURL("image/png");
+        offFabric.dispose();
+      }, 200);
     };
   }, []);
 
@@ -836,7 +810,9 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
   };
   return (
     <div ref={containerRef} className="flex-1 flex items-center justify-center overflow-hidden relative" style={{ minHeight: 0, backgroundColor: TAC_THEME.bg }}>
-      <canvas ref={canvasElRef} className="max-w-full max-h-full" style={{ touchAction: "none" }} />
+      {/* Static field background — never moves, never receives events */}
+      <img ref={fieldImgRef} alt="" className="absolute max-w-full max-h-full pointer-events-none select-none" style={{ objectFit: "contain" }} />
+      <canvas ref={canvasElRef} className="absolute max-w-full max-h-full" style={{ touchAction: "none" }} />
     </div>
   );
 }
@@ -982,7 +958,7 @@ export function drawVectorField(canvas: Canvas) {
   });
   (field as any)._isFieldBg = true;
 
-  const others = canvas.getObjects().filter((o: any) => !o._isFieldBg);
+  const others = canvas.getObjects().filter((o: any) => true);
   others.forEach((o: any) => canvas.remove(o));
   canvas.add(field);
   others.forEach((o: any) => canvas.add(o));
