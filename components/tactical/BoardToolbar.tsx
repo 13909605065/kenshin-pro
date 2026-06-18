@@ -1,6 +1,6 @@
 "use client";
 
-import { MousePointer2, Circle, Type, Trash2, ChevronUp, ChevronDown, ZoomIn, ZoomOut } from "lucide-react";
+import { MousePointer2, Circle, Type, Trash2, ChevronUp, ChevronDown, ZoomIn, ZoomOut, Pen } from "lucide-react";
 import { useState } from "react";
 import { TAC_THEME } from "@/lib/tactical-theme";
 
@@ -64,6 +64,7 @@ const TOOLS: ToolDef[] = [
   { id: "draw_pass", label: "传球", iconFn: iconPass },
   { id: "draw_curve", label: "直线", iconFn: iconStraight },
   { id: "draw_dribble", label: "带球", iconFn: iconDribble },
+  { id: "draw_free", label: "绘图", icon: <Pen className="w-3.5 h-3.5" strokeWidth={1.5} /> },
   { id: "add_text", label: "文字", icon: <Type className="w-3.5 h-3.5" strokeWidth={1.5} /> },
   { id: "erase", label: "删除", icon: <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} /> },
 ];

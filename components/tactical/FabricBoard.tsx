@@ -176,12 +176,18 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       historyIdx = history.length - 1;
       onHistoryChange?.(historyIdx > 0, historyIdx < history.length - 1);
     };
-    /** Re-mark the field group after JSON restore (custom props like _isFieldBg are lost) */
+    /** Re-mark and re-lock the field group after JSON restore */
     const ensureFieldMarked = () => {
       const all = canvas.getObjects();
       for (const o of all) {
         if ((o as any).lockMovementX && (o as any).type === "group") {
           (o as any)._isFieldBg = true;
+          // Re-apply full lock (some properties may be lost in serialization)
+          o.set({
+            selectable: false, evented: false,
+            lockMovementX: true, lockMovementY: true,
+            lockRotation: true, lockScalingX: true, lockScalingY: true,
+          });
         }
       }
     };
@@ -631,6 +637,21 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     };
     if (activeTool === "add_text") { c.on("mouse:down", h); return () => c.off("mouse:down", h); }
     return () => c.off("mouse:down", h);
+  }, [activeTool, activeColor]);
+
+  // Free-draw tool (iPad pencil / finger drawing)
+  useEffect(() => {
+    const c = canvasRef.current; if (!c) return;
+    if (activeTool === "draw_free") {
+      c.isDrawingMode = true;
+      c.selection = false;
+      if (c.freeDrawingBrush) {
+        c.freeDrawingBrush.color = activeColor;
+        c.freeDrawingBrush.width = 3;
+      }
+    } else {
+      c.isDrawingMode = false;
+    }
   }, [activeTool, activeColor]);
 
   // Place player — 8-point circular anchors, perfectly centered number
