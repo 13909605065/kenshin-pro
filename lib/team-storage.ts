@@ -49,7 +49,7 @@ async function pullTeamsFromCloud(): Promise<boolean> {
   } catch { return false; }
 }
 
-/** Pull active_team_id from Supabase → update localStorage (only if local has no data or cloud is newer). */
+/** Pull active_team_id from Supabase → update localStorage. Cloud is source of truth. */
 async function pullActiveTeamFromCloud(): Promise<boolean> {
   try {
     const userId = await getUserId();
@@ -59,23 +59,7 @@ async function pullActiveTeamFromCloud(): Promise<boolean> {
     if (error || !data?.active_team_id) return false;
 
     const cloudTeamId = data.active_team_id;
-    const localTeamId = localStorage.getItem(ACTIVE_TEAM_KEY);
-
-    // If same, nothing to do
-    if (localTeamId === cloudTeamId) return true;
-
-    // If local has roster data but cloud doesn't, keep local (don't lose data)
-    if (localTeamId) {
-      const localRoster = localStorage.getItem(`roster_players_${localTeamId}`);
-      const hasLocalData = localRoster && localRoster !== "[]";
-      if (hasLocalData) {
-        // Local has data — push local team ID to cloud instead
-        await pushActiveTeamToCloud(localTeamId);
-        return true;
-      }
-    }
-
-    // Cloud team wins — update localStorage
+    // Cloud always wins — ensures both devices use the same team
     localStorage.setItem(ACTIVE_TEAM_KEY, cloudTeamId);
     return true;
   } catch { return false; }
