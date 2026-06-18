@@ -288,16 +288,22 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
     };
     window.addEventListener("keydown", onKeyDown);
 
-    // ─── Snap-to-guide: horizontal & vertical alignment ───
+    // ─── Snap-to-guide: show guides during drag, snap on release ───
     const clearGuides = () => {
       alignGuidesRef.current.forEach(g => canvas.remove(g));
       alignGuidesRef.current = [];
     };
 
+    let pendingSnapX: number | null = null;
+    let pendingSnapY: number | null = null;
+
+    // During drag: only show guide lines, DON'T force position
     canvas.on("object:moving", (opt: any) => {
       const obj = opt.target;
-      if (!obj || obj._isFieldBg) { clearGuides(); return; }
+      if (!obj || obj._isFieldBg) { clearGuides(); pendingSnapX = null; pendingSnapY = null; return; }
       clearGuides();
+      pendingSnapX = null;
+      pendingSnapY = null;
 
       const objCenter = obj.getCenterPoint();
       const objBounds = obj.getBoundingRect();
@@ -305,15 +311,12 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         o !== obj && !o._isFieldBg && !o._isRouteArrow && !o._isRoute
       );
 
-      let snappedY: number | null = null;
-      let snappedX: number | null = null;
+      const objL = objBounds.left, objR = objBounds.left + objBounds.width;
+      const objT = objBounds.top, objB = objBounds.top + objBounds.height;
 
-      // ── Collect centers & edges for all other objects ──
       const centers: { x: number; y: number }[] = [];
-      const leftEdges: number[] = [];
-      const rightEdges: number[] = [];
-      const topEdges: number[] = [];
-      const bottomEdges: number[] = [];
+      const leftEdges: number[] = [], rightEdges: number[] = [];
+      const topEdges: number[] = [], bottomEdges: number[] = [];
 
       for (const other of others) {
         const oc = other.getCenterPoint();
@@ -325,92 +328,73 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
         bottomEdges.push(ob.top + ob.height);
       }
 
-      // ── 1. Center alignment (horizontal / vertical) ──
+      // Find nearest snap points (center + edge alignment)
+      let bestY: number | null = null, bestYDiff = SNAP_THRESHOLD;
+      let bestX: number | null = null, bestXDiff = SNAP_THRESHOLD;
+
       for (const oc of centers) {
-        if (snappedY === null && Math.abs(objCenter.y - oc.y) < SNAP_THRESHOLD) snappedY = oc.y;
-        if (snappedX === null && Math.abs(objCenter.x - oc.x) < SNAP_THRESHOLD) snappedX = oc.x;
-        if (snappedY !== null && snappedX !== null) break;
+        const dy = Math.abs(objCenter.y - oc.y);
+        const dx = Math.abs(objCenter.x - oc.x);
+        if (dy < bestYDiff) { bestYDiff = dy; bestY = oc.y; }
+        if (dx < bestXDiff) { bestXDiff = dx; bestX = oc.x; }
+      }
+      for (const le of leftEdges) {
+        const d = Math.abs(objL - le); if (d < bestXDiff) { bestXDiff = d; bestX = le + (objR - objL) / 2; }
+      }
+      for (const re of rightEdges) {
+        const d = Math.abs(objR - re); if (d < bestXDiff) { bestXDiff = d; bestX = re - (objR - objL) / 2; }
+      }
+      for (const te of topEdges) {
+        const d = Math.abs(objT - te); if (d < bestYDiff) { bestYDiff = d; bestY = te + (objB - objT) / 2; }
+      }
+      for (const be of bottomEdges) {
+        const d = Math.abs(objB - be); if (d < bestYDiff) { bestYDiff = d; bestY = be - (objB - objT) / 2; }
       }
 
-      // ── 2. Edge alignment ──
-      const objL = objBounds.left, objR = objBounds.left + objBounds.width;
-      const objT = objBounds.top, objB = objBounds.top + objBounds.height;
-
-      if (snappedX === null) {
-        for (const le of leftEdges) {
-          if (Math.abs(objL - le) < SNAP_THRESHOLD) { snappedX = le + (objR - objL) / 2; break; }
-        }
-      }
-      if (snappedX === null) {
-        for (const re of rightEdges) {
-          if (Math.abs(objR - re) < SNAP_THRESHOLD) { snappedX = re - (objR - objL) / 2; break; }
-        }
-      }
-      if (snappedY === null) {
-        for (const te of topEdges) {
-          if (Math.abs(objT - te) < SNAP_THRESHOLD) { snappedY = te + (objB - objT) / 2; break; }
-        }
-      }
-      if (snappedY === null) {
-        for (const be of bottomEdges) {
-          if (Math.abs(objB - be) < SNAP_THRESHOLD) { snappedY = be - (objB - objT) / 2; break; }
-        }
-      }
-
-      // ── 3. Equal spacing: snap to midpoint between two neighbors ──
-      if (snappedX === null && centers.length >= 2) {
-        // Find nearest center to the left and right
-        let leftNeighbor: { x: number; y: number } | null = null;
-        let rightNeighbor: { x: number; y: number } | null = null;
+      // Equal spacing midpoint
+      if (bestX === null && centers.length >= 2) {
+        let leftN: { x: number } | null = null, rightN: { x: number } | null = null;
         for (const oc of centers) {
           if (Math.abs(oc.y - objCenter.y) < SNAP_THRESHOLD * 3) {
-            if (oc.x < objCenter.x && (!leftNeighbor || oc.x > leftNeighbor.x)) leftNeighbor = oc;
-            if (oc.x > objCenter.x && (!rightNeighbor || oc.x < rightNeighbor.x)) rightNeighbor = oc;
+            if (oc.x < objCenter.x && (!leftN || oc.x > leftN.x)) leftN = oc;
+            if (oc.x > objCenter.x && (!rightN || oc.x < rightN.x)) rightN = oc;
           }
         }
-        if (leftNeighbor && rightNeighbor) {
-          const midX = (leftNeighbor.x + rightNeighbor.x) / 2;
-          if (Math.abs(objCenter.x - midX) < SNAP_THRESHOLD * 2) snappedX = midX;
+        if (leftN && rightN) {
+          const midX = (leftN.x + rightN.x) / 2;
+          const d = Math.abs(objCenter.x - midX);
+          if (d < bestXDiff) { bestXDiff = d; bestX = midX; }
         }
       }
-
-      if (snappedY === null && centers.length >= 2) {
-        let topNeighbor: { x: number; y: number } | null = null;
-        let bottomNeighbor: { x: number; y: number } | null = null;
+      if (bestY === null && centers.length >= 2) {
+        let topN: { y: number } | null = null, bottomN: { y: number } | null = null;
         for (const oc of centers) {
           if (Math.abs(oc.x - objCenter.x) < SNAP_THRESHOLD * 3) {
-            if (oc.y < objCenter.y && (!topNeighbor || oc.y > topNeighbor.y)) topNeighbor = oc;
-            if (oc.y > objCenter.y && (!bottomNeighbor || oc.y < bottomNeighbor.y)) bottomNeighbor = oc;
+            if (oc.y < objCenter.y && (!topN || oc.y > topN.y)) topN = oc;
+            if (oc.y > objCenter.y && (!bottomN || oc.y < bottomN.y)) bottomN = oc;
           }
         }
-        if (topNeighbor && bottomNeighbor) {
-          const midY = (topNeighbor.y + bottomNeighbor.y) / 2;
-          if (Math.abs(objCenter.y - midY) < SNAP_THRESHOLD * 2) snappedY = midY;
+        if (topN && bottomN) {
+          const midY = (topN.y + bottomN.y) / 2;
+          const d = Math.abs(objCenter.y - midY);
+          if (d < bestYDiff) { bestYDiff = d; bestY = midY; }
         }
       }
 
-      // ── Apply snaps & draw guides (magnetic pull, not hard lock) ──
-      const SNAP_STRENGTH = 0.35; // gentle 35% pull — aligns without locking either axis
-      if (snappedY !== null) {
-        const dy = snappedY - objCenter.y;
-        obj.set({ top: (obj.top || 0) + dy * SNAP_STRENGTH });
-        const guide = new Line(
-          [0, snappedY, FW, snappedY],
+      // Draw guide lines only (no position forcing during drag)
+      if (bestY !== null) {
+        pendingSnapY = bestY;
+        const guide = new Line([0, bestY, FW, bestY],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
-            selectable: false, evented: false, opacity: 0.7 }
-        );
+            selectable: false, evented: false, opacity: 0.7 });
         canvas.add(guide);
         alignGuidesRef.current.push(guide);
       }
-
-      if (snappedX !== null) {
-        const dx = snappedX - objCenter.x;
-        obj.set({ left: (obj.left || 0) + dx * SNAP_STRENGTH });
-        const guide = new Line(
-          [snappedX, 0, snappedX, FH],
+      if (bestX !== null) {
+        pendingSnapX = bestX;
+        const guide = new Line([bestX, 0, bestX, FH],
           { stroke: TAC_THEME.accent, strokeWidth: 1, strokeDashArray: [4, 4],
-            selectable: false, evented: false, opacity: 0.7 }
-        );
+            selectable: false, evented: false, opacity: 0.7 });
         canvas.add(guide);
         alignGuidesRef.current.push(guide);
       }
@@ -418,8 +402,26 @@ export function FabricBoard({ activeTool, activeColor, onObjectSelected, onHisto
       canvas.requestRenderAll();
     });
 
-    canvas.on("object:modified", () => clearGuides());
-    canvas.on("selection:cleared", () => clearGuides());
+    // On release: snap to the nearest guide
+    canvas.on("object:modified", (opt: any) => {
+      const obj = opt.target;
+      if (!obj) { clearGuides(); return; }
+      clearGuides();
+
+      if (pendingSnapX !== null) {
+        const dx = pendingSnapX - obj.getCenterPoint().x;
+        obj.set({ left: (obj.left || 0) + dx });
+      }
+      if (pendingSnapY !== null) {
+        const dy = pendingSnapY - obj.getCenterPoint().y;
+        obj.set({ top: (obj.top || 0) + dy });
+      }
+      pendingSnapX = null;
+      pendingSnapY = null;
+      canvas.requestRenderAll();
+    });
+
+    canvas.on("selection:cleared", () => { clearGuides(); pendingSnapX = null; pendingSnapY = null; });
 
     // Default: vector field with dark muted green grass
     drawVectorField(canvas);
