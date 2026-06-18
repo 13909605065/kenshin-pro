@@ -513,33 +513,30 @@ export default function SeasonCalendar() {
     return eventsByDate[d] || [];
   }, [eventsByDate]);
 
-  // ── Batch phase planning: each phase has independent start + end dates ──
+  // ── Batch phase planning: each phase applied individually ──
   const phaseOrder: PhaseType[] = ['offseason', 'preseason_build', 'regular_season', 'playoffs'];
 
-  const handleBatchPlan = useCallback(() => {
+  const handleApplyPhase = useCallback((phase: PhaseType) => {
+    const startEl = document.getElementById(`phase-start-${phase}`) as HTMLInputElement;
+    const endEl = document.getElementById(`phase-end-${phase}`) as HTMLInputElement;
+    const startDate = startEl?.value;
+    const endDate = endEl?.value;
+    if (!startDate || !endDate || endDate < startDate) return;
+
     updateData(prev => {
-      const newRanges: PhaseRange[] = [];
-      for (const phase of phaseOrder) {
-        const startEl = document.getElementById(`phase-start-${phase}`) as HTMLInputElement;
-        const endEl = document.getElementById(`phase-end-${phase}`) as HTMLInputElement;
-        const startDate = startEl?.value;
-        const endDate = endEl?.value;
-        if (startDate && endDate && endDate >= startDate) {
-          newRanges.push({
-            id: genId(),
-            startDate,
-            endDate,
-            phase,
-            notes: PHASE_CONFIG[phase].label,
-          });
-        }
-      }
-      // Remove old ranges for the 4 phases, keep any others
-      const otherRanges = prev.phaseRanges.filter(r => !phaseOrder.includes(r.phase));
-      return { ...prev, phaseRanges: [...otherRanges, ...newRanges] };
+      const ranges = prev.phaseRanges.filter(r => r.phase !== phase);
+      return {
+        ...prev,
+        phaseRanges: [...ranges, {
+          id: genId(),
+          startDate,
+          endDate,
+          phase,
+          notes: PHASE_CONFIG[phase].label,
+        }],
+      };
     });
-    setShowBatchPanel(false);
-  }, [updateData, phaseOrder]);
+  }, [updateData]);
 
   // ── Export JSON ──
   const handleExport = useCallback(() => {
@@ -848,7 +845,7 @@ export default function SeasonCalendar() {
           {/* ══ BATCH PHASE PLANNING ══ */}
           {showBatchPanel && (
             <div className="px-4 py-3 border-b border-[#222] bg-[#0a0a0a] space-y-3">
-              <span className="text-[10px] text-gray-500 font-medium">阶段规划 — 四个阶段独立设置开始和结束日期</span>
+              <span className="text-[10px] text-gray-500 font-medium">阶段规划 — 设置日期后点击应用</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {phaseOrder.map(phase => {
                   const cfg = PHASE_CONFIG[phase];
@@ -862,28 +859,28 @@ export default function SeasonCalendar() {
                       <input
                         id={`phase-start-${phase}`}
                         type="date"
-                        defaultValue={existingRange?.startDate || data.seasonStart}
-                        placeholder="开始"
+                        defaultValue={existingRange?.startDate || ''}
+                        placeholder="开始日期"
                         className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555]"
                       />
                       <span className="text-[8px] text-gray-600 text-center">至</span>
                       <input
                         id={`phase-end-${phase}`}
                         type="date"
-                        defaultValue={existingRange?.endDate || data.seasonEnd}
-                        placeholder="结束"
+                        defaultValue={existingRange?.endDate || ''}
+                        placeholder="结束日期"
                         className="bg-[#1a1a1a] border border-[#333] rounded px-1 py-0.5 text-[9px] text-white focus:outline-none focus:border-[#555]"
                       />
+                      <button
+                        onClick={() => handleApplyPhase(phase)}
+                        className="mt-1 px-2 py-1 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded text-[9px] font-bold transition"
+                      >
+                        应用
+                      </button>
                     </div>
                   );
                 })}
               </div>
-              <button
-                onClick={handleBatchPlan}
-                className="px-3 py-1.5 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded text-[10px] font-bold transition"
-              >
-                全部应用
-              </button>
             </div>
           )}
 
