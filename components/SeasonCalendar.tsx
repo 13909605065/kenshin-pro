@@ -389,14 +389,16 @@ export default function SeasonCalendar() {
 
   const syncVersion = useSyncVersion();
 
-  // Pull season calendar from Supabase when sync completes
+  // Prevent cloud pull from overwriting just-saved local data
+  const lastSaveRef = useRef(0);
+
+  // Pull season calendar from Supabase when sync completes (but skip if just saved locally)
   useEffect(() => {
-    // First try dedicated season_calendar table, fall back to localStorage (synced via user_kv)
+    if (Date.now() - lastSaveRef.current < 2000) return; // skip if saved <2s ago
     pullSeasonFromCloud().then(cloudData => {
       if (cloudData) {
         setData(cloudData);
       } else {
-        // Cloud table might be empty — try localStorage (populated by user_kv sync)
         const local = loadData();
         if (local.events.length > 0 || local.phaseRanges.length > 0) {
           setData(local);
@@ -427,6 +429,7 @@ export default function SeasonCalendar() {
 
   // ── persist on change ──
   const updateData = useCallback((updater: (prev: SeasonCalendarData) => SeasonCalendarData) => {
+    lastSaveRef.current = Date.now();
     setData(prev => {
       const next = updater(prev);
       saveData(next); notifyChange("season-calendar-updated");
