@@ -27,7 +27,8 @@ type DataEvent =
   | "season-calendar-updated"
   | "load-data-changed"
   | "knowledge-base-updated"
-  | "sync-completed";
+  | "sync-completed"
+  | "custom-exercises-updated";
 
 import { useState, useEffect } from "react";
 

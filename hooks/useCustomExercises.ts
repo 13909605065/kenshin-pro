@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { notifyChange } from "@/lib/data-events";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -80,6 +81,7 @@ export function useCustomExercises() {
       const updated = [...exercises, newEx];
       setExercises(updated);
       persist(updated);
+      notifyChange("custom-exercises-updated");
       return newEx;
     },
     [exercises, persist]
@@ -93,6 +95,7 @@ export function useCustomExercises() {
       updated[idx] = { ...updated[idx], ...updates };
       setExercises(updated);
       persist(updated);
+      notifyChange("custom-exercises-updated");
       return true;
     },
     [exercises, persist]
@@ -104,6 +107,7 @@ export function useCustomExercises() {
       if (updated.length === exercises.length) return false;
       setExercises(updated);
       persist(updated);
+      notifyChange("custom-exercises-updated");
       return true;
     },
     [exercises, persist]

@@ -1,8 +1,39 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Plus } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { X, Plus, AlertTriangle, Ban } from "lucide-react";
 import { CustomExercise, CustomBodyPart, CustomEquipment } from "@/hooks/useCustomExercises";
+import { STRENGTH_LIBRARY } from "@/lib/training-library";
+
+// ─── Similarity detection ──────────────────────────────────
+
+function charJaccard(a: string, b: string): number {
+  const aArr = a.replace(/\s/g, "").split("");
+  const bArr = b.replace(/\s/g, "").split("");
+  const aSet = new Set(aArr);
+  const bSet = new Set(bArr);
+  let intersection = 0;
+  let union = 0;
+  const allChars = new Set<string>();
+  aArr.forEach(c => allChars.add(c));
+  bArr.forEach(c => allChars.add(c));
+  union = allChars.size;
+  Array.from(aSet).forEach(c => { if (bSet.has(c)) intersection++; });
+  return union === 0 ? 0 : intersection / union;
+}
+
+function findSimilar(name: string, existing: string[]): { exact: string[]; similar: string[] } {
+  const t = name.trim();
+  if (!t) return { exact: [], similar: [] };
+  const exact: string[] = [];
+  const similar: string[] = [];
+  for (const n of existing) {
+    if (n === t) { exact.push(n); continue; }
+    if (t.includes(n) || n.includes(t)) { similar.push(n); continue; }
+    if (charJaccard(t, n) >= 0.6) { similar.push(n); }
+  }
+  return { exact, similar };
+}
 
 interface Props {
   open: boolean;
@@ -40,6 +71,31 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
   const [imageBase64, setImageBase64] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // ─── Build existing names list (built-in + custom) ────────
+  const existingNames = useMemo(() => {
+    const names: string[] = [];
+    // Built-in from STRENGTH_LIBRARY
+    for (const ex of Object.values(STRENGTH_LIBRARY)) {
+      names.push(ex.name);
+    }
+    // Custom from localStorage
+    try {
+      const custom = JSON.parse(localStorage.getItem("kenshin_custom_exercises") || "[]");
+      custom.forEach((ce: any) => {
+        if (!editingExercise || ce.id !== editingExercise.id) {
+          names.push(ce.name);
+        }
+      });
+    } catch {}
+    return names;
+  }, [editingExercise]);
+
+  // ─── Real-time similarity check ───────────────────────────
+  const dupCheck = useMemo(() => {
+    if (!name.trim()) return { exact: [] as string[], similar: [] as string[] };
+    return findSimilar(name, existingNames);
+  }, [name, existingNames]);
+
   useEffect(() => {
     if (editingExercise) {
       setName(editingExercise.name);
@@ -71,6 +127,12 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
   const handleSubmit = () => {
     if (!name.trim()) {
       setErrorMsg("请输入动作名称");
+      return;
+    }
+    // Block exact duplicates
+    const dup = findSimilar(name, existingNames);
+    if (dup.exact.length > 0 && !isEditing) {
+      setErrorMsg(`动作「${dup.exact[0]}」已存在，请勿重复添加`);
       return;
     }
 
@@ -113,6 +175,26 @@ export function AddExerciseModal({ open, onClose, onSave, editingExercise }: Pro
           <div>
             <label className={labelClass}>动作名称 <span className="text-[#992828]">*</span></label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="例：杠铃反向弓步" className={inputClass} />
+            {/* Duplicate / Similar warnings */}
+            {dupCheck.exact.length > 0 && (
+              <div className="mt-2 p-2 rounded-lg bg-[#992828]/10 border border-[#992828]/30 flex items-start gap-2">
+                <Ban className="w-3.5 h-3.5 text-[#992828] mt-0.5 shrink-0" />
+                <div className="text-xs text-[#992828]">
+                  <span className="font-bold">重复动作：</span>
+                  动作库中已存在「{dupCheck.exact.join("」、「")}」
+                </div>
+              </div>
+            )}
+            {dupCheck.similar.length > 0 && dupCheck.exact.length === 0 && (
+              <div className="mt-2 p-2 rounded-lg bg-yellow-500/5 border border-yellow-500/20 flex items-start gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" />
+                <div className="text-xs text-yellow-400">
+                  <span className="font-bold">可能重复：</span>
+                  与「{dupCheck.similar.slice(0, 5).join("」、「")}」
+                  {dupCheck.similar.length > 5 && `等${dupCheck.similar.length}个`} 高度相似，请确认是否同一动作
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -565,6 +565,18 @@ function ExerciseLibraryPanel({
   onAddExercise: (id: string) => void;
 }) {
   // Merge custom exercises from localStorage
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setRefreshKey(k => k + 1);
+    window.addEventListener("custom-exercises-updated", handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("custom-exercises-updated", handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, []);
+
   const allExercises = useMemo(() => {
     const builtIn = [...EXERCISE_LIBRARY];
     try {
@@ -585,7 +597,7 @@ function ExerciseLibraryPanel({
       });
     } catch {}
     return builtIn;
-  }, []);
+  }, [refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     return allExercises.filter((ex) => {
