@@ -6,7 +6,7 @@ import { useTeam } from "@/lib/team-context";
 import { ChevronDown, Plus, Settings, X } from "lucide-react";
 import {
   Home, Dumbbell, Activity, Zap, Users,
-  BarChart3, Gauge, Trophy, ListChecks,
+  BarChart3, Gauge, Trophy, ListChecks, Shield,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { id: "load",     label: "负荷管理", icon: BarChart3,   path: "/load" },
   { id: "fitness",  label: "体测",     icon: Gauge,       path: "/fitness" },
   { id: "roster",   label: "花名册",   icon: Users,       path: "/roster" },
+  { id: "injury-prevention", label: "伤病预防", icon: Shield, path: "/injury-prevention" },
   { id: "status",   label: "状态录入", icon: Activity,    path: "/status" },
   { id: "match",    label: "比赛",     icon: Trophy,      path: "/match" },
   { id: "settings", label: "设置",     icon: Settings,    path: "/settings" },
