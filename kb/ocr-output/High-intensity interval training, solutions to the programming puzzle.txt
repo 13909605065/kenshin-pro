@@ -1,0 +1,4921 @@
+Lt eviSfelo
+
+CA 王
+义种入
+
+Sports Med (2013) 43:313-338
+DOL 10.1007/s40279-013-0029-x
+
+High-Intensity Interval Training, Solutions
+to the Programming Puzzle
+Part I: Cardiopulmonary Emphasis
+Martin Buchheit - Paul B. Laursen
+
+Published online: 29 March 2013
+
+© Springer International Publishing Switzerland 2013
+
+Abstract
+
+High-intensity
+
+interval
+
+training
+
+(HIT),
+
+in
+
+a
+
+characterize the training stimulus when programming HIT,
+
+variety of forms, is today one of the most effective means
+
+including cardiovascular work, anaerobic glycolytic energy
+
+of improving cardiorespiratory and metabolic function and,
+
+contribution and acute neuromuscular load and musculo-
+
+in turn, the physical performance of athletes. HIT involves
+
+skeletal
+
+repeated short-to-long bouts of rather high-intensity exer-
+
+manipulation of up to nine variables, which include the
+
+strain.
+
+Prescription
+
+for
+
+HIT
+
+consists
+
+of
+
+the
+
+cise interspersed with recovery periods. For team and
+
+work interval intensity and duration, relief interval inten-
+
+racquet sport players, the inclusion of sprints and all-out
+
+sity and duration, exercise modality, number of repetitions,
+
+efforts into HIT programmes has also been shown to be an
+
+number of series, as well as the between-series recovery
+
+effective practice. It is believed that an optimal stimulus to
+
+duration and intensity. The manipulation of any of these
+
+elicit both maximal cardiovascular and peripheral adapta-
+
+variables can affect the acute physiological responses to
+
+tions is one where athletes spend at least several minutes
+
+HIT. This article is Part I of a subsequent II-part review
+
+per session in their ‘red zone,’ which generally means
+
+and will discuss the different aspects of HIT programming,
+
+reaching at least 90 % of their maximal oxygen uptake
+
+from work/relief interval manipulation to the selection
+
+(VO2max). While use of HIT is not the only approach to
+
+of exercise mode, using different examples of training
+
+improve physiological parameters and performance, there
+
+cycles from different sports, with continued reference to
+
+has been a growth in interest by the sport science com-
+
+T@VOomax and cardiovascular responses. Additional pro-
+
+munity for characterizing training protocols that allow
+
+gramming and periodization considerations will also be
+
+athletes to maintain long periods of time above 90 % of
+
+discussed with respect to other variables such as anaerobic
+
+VOrmax (T@VOrmax). In addition to T@VO2max, other
+
+glycolytic system contribution (as inferred from blood
+
+physiological variables should also be considered to fully
+
+lactate accumulation), neuromuscular load and musculoskeletal strain (Part II).
+
+M. Buchheit
+
+ASPIRE, Football Performance & Science Department,
+Academy for Sports Excellence, Doha, Qatar
+
+M. Buchheit (D4)
+
+1 Introduction
+With respect to prescribing training that improves perfor-
+
+Physiology Unit, Sport Science Department, ASPIRE,
+
+mance, coaches know that ‘‘there’s more than one way to
+
+Academy for Sports Excellence, P.O. Box 22287, Doha, Qatar
+
+skin the cat.’’[1] Recent reviews [1, 2] have highlighted the
+
+e-mail: martin.buchheit@aspire.ga; mb @ martin-buchheit.net
+P. B. Laursen
+
+potential
+
+of varying
+
+quantities
+
+of both
+
+high-intensity
+
+interval training (HIT) and continuous high-volume, low-
+
+High Performance Sport New Zealand,
+
+intensity training on performance in highly trained athletes.
+
+Auckland, New Zealand
+
+While there is no doubt that both types of training can
+
+P. B. Laursen
+
+effectively improve cardiac and skeletal muscle metabolic
+
+Sport Performance Research Institute New Zealand (SPRINZ),
+
+function, and that a dose of both types of training are
+
+Auckland University of Technology, Auckland, New Zealand
+
+important constitutes of an athlete’s training programme,
+
+4N Adis
+
+314
+
+M. Buchheit, P. B. Laursen
+
+this review will focus solely on the topic of HIT. Indeed, a
+
+session in their ‘red zone,’ which generally means attaining
+
+number of studies in this area have emerged over the last
+
+an intensity greater than 90 % of VOonax (3, 5, 15, 18].
+
+decade, and it is perhaps not surprising that running- or
+
+Consequently, despite our limited understanding of the
+
+cycling-based HIT is today considered one of the most
+
+dose-response relationship between the training load and
+
+effective forms of exercise for improving physical perfor-
+
+training-induced changes in physical capacities and per-
+
+mance in athletes [3-6]. “HIT involves repeated short-to-
+
+formance (which generally shows large inter-individual
+
+long bouts of rather high-intensity exercise interspersed
+
+responses [19, 20]), there has been a growing interest by
+
+with recovery periods” [3], and has been used by athletes
+
+the sport science community for characterizing training
+
+for almost a century now. For example, in 1920, Paavo
+
+protocols that allow athletes to maintain the longest time
+
+Nurmi, one of the best middle- and long-distance runners in
+
+>90 % VOormax (T@VOormax; See Midgley and McNaughton [14] for review). In addition to T@ VOomax, however,
+
+the world at that time, was already using some form of HIT
+in his training routines. Emil Zatopek contributed later in
+
+the 1950s to the popularization of this specific training
+format (see Billat [3] for a detailed history of HIT). The
+progressive emergence of this training method amongst
+elite athletes is the first evidence of its effectiveness (i.e.
+
+‘best practice’ theory [2]). More recently, the use of sprints
+and all-out efforts has also emerged, both from the applied
+
+(team sport) field and the laboratory [7-9]. These particularly intense forms of HIT include repeated-sprint training
+(RST; sprints lasting from 3 to 7s, interspersed with
+recovery periods lasting generally less than 60 s) or sprint
+
+interval training (SIT; 30 s all-out efforts interspersed with
+2—4 min passive recovery periods).
+Following pioneering experiments by Hill in the 1920s
+
+(Hill included intermittent exercises in his first studies [2]),
+Astrand and co-workers published several classical papers
+in the 1960s on the acute physiological responses to HIT,
+which created the first scientific basis for long [10] and
+
+short [11, 12] duration intervals. Studies by Balsom et al.
+followed in the 1990s, emphasizing all-out efforts [13]. As
+will be detailed in the review, most of the scientific work
+that followed these studies over the past 20-50 years has
+
+been an extension of these findings using new technology
+in the field (i.e. more accurate and portable devices).
+However, the important responses and mechanisms of HIT
+
+had already been demonstrated [10-12].
+It has been suggested that HIT protocols that elicit
+
+maximal oxygen uptake (VO2max), or at least a very high
+percentage of VO2nax, maximally stress the oxygen transport and utilization systems and may therefore provide the
+
+most effective stimulus for enhancing VOomax {5, 14, 15].
+
+other physiological variables should also be considered to
+fully characterize the training stimulus when programming
+HIT [21-23]. Any exercise training session will challenge,
+
+at different respective levels relative to the training content,
+both the metabolic and the neuromuscular/musculoskeletal
+systems [21, 22]. The metabolic system refer to three distinct yet closely related integrated processes, including (1)
+
+the splitting of the stored phosphagens (adenosine triphosphate
+
+[ATP] and phosphocreatine
+
+[PCr]);
+
+(2) the
+
+nonaerobic breakdown of carbohydrate (anaerobic glyco-
+
+lytic energy production); and (3) the combustion of carbohydrates and fats in the presence of oxygen (oxidative
+metabolism, or aerobic system) [184]. It is therefore possible
+
+to precisely characterize the acute physiological
+
+responses of any HIT session, based on (a) the respective
+contribution of these three metabolic processes; (b) the
+neuromuscular load; and (c) the musculoskeletal strain
+
+(Fig. 1, Part I). Under these assumptions, we consider the
+
+cardiorespiratory (i.e. oxygen uptake; VO,) data, but also
+cardiovascular work [24—27]), stored energy [28, 29] and
+cardiac autonomic stress [30-33] responses as the primary
+
+variables of interest when programming HIT sessions
+(review Part I). By logic, anaerobic glycolytic energy
+contribution
+
+and
+
+neuromuscular
+
+load/musculoskeletal
+
+strain are therefore likely the more important secondary
+variables to consider when designing a given HIT session
+(Part I).
+Several factors determine the desired acute physiological
+
+response to an HIT session (and the likely forthcoming
+adaptations) [Fig. 1]. The sport that the athlete is involved
+in (i.e. training specificity) and the athlete’s profile or sport
+
+While evidence to justify the need to exercise at such an
+
+specialty (e.g. an 800 m runner will likely favour a greater
+
+intensity remains unclear, it can be argued that only exer-
+
+proportion of ‘anaerobic-based’ HIT compared with a
+
+cise intensities near VO2,,.x allow for both large motor unit
+
+marathon runner [6]) should first be considered in relation to
+
+recruitment (i.e.
+
+and
+
+the desired long-term training adaptations. Second, and
+
+attainment of near-to-maximal cardiac output (see Sect.
+
+more importantly on a short-term basis, training periodi-
+
+3.2), which, in turn, jointly signals for oxidative muscle
+
+zation has probably the greatest impact on the HIT pre-
+
+fibre adaptation and myocardium enlargement (and hence,
+
+scription. Many of the desired training adaptations are
+
+type
+
+Il
+
+muscle
+
+fibres)
+
+[16,
+
+17]
+
+VOomax). For an optimal stimulus (and forthcoming car-
+
+likely training cycle dependent (e.g. generic aerobic power
+
+diovascular and peripheral adaptations), it is believed that
+
+development in the initial phase of the preseason vs. sport-
+
+athletes should spend at least several minutes per HIT
+
+specific and more anaerobic-like HIT sessions towards the
+
+HIT Programming: Cardiopulmonary Emphasis
+
+315
+
+Desired metabolic and/or
+neuromuscular load of the HIT
+session
+
+1, Metabolic
+
+(O, system)
+
+2, Metabolic
+
+(O, system)
++ neuromuscular
+
+3. Metabolic
+
+(0, + anaerobic
+systems)
+
+4. Metabolic
+
+5. Metabolic
+
+{O, + anaerobic
+systems)
+
+6. Neuromuscular
+
+(peripheral
+O, +
+anaerobic
+
++ neuromuscular
+
+system)
+
++ neuromuscular
+
+Ne ve
+
+Short intervals (<60 s)
+
+|
+
+sr
+
+|
+
+Long Intervals (260 s)
+
+Fig. 1 Decision process for selecting an HIT format based on the
+
+load; and (6) eliciting a high predominant neuromuscular strain,
+
+expected acute physiological response/strain. The six different types
+of acute responses are categorized as (/) metabolic, but eliciting
+
+While some HIT formats can be used to match different response
+categories (e.g. short intervals when properly manipulated can match
+
+essentially large requirements from the Oy transport and utilization
+systems, i.e, cardiopulmonary system and oxidative muscle fibres; (2)
+
+into categories 1-4), SIT for example can only match category 5,
+Category 6 is not detailed in the present review since it does not fit
+
+metabolic as for (1) but with a certain degree of neuromuscular strain;
+
+into any particular type of HIT, H/T high-intensity interval training,
+
+(3) metabolic as for (1) but with a large anaerobic glycolytic energy
+contribution; (4) metabolic as for (3) plus a certain degree of
+
+{La} blood lactate accumulation, surrogate of anaerobic glycolytic
+energy release RST repeated-sprint training, S/T spring interval
+
+neuromuscular load; (5) metabolic with essentially an important
+anaerobic glycolytic energy contribution and a large neuromuscular
+
+training
+
+start of the competitive season in team sports). Additionally,
+
+At least nine variables can be manipulated to prescribe
+
+for athletes training twice a day, and/or in team sport
+
+different HIT sessions (Fig. 2 [35]). The intensity and
+
+players training a myriad of metabolic and neuromuscular
+
+duration of work and relief intervals are the key influencing
+
+systems
+
+simultaneously
+
+[34],
+
+the
+
+physiological
+
+strain
+
+factors [10, 12]. Then, the number of intervals, the number
+
+associated with a given HIT session needs to be considered
+
+of
+
+in relation to the demands of other physical and technical/
+
+intensities determine the total work performed. Exercise
+
+series
+
+and
+
+between-series
+
+recovery
+
+durations
+
+and
+
+tactical sessions to avoid overload and enable appropriate
+
+modality (i.e. running vs. cycling or rowing, or straight line
+
+adaptation (i.e. maximize a given training stimulus and
+
+vs. uphill or change of direction running) has to date
+
+minimize musculoskeletal injury risk). There are likely
+
+received limited scientific interest, but it is clear that it
+
+several approaches (i.e. HIT format) that, considered in
+
+represents a key variable to consider when programming
+
+isolation, will achieve a similar metabolic and/or neuro-
+
+HIT, especially for team and racquet sport athletes. The
+
+muscular training adaptation outcome. However, the ability
+
+manipulation of each variable in isolation likely has a
+
+of the coach to understand the isolated acute responses to
+
+direct impact on metabolic, cardiopulmonary and/or neu-
+
+various HIT formats may assist with selection of the most
+
+romuscular responses. When more than one variable is
+
+appropriate HIT session to apply, at the right place and time.
+
+manipulated simultaneously, responses are more difficult to
+
+316
+
+M. Buchheit, P. B. Laursen
+
+Fig. 2 Schematic illustration of
+the nine variables defining a
+
+Relief
+
+HIT session adapted from
+Buchheit [35]. HIT high-
+
+intensity interval training
+
+Work
+
+\一
+
+Duration
+
+I
+
+_/
+
+一-一
+Series
+
+|
+
+.
+
+4
+
+.
+
+owe
+
+.
+
+*
+
+sone
+
+aeaee
+
+TM
+
+predict,
+
+Time between series
+
+网
+
+Suu
+UU
+
+UW:
+
+7
+
+~
+
+;
+
+Between-series
+
+=
+
+recovery intensity
+
+since the factors are inter-related. While our
+
+comparable effects in other sports (or exercise modes, e.g.
+
+understanding of how to manipulate these variables is
+
+cycling, rowing, etc.), with the exception of under-water
+
+progressing with respect to T@VO»
+4, [14], it remains
+
+activities
+
+unclear which combination of work-interval duration and
+
+approach [36]. Finally, we believe that the present rec-
+
+intensity, if any, is most effective at allowing an individual
+
+ommendations are essentially appropriate for moderately
+
+to spend prolonged T@ VO.
+x While ‘controlling’ for the
+level of anaerobic engagement [3] and/or neuromuscular
+
+load (review Part II).
+Considering that long-term physiological and performance adaptations to HIT are highly variable and likely
+
+population-dependent (age, gender, training
+
+status and
+
+background) [19, 20], providing general recommendations
+for the more efficient HIT format is difficult. We provide,
+
+however, in Part I of this review, the different aspects of
+
+that
+
+may
+
+require
+
+a
+
+specific
+
+programming
+
+trained to elite athletes. For special populations (e.g. sed-
+
+entary or cardiac patients), the reader is referred to recent
+reviews [37] and original investigations [38—40]. Standardized differences (or effect sizes; ES [41]) have been
+
+calculated where possible to examine the respective effects
+of the manipulation of each HIT variable, and interpreted
+using Hopkins’ categorization criteria, where 0.2, 0.6, 1.2
+
+and >2 are considered ‘small’, ‘medium’, ‘large’ and ‘very
+large’ effects, respectively [42].
+
+HIT programming, from work/relief interval manipulation
+to the selection of exercise modality, with continued ref-
+
+erence to T@VOomax (ie. time spent >90 % VOomaxs
+otherwise stated), which may assist to individualize HIT
+prescription for different types of athletes. Additional
+programming considerations will also be discussed with
+respect to other variables, such as cardiovascular responses.
+
+Different examples of training cycles from different sports
+will be provided in Part II of the present review. As this
+was a narrative, and not a systematic review, our methods
+
+included a selection of the papers we believed to be most
+relevant in the area. Since the main goal of HIT sessions is
+
+2 Prescribing Interval Training for Athletes
+in the Field
+To prescribe
+
+HIT and ensure that
+
+athletes
+
+reach the
+
+required intensity, several approaches exist to control and
+individualize exercise speed/power accordingly. We will
+discuss these points and illustrate why, in our opinion,
+using incremental test parameters is far more objective,
+practical,
+
+and
+
+likely
+
+more
+
+accurate
+
+and
+
+effective
+
+at
+
+achieving desired performance outcomes.
+
+to improve the determinants of VO,,,,,,. only HIT sessions
+performed in the severe intensity domain (i.e. greater than
+
+2.1 The Track-and-Field Approach
+
+the second ventilatory threshold or maximal lactate steady
+state) were considered. Acute responses to running-based
+
+To programme HIT for endurance runners, coaches have
+
+HIT were given priority focus, since the largest quantity of
+
+traditionally used specific running speeds based on set
+
+literature has used this exercise mode. It is likely, however,
+
+times for distances ranging from 800 m to 5000 m, but
+
+that the manipulation of these same HIT variables has
+
+without using physiological markers such as the speeds
+
+AN
+
+AA
+
+HIT Programming: Cardiopulmonary Emphasis
+
+317
+
+associated with VO: max. lactate or ventilatory thresholds
+
+2.2 The Team Sport Approach
+
+[3]. It is worth mentioning, however, that coaches and
+
+athletes have been, and still are, highly successful using
+
+Due to the technical/tactical requirements of team sports,
+
+this approach; an observation that should humble the
+
+and following the important principle of training specific-
+
+exercise physiologist. The attraction of this method is that
+
+ity, game- (i.e. so-called small sided games, SSG) [43-46]
+
+the entire locomotor profile (i.e. both maximal sprinting
+
+or skill-based [47, 48] conditioning has received an expo-
+
+and aerobic speeds, Fig. 3) of the athlete can be used to
+
+nential growth in interest [49]. While understanding of the
+
+‘shape’ the HIT session, so that each run can be performed
+
+VO, responses to SSG is limited [44, 50, 51], T@ VO2max
+
+in accordance with the athlete’s (maximal) potential. While
+
+during an SSG in national-level handball players was
+
+for short intervals (i.e. 10-60 s) the reference running time
+
+achieved for 70 % of the session (i.e. 5 min 30 s of the 8-
+
+will be a percentage of the time measured over a maximal
+
+min game) [50]. Although the effectiveness of such an
+
+100-400 m sprint, the speed maintained over 800—1,500 m
+
+approach has been shown [43, 46, 52, 53], SSGs have
+
+to 2,000—3,000 m can be used to calibrate longer intervals
+
+limitations that support the use of less specific (i.e. run
+
+(e.g. 24 to 6-8 min). The disadvantage of this approach,
+
+based) but more controlled HIT formats at certain times of
+
+however, is that it does not allow the coach to consciously
+
+the season or for specific player needs. The acute physio-
+
+manipulate the acute physiological load of the HIT session,
+
+logical load of an SSG session can be manipulated by
+
+and precisely target a specific adaptation (i.e. Fig. 1, when
+
+changing the technical rules [54], the number of players
+
+there is a need to improve a physiological quality and not
+
+and pitch size [55], but the overall load cannot, by default,
+
+just to prepare for a race). Additionally, this approach tends
+
+be precisely standardized. Within-player responses to SSG
+
+to be reserved for highly experienced coaches and well
+
+are highly variable (poor reproducibility for blood lactate
+
+trained athletes, for whom best running times on several set
+
+[coefficient of variation (CV): 15-30 %] and high-intensity
+
+distances are known. The translation and application of the
+
+running responses
+
+track-and-field method to other sports is, however, difficult.
+
+between-player variability in the (cardiovascular) respon-
+
+For example, how might a coach determine the expected
+
+ses is higher than more specific run-based HIT [49]. During
+
+800-m run time for a 2.10-m tall basketball player that has
+
+an SSG in handball, average VO, was shown to be inversely related to VOxmax [50], suggesting a possible ceiling
+effect for VOomax development in fitter players. Addition-
+
+never run more that 40 s continuously on a court before?
+
+Thus, using the track-and-field approach for non-track-andfield athletes is unlikely to be appropriate, practical or
+
+effective.
+
+[CV:
+
+30-50 %]
+
+[56,
+
+57]),
+
+and the
+
+ally, reaching and maintaining an elevated cardiac filling is
+believed to be necessary to improve maximal cardiac
+
+Fig. 3 Intensity range used for
+
+AT
+
+the various run-based HIT
+
+formats. ASR anaerobic speed
+reserve, MLSS maximal lactate
+steady state, MSS maximal
+
+”不
+
+180% VVOxmas
+
+95% MSS
+
+160% VVO2max
+
+85% MSS
+
+140% VVOomay
+
+75% MSS
+
+120% VVOomax
+
+View
+
+SIT
+
+sprinting speed, RST repeated-
+
+sprint training, S/T sprint
+
+interval training, VO,,,,..
+maximal oxygen uptake,
+
+VVO>0, minimal running speed
+required to elicit VOamax, VASO
+speed half way between
+
+ASR
+
+RST
+
+vVO,,,.,, and MLSS, V,,,,
+critical velocity, Viey peak
+speed reached at the end of the
+30-15 Intermittent Fitness Test,
+
+HIT
+
+Vine Tess peak incremental test
+
+short
+
+speed
+
+NN
+
+i WincTest
+
+WOorax
+
+。 VA50
+
+intervals
+
+1
+
+HIT
+
+long
+
+intervals
+
+Vecrit/MLSS
+
+AN Adis
+
+HIT Programming: Cardiopulmonary Emphasis
+
+317
+
+associated with VOonax, lactate or ventilatory thresholds
+
+2.2 The Team Sport Approach
+
+[3]. It is worth mentioning, however, that coaches and
+athletes have been, and still are, highly successful using
+
+Due to the technical/tactical requirements of team sports,
+
+this approach; an observation that should humble the
+
+and following the important principle of training specific-
+
+exercise physiologist. The attraction of this method is that
+
+ity, game- (i.e. so-called small sided games, SSG) [43-46]
+
+the entire locomotor profile (i.e. both maximal sprinting
+
+or skill-based [47, 48] conditioning has received an expo-
+
+and aerobic speeds, Fig. 3) of the athlete can be used to
+
+nential growth in interest [49]. While understanding of the
+
+‘shape’ the HIT session, so that each run can be performed
+
+VO, responses to SSG is limited [44, 50, 51], T@ VOommax
+
+in accordance with the athlete’s (maximal) potential. While
+
+during an SSG in national-level handball players was
+
+for short intervals (i.e. 10-60 s) the reference running time
+
+achieved for 70 % of the session (i.e. 5 min 30 s of the 8-
+
+will be a percentage of the time measured over a maximal
+
+min game) [50]. Although the effectiveness of such an
+
+100-400 m sprint, the speed maintained over 800—1,500 m
+
+approach has been shown [43, 46, 52, 53], SSGs have
+
+to 2,000—3,000 m can be used to calibrate longer intervals
+
+limitations that support the use of less specific (i.e. run
+
+(e.g. 2-4 to 6-8 min). The disadvantage of this approach,
+
+based) but more controlled HIT formats at certain times of
+
+however, is that it does not allow the coach to consciously
+
+the season or for specific player needs. The acute physio-
+
+manipulate the acute physiological load of the HIT session,
+
+logical load of an SSG session can be manipulated by
+
+and precisely target a specific adaptation (i.e. Fig. 1, when
+
+changing the technical rules [54], the number of players
+
+there is a need to improve a physiological quality and not
+
+and pitch size [55], but the overall load cannot, by default,
+
+just to prepare for a race). Additionally, this approach tends
+
+be precisely standardized. Within-player responses to SSG
+
+to be reserved for highly experienced coaches and well
+
+are highly variable (poor reproducibility for blood lactate
+
+trained athletes, for whom best running times on several set
+
+[coefficient of variation (CV): 15-30 %] and high-intensity
+
+distances are known. The translation and application of the
+
+running responses
+
+track-and-field method to other sports is, however, difficult.
+
+between-player variability in the (cardiovascular) respon-
+
+[CV:
+
+30-50 %]
+
+[56,
+
+57]),
+
+and the
+
+For example, how might a coach determine the expected
+
+ses is higher than more specific run-based HIT [49]. During
+
+800-m run time for a 2.10-m tall basketball player that has
+
+an SSG in handball, average VO, was shown to be inversely related to VO2max [50], suggesting a possible ceiling
+
+never run more that 40 s continuously on a court before?
+Thus, using the track-and-field approach for non-track-and-
+
+field athletes is unlikely to be appropriate, practical or
+effective.
+
+effect for VOomax development in fitter players. Additionally, reaching and maintaining an elevated cardiac filling is
+believed to be necessary to improve maximal cardiac
+
+Fig. 3 Intensity range used for
+the various run-based HIT
+
+a
+
+formats. ASR anaerobic speed
+reserve, MLSS maximal lactate
+
+steady state, MSS maximal
+
+180% vVO2
+
+95% MSS
+
+160% vVO2max
+
+85% MSS
+
+140% vVO:
+
+75% MSS
+
+120% VWWOamax
+
+了 Vier
+
+SIT
+
+sprinting speed, RST repeatedsprint training, S/T sprint
+
+interval training, VO,,mene
+maximal oxygen uptake,
+
+vVO>%a, Minimal running speed
+required to elicit VO2rmax, VASO
+speed half way between
+
+ASR
+
+RST
+
+vVO,,,,,, and MLSS, V.,,,
+critical velocity, Vjey peak
+speed reached at the end of the
+
+HIT
+
+30-15 Intermittent Fitness Test,
+Vine Yesr peak incremental test
+speed
+
+NN
+
+= Vine. Test
+vvVO 2max
+
+a
+于
+
+|
+
+90% VVOn
+
+Fe
+
+e, VA50
+
+了
+
+short
+intervals
+
+j
+
+HIT
+
+long
+
+intervals
+
+Vecrit/MLSS
+
+人 Adis
+
+318
+
+M. Buchheit, P. B. Laursen
+
+function [58, 59]. The repeated changes in movement
+
+different exercise sessions (as assessed by accumulated
+
+patterns and the alternating work and rest periods during an
+
+blood lactate levels during run-based HIT [71] and by
+
+SSG might therefore induce variations in muscular venous
+
+running speed during an SSG [63]) can have a
+
+pump action, which can, in turn, limit the maintenance of a
+
+similar mean HR response. Thus, the temporal dissociation
+
+high stroke volume (SV) throughout the exercise and
+
+between HR, VO>, blood lactate levels and work output
+
+compromise long term adaptations [60] (see Sect. 3.2).
+
+during HIT limits our ability to accurately estimate inten-
+
+Compared with generic run-based exercises, the VO,/heart
+
+relatively
+
+sity during HIT sessions using HR alone. Further, it is
+
+rate (HR) ratio (which can be used with caution as a sur-
+
+difficult to imagine how an athlete would practically con-
+
+rogate of changes in SV during constant exercise when the
+
+trol or adjust exercise intensity during an interval, espe-
+
+arteriovenous O, difference is deemed constant [61]) is
+
+cially for athletes running at high speed, where viewing HR
+
+also likely lower during an SSG [44, 50, 51]. While this
+
+from a watch is difficult.
+
+ratio is generally close to 1 during run-based long intervals
+
+(i.e. VO, at 95 % VO,,,,, for HR at 95 % of maximal HR
+(HR,,,,) [21, 62]), authors have reported values at 79 %
+
+VOsenax and 92 % HR, during basketball drills [44] and
+at 52 % VOomax and 72 % HRmax during a five-a-side
+indoor soccer game [51]. This confirms the aforementioned
+possible limitations with respect to SV enlargement, and
+suggests that assessment of cardiopulmonary responses
+
+during an SSG (and competitive games) using HR may be
+
+misleading [63]. Finally, the VO,/speed [50] (and HR/
+speed [63]) relationship also tends to be higher during an
+SSG compared with generic running, possibly due to
+higher muscle mass involvement. While this method of
+
+training is often considered to be highly specific, this is not
+always the case, since during competitive games players
+have often more space to run and reach higher running
+
+speeds (up to 85-90 % of maximal sprinting speed [64
+一
+66]) for likely similar metabolic demands.
+
+2.3 Heart Rate-Based Prescription
+Heart rate has become the most commonly measured
+physiological marker for controlling exercise intensity in
+the field [67]. Setting exercise intensity using HR zones is
+
+well suited to prolonged and submaximal exercise bouts;
+however, its effectiveness for controlling or adjusting the
+intensity of an HIT session may be limited. HR cannot
+
+inform the intensity of physical work performed above the
+
+speed/power associated with VOomaxs Which represents a
+large proportion of HIT prescriptions [3—5]. Additionally,
+while HR is expected to reach maximal values (>90-95 %
+HR ax) for exercise at or below the speed/power associated
+
+with VOomax, this is not always the case, especially for very
+short (<30 s) [68] and medium-long (i.e. 1-2 min) [69]
+
+intervals. This is related to the well-known HR lag at
+exercise onset, which is much slower to respond compared
+
+2.4 Rating of Perceived Exertion-Based Prescription
+
+Prescribing the intensity of HIT bouts using the rating of
+perceived exertion (RPE) method [72] is highly attractive
+because of its simplicity (no need to monitor HR) and
+
+versatility. Using this approach, coaches generally prescribe independent variables such as the duration or distance of work and relief intervals [71]. In return, the
+
+athlete
+
+can
+
+self-regulate
+
+their
+
+exercise intensity.
+
+The
+
+intensity selected is typically the maximal intensity of
+exercise perceived as sustainable (‘hard’ to ‘very hard’,
+ie. >6 on a CR-10 Borg scale and >15 on a 6-20 scale)
+
+and is based on the athlete’s experience, the session goal
+and external considerations related to training periodization. While the specific roles (or contributions) played by
+varying
+
+biological
+
+afferents
+
+and
+
+other
+
+neurocognitive
+
+processes involved with the selection of exercise pace
+based on effort are still debated (see viewpoint/counterpoint [73]), RPE responses may reflect “a conscious sen-
+
+sation of how hard, heavy, and strenuous exercise is” [74],
+relative to the combined physiological [75], biomechanical
+and psychological [76] stress/fatigue imposed on the body
+
+during exercise [77]. RPE responses are gender-independent [78] and comparable during free versus constant pace
+exercise [79]. In practice, the first benefit of RPE-guided
+
+HIT sessions [69, 71] is that they do not require any
+knowledge of the athletes’ fitness level (no test results
+needed). Finally, RPE is a universal ‘exercise regulator’,
+
+irrespective of locomotor mode and variations in terrain
+and environmental conditions. While more research in
+trained athletes is needed to confirm the efficacy of RPEguided training sessions, it has been shown to promote the
+
+same
+
+physiological
+
+adaptations
+
+as
+
+an
+
+HR-based
+
+pro-
+
+gramme over 6 weeks in young women [80]. The RPE
+method does have limitations, however, since it does not
+
+allow for the precise manipulation of the physiological
+
+with the VO, response [70]. Further, HR inertia at exercise
+
+response to a given HIT session. This could limit the
+
+cessation (i.e. HR recovery) can also be problematic in this
+
+ability to target a specific adaptation (i.e. Fig. 1), and
+
+context, since this can create an overestimation of the
+
+might also be problematic in a team sport setting (as
+
+actual work/physiological load that occurs during recovery
+
+discussed in the three preceding sections). There is also
+
+periods [69]. It has also been shown that substantially
+
+some evidence to suggest that the ability to adjust/evaluate
+
+4\ Adis
+
+HIT Programming: Cardiopulmonary Emphasis
+
+319
+
+exercise intensity based on RPE may be age- [81], fitness-
+
+the field since it is largely correlated with distance
+
+[82, 83], exercise-intensity- and pleasure-[84] dependent.
+
+running performance [99] and match running capacity
+in team sports (but for some positions only) [98, 100].
+
+2.5 Velocity/Power Associated with Maximal Oxygen
+
+Uptake (VO2max)
+Following early works in the 1970s and 1980s [85-88], the
+
+4)
+
+A 5-min exhaustive run [101], since the average time
+
+to exhaustion at VVOomax has been reported to range
+from 4 to 8 min [89, 102]. The VVOomax calculated
+from this test has been shown to be largely correlated
+
+physiologists V.L. Billat and D.W. Hill popularized the
+
+with the Vipc-ress reached in the UM-TT (r = 0.94)
+
+speed (or power) associated with VOoma, (so-called
+v/pVOomax or maximal aerobic speed/power [MAS/MAP]
+
+and on a ramp treadmill test (r = 0.97) [101], while
+being slightly (i.c.
+
+| km/h range) slower and faster
+
+[89, 90]) as a useful reference intensity to programme HIT
+
+than these velocities, respectively. The VVOomax
+
+[3-5]. The attractiveness of the v/pVO2max method is that it
+represents an integrated measure of both VOomax and the
+
+estimated
+
+via the
+
+5-min test
+
+is,
+
+however, likely
+
+influenced by pacing strategies, and may only be valid
+
+energetic cost of running/cycling into a single factor;
+
+for trained runners able to run at VVOonax for &5 min.
+
+hence, being directly representative of an athletes’ loco-
+
+VVOo2max is also method-[90] and protocol-dependent
+[103]. A mathematically estimated VVOomax [88, 91] is
+
+motor ability [89]. Since v/pVOrmax is theoretically the
+lowest speed/power needed to elicit VO2max, it makes
+intuitive sense for this marker to represent an ideal reference for training [5, 15, 89].
+
+v/p VOonax Can be determined, or estimated, a number of
+different ways. Methods include using the following:
+
+1)
+2)
+
+3)
+
+likely to be lower than a measured vVO,,,,, [93] that is
+also lower than VineTest [89, 104]. Additionally, irrespec-
+
+tive of the method used to determine vVO,,,,,,, protocols
+with longer-stage durations tend to elicit lower speed/
+power values [103], while larger speed/power increments
+
+The linear relationship between VO, and running
+
+result in higher-speed/power values. Similarly, vVO»,.,.
+
+speed established at submaximal speeds [88].
+
+also appears to be inversely related to the terrain or
+
+The individual cost of running to calculate a theoret-
+
+treadmill slope [105]. Endurance-trained athletes are likely
+
+ical running speed for a given VOomans either with [91]
+
+able to tolerate longer stages and therefore, less likely to
+
+or without [92] resting VO, values.
+
+present impairments in vVO,,,,, With variations in proto-
+
+Direct measurement (i.e. pulmonary gas exchange
+
+col. These differences must be acknowledged since small
+
+[93]) during ramp-like incremental running/cycling
+
+differences in the prescribed work intensity have sub-
+
+tests to exhaustion, either on the track, on a treadmill
+
+stantial effects on acute HIT responses.
+
+or using an ergometer, On the track, the University of
+
+The reliability of VVOy,.4, ANd Vino poy (as examined
+
+Montreal Track Test (UM-TT [87]) is the protocol
+
+using CVs) has been shown to be good: 3 % for vVO
+
+most commonly used with athletes [94, 95], although
+
+in moderately trained middle- and long-distance runners
+
+the Vam-Eval [96], which only differs from the UM-
+
+[68], 3.5 % for UM-TT Vyjyc roy, in moderately trained
+
+TT due to its smoother speed increments and shorter
+
+athletes [87], 3.5 % (90
+% confidence limits:
+
+intercones distances, has also received growing inter-
+
+{Buchheit M, unpublished results]) for Vam-Eval VinoTew
+
+est since it is easier to administer in young populations
+
+in 65 highly trained young football players, 2.5 % and 3 %
+
+and/or non-distance running specialists [97, 98]. Since
+
+for treadmill Vine ‘res: in Well trained male distance runners
+
+the ‘true’ v/pVOomax during incremental tests requires
+VO, measures to determine the lowest speed/power
+
+finally,
+
+that elicits VOomax (generally defined as a plateau in
+VO), or an increase less than 2.1 mL/min/kg despite an
+increase in running speed of 1 km/h [93]), the final
+
+(peak) incremental test speed/power reached at the end
+of these tests (V/pinc-rest) is only an approximation of
+
+W/pVOomax» These two distinct speeds/powers are
+strongly correlated (r > 0.90 [87]), but V/pine-rest can
+
+be 5-10 % greater than v/pVOo:maxs with individuals
+
+3.0, 4.1
+
+[106] and recreational runners [104], respectively, and
+1-2 % for the 5-min test in a heterogeneous
+
+sporting population [107].
+For training prescription, Vine rest, a8 determined in the
+field with the UM-TT [87] or the Vam-Eval [96], is
+probably the preferred method, since, in addition to not
+requiring sophisticated apparatus, the tests account for the
+
+anaerobic contribution necessary to elicit VOomax [108]. It
+is, however, worth noting that using VVO:
+OF Vine Test 88
+the reference running speed is essentially suitable for long
+
+possessing greater anaerobic reserves presenting gen-
+
+(2-6 min) intervals ran around VVO2nax (90-105 %). For
+
+erally a greater v/pVOsnax — V/Pinc-resr difference.
+
+sub- and supramaximal training intensities, however, the
+
+Measurement of Vj, ‘res: i8, however, very practical in
+
+importance of other physiological attributes should be
+
+人 Adis
+
+320
+
+considered.
+
+M. Buchheit, P. B. Laursen
+
+For
+
+instance,
+
+endurance
+
+capacity
+
+(or
+
+the
+
+capacity to sustain a given percentage of VVO2max over
+
+2300
+
+time [109]) and anaerobic power/capacity [110] are likely
+
+29
+
+logical responses. The following section highlights the
+different options available for the prescription of supra-
+
+Maximal sprinting speed
+
+”一
+
+(km/h)
+
+]
+18
+
+HIT running speed
+-一 人 ~
+
+.
+
+ceed: Behe ®
+
+VV Do max
+
+Speed
+
+to influence time to exhaustion and, in turn, the physio-
+
+mm
+、
+
+Running
+
+maximal training (i.e. training at intensities > VVO2max)2.6 Anaerobic Speed Reserve
+Consideration for an individual’s anaerobic speed reserve
+
+(ASR; the difference between maximal sprinting speed
+
+(MSS) and vVO.,,,,,,. Fig. 3) is often not fully taken into
+account by coaches and scientists in their training pre-
+
+Athlete
+
+Athlete
+
+A
+
+A
+
+Fig. 4 Illustration of the importance of ASR
+
+for two athletes
+
+possessing similar running speeds associated with VVOonax, but
+different maximal sprinting speeds. During an HIT session, Athlete B
+
+scription. While track-and-field (running) coaches have
+
+with a greater ASR will work at a lower percentage of his ASR, and
+
+indirectly used this concept for years to set the work
+
+will therefore achieve a lower exercise load compared with Athlete A
+
+interval intensity (as discussed in Sect. 2.1), its scientific
+basis and interest was only brought forth merely a decade
+
+ago, when Billat and co-workers [110] showed that time to
+
+exhaustion at intensities above vVO,,,,,, Were better related
+to the ASR and/or MSS, than to vVO,,,,,- Bundle et al.
+
+[116]. ASR anaerobic speed reserve, H/T high-intensity interval
+
+training, vVVO2m., minimal running speeds associated with maximal
+oxygen uptake
+
+physiological recovery capacities during each relief interval; and (3) change of direction ability (since indoor HIT is
+
+[111-113] demonstrated, using an empirical prediction
+
+often performed in shuttles) [94, 116]. Programming HIT
+
+model, that the proportion of ASR used could determine
+
+without taking these variables into consideration may result
+
+performance during all-out efforts lasting between a few
+
+in sessions with different aerobic and anaerobic energy
+
+seconds and several minutes. While these studies have used
+
+demands, which prevents the standardization of training
+
+continuous exercise, ASR has only recently been consid-
+
+load, and likely limits the ability to target specific physi-
+
+ered in relation to repeated-sprint performance [114, 115].
+
+ological adaptations [94]. To overcome the aforementioned
+
+In practice, two athletes can present with clearly different
+
+limitations inherent with the measurement of VVOo
+4, and
+
+MSS ability, despite a similar vVO,,,,,, (Fig. 4 [116]). If
+
+ASR, the 30-15 Intermittent Fitness Test (30—15yer) was
+
+during an HIT session they exercise at a similar percentage
+
+developed for intermittent exercise and change of direction
+
+of VVO3,,..5 as is generally implemented in the field (e.g.
+
+(COD)-based HIT prescription [35, 94, 116]. The 30-1SrFr
+
+see [117]), the exercise will actually involve a different
+
+was designed to elicit maximal HR and VO>, but addi-
+
+proportion of their ASR, which results in a different
+
+tionally provide measures of ASR, repeated effort ability,
+
+physiological demand, and in turn, a different exercise
+
+acceleration, deceleration, and COD abilities [94,
+
+tolerance [116]. Therefore, it appears that, in addition to
+
+119}. The final speed reached during the 30—15yry, Vier, is
+
+118,
+
+VVOb,nx+ the measurement of MSS (and ASR) should be
+
+therefore a product of those above-mentioned abilities. In
+
+considered for individualizing training intensity during
+
+other words, the 30—15,-; is highly specific, not to a spe-
+
+supramaximal HIT [110, 116].
+
+cific sport, but to the training sessions commonly per-
+
+2.7 Peak Speed in the 30-15 Intermittent Fitness Test
+
+reached in the different Yo-Yo tests [120] (e.g. vVYo-YoIR1
+
+While using the ASR to individualize exercise intensity for
+
+have likely similar physiological requirements [221], only
+
+supramaximal runs might represent an improved alterna-
+
+the Ver can be used accurately for training prescription.
+
+tive over that of VVOomax Or Vine Tests it still does not
+
+For instance, vYo-YoIR1 cannot be directly used for
+
+formed in intermittent sports [116]. While the peak speeds
+for the Yo-Yo Intermittent Recovery Level 1) and Vjpr
+
+capture an overall picture of the different physiological
+
+training prescription since, in contrast to Vy; [35], its
+
+variables of importance during team- or racquet-based
+
+relationship with Vi es: (and VVOn,) is speed-depen-
+
+specific HIT sessions. In many sports, HIT is performed
+
+dent [121], Fig. 5). When running at VYo-YoIR1, slow and
+
+indoors and includes repeated very short work intervals
+
+unfit athletes use a greater proportion of their ASR, while
+
+(<45 s). This implies that, in addition to the proportion
+
+fitter athletes run below their vVO,,,,.. (Fig. 5). Finally,
+
+of the ASR used, the responses to these forms of HIT
+
+Vier has been shown to be more accurate than Vj,... ‘pes, for
+
+appear related to an individual's (1) metabolic inertia (e.g.
+
+individualizing HIT with COD in well trained team sport
+
+VO, kinetics) at the onset of each short interval; (2)
+
+players [94], and its reliability is good, with the typical
+
+AN Adic
+
+321
+
+HIT Programming: Cardiopulmonary Emphasis
+
+a 24, All pooled
+
+n= 141
+
+a
+
+20 4
+
+a
+
+_
+= i
+
+aa
+4° ae
+
+agit a 3 age “U7
+
+= 16
+
+=
+
+=
+
+224 y=0.8x+6
+r= 0.84 (0.79,
+0.88)
+
+y” vo
+
+a
+
+“
+
+ye
+
+v/pVO2max is not specifically needed to calibrate the intensity).
+
+a
+
+3 Acute Responses to Variations of Interval Training
+
+A’ LY
+
+a“
+
+12
+
+4
+
+3.1 Maximizing the Time Spent at or Near VOomax
+
+LA
+
+y
+
+&
+
+Male
+
+A
+
+Female
+
+一
+
+10
+
+10
+
+12
+
+14
+
+16
+
+18
+
+20
+
+22
+
+24
+
+VincTest (km/h)
+
+b
+
+20
+
+L “
+
+Male
+
+197 720.79 (0.57, 0.86)
+y=04x+9.8
+
+4
+
+U7
+
+17 4
+ao
+a
+口
+
+16
+
+22
+
+y
+
+a
+
+7
+
+-
+
+ex
+
+=
+> 144
+
+metabolic (oxidative) responses to HIT sessions. In the
+present review, we integrate recently published work and
+
+provide a comprehensive analysis of the VO2 responses to
+through
+
+short
+
+intervals
+
+and
+
+repeated-sprint
+
+sequences
+
+(RSS, Fig. 3). Figure 6 illustrates the vo, responses of
+four distinct HIT sessions, including long intervals, and
+
+highlights how changes in HIT variables can impact the
+
+T@VOomax (21, 50, 127, 128]. There are, however,
+
+Ua 一
+
+13 4
+
+(reviewed previously [14]), since pulmonary vo, respon-
+
+different forms of HIT, from long intervals to SIT sessions,
+
+OQ
+
+_O-F
+70
+o
+了
+
+15
+
+We lead off this review with data related to T@VO2max
+ses may actually integrate both cardiovascular and muscle
+
+n=14
+
+一 18-
+
+or long (30-45 s sprints, SIT) duration sprints. Since such
+
+exercise is consistently performed ‘all-out’, they can be
+prescribed without the need to pre-test the individual (i.e.
+
+ar
+
+Kaa OO 一
+
+144
+
+these sessions can be divided into either short (3-10 s, RST)
+
+numerous methodological limitations that need to be con-
+
+了
+
+sidered to interpret the findings shown from the different
+
+一
+
+studies [68, 103, 129]. In addition to methodological con-
+
+12
+
+siderations between studies (treadmill vs. overground run-
+
+Veres (kv)
+
+ning, determination criteria for both VOomax ANd vVVYO
+
+Fig.5 Relationships (90 % confidence limits) between the Vypr,
+
+data analysis [averaging, smoothing technique], threshold
+
+upper panel (Buchheit M, personal data [35]), vYo-YoIR1, lower
+
+for minimal VO, values considered as maximal [90 %,
+
+panel [121] and Vin-Tes- Vier speed reached at the end of the 30-15
+
+95 %, VOxmax minus 2.1 ml/min/kg, 100 %]), differences
+
+Intermittent Fitness Test, Vine 7es¢ peak incremental test speed, vYo-
+
+YoIRI peak running speed
+
+reached at the end of the
+
+Yo-Yo
+
+intermittent recovery level 1 test
+
+in the reliability level of analysers and intra-day subject
+
+variation in VO2max, WO> kinetics and times to exhaustion,
+make comparison between studies difficult. The within-
+
+error of measurement (expressed as CV) shown to be 1.6 %
+(95 % CL 1.4, 1.8) [122]. Also of note, since VIFT is
+
+2-5 km/h (15-25 %) faster than VVO2max and/or Vinc-Test
+(35, 116, 119], it is necessary to ‘adjust’ the percentage of
+Vier used when programming. While HIT is generally
+
+performed around VVO2max (i.e. 100-120 % [3, 4], Fig. 3),
+Vier constitutes the upper limit for these exercises (except
+for very short intervals and all-out repeated-sprint training).
+Thus, the 30-15j7 permits improved precision of programming by individualizing the intensity of the prescribed
+
+interval bouts around intensities ranging from 85 % to
+105 % of Virr [43, 50, 123-125].
+2.8 All-Out Sprint Training
+
+study effects of HIT variable manipulation on the observed
+
+T@VOomax can, however, provide insight towards understanding how best to manipulate HIT variables.
+
+3.1.1 Oxygen Uptake (VO2) Responses to Long Intervals
+3.1.1.1 Exercise Intensity during Long Intervals
+
+During
+
+a single constant-speed or power exercise, work intensity
+
+close to v/pVOomax is required to elicit maximal VO,
+responses. In an attempt to determine the velocity associ-
+
+ated with the longest T@VO2max during a run to exhaustion,
+
+six
+
+physical-education
+
+students
+
+performed
+
+four
+
+separate runs at 90 %, 100 %, 120 % and 140 % of their
+
+VVOomax (17 km/h) [130]. Not surprisingly, time to
+exhaustion was inversely related to running intensity.
+
+Repeated all-out sprinting efforts have received a marked
+
+T@VOoimnax during the 90 % and 140 % conditions was
+
+growth in research interest lately [9, 126]. In practical terms,
+
+trivial (i.e. <20s on average), but reached substantially
+
+人 Adis
+
+322
+
+M. Buchheit, P. B. Laursen
+
+{La}: 6.5(2.2)
+45>
+
+RPE16.5(2.2)
+
+后
+
+WE Total distance
+
+Mam Distance >90% WO,,,.,,
+
+35 4
+
+Ga Tevo,,,., (95%)
+
+30 +
+
+RPE:13.5(2)
+{La}: 5.7(1.8)
+
+(m)
+
+=
+
+UHMB Session time
+C7 T@VO,,,,,., (90%)
+
+25]
+
+B20;
+
+于 154
+
+APE:15.8(2.4)
+{La}: 8.9(2.2)
+
+Distance
+
+404
+
+104
+54
+
+人0 -
+
+5x(3min[90% VVO,,,]'90s[036]) 1
+
+3x(2x(2min{100% vVO,,..,)/2min[50% vVO,,..,)) 3
+
+5x(Smin[92% vVO.,,.,,/2-5min[46% vVO.,,,}) 2
+
+Fig. 6 Mean + SD of total session time, T@VOy,,,x, total distance
+
+and distance ran above 90 % of vVO,,,x during four different HIT
+sessions including long intervals. Percentages (mean + SD) refer to
+T@VO,,,.. relative to the total session time, and distance ran above
+
+90 % of VVOomax relative to the total distance ran. RPE and [La],
+
+3min45[SSG}'30s[0%}/3min45[SSG] 4
+
+[21]; 2 [127]; 3 [128] and 4 [50]. H/T high-intensity interval training,
+[La] blood lactate concentration, N/A not available, RPE rating of
+
+perceived exertion, SSG small-sided games (handball), VO max
+maximal oxygen uptake, T@VO»,,., time spent above 90 % or
+95 % of VD VVO2max minimal running speed associated with
+
+mmol/L) are provided as mean + SD when available. References: |
+
+VOomax
+
+‘larger’
+
+120 %: mean + standard
+
+least be equal to the time needed to reach VO,,,,,,. Thus,
+
+of
+
+exhaustion,
+
+with short intervals, as during typical HIT sessions (work
+
+ES > +2.8) and 73 + 29 s (59 %, ES > +1.7). In another
+
+interval duration < time needed to reach VO4,...)s VOomax
+
+values at
+
+deviation
+
+100 % and
+
+190+ 87
+
+(57%
+
+time
+
+to
+
+study, middle-distance runners did not manage to reach
+
+VOomax While running at 92 % of VWO2max [131]. The
+ability to reach VO),,,,, during a single run at the velocity
+
+is usually not reached on the first interval. VO,,,,,, Values
+can, however, be reached during consecutive intervals,
+through the priming effect of an adequate warm-up and/or
+
+between the maximal lactate steady state and VVOy.,4, (ie.
+vASO, +92-93 % of VVO,,,... [130]) via the development
+of a VO, slow component [10] is likely fitness-dependent
+
+the first intervals (that accelerates vo, kinetics [133, 134])
+and the development of a VO, slow component [10]. The
+time needed to reach VO,,,,, during constant-speed exer-
+
+[132]
+
+to reach
+
+cise to exhaustion has received considerable debate in the
+
+VOsrnax)- In addition, as the determination of vASO is
+
+(with highly
+
+past [104, 131, 135-138]. The variable has been shown to
+
+impractical
+
+>95 %
+
+range from 97 s [138] to 299 s [131] and has a high in-
+
+v/pVOxmax are therefore recommended for maximizing
+
+tersubject variability (20-30 % [131, 135, 137] to 40 %
+
+in
+
+the
+
+trained
+field,
+
+runners
+
+work
+
+unlikely
+
+intensities
+
+of
+
+T@VO,,,., during single isolated runs. However, in practice, athletes do not exercise to exhaustion, but use inter-
+
+vals or sets. Slightly lower intensities (+90 % v/pVOo ax)
+can also be used when considering repeated exercise bouts
+
+(as during HIT sessions), since interval VO) is likely to
+
+increase with repetitions with the development of a VO,
+slow component [10]. As suggested by Astrand in the
+
+1960s [10], exercise intensity does not need to be maximal
+
+during an HIT session to elicit VO2max.3.1.1.2 Time-to-Reach WOb2ma, and Maximizing LongInterval Duration
+
+If VOomax is to be reached during the
+
+first interval of a sequence, its interval duration must at
+
+4N Adis
+
+[104]). While methodological differences could explain
+
+some of these dissimilarities (whether 95 % or 100 % of
+
+VOsmax iS considered, the presence and type of pretrial
+warm-up), the variability is consistent with those shown in
+
+VO, kinetics at exercise onset. VO, kinetics are generally
+affected by exercise intensity [139], accelerated during
+
+running compared with cycling exercise [140] and faster in
+
+trained individuals [141]. The relationship between VO,
+
+kinetics at exercise onset and VOdenaxs however, is less
+clear, with some studies reporting relationships [141-143],
+and others showing no correlation [144-146], suggesting
+
+that the VO, kinetics at exercise onset is more related to
+training status [141, 147] than VOomax per se.
+
+HIT Programming: Cardiopulmonary Emphasis
+
+323
+
+As an alternative to using fixed long-interval durations,
+
+duration did not modify these peak values (93 + 5 and
+
+using 50-70 % of time to exhaustion at VVOomax has been
+
+92+3%
+
+suggested by the scientific community as an alternative to
+
+Although performed on an inclined treadmill (5 %), these
+
+individualizing interval training [3, 5,
+
+for
+
+4-
+
+and
+
+6-min
+
+intervals,
+
+respectively).
+
+148-150).
+
+latter sessions were performed at submaximal self-selected
+
+However, to our knowledge, prescribing training based on
+
+velocities (i.e. 91 %, 83 %, 76 % and 70 % VVOomax for 1-
+
+time to exhaustion is very rare compared with how
+
+, 2-, 4- and 6-min intervals, respectively [71]), which
+
+endurance athletes actually train. Additionally, while the
+
+probably explains why VOomax Was not reached [130] (see
+
+rationale of this approach is sound (50-70 % is the average
+
+Sect. 3.1.1.4 below with respect to uphill running).
+
+137,
+
+proportion of time to exhaustion needed to reach VOomax)s
+this is not a practical method to apply in the field. First, in
+
+3.1.1.3 Relief Interval Characteristics during Long-Inter-
+
+addition to VVOomax, time to exhaustion at VVOom, must
+
+val High-Intensity Interval Training (HIT)
+
+be determined, which is only a moderately reliable measure
+
+gramming HIT, both the duration and intensity of the relief
+
+When pro-
+
+(CV = 12 % [68] to 25 % [93]), is exhaustive by nature
+
+interval are important [152]. These two variables must be
+
+and highly dependent on the accuracy of the VVO:
+
+considered in light of (1) maximizing work capacity during
+
+determination [103]. Second, the time required to reach
+
+VOomax has frequently been reported to be longer than
+75 % of time to exhaustion in some participants [131, 135,
+136]. Intervals lasting 70 % of time to exhaustion have also
+been reported as very difficult to perform, likely due to the
+
+high anaerobic energy contribution this requires [150]. For
+
+subsequent intervals (by increasing blood flow to acceler-
+
+ate muscle metabolic recovery, e.g. PCr resynthesis, HTM
+ion buffering, regulation of inorganic phosphate (Pi) con-
+
+centration and K~ transport, muscle lactate oxidation) and;
+
+(2) maintaining a minimal level of vo, to reduce the time
+needed to reach VO,,,,,, during subsequent intervals (i.e.
+
+to
+
+starting from an elevated ‘baseline’) [3, 14]. While per-
+
+exhaustion, repeating sets of 60 % of time to exhaustion is
+
+forming active recovery between interval bouts is appeal-
+
+athletes
+
+presenting
+
+with
+
+exceptionally
+
+long
+
+time
+
+typically not attainable [137]. Finally, there is no link
+
+ing to accelerate the time needed to reach VO,,,,,, and in
+
+between the time needed to reach VO,,,,, and time to
+
+turn, induce a higher fractional contribution of aerobic
+
+exhaustion [135, 137]. Therefore, since a given percentage
+
+metabolism to total energy turnover [134], its effects on
+
+of time to exhaustion results in very different amounts of
+
+performance capacity (time to exhaustion), and hence,
+
+T@VOb max. it appears more logical to use the time needed
+to reach VOomna, to individualize interval length [135] (e.g.
+
+T@VO,,,., are not straightforward. The benefit of active
+
+time needed to reach VO2max + 1 or 2 min). If the time
+
+needed to reach VOomax cannot be determined (as is often
+the case in the field), we would therefore recommend using
+fixed intervals durations >2—3 min that could be further
+
+adjusted in accordance with the athlete’s training status
+(with the less trained performing lower training loads, but
+longer intervals) and the exercise mode. Indeed, if we
+consider that the time constant of the primary phase of the
+
+VO, kinetics at exercise onset (t) in the severe intensity
+domain is generally in the range of 20 s to 35 s [131, 140,
+
+146], and that a steady-state (二
+95 % VOoenax) is reached
+after exercise onset within +4 t, VOoma, should then be
+reached from within 1 min 20s to 2 min 20s
+
+(at least
+
+when intervals are repeated), irrespective of training status
+and exercise mode. This is consistent with the data shown
+by
+
+Vuorimaa
+
+et
+
+al.
+
+in
+
+national
+
+level
+
+runners
+
+(vVOomax = mean + SD 19.1 + 1 km/h), where VOomax
+values were reached during 2-min work/2-min rest intervals,
+
+but
+
+not
+
+during
+
+1 min/l min
+
+[22].
+
+Similarly,
+
+in
+
+the study by Seiler and Sjursen [71] in well trained run-
+
+ners (VVOomax = 19.7 + 1 km/h), peak VO, was only
+
+8245 % of VOdrmax during 1-min intervals, while it
+reached 92 + 4 during 2-min intervals; extending the work
+
+recovery has often been assessed via changes in blood
+lactate concentration [153, 154], which has little to do with
+muscle lactate concentration [155]. Additionally, neither
+
+blood [156, 157] nor muscle [155] lactate has a direct (nor
+linear) relationship with performance capacity. The current
+understanding is that active recovery can lower muscle
+oxygenation [158, 159], impair PCr resynthesis (O, com-
+
+petition) and trigger anaerobic system engagement during
+the following effort [160]. Additionally, while a beneficial
+performance effect on subsequent intervals can be expected
+
+with long recovery periods (>3 min [134, 161, 162], when
+the possible ‘wash out’ effects overcome that of the likely
+reduced PCr resynthesis), active recovery performed during this period may negate subsequent interval performance using both long periods at high intensities (>45 %
+
+v/pVO2max) [153] and short periods of varying intensity
+[159, 163]. In the context of long interval HIT, passive
+recovery is therefore recommended when the relief interval
+is less than 2—3 min in duration. If an active recovery is
+chosen for the above-mentioned reasons (i.e. [3, 14, 134].),
+relief intervals should last at least 3—4 min at a submaximal
+intensity [153] to allow the maintenance of high-exercise
+
+intensity during the following interval.
+In practice, active recovery is psychologically difficult
+to apply for the majority of athletes, especially for non-
+
+人 Adis
+
+324
+
+M. Buchheit, P. B. Laursen
+
+endurance
+
+athletes.
+
+When
+
+moderately
+
+trained
+
+runners
+
+et al. [174] found in elite French middle-distance runners
+
+(VVOomax = 17.6 km/h) were asked to self-select the nat-
+
+(VVOomax = mean+ SD
+
+ure
+
+78 + 4 ml/min/kg) that T@ VOoinax observed during a hill
+
+of their
+
+relief
+
+intervals
+
+during
+
+an
+
+HIT
+
+session
+
+(6 x 4 min running at 85 % VVOomax on a treadmill with
+5 % incline), they chose a walking recovery mode of about
+
+21.2+0.6km/h,
+
+VOomax =
+
+HIT session (6 x 500 m [1 min 40 s] 4—5 % slope [85 %
+
+VVOomax)/1 min 40 s [0 %]) was lower compared with a
+
+2 min [69]. Compared with 1-min recovery intervals, the 2-
+
+‘reference’ track session (6-600 m [1 min 40s] {102 %
+
+min recovery duration enabled runners to maintain higher
+
+VVOomax }/1 min 40s [0 %]). While VO» reached 99 %
+
+running speeds; extending passive recovery to 4 min did
+not provide further benefits with respect to running speeds.
+
+The low T@VOb,/total exercise time ratio shown
+by Millet et al. [128] (34 % when considering time >90 %
+
+VOomax; Fig. 6) in well trained triathletes (VVOoma. =
+19.9 + 0.9 km/h) was likely related to the introduction of
+5-min passive pauses every second interval, With intervals
+performed successively
+
+(no passive pauses, no blocks
+
+and 105 % VOomax during the hill and track sessions,
+respectively, the T@VOo ,/exercise time ratio was
+‘moderately’ lower during the hill HIT (27 % vs. 44 %,
+
+ES = — 1.0). The reason for the lower T@ VOommax during
+the hill HIT is unclear, Despite the expected higher muscle
+force requirement during hill running [173], this is unlikely
+
+enough to compensate for the reduction in absolute running
+
+speed. If we consider that running uphill at 85 % VVOowmax
+
+but active recoveries < 50% VVOoma, between runs),
+Demarie et al, [127] reported a longer T@ VOomax in senior
+long-distance runners (VVOonax = 16.6 + 1.1 km/h), More
+
+requirement as level running (or treadmill running with a
+
+recently, Buchheit et al, showed, in highly trained young
+
+at = 105 %; [175] the differences observed by Gajer et al.
+
+runners (VVOwy = 18.6 + 0.3 km/h), that even shorter
+
+could have been even greater if the flat condition was ran at
+
+recovery periods (ic, 90s), despite a passive recovery
+
+a faster (and possibly better matched) speed (105 % vs.
+
+with a grade of 5 % has likely the same (theoretical) energy
+
+1% grade to compensate for wind resistance
+
+[105])
+
+intensity (walk), enabled athletes to spend a relatively high
+
+102 % [174]). As well, intervals in these sessions might not
+
+proportion of the session at >90 % of VOomax (43 %) [21].
+
+have been long enough to observe the additional slow
+
+This particular high ‘efficiency’ was also likely related to
+
+component
+
+both the young age [222] and the training status [141] of
+
+(* 2 min [172]). More research is required, however, to
+
+the runners (since both are generally associated with
+
+clarify the cardiorespiratory responses to uphill running at
+
+accelerated VO, kinetics).
+
+higher gradients (> 10 %) or to staircase running that may
+
+generally
+
+witnessed
+
+with
+
+uphill
+
+running
+
+Finally, in an attempt to individualize between-run
+
+require very high VO» values due to participation of upper
+
+recovery duration, the return of HR to a fixed value or
+
+body limbs (back muscles and arms when pushing down or
+
+percentage of HR is sometime used in the field and in
+
+grabbing handrails),
+
+the scientific literature [165,
+
+166]. The present under-
+
+standing of the determinants of HR recovery suggest,
+
+3.1.1.5 Volume of HIT with Long Intervals
+
+nevertheless, that this practice is not very relevant [69].
+
+variable that can be used to maximize T@VOb .. is the
+
+During recovery, HR is neither related to systemic O»
+
+number of long-interval repetitions. It is worth noting,
+
+demand nor muscular energy turnover [142,
+
+167], but
+
+however, that very few authors have examined HIT ses-
+
+rather to the magnitude of the central command and
+
+sions/programmes that are consistent with the sessions that
+
+metaboreflex stimulations [168].
+
+Another
+
+athletes actually perform, and that research on the optimal
+
+T@VOsinax per session is limited. Cumulated high3.1.1.4 Uphill Running during
+vals
+
+HIT with
+
+Long
+
+Inter-
+
+Despite its common practice [169], the cardiorespi-
+
+ratory responses to field-based HIT sessions involving
+uphill or staircase running has received little attention.
+Laboratory studies in trained runners (Vine Test = 20 km/h)
+
+[170, 171] have shown that, for a given running speed, VO,
+is higher during uphill compared with level running after a
+
+intensity (>90 % v/pVOxmax) exercise time during typical
+sessions in well trained athletes has been reported to
+be 12 min (6 x 2 min or 6 x +600
+m [128]), 15 min
+(5 x 3 min or 5 x =800-1,000
+m [21]),
+
+16 min (4 x
+
+4 min or 4 x =1,000-1,250 m [46]), 24 min (6 x 4 min
+or
+
+6 x #1,000-1,250m
+
+[69];
+
+4x 6min
+
+or
+
+4x
+
+= 1,500 m [71]) and 30 min (6 x 5 minor5 x =1,300-
+
+couple of minutes, probably due to the increased forces
+
+1,700 m [127]), which enabled athletes to accumulate,
+
+needed to move against gravity, the subsequently larger
+
+depending on the HIT format, from 10 min >90 % [21, 128]
+
+motor units recruited and the greater reliance on concentric
+
+to 4-10 min >95 % [127, 128] at VO,,,,,,. Anecdotal evi-
+
+contractions; all of which are believed initiators of the vo,
+
+dences suggest that elite athletes tend to accumulate greater
+
+slow component [172]. However, in practice, athletes
+
+T@VObsjn4x per session at some point of the season. In
+
+generally run slower on hills versus the track [173]. Gajer
+
+4\ Adis
+
+recreationally trained cyclists (VOomax: ~52 ml/min/kg),
+
+HIT Programming: Cardiopulmonary Emphasis
+
+325
+
+Seiler et al. showed that larger volumes of HIT performed
+
+(ES = +1.2) [177]. The twofold magnitude difference in
+
+at a lower intensity (i.e.
+
+Millet et al. [177] compared with Thevenet et al’s. study
+
+4 x 8 min = 32 min at 90 %
+
+HR
+x) May be more effective than more traditional HIT
+
+[179] (ES: +1.2 vs. +0.6) is likely due to the fact that
+
+sessions (e.g. 4 x 4 min) [176]. Further research examin-
+
+Millet et al’s. runs were not performed to exhaustion, but
+
+ing the influence of these particular sessions in more highly
+
+implemented with pre-determined sets.
+
+trained athletes are, however, required to confirm these
+
+possible that if the runs at 100 % had been performed to
+
+findings.
+
+exhaustion [177], this would have compensated for the
+
+3.1.2 WO Responses to HIT with Short Intervals
+
+ence in T@VOomax observed. Similarly, increasing the
+
+lower efficiency of the protocol and decreased the differ-
+
+For short interval HIT runs to exhaustion, T@VOs na. is
+largely correlated with total exercise time (i.e. time to
+exhaustion) [14]. Hence, the first approach to maximizing
+
+T@VOdmax during such sessions should be to focus on the
+most effective adjustments to work/relief intervals (intensity
+and duration) that increase time to exhaustion. In practice,
+however, coaches do not prescribe HIT sessions to exhaus-
+
+tion; they prescribe a series or set of HIT [50, 128, 177, 178].
+In this context, it is important to consider the strategies
+
+needed to maximize T@VO>.x Within a given time period,
+or to define ‘time-efficient’ HIT formats with respect to the
+
+T@VOo nax/exercise time ratio (i.e. T@ VOomax in relation to
+the total duration of the HIT session, warm-up excluded).
+3.1.2.1 Effect
+
+of
+
+Work
+
+Interval
+
+Intensity
+
+on
+
+T@VOomex Billat et al. [23] were the first to show the
+effect of exercise intensity on T@ VOomax during HIT with
+short intervals (15 s/15 s) in a group of senior (average age:
+
+52 years) distance runners (VVO2max = 15.9 + 1.8 km/h).
+While the concurrent manipulation of the relief interval
+
+intensity (60-80 % of VVOomax, tO maintain an average
+HIT intensity of 85 %) might partially have influenced the
+
+VO, responses, the authors did show that increasing work
+interval intensity from 90 % to 100 % of VVOommax Was
+associated with a ‘small’ improvement in the T@ VOdmax!
+exercise time ratio (81 % vs. 68 %, ES = + 0.5). How-
+
+ever, the T@VOoma,/exercise time ratio (85 %) was not
+substantially greater using a work interval fixed at 110
+
+compared with 100 % of VVOomax (ES = +0.2). Using a
+fixed relief interval intensity (Fig. 7a, [117, 177, 179]),
+
+increasing
+
+work
+
+intensity
+
+from
+
+100%
+
+to
+
+110%
+
+of
+
+VVO2max during a 30 s/30 s format in trained young runners (VVO2max = 17.7 + 0.9 km/h) induced a ‘moderate’
+increase
+
+in
+
+the
+
+T@VO,,,,,/exercise
+
+time
+
+It is therefore
+
+ratio
+
+work intensity from 110 % to 120 % of VVOdmax during a
+15 s/15s
+
+format
+
+in
+
+physical
+
+education
+
+students
+
+(VVOomax = 16.7 + 1.3 km/h) lead to a ‘large’ improvement in the T@VOd a,/exercise time ratio (ES = +1.8)
+[117]. Interestingly, in the study by Millet et al. [177],
+
+individual improvements in T@VO, with the increase in
+work intensity were inversely correlated with the athletes’
+
+primary time constant for VO kinetics at exercise onset
+(r = 0.91; 90 % CI 0.61, 0.98), suggesting that the time
+
+constant could be an important variable to consider when
+selecting HIT variables [116, 177]. Practically speaking,
+this data implies that coaches should programme HIT at
+slightly greater exercise intensities for athletes presenting
+
+with slow VO; kinetics (i.e. older/less trained [141]), or for
+athletes
+
+exercising on
+
+a
+
+bike
+
+[140].
+
+However, since
+
+increasing exercise intensity has other implications (e.g.
+greater anaerobic energy contribution, higher neuromuscular load, see Part II), such programming manipulations
+need to use a cost/benefit approach.
+
+With respect to the use of very-high-exercise intensities
+
+(>102/120 % = Vurr/vVVO2max)
+
+for
+
+HIT,
+
+while
+
+the
+
+T@VOomax/exercise time ratio is high (81 % and 77 % at
+
+130 % and 140 % of VVOomaxs respectively), exercise
+capacity is typically impaired and, hence, total T@ VO2max
+for a given HIT series is usually low [117] (i.e. 5 min 47 s
+
+at 120 % VVOomax [117]). Nevertheless, the use of repeated
+sets of such training can allow the accumulation of a suf-
+
+ficient T@ VOsmnax. Additionally, well trained athletes are
+generally able to perform HIT at this intensity for longer
+periods (i.e. >8 min [43, 50, 95, 180], especially when
+
+Vier, instead of VVOomax, is used [94]). To conclude, it
+appears that during HIT that involves short work intervals,
+
+selection of a work bout intensity that ranges between
+
+100 % and 120 % of VVO2ynax (>89 % and 105 % of Vier)
+may be optimal.
+
+(ES = + 0.6), despite ‘very large’ and ‘moderate’ reduc-
+
+tions in time to exhaustion (ES = —4.4) and T@VO,,,...
+(ES = —0.7), respectively [179]. A slight increase in work
+
+intensity from 100 % to 105 % of VVO,,,.. during a
+30 s/30s
+
+HIT
+
+format
+
+in
+
+well
+
+trained
+
+triathletes
+
+(VVOsynax = 19.8 + 0.93 km/h) was associated with a
+‘large’ improvement in the T@VO,,,,,,/exercise time ratio
+
+3.1.2.2 Effect of Work Interval Duration on T@V Oommeax
+The effect of work interval duration on systemic vO,
+responses during HIT involving repeated short intervals
+
+was one of the first parameters examined in the HIT literature [11, 12]. Surprisingly, there is little data available
+on repeated efforts lasting less than
+
+15s, despite the
+
+AN Adis
+
+326
+
+a
+
+M. Buchheit, P. B. Laursen
+
+307
+25 4
+
+,
+
+Cd FOVO sera (90%)
+
+MB 100% WO,,,,
+.is5% Vp,
+
+[Laz 8.211|
+
+Mi 05% WO, ae Vier
+
+23(10)%
+
+GE 10% WV
+
+ae! 4% Ver
+
+toy 120% wo. rac 102% Ver
+
+my 130% WO5,.0,/191% Vey
+一 204
+Cc
+
+La}: 11.403)
+
+Gay 140% WO,,,,,/120% V_.
+
+rae ad
+
+三
+
+~一 15
+
+fla}: 1 1.0(3}
+
+F
+
+10-
+
+$a(z3)%
+
+45(20)%
+
+~
+
+very high level (as detailed in Sect. 3.1.4) and/or relief
+
+个
+
+15s[--%j/t5slol1 |
+
+1 30s[-%j/30s[5035 vVO。 ]3
+
+30s[--%]/30s[503%6 VVD。,,]2
+
+oo 了
+
+45 ;
+
+GE ics
+Mic
+==
+-一 =
+
+1(1y%
+
+= 30 5
+
+(ear 7.312) |
+
+20 -
+
+2%
+
+|
+
+TISy%
+
+O% TuLaj 11152)
+|
+
+5 4
+
+0°
+
+~s[105% vVO,,,, ,/20s[0] 6
+
+--8[100% vVO,,,,,,/15s[50%] 5
+
+Ge 50% WD:
+GD 67% WO
+
+40 4 ey 86% WO
+
+--8[115% WO,, /20s[0] 6
+
+Te Vo,,,,, (90%)
+
+50; Ge 0% vo...
+41% Vy,
+55% Very
+
+Lal: 642)
+
+24(197%
+
+{La}: 10.7(2)
+
+Batam
+
+[Lap 6102)
+
+7 fla}: 14.72)
+
+42(17)%
+
+63/26)%
+
+T [Lag 12.8/2}
+_
+
+THA
+
+19.9+ 0.9 km/h)
+
+induced
+
+‘very
+
+large’
+
+increases
+
+in
+
+4, (9 vs. 1.5 min, ES = + 2.4), despite a shorter
+
+larly, in wrestlers (vVVO>,,,, = 16.3 + 1.1 km/h), increasing running work interval duration from 15 s to 30 s lead to
+
+‘very
+
+large’
+
+increase
+
+in T@ VOomax
+
+(4 vs.
+
+O min,
+
+ES = 2.9); [185] a further increase in the interval duration
+
+to 60 s extended T@VO>,,.x to 5.5 min (ES = 0.5 vs. the
+
+0
+15s[120% vVO,_....J/15s[—}% 7
+
+interval duration from 30s to 60s using a fixed-relief
+
+duration of 30s in well trained triathletes (VVOs,. =
+
+the T@VO,,,,./exercise ratio, ES = +2.8) [128]. Simi-
+
+6a(19)%
+
+E
+
+(Fig. 7b, [128, 185, 186]). For example, extending work
+
+total session time (28 vs. 34 min, ES = —0.9; change in
+
+(Lat 9.6(2}
+
+—
+
+work relief intervals constant, also increases T@VO),....
+
+T@VO
+
+71% Vey
+
+© 30
+
+10 7
+
+[184]. Increasing the work interval duration, while keeping
+
+T
+
+--s[100% vVO,,.,,/308[50)% 4
+
+=
+
+session enables a greater T@VO,,,,,,/exercise time ratio
+than a 30 s/30 s session is unknown.
+
+duration increases the relative aerobic energy requirements
+
+10 >
+
+E 20 5
+
+gated thus far; whether, for example, a 15 s/15 s HIT
+
+What is known of course is that prolonging exercise
+
+31(22
+上&
+
+15 4
+
+C
+
+105 % Vir), work intervals >10 s appears to be required
+
+to elicit high VO, responses. Surprisingly, the specific
+ratio in the same group of subjects, has not been investi-
+
+‘
+
+32(11)% aot at
+
+i= 254
+
+plete myoglobin resaturation. Therefore, in the context of
+
+effect of work interval duration, using a fixed work/rest
+
+717%
+
+a 35 -
+
+intervals are short/intense enough so that they limit com-
+
+HIT involving short intervals (100-120 % VVO,,.., or 89/
+
+CI Tewvo,
+90%
+ees
+zean 95%)
+TOV
+gpg, SD in
+UMS | oF21s
+
+=~ 40 -
+
+and then available for the following interval [11]. As a
+result, the cardiopulmonary responses of such efforts are
+relatively low [183], unless exercise intensity is set at a
+
+5 [vay 14.745) ;
+
+b 65
+607 4
+
+oxidative phosphorylation, with more than 50 % of the O>
+
+recovery periods, oxymyoglobin stores are rapidly restored
+
+234181%
+
+af4ajs
+
+20 s) [181, 182]. During very short runs (<10s), ATP
+
+requirements in working muscle are met predominantly by
+used derived from oxymyoglobin stores [11]. During the
+
+32(22)%
+
+ILal: 13.1(4)
+
+由
+E
+所
+
+common approach used by coaches (e.g. 10 s/10 s, 10 s/
+
+30s[105% vVO,,....W30s[--]% 8-9
+
+30-s condition). Considering the importance of VO»
+
+kinetics for extending T@ VOdmnax [177], these data suggest
+
+Fig. 7 Mean + SD total time and T@ VO) ,,,, during different forms
+
+that longer work intervals (e.g. 30 s/30 s vs. 15 s/15 s) are
+
+of HIT, including short intervals, as a function of changes in work
+
+preferred for individuals with slow VO; kinetics (i.e. older/
+
+interval intensity (a: references 1 [117]; 2 [179] and 3 [177]), work
+interval duration (b: references 4 [128], 5 [185] and 6 [186]) and relief
+
+less trained [141]), or for exercising on a bike [140].
+
+interval intensity (ce: references: 7 [190]; 8 [188] and 9 [164]).
+-- indicates the variable that was manipulated. Percentages refer to the
+
+mean + SD T@VO,,,,, relative to total session time. Mean + SD
+
+3.1.2.3 Characteristics
+
+of
+
+the
+
+Relief
+
+Interval
+
+and
+
+[La] mmol/L is provided when available (values for study 6 [186]
+
+T@VOe2mnax
+
+were all <6 mmol/L and are therefore not provided). H/T high-
+
+major role in the VO» response during HIT involving short
+
+intensity interval training, VO2., maximal oxygen uptake,
+T@V Oma. time spent at 90 % or 95 % of VOomax, Vier running
+speed reached at the end of the 30-15 Intermittent Fitness Test,
+
+The intensity of the relief interval also plays a
+
+intervals, since it affects both the actual VO, during the
+sets and exercise capacity (and, hence, indirectly time to
+
+VVO>2na, minimal running speed associated with VO2,,.,, * indicates
+
+exhaustion and T@VOomax; Fig. 7c, [164, 187, 188]).
+
+HIT not performed to exhaustion
+
+Compared
+
+4N Adis
+
+with
+
+passive
+
+recovery, runs
+
+to
+
+exhaustion
+
+HIT Programming: Cardiopulmonary Emphasis
+
+327
+
+involving active recovery are consistently reported to be
+
+advised to consistently recommend HIT runs to exhaustion
+
+40-80 % shorter [164, 187-190]. Therefore, when con-
+
+to optimize T@ VOsmax. this would likely be challenging,
+
+sidering runs to exhaustion during 15 s/15 s exercises, the
+
+psychologically speaking, for both coaches and athletes
+
+absolute T@VOonx might not differ between active and
+
+alike; this is likely why HIT sessions to exhaustion are not
+
+passive recovery conditions [190] (ES = —0.3), but the
+
+often practiced by athletes.
+
+T@VOona./exercise time ratio is substantially greater
+
+In practice, the number of intervals programmed should
+
+when active recovery is implemented (ES = +0.9); a
+
+be related to the goals of the session (total ‘load’ or total
+
+factor of obvious importance when implementing pre-
+
+T@VOomax expected), as well as to the time needed to
+
+determined sets of HIT [50, 128, 178]. During a 30 s/30 s
+
+reach VOoma, and the estimated T@VOona,/exercise time
+
+exercise model, compared with passive recovery, recovery
+
+ratio of the session. The time needed to reach VOomax
+
+intensities of 50 % and 67 % of VVOomax were associated
+
+during
+
+with ‘small’ and ‘very large’ improvements in T@ VOs imax
+
+involving short HIT (30 s/30 s) was recently examined in
+
+different
+
+work-
+
+and
+
+relief-interval
+
+intensities
+
+(ES = +0.4 and +0.1, respectively) and the T@VOomax!
+
+young endurance-trained athletes [164,
+
+exercise time ratio (ES = +2.3 and +4.1, respectively)
+
+surprisingly, these studies showed shorter time needed to
+
+[164,
+
+reach VOomax Values for work intensities > 105 % VVOomax
+
+188]. Increasing the recovery intensity to 84 %
+
+179,
+
+188]. Not
+
+but
+
+and relief intensities >60 % VVOomax. Conversely, using
+
+increased ‘very largely’ the T@ VO>,,,,./exercise time ratio
+
+slightly lower work- and/or relief-interval intensities (i.e.
+
+reduced
+
+‘moderately’
+
+T@VOosmax
+
+(ES = —0.6),
+
+(ES = +3.4). Taken together, these studies suggest that,
+
+work: 100 % and relief: 50 % VVO2max) the runners nee-
+
+for the short HIT formats examined thus far, relief interval
+
+ded more than 7 min to reach VOoymax. Despite a lack of
+
+intensities around +70 % VVObomsx should be recommended to increase both T@VOomax and the T@ VOomax/
+exercise time ratio [23]. The fact that active recovery had a
+
+likely greater impact on T@ VOomax during the 30 s/30 s
+
+statistical differences [164, 179, 188], all ES between the
+different work/relief ratios examined were ‘small’ to ‘very
+
+large’. In the field then, time needed to reach VOomnax might
+be accelerated by manipulating HIT variables during the
+
+[164, 188] compared with the 15 s/15s [190] exercise
+
+first repetitions of the session, i.e. using more intense work-
+
+model is related to the fact that VO, reaches lower values
+during 30s of passive rest, which directly affects VO,
+
+and/or relief-interval intensities during the first two to three
+
+levels during the following effort. For this reason, we
+recommend programming passive recovery <15-20 s for
+
+non-endurance sport athletes not familiar with performing
+active recovery, and/or performing active recovery during
+longer-relief interval durations (>20s). In general, the
+
+intervals, or using longer work intervals and/or shorter
+
+relief intervals.
+
+If we consider that a goal T@ VOomax Of
+
+10 min per
+
+session is appropriate to elicit important cardiopulmonary
+adaptations (Sect. 3.1.1.5), athletes should expect to exer-
+
+cise for a total of 30 min using a 30s [110 % VVOomaxl/
+
+characteristic of the relief interval intensity can be adjusted
+
+30 s [50 % VVOomax] format, since the T@VO2m.,/total
+
+in alignment with the work intensity, with higher-relief
+
+exercise time ratio is approximately 30 % (Fig. 7a). Since
+
+interval intensities used for lower-work interval intensities
+
+it is unrealistic to perform a single 30-min session, it is
+
+[23], and lower-relief exercise intensities used for higher-
+
+possible for it to be broken into three sets of 10-12 min
+
+work interval intensities and durations [117, 177, 179].
+
+(adding 1-2 min per set to compensate for the time needed
+
+to regain VOomax during the second and third set). Such a
+3.1.2.4 Series Duration, Sets and T@VO},,,,
+
+Dividing
+
+HIT sessions into sets has consistently been shown to
+
+session is typical to that used regularly by elite distance
+runners in the field.
+
+A lower volume (shorter series or less
+
+sets) may be used for other sports (i.e. in team sports, a
+
+reduce the total T@VO,,,,,, [50, 128, 178]. For example,
+in endurance-trained young runners (VYO = 17.7 +
+
+T@VOomax Of 5—7 min is likely sufficient [116]) and/or for
+
+0.3 km/h), performing 4-min recoveries (30 s rest, 3 min at
+
+endurance athlete’s programme. In elite handball, for
+
+50 % VVOsmaxs 30 8 rest) every 6 repetitions (30 s/30 s)
+was associated with a ‘moderately’ lower T@ VOomax
+(ES = —0.8) despite
+
+‘very large’
+
+increases in time to
+
+exhaustion (ES = +4.3); the T@VOomasx/exercise time
+
+maintenance during unloading or recovery periods in an
+example, 2 x (20 x 10s [110 % Vypr]/20 s [0]) is common practice, and might enable players to spend +7 min
+
+at VOomax (considering a T@ VO max/exercise time ratio of
+35 %; Buchheit M, unpublished data). In football (soccer),
+
+ratio was therefore ‘very largely’ reduced (ES = —2.3)
+
+HIT sessions such as 2 x (12-15 x 15 s [120 % Vine Test}/
+
+[178]. This is likely related to the time athletes needed to
+
+15 s [0]) are often implemented [95], which corresponds to
+
+return to high VO, levels after each recovery period, irre-
+
+26 min at VOomax (14 min with a T@VO2ma/exercise
+
+spective of the active recovery used. While it could be
+
+time ratio of +45 % [190]).
+
+4N Adis
+
+328
+
+M. Buchheit, P. B. Laursen
+
+3.1.3 Short versus Long Intervals and T@ VOoinax
+
+should be active and less than 20 s (Fig. 8, lower panel [13,
+
+A direct comparison between long and short HIT sessions,
+
+the sprints [193], and/or changes in direction [194], are also
+
+with respect to T@ VO:
+
+of interest, since these may increase systemic O2 demand
+
+30, 158, 192-195]). The introduction of jumps following
+
+has only been reported twice in
+compared
+
+without the need for increasing sprint distance, which could
+
+T@VOsn,, between 6 x 600m (track session, 102 %
+VVOoinaxs ran in +1 min 40s) and 10 repetitions of a
+
+increase muscular load and/or injury risk (see review Part
+
+highly-trained
+
+athletes.
+
+Gajer
+
+et
+
+al.
+
+[174]
+
+30 8/30 s HIT session (work/relief intensity:
+
+105/50 %
+
+VVO max) in elite middle-distance runners (VVOsa. =
+21.2 + 0.6 km/h). While VO, reached 105 % VOsiax
+during the track session, VO) ,,,, Was not actually attained
+during the 30 8/30 s session. If the track session is con-
+
+sidered as the ‘reference’ session (T@VO,,,,,/exercise
+time ratio: 44 %), T@VOoma. was ‘very largely’ lower
+during the 30 8/30 s intervals (10 %, ES = —2.6). Similarly, Millet et al, [128] showed that performing 2 min/
+
+2 min intervals enabled triathletes to attain a ‘very largely’
+
+longer T@ VOomax compared with a 30 8/30 s session
+(ES = +2.2, T@VOon/exercise time ratio = +2.2).
+Long intervals were however ‘moderately’ less ‘efficient’
+
+than a 60 8/308 effort model (T@VOo.,/exercise time
+ratio, ES =
+
+一 0.8) [128]. Taken together, these data sug-
+
+gest that long intervals and/or short intervals with a work/
+relief ratio >1
+
+should be preferred due to the greater
+
+T@VOon./exercise time ratio,
+3.1.4 VO» Responses to Repeated-Sprint Sequences
+Compared with the extensive data available on cardiorespiratory responses to long and short HIT, relatively little
+has been presented on the acute responses to RSS. An RSS
+
+II). Nevertheless, with very short passive recovery periods
+
+(i.e. 17 s), some athletes can reach VO,,,,,, by repeating 3 s
+sprints only (15 m). It is worth noting, however, that during
+all RSS examined here (Fig. 8, except for Dupont et al’s.
+
+study [192]), a number of players did not reach VOoenaxs
+and T@VOonx. showed high interindividual variations
+(CV = 30-100 %). More precisely, when considering the
+four different forms of RSS performed by the same group
+of 13 athletes [193, 194], it was observed that six (45 %) of
+
+them reached VOo,,,, on four occasions, one (8 %) on
+three, four (31 %) on two, with two (15 %) never reaching
+
+VOdinax during any of the RSS. When the data from the
+four RSS were pooled, the number of times that VOomax
+
+was reached was inversely related to VOdinax (r= —0.61,
+
+90 % CL —0.84, —0.19), Similarly, the total T@VO2
+4.
+over the four different RSS was inversely correlated with
+
+VOomax (r = —0.55; 90 % CL —0,85, 0.00). There was,
+however, no relationship between the number of times that
+
+VOomax Was reached or the T@ VOo
+nox and VO» kinetics at
+exercise onset, as measured during submaximal exercise
+
+[144]. These data show that, with respect to T@ VO2:ax,
+using RSS may be questionable to apply in some athletes,
+
+especially those of high fitness.
+
+3.1.5 VO» Responses to Sprint Interval Sessions
+
+is generally defined as the repetition of >two short (<10 s)
+all-out sprints interspersed with a short recovery period
+
+The important research showing the benefits of SIT [126],
+
+(<60 s) [191]. Early in the
+
+notwithstanding, there
+
+1990s, Balsom et al. [13]
+
+demonstrated that RSS were aerobically demanding (i.e.
+
+>65 % VOouns.) In addition, Dupont et al. have shown
+
+is,
+
+to date, few data available
+
+showing the acute physiological responses to typical SIT
+
+sessions that might be implemented in practice. Tabata
+
+has not been reported. For the purpose of the present
+
+et al. [198] showed that WO Was not reached (peak of
+87 % VOormax) during repeated 30 s cycling efforts (200 %
+of pVOormax and therefore not actually ‘all-out’) inter-
+
+review, we have reanalysed data from previous studies [30,
+
+spersed by 2-min passive recovery. In contrast, we recently
+
+158, 193, 194] to provide T@ VO: Values for several
+
+showed [142] that during a ‘true’ all-out SIT session, most
+
+that footballers can reach VO
+ax during repeated sprinting
+
+[192]. To our knowledge, however, T@ VOomax during RSS
+
+forms of RSS (Fig. 8, upper panel [13, 30, 158, 192—195]).
+
+subjects reached values close to (or above) 90 % of their
+
+When manipulating key variables already described (Fig. 2
+
+VO and HR. Nevertheless, T@VOomax Was only 22 8
+
+[35]), VOomax is often reached and sustained for 10-40 %
+
+on average (range 0-60 s, with two subjects showing no
+
+of the entire RSS duration (i.e. 10-60 s; Fig. 8 a). If RSS
+
+values >90 % VOormax) [142], and VOzmax Was reached by
+
+are repeated two to three times per session, as is often done
+
+five (50 %) subjects only. These important individual VO,
+
+in practice [180, 196, 197], the majority of athletes may
+
+responses
+
+spend up to 2-3 min at VOsax during the repeated sprints.
+To increase T@VO mx during an RSS, it appears that
+
+variations in cardiorespiratory fitness (i.e. there was a
+
+sprints/efforts should last at least 4 s, and that the recovery
+
+AN Adis
+
+to
+
+SIT
+
+sessions
+
+were
+
+partly
+
+explained
+
+by
+
+negative correlation between T@ VOoinax and both VOomax
+(r = —0.68; 90 % CL —0.90, —0.20) and VO, kinetics at
+
+HIT Programming: Cardiopulmonary Emphasis
+
+329
+
+noting that although pulmonary VO, is not high during
+
+mn a
+
+100
+5
+
+41f1
+
+_
+
+fol 60 +
+口
+>
+
+ez
+
+is a progressive shift in energy metabolism during a SIT
+
+F son
+
+i 60
+
+ere
+
+704
+
+>
+
+4
+
+ev’
+
+SIT, muscle O» demand likely is, especially as the number
+of sprint repetitions increase. It has been shown that there
+
+下一
+
+Ay.oe am
+
+0
+
+o
+
+Ge) x 10y%
+
+G3 927%
+
+50
+4
+
+session, with a greater reliance on oxidative metabolism
+when sprints are repeated [199, 200]. Along these same
+
+lines, muscle deoxygenation levels and post-sprint reoxygenation rates have been shown to become lower and
+slower, respectively,
+
+is
+NK
+
+One
+
+nenoeannrn
+
+#
+
+£#
+
+£
+
+#
+
+F
+
+FF
+
+PPEEe
+
+=s
+
+FFF
+
+KF KWH
+
+a
+
+EEERE ES
+
+e8@snikeogaaaa
+
+和
+
+on
+
+2s
+
+9
+
+=
+
+re
+
+improved with exercise-induced hyperaemia)
+
+3.1.6 Summary
+
+In this section of the review, we have highlighted the VO;
+
+fos:
+mj
+
+responses to various forms of HIT. It appears that most HIT
+
+oO
+
+oS
+
+6 E
+
+formats, when properly manipulated, can enable athletes to
+
+w
+
+x
+
+1201 将 vo, >58%VOsnes
+
+x
+
+bd
+
+B VO, >65%VD:nsx
+
+reach VOomax- However, important between-athlete and
+
+°
+
+between-HIT format differences exist with
+
+© VO, >78%V0,,..,
+
+60 +
+
+likely
+
+Q
+
+@ VO, >50%V0,_.
+
+8
+
+repetition
+
+HF
+
+2
+22R322223
+S3e2se22
+a 3
+三 Fe
+村 可 页 民 可 丁丁 对
+
+—
+
+sprint
+
+[142].
+
+SPesepsaaea
+aaa
+aa
+ee aas
+
+DD
+
+increasing
+
+muscle with increasing sprint repetition (since O, delivery
+-
+
+~
+
+with
+
+number. This response implies a greater O, demand in the
+
+A VO, >80%V0,,..,
+
+@ Vo, ~a5%V0.,.,,
+
+respect to
+
+T@VO 4... RSS and SIT sessions allow for a limited
+
+Y
+
+T@VO,,,., compared with HIT that involve long and short
+
+Fo 40 4
+
+intervals. Combined, data from high-level athletes [128,
+174] suggest that long intervals and/or short intervals with
+
+=
+
+|
+
+”GO
+二 -人
+Wdw
+
+和
+8 204
+8
+
+Pca
+
+a
+
+_7?
+
+a work/relief ratio >1 should enable a greater T@VO,,,,,,/
+exercise time ratio during HIT sessions. The methods of
+
++Jump 90CO0 «Jump
+
+maximizing long-term VO,,,,, development and performance adaptations using different forms of HIT sessions
+
+10
+
+0
+
+T
+
+7
+
+1
+
+2
+
+7
+
+7
+
+7
+
+3
+
+4
+
+5
+
+6
+
+7
+
+Sprint duration (s)
+
+that involve varying quantities of T@VO,,,,,,, as well as
+the most efficient way of accumulating a given T@VO,,,.,
+in an HIT session (i.e. intermittently vs. continuously), is
+
+Fig. 8 a Mean + SD VO, responses during selected repeated-sprint
+
+still to be determined.
+
+sequences. The intensity of the relief interval (i.e. [percentage]) is
+
+expressed as a fraction of the VVOomax. When available, both the
+percentage of participants that reached VO),,.. (runner) and the
+mean + SD time spent above 90 % of WOomax (clock) are provided.
+b The mean VO), responses during the repeated-sprint sequences
+presented in section a are categorized into six colour-coded families
+
+(based in the % of VOs,,., elicited) and then plotted as a function of
+sprint and recovery duration. The dashed lines represent the shorter
+sprint and recovery durations likely needed to achieve at least 80 % of
+
+VO:
+Circles indicate active recovery. Note (see arrow) that 75 %
+of VO:
+can be achieved with very short sprints (i.e. 15 m) with
+
+passive recovery when sprints are interspersed with very short pauses
+
+(i.e. 17 s). References: 1 [13];2 [195];3 [158];
+4 [194]; 5 [192]; 6 [30]
+
+3.2 Cardiac Response with HIT and Repeated-Sprint
+Efforts
+Due to the varying temporal aspects [70] and possible
+
+dissociation between VO, and cardiac output (Qc) during
+intense exercise [201, 202], T@VO,,,,,, might not be the
+sole criteria of importance for examining when assessing
+the cardiopulmonary response of a given HIT session.
+Since reaching and maintaining an elevated cardiac filling
+is believed to be necessary for improving maximal cardiac
+
+and 7 [193]. COD changes of direction, VO, oxygen uptake, VO2nax
+maximal VO, VVO2m., minimal running speed required to elicit
+maximal VO», Wdw refers to sprints performed on a non-motorized
+
+function [58, 59, 203], training at the intensity associated
+
+treadmill
+
+key intensity, however, remains difficult, since this requires
+
+with maximal SV may be important [201]. Defining this
+
+the continuous monitoring of SV during exercise (e.g
+(submaximal) exercise cessation (r = 0.68; 90 % CL 0.20,
+
+0.90). As with RSS, there was no link between T@VO,,.,..
+
+and VO, kinetics at exercise onset. Finally, it is worth
+
+[25—27, 201, 204]). Interestingly, whether SV is maximal at
+
+v/pVO2maxs or prior to their occurrences, is still debated
+[205-207]. SV behaviour during an incremental test is
+
+330
+
+M. Buchheit, P. B. Laursen
+
+likely protocol-dependent [202] and affected by training
+
+and while further analysis on a greater number of subjects
+
+status (e.g. ventricular filling partly depends on blood
+
+is needed, these preliminary data lend support to the belief
+
+volume, which tends to be higher in trained athletes) [206],
+
+that despite its supramaximal nature, HIT sessions might
+
+although this is not always the case [207]. In addition, the
+
+trigger
+
+nature of exercise, i.e. constant power vs. incremental vs.
+
+adjustments occurring
+
+intermittent, as well as body position (more supine during
+
+periods. Take for example an HIT session involving three
+
+cardiocirculatory
+
+adaptation
+
+via
+
+cardiovascular
+
+specifically during the recovery
+
+rowing or swimming vs. more upright during running and
+
+sets of eight repetitions of a
+
+cycling), might also affect the SV reached and maintained
+
+interspersed with 45 s of passive recovery (long enough for
+
+15s sprint (30 % APR)
+
+throughout the exercise bout. In fact, there is limited data
+
+peak SV to be reached). Such a format would allow such
+
+on cardiac function during exercises resembling those
+
+athletes to maintain their peak SV for 24 x 20s = 480 s,
+
+prescribed during field-based HIT sessions, i.e. constant-
+
+which is similar to what can be sustained during a constant-
+
+power bouts at high intensity. In these studies, SV reached
+
+power exercise performed to exhaustion [25]. Interestingly,
+
+maximal values within +1 min [26],]
+
+Fontana et al. [215] also observed, using a rebreathing
+
++2 min [24, 25,
+
+204] and +4 min [27], and then decreased [24, 26, 204] or
+
+method in untrained men, ‘largely’ greater SV values at the
+
+remained stable [25, 27] prior to fatigue. Inconsistencies in
+
+end of a 30 s all-out sprint compared with an incremental
+
+exercise intensities, individual training background and
+
+test
+
+particular haemodynamic behaviours (e.g. presence of a
+
++ 1.3).
+
+HR deflection at high intensities [208]), as well as meth-
+
+(149 + 26 vs. 190 + 12 beats/min, ES = —2.2), so there
+
+odological considerations in the measurement of SV may
+
+was no substantial difference in maximal cardiac output
+
+explain
+
+(Qemax) [18.2 + 3.3 vs. 17.9 + 2.6 L/min, ES = 一 0.1].
+
+these
+
+differences
+
+[205-207].
+
+As discussed
+
+in
+
+to
+
+exhaustion
+
+HR,,.,
+
+(127 +37
+
+vs.
+
+was nevertheless
+
+94+ 115ml,
+
+‘very
+
+largely’
+
+ES =
+
+lower
+
+Sect. 2.2, alternating work and rest periods during HIT with
+
+To conclude, the optimal nature and intensity of exercise
+
+short intervals might also induce variations in the action of
+
+needed to produce the greatest SV adaptations is not
+
+the venous muscle pump, which can, in turn, limit the
+
+known. In acquiring the answer to this question, one needs
+
+maintenance of a high SV [60].
+
+to take into account individual characteristics, such as fit-
+
+Following the beliefs of German coach, Woldemar
+
+ness level, training status and various individual haemo-
+
+Gerschler, in the 1930s, Cumming reported, in 1972, that
+
+dynamic behaviours to different exercise modes. In a
+
+maximal SV values were reached during the exercise
+
+practical way, on the basis of the limited data available, it
+
+recovery period, and not during exercise, irrespective of the
+
+might be recommended to prescribe a variety of different
+
+exercise intensity
+
+[209].
+
+Although
+
+these
+
+results
+
+were
+
+training methods to gain the adaptation advantages of each
+
+obtained during supine exercise in untrained patients, and
+
+exercise format. HIT sessions, including near-to-maximal
+
+despite contradictory claims [210], they contributed to the
+
+long intervals with long recovery durations (e.g. >3—4 min/
+
+widespread belief that the repeated recovery periods and
+
+>2 min) might allow athletes to reach a high SV during the
+
+their associated high SV accounted for the effectiveness of
+
+work (and possibly the relief intervals). Along these same
+
+HIT on cardiocirculatory function [211]. In partial support
+
+lines, 4-min intervals + 90-95 % v/pVOommax appear to be
+
+of this, Takahashi et al. [212] also reported in untrained
+
+receiving the greatest interest to improve cardiopulmonary
+
+males that during the first 80 s of an active recovery (20 %
+
+function (e.g [46, 59, 216]). Alternatively, repeated short
+
+VOomax)s SV values were 10 % greater than during a pre-
+
+supramaximal work intervals (e.g.
+
+15-30 s) with long
+
+ceding submaximal cycling exercise (60 % VO2max). Sur-
+
+recovery periods (>45 s) might also be effective at reach-
+
+prisingly, these particular and still hypothetical changes in
+
+ing high values both during exercise [215] and possibly, in
+
+SV during recovery had never before been examined dur-
+
+recovery (Fig. 9). However, whether Qc,,,,, adaptations are
+
+ing typical HIT sessions in athletes. We recently collected
+
+comparable following long- and short-interval sessions (i.e.
+
+haemodynamic data in well trained cyclists that partly
+
+continuous vs. intermittent), or whether achieving a certain
+
+confirmed
+
+quantity of time at Qc,,,, (T@Qc,,,,) is needed to maxi-
+
+Cumming’s
+
+findings
+
+(Buchheit
+
+M,
+
+et
+
+al.,
+
+unpublished data, Fig. 9). Irrespective of the exercise, i.e.
+
+mize its adaptation, is still unknown. In the only longitu-
+
+incremental test, 3 min at pPVO2max or repeated 15-s sprints
+
+dinal study to date comparing the effect of short versus
+
+(30 % of the anaerobic power reserve, APR), the SV of a
+well
+
+trained
+
+cyclist
+
+(peak
+
+power
+
+output = 450 W,
+
+VOomax = 69 ml/min/kg, training volume = 10 h/week)
+showed its highest values consistently during the recovery
+periods
+
+(upright
+
+position
+
+on
+
+the
+
+bike).
+
+While
+
+we
+
+long HIT on maximal cardiovascular function in university
+
+students (VO ,,.,: 55-60 ml/min/kg) [59], there was a
+‘small’ trend for greater improvement in Qc,,,,, for the long
+interval protocol (ES = +1 vs. +0.7 for4 x 4 min vs. 15/15,
+
+respectively). It is worth noting that Seiler et al. [176]
+
+acknowledge the limitations inherent to the impedance
+
+showed, in recreational cyclists (VO5,.,..: ~52 ml/min/kg),
+
+method used (PhysioFlow, Manaetec, France [213, 214]),
+
+that accumulating 32 min of work at 90 % HR,,., may
+
+HIT Programming: Cardiopulmonary Emphasis
+
+331
+
+a
+
+80 噩
+
+6 =
+200
+
+0 §
+
+E= 160
+3
+
+interval training may act in an integrated way to stimulate
+physiological adaptations in this population [176]. In this
+
+一
+一-HR
+外
+
+120
+
+latter case [176], the decrease in exercise intensity may
+
+—TsI
+
+& 3 100
+
+2eE
+
+have allowed for a greater T@Qc,,,,, (or near Qc,,,.,), and,
+
+cv 8
+
+in turn, a greater adaptation. Whether similar results would
+
+60
+
+工人
+
+be observed in highly trained athletes who are more likely
+
+0
+
+500
+
+1000
+
+1500
+
+2000
+
+2500
+
+to require greater levels of exercise stress for further
+
+adaptations, is still unknown. Finally, since T@Qc,,,, has
+
+Time (s)
+
+b
+
+og
+4
+
+60 三
+
+40 =
+
+王
+
+200
+
+oO
+
+= se 180
+E- 1604
+
+o>
+
+ar 1404
+=2 1204
+
+一 HA
+
+E $3
+BE 100 4
+
+IS
+
+determines the training responses [59]. Rather, they show
+that both exercise intensity and accumulated duration of
+
+ae 140
+2
+
+at ~95 % HRymax [176]. While SV was not measured, these
+
+results contrast with the idea that exercise intensity directly
+
+20 ~~
+
+=e 180 #
+
+actually induce greater adaptive gains than 16 min of work
+
+一 sv
+~~ TSI
+
+been shown to be largely correlated with time to exhaustion
+
+during severe exercise (r ranging from 0.79; 90 % CL 0.45,
+0.93 to r 0.98; 90 % CL 0.94, 0.99) [25], pacing strategies
+
+that can increase time to exhaustion but that sustain a high
+cardiorespiratory demand may also be of interest. For
+
+instance, adjusting work intensity based on VO, responses
+(constant-VO, exercise at 77% VWO,,,,, On average)
+instead
+
+of
+
+power
+
+(constant-power
+
+exercise
+
+at
+
+87 %
+
+PVOb,nax) led to ‘moderate’ increases in time to exhaustion
+(20 min + 10 min vs. 15 min + 5 min, ES = +1.0) and,
+
+60
+404
+0
+
+.
+100
+
+.
+200
+
+'
+300
+
+.
+400
+
+,
+500
+
+,
+600
+
+in turn, T@Qc,,,, (16 min + 8 min vs. 14 min + 4 min,
+
+,
+700
+
+ES = +0.9) [25].
+
+Time (s)
+
+C
+© vo,
+
+200 -
+
+80 Ej
+a 三
+
+g
+
+Sue
+
+站
+
+°
+
+=> 180 prmnamel gp
+
+A
+
+40 三
+
+In Part I of this review, the different aspects of HIT pro-
+
+»
+
+gramming have been discussed with respect to T@ VO,,,.,,
+
+20 二
+E
+
+— 1604
+
+and cardiopulmonary function. Important between-athlete
+
+=
+
+and between-HIT format differences exist, so that precise
+
+ae 1404
+=
+2 120 J
+gs
+3
+
+Is
+
+100;
+
+— "6
+HA
+—
+
+recommendations are difficult to offer. Most HIT formats,
+
+—
+
+if properly
+
+TSI
+
+VOsmax.
+
+manipulated, can enable athletes to reach
+
+and SIT sessions allow limited
+T@VO
+4. compared with HIT sessions involving long
+
+604
+40
+=]
+
+4 Conclusions
+
+50
+
+=: 100
+
+150
+
+200
+
+250
+
+300
+
+350
+
+Time (s)
+
+Fig. 9 a VO), HR, SV and muscle oxygenation (TSI) during an
+incremental test followed by two sets of three supramaximal 15-s
+
+sprints (35 % APR); b 5-min bout at 50 % of pVOomax immediately
+followed by 3 min at pVO»,,..; and (c) the early phase of an HIT
+session (i.e. first four exercise bouts (15-s [35 % APRJ/45 s [passive];
+
+but RSS
+
+and short intervals. The VO, responses during RSS and SIT
+appear to be fitness-dependent, with the fitter athletes less
+
+able to reach VO2max during such training. Based on the
+current review, the following general recommendations can
+be made:
+
+1.
+
+To individualize exercise intensity and target specific
+
+in a well trained cyclist. Note the reductions in SV for intensities
+
+acute physiological responses (Fig. 1), v/pPVO2max and
+
+above >50 % of VO»... during both the incremental and constant
+
+ASR/APR
+
+or
+
+Vir
+
+are
+
+likely
+
+power tests, which is associated with a greater muscle deoxygenation
+
+references
+
+needed
+
+to
+
+design
+
+during the incremental test. In contrast, maximal SV values are
+
+(二 1-2 min) and short (<45 s) intervals, respectively.
+
+consistently observed during the post-exercise periods, either following incremental, maximal or supramaximal exercises. APR anaerobic
+
+the
+
+more
+
+HIT
+
+accurate
+
+with
+
+long
+
+For run-based HIT sessions, compared with the ASR,
+
+power reserve, H/T high-intensity interval training, HR heart rate,
+
+Vier integrates between-effort recovery abilities and
+
+VOomax Maximal oxygen uptake, p VO2,,., minimal power associated
+
+COD capacities that make Vj; especially relevant for
+
+with VOs,,.., SV stroke volume, TS/ tissue saturation index
+
+programming short, supramaximal intermittent runs
+
+4 Adis
+
+332
+
+2.
+
+M. Buchheit, P. B. Laursen
+
+performed with COD, as implemented in the majority
+
+programming puzzle”, while adding what is
+
+of team and racket sports.
+
+during the technical/tactical sessions [151], since physio-
+
+Especially in well trained athletes that perform exer-
+
+logical and performance adaptations have been shown to
+
+cises involving large muscle groups, and assuming the
+
+occur in relation to the accumulated training load com-
+
+accumulation of T@ VOomnax may maximize the train-
+
+pleted at high intensities [218]). Finally, since in team
+
+ing stimulus to improving performance, we recom-
+
+sports improvements in physical fitness might not have a
+
+mend long- and short-bout HIT with a work/relief ratio
+
+similar impact on match running performance for all
+
+>1 (see Part II, Table 1 for practical programming
+
+players (influence of playing positions, systems of play,
+
+suggestions). Additionally:
+
+individual playing styles) [63, 98, 219, 220], the imple-
+
+a.
+
+There should be little delay between the warm-up
+and the start of the HIT session so that the time
+
+needed to reach VOomax is accelerated. Warm-up
+
+intensity can be 三 60-70 % v/pVOomaxs or game
+based (moderate intensity) for team and racket
+b.
+
+mentation of HIT sessions should be individualized and
+
+considered using a cost-benefit approach. As will be discussed in Part II, consideration for other important aspects
+of HIT programming, such as glycolytic anaerobic energy
+contribution,
+
+neuromuscular
+
+load
+
+and
+
+musculoskeletal
+
+strain, should also be considered. Further studies are also
+
+sport athletes.
+
+needed to examine the long-term adaptations to all forms
+
+Total session volume should enable athletes to
+
+of HIT/repeated all-out efforts presented in the present
+
+spend between SS (team and racket sports) and
+
+review with respect to gender, age and training status/
+
+= 10 (endurance sports) min at VO2max3.
+
+‘missed’
+
+background.
+
+Until new evidence is provided, the importance of
+
+continuous versus repeated ventricular filling at high
+rates for developing cardiovascular adaptations is not
+
+Acknowledgments
+
+No sources of funding were used to assist in the
+
+preparation of this review. The authors have no conflicts of interest
+that are directly relevant to the content of this review.
+
+known. Near-to-maximal and prolonged work intervals
+currently appear to be the preferred HIT option (i.e.
+
+>4 min at 90-95 % v/pVO2maxs with likely decreasing
+external
+
+load
+
+with
+
+increasing
+
+fatigue
+
+to
+
+prolong
+
+T@Qemax).
+
+References
+1. Laursen PB. Training for intense exercise performance: highintensity or high-volume training? Scand J Med Sci Sports.
+2010;20(Supp! 2):1-10.
+2. Seiler S, Tonnessen E. Intervals, thresholds, and long slow
+
+5 Perspective
+
+distance: the role of intensity and duration in endurance training.
+Sportscience. 2009; 13:32-53.
+
+3. Billat LV. Interval training for performance: a scientific and
+
+Further research is required to specify the acute cardiopulmonary responses to HIT/RST/SIT in particular popu-
+
+empirical practice: special recommendations for middle- and
+long-distance running. Part I: aerobic interval training. Sports
+Med. 2001;1:13-31.
+
+lations such as youth and female athletes, as well as the
+
+4. Billat LV. Interval training for performance: a scientific and
+
+influence that training status and cardiorespiratory fitness
+
+empirical practice: special recommendations for middle- and
+
+have on these responses. Further research is also needed to
+improve our understanding of how to optimally manipulate
+HIT variables, in particular, environmental conditions (e.g.
+altitude [21], heat [217]), where ‘typical’ HIT sessions, as
+suggested for programming in the present review, cannot
+be performed. The impact of time of day, timing within a
+session, and external training contents should also be
+
+long-distance running. Part IL: anaerobic interval training. Sports
+Med. 2001;31:75-90.
+
+5. Laursen PB, Jenkins DG. The scientific basis for high-intensity
+interval training: optimising training programmes and maximising performance in highly trained endurance athletes. Sports
+Med. 2002;32:53-73.
+6. Laursen PB. Interval training for endurance. In: Mujika I, editor.
+Endurance training: science and practice (pp. 41-50). VitoriaGasteiz: Ifigo Mujika; 2012. ISBN 978-84-939970-0-7.
+
+examined, as typically most studies are conducted with
+
+7. Bishop D, Girard O, Mendez-Villanueva A. Repeated-sprint
+
+‘fresh’ participants in controlled environments, while in
+
+ability—Part Il: recommendations for training. Sports Med.
+
+practice, HIT sessions are often performed in a state of
+
+accumulated fatigue (end of a team-sport session or in
+the afternoon following an exhaustive morning training
+session). Understanding the physiological responses to
+technical/tactical training sessions is also likely an impor-
+
+tant aspect of successful training in team sport athletes, so
+that the optimal HIT sessions can be programmed as supplemental sessions (i.e. how does one “best solve the
+
+4N Adis
+
+2011;41:741-56.
+8. Gibala MJ, Little JP, van Essen M, et al. Short-term sprint
+interval versus traditional endurance training: similar initial
+adaptations in human skeletal muscle and exercise performance.
+J Physiol. 2006;575:901-11.
+9. laia FM, Bangsbo J. Speed endurance training is a powerful
+stimulus for physiological adaptations and performance improve-
+
+ments of athletes. Scand J Med Sci Sports. 2010;20(Suppl. 2):
+11-23.
+
+

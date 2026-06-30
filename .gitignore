@@ -35,8 +35,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# knowledge base (local only, too large for Git)
-/kb/
+# knowledge base — PDF books are local only (copyright), OCR text is deployable
+/kb/books/
 *.zip
 
 # Claude Code internals (not needed in repo)
