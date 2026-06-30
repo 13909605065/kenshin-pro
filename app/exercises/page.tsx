@@ -314,6 +314,15 @@ export default function ExercisesPage() {
     }
   };
 
+  const handleBatchSave = (exercises: Omit<CustomExercise, "id">[]) => {
+    let added = 0;
+    for (const ex of exercises) {
+      const result = addExercise(ex);
+      if (result) added++;
+    }
+    return added;
+  };
+
   const handleEditCustom = (id: string) => {
     const found = customExercises.find((e) => e.id === id);
     if (found) {
@@ -553,6 +562,7 @@ export default function ExercisesPage() {
         open={modalOpen}
         onClose={() => { setModalOpen(false); setEditingCustom(null); }}
         onSave={handleSaveCustom}
+        onBatchSave={handleBatchSave}
         editingExercise={editingCustom}
       />
 
