@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Canvas, Circle, FabricImage } from "fabric";
 import { EquipmentPalette } from "@/components/tactical/EquipmentPalette";
 import { BoardToolbar } from "@/components/tactical/BoardToolbar";
-import { ArrowLeft, Menu, Download } from "lucide-react";
+import { ArrowLeft, Menu, Download, Image } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TAC_THEME } from "@/lib/tactical-theme";
 // ─── Constants ────────────────────────────────────────────
@@ -222,6 +222,7 @@ export default function WarmupDesignPage() {
   // ─── Equipment placement ────────────────────────────────
   const eqCountRef = useRef<Record<string, number>>({});
   const lastTapRef = useRef<{ x: number; y: number }>({ x: 525, y: 340 });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const hPlaceEquipment = useCallback((filename: string, name: string) => {
     const c = boardRef.current; if (!c) return;
     const cnt = (eqCountRef.current[filename] || 0) + 1;
@@ -257,6 +258,56 @@ export default function WarmupDesignPage() {
       img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
       c.add(img); c.setActiveObject(img); c.requestRenderAll(); autoSave();
     });
+  }, [autoSave]);
+
+  // ─── Import image from Keynote/screenshot ─────────────────
+  const hImportImage = useCallback(() => {
+    const input = fileInputRef.current;
+    if (!input || !boardRef.current) return;
+    input.accept = "image/png,image/jpeg";
+    input.onchange = (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev: any) => {
+        const dataUrl = ev.target?.result as string;
+        if (!dataUrl || !boardRef.current) return;
+        const c = boardRef.current;
+        FabricImage.fromURL(dataUrl).then((img) => {
+          const maxW = c.getWidth() * 0.7;
+          const maxH = c.getHeight() * 0.7;
+          const nw = img.width || 800, nh = img.height || 600;
+          const s = Math.min(maxW / nw, maxH / nh, 1.5);
+          img.set({
+            left: (c.getWidth() - nw * s) / 2,
+            top: (c.getHeight() - nh * s) / 2,
+            scaleX: s, scaleY: s,
+            selectable: true, evented: true,
+          });
+          (img as any).name = "导入图片";
+          img.setControlsVisibility({ tl: true, tr: true, bl: true, br: true, ml: true, mr: true, mt: true, mb: true, mtr: true });
+          c.add(img); c.setActiveObject(img); c.requestRenderAll();
+          autoSave();
+
+          // ★ Auto-save to warmup library after import
+          try {
+            const lib = JSON.parse(localStorage.getItem('kenshin_warmup_library') || '[]');
+            const ts = new Date();
+            const autoName = `导入图片 ${ts.toLocaleDateString('zh-CN')} ${ts.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`;
+            lib.unshift({
+              id: `warmup_${Date.now()}`,
+              name: autoName,
+              createdAt: ts.toISOString(),
+              canvasJSON: JSON.stringify(c.toJSON()),
+            });
+            localStorage.setItem('kenshin_warmup_library', JSON.stringify(lib.slice(0, 20)));
+          } catch {}
+        });
+      };
+      reader.readAsDataURL(file);
+      input.value = "";
+    };
+    input.click();
   }, [autoSave]);
 
   const hField = useCallback((fn: string) => {
@@ -362,6 +413,17 @@ export default function WarmupDesignPage() {
           onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           title="热身库">
           <span className="hidden sm:inline">热身库</span>
+        </button>
+
+        {/* 导入图片 */}
+        <button onClick={hImportImage}
+          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-bold transition-colors touch-target"
+          style={{ color: '#f59e0b', border: `1px solid #f59e0b` }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          title="导入Keynote截图">
+          <Image className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">导入图片</span>
         </button>
 
         {/* 导出 PNG */}
@@ -542,6 +604,9 @@ export default function WarmupDesignPage() {
           </div>
         )}
       </div>
+
+      {/* ─── Hidden file input for image import ─── */}
+      <input ref={fileInputRef} type="file" className="hidden" aria-hidden="true" />
     </div>
   );
 }
