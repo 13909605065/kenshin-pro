@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Trash2, AlertTriangle, ChevronDown } from "lucide-react";
-import { loadPlayers, type PlayerRecord } from "@/lib/roster-utils";
+import { getPlayers } from "@/lib/roster-utils";
 import { useSyncVersion, notifyChange } from "@/lib/data-events";
 import { MobileNav } from "@/components/MobileNav";
 
@@ -57,8 +57,7 @@ function srpeCalc(rpe: number, duration: number) {
 export default function StatusPage() {
   const router = useRouter();
   const syncVersion = useSyncVersion();
-  const [players, setPlayers] = useState<PlayerRecord[]>([]);
-  useEffect(() => { loadPlayers().then(setPlayers); }, [syncVersion]);
+  const players = useMemo(() => getPlayers(), [syncVersion]);
   const today = new Date().toISOString().slice(0, 10);
 
   // ── State ──

@@ -147,8 +147,11 @@ async function pullFromCloud(): Promise<PlayerRecord[]> {
       if (error || !data) return getLocalPlayers();
 
       if (data.length > 0) {
-        // Supabase has data → it wins (source of truth)
         const cloudPlayers = data.map(mapRowToPlayer);
+        const local = getLocalPlayers();
+        // 本地优先：如果本地有更多数据（用户刚编辑过），保留本地
+        if (local.length >= cloudPlayers.length) return local;
+        // 云端有更多数据（换设备/首次加载），用云端
         saveLocalPlayers(cloudPlayers);
         return cloudPlayers;
       }

@@ -7,7 +7,7 @@ import {
   History, FileText, FileSpreadsheet,
   Gauge, Timer, Droplets, Brain, X, RotateCcw,
 } from "lucide-react";
-import { loadPlayers, type PlayerRecord } from "@/lib/roster-utils";
+import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/lib/trimp";
 import { saveSessionLog } from "@/lib/training-log";
 import { notifyChange, useSyncVersion } from '@/lib/data-events';
@@ -537,9 +537,9 @@ export default function FieldPage() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Load players from Supabase (source of truth) ──
+  // ── Load players from localStorage (savePlayers 已双写) ──
   useEffect(() => {
-    loadPlayers().then(setPlayers);
+    setPlayers(getPlayers());
   }, [syncVersion]);
 
   // ── Timer ──
