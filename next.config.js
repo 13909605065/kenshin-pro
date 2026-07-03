@@ -8,6 +8,7 @@ const nextConfig = {
   trailingSlash: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  generateBuildId: async () => `kb-${Date.now()}`,
   env: {
     NEXT_PUBLIC_BUILD_TIME: String(Date.now()),
   },
