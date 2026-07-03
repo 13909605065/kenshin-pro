@@ -13,6 +13,9 @@ import {
   type PlayerRecord,
   getTeams,
   getActiveTeamId,
+} from "@/lib/roster-utils";
+import { notifyChange } from "@/lib/data-events";
+import {
   setActiveTeamId,
   addTeam,
   renameTeam,
@@ -28,7 +31,7 @@ import {
   positionBenchmark,
   type FitnessProfile,
 } from "@/lib/fitness-store";
-import { Upload, Plus, X, Save, Trash2, Activity, Zap } from "lucide-react";
+import { Upload, Plus, X, Save, Trash2, Activity, Zap, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft } from "lucide-react";
@@ -91,6 +94,7 @@ export default function RosterPage() {
   } | null>(null);
 
   const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
+  const [syncOk, setSyncOk] = useState(false);
 
   // Team management (lazy init to avoid SSR localStorage access)
   const [teams, setTeams] = useState<Team[]>(() => {
@@ -332,6 +336,12 @@ export default function RosterPage() {
         </button>
 
         <span className="text-xs text-gray-400">{players.length}名球员</span>
+        <button
+          onClick={() => { notifyChange("roster-updated"); setSyncOk(true); setTimeout(() => setSyncOk(false), 2000); }}
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-green-400 bg-green-500/10 hover:bg-green-500/20 rounded-lg transition border border-green-500/20"
+        >
+          <RefreshCw className="w-3 h-3" /> {syncOk ? '已同步 ✓' : '同步'}
+        </button>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
         <a href="/花名册模板.xlsx" download="花名册模板.xlsx"
