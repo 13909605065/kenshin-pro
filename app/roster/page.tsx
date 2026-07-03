@@ -303,7 +303,7 @@ export default function RosterPage() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <span className="text-white font-bold text-sm">球队花名册</span>
-          <span className="text-[10px] text-gray-500">{players.length}名球员</span>
+          <span className="text-[10px] text-gray-500">{players.length}名球员 · v20260704-1</span>
         </div>
       </header>
       {/* Import toast */}
