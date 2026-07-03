@@ -342,6 +342,46 @@ export default function RosterPage() {
         >
           <RefreshCw className="w-3 h-3" /> {syncOk ? '已同步 ✓' : '同步'}
         </button>
+        <button
+          onClick={() => {
+            const rosterNames = new Set(players.map(p => p.name));
+            const keys = [
+              'kenshin_field_sessions', 'kenshin_fitness_tests',
+              'kenshin_daily_monitoring', 'kenshin_season_calendar',
+              'kenshin_warmup_calendar', 'kenshin_gym_calendar',
+              'kenshin_training_logs', 'kenshin_daily_training_notes',
+            ];
+            let cleaned = 0;
+            for (const key of keys) {
+              try {
+                const raw = localStorage.getItem(key);
+                if (!raw) continue;
+                const data = JSON.parse(raw);
+                if (key === 'kenshin_field_sessions') {
+                  for (const s of data) {
+                    if (s.playerLoads) {
+                      const before = s.playerLoads.length;
+                      s.playerLoads = s.playerLoads.filter((pl: any) => rosterNames.has(pl.name));
+                      cleaned += before - s.playerLoads.length;
+                    }
+                  }
+                  localStorage.setItem(key, JSON.stringify(data));
+                } else if (key === 'kenshin_fitness_tests' || key === 'kenshin_daily_monitoring') {
+                  const before = data.length;
+                  const filtered = data.filter((d: any) => rosterNames.has(d.player || d.name));
+                  cleaned += before - filtered.length;
+                  localStorage.setItem(key, JSON.stringify(filtered));
+                }
+              } catch {}
+            }
+            notifyChange("roster-updated");
+            setSyncOk(true); setTimeout(() => setSyncOk(false), 2000);
+            alert(`已同步：清除了 ${cleaned} 条不属于当前花名册的脏数据。训练页现在只显示花名册的 ${players.length} 名球员。`);
+          }}
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 rounded-lg transition border border-orange-500/20"
+        >
+          <Trash2 className="w-3 h-3" /> 清脏数据
+        </button>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
         <a href="/花名册模板.xlsx" download="花名册模板.xlsx"
