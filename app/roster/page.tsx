@@ -31,7 +31,7 @@ import {
   positionBenchmark,
   type FitnessProfile,
 } from "@/lib/fitness-store";
-import { Upload, Plus, X, Save, Trash2, Activity, Zap, RefreshCw } from "lucide-react";
+import { Upload, Plus, X, Save, Trash2, Activity, Zap, RefreshCw, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft } from "lucide-react";
@@ -351,6 +351,22 @@ export default function RosterPage() {
         <button onClick={() => fileRef.current?.click()}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
           <Upload className="w-3.5 h-3.5" />导入Excel
+        </button>
+        <button onClick={async () => {
+          const { utils, writeFileXLSX } = await import("xlsx");
+          const data = players.map(p => ({
+            "姓名": p.name, "位置": p.position, "号码": p.number,
+            "年龄": p.age ?? "", "身高(cm)": p.height ?? "", "体重(kg)": p.weight ?? "",
+            "伤病状态": p.injuryStatus === "healthy" ? "健康" : p.injuryStatus === "minor" ? "轻伤" : "缺阵",
+            "伤病备注": p.injuryNote, "伤病史": p.injuryHistory
+          }));
+          const wb = utils.book_new();
+          const ws = utils.json_to_sheet(data);
+          utils.book_append_sheet(wb, ws, "花名册");
+          writeFileXLSX(wb, `花名册_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-300 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition">
+          <Download className="w-3.5 h-3.5" />导出Excel
         </button>
         <button onClick={() => { setEditing({ id: "", name: "", position: "", number: "", age: null, height: null, weight: null, injuryStatus: "healthy", injuryNote: "", injuryHistory: "", disabledExercises: [], notes: "" }); setShowAdd(true); }}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-black bg-[#992828] hover:bg-[#992828]/90 rounded-lg transition font-bold">
