@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSyncVersion } from "@/lib/data-events";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Upload, Download, TrendingUp, TrendingDown, Minus, Trash2, Plus, Activity } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { getPlayers } from "@/lib/roster-utils";
+import { loadPlayers, type PlayerRecord } from "@/lib/roster-utils";
 
 // ═══════════════════════════════════════════════
 // Tests — matching 山西 05_体能测试.xlsx (零硬件)
@@ -80,7 +80,9 @@ export default function FitnessPage() {
   const syncVersion = useSyncVersion();
   const router = useRouter();
   const [results, setResults] = useState<TestResult[]>(loadResults);
-  const players = useMemo(() => getPlayers(), [syncVersion]);
+  const [players, setPlayers] = useState<PlayerRecord[]>([]);
+
+  useEffect(() => { loadPlayers().then(setPlayers); }, [syncVersion]);
   const [selectedTest, setSelectedTest] = useState(TESTS[0].id);
   const [selectedPlayer, setSelectedPlayer] = useState("");
   const [value, setValue] = useState("");
