@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
   getPlayers,
-  loadPlayers,
   savePlayers,
   addPlayer,
   updatePlayer,
@@ -79,7 +78,7 @@ export default function RosterPage() {
   const router = useRouter();
   const [players, setPlayers] = useState<PlayerRecord[]>([]);
   useEffect(() => {
-    loadPlayers().then((data) => setPlayers(data));
+    setPlayers(getPlayers());
   }, []);
 
   const refreshPlayers = () => { setPlayers(getPlayers()); };
@@ -95,6 +94,7 @@ export default function RosterPage() {
 
   const [importToast, setImportToast] = useState<{type: 'success'|'error', msg: string} | null>(null);
   const [syncOk, setSyncOk] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   // Team management (lazy init to avoid SSR localStorage access)
   const [teams, setTeams] = useState<Team[]>(() => {
@@ -382,6 +382,19 @@ export default function RosterPage() {
         >
           <Trash2 className="w-3 h-3" /> 清脏数据
         </button>
+        {selected.size > 0 && (
+          <button
+            onClick={() => {
+              if (!confirm(`删除选中的 ${selected.size} 名球员？`)) return;
+              selected.forEach(id => deletePlayer(id));
+              setSelected(new Set());
+              refreshPlayers();
+            }}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition border border-red-500/20"
+          >
+            <Trash2 className="w-3 h-3" /> 删除({selected.size})
+          </button>
+        )}
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
         <a href="/花名册模板.xlsx" download="花名册模板.xlsx"
@@ -431,16 +444,27 @@ export default function RosterPage() {
           const fit = getFitnessProfile(p.id);
           const hasFitData = fit.sprint30m != null || fit.squat1RM != null || fit.verticalJump != null || fit.yoYoIR1 != null;
           return (
-            <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#992828] transition group">
+            <div key={p.id} className="bg-[#1e1e1e] rounded-xl border border-[#222]/50 hover:border-[#992828] transition group relative">
+              {/* Checkbox */}
+              <input
+                type="checkbox"
+                checked={selected.has(p.id)}
+                onChange={() => {
+                  const next = new Set(selected);
+                  next.has(p.id) ? next.delete(p.id) : next.add(p.id);
+                  setSelected(next);
+                }}
+                className="absolute top-3 left-3 w-4 h-4 accent-[#992828] z-10"
+              />
               {/* Top section: name + position + number */}
-              <div className="p-3 pb-2">
+              <div className="p-3 pb-2 pl-8">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-8 h-8 rounded-full bg-[#992828]/20 flex items-center justify-center text-white font-bold text-sm">{p.name[0] || "?"}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium truncate">{p.name}</p>
                     <p className="text-[10px] text-gray-400">{p.position || "未设置"} {p.number && `#${p.number}`}</p>
                   </div>
-                  <button onClick={() => { setEditing(p); setShowAdd(true); }} className="text-gray-600 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => { if (confirm(`删除 ${p.name}？`)) { deletePlayer(p.id); setSelected(s => { const n = new Set(s); n.delete(p.id); return n; }); refreshPlayers(); } }} className="text-gray-600 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition"><Trash2 className="w-3 h-3" /></button>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-gray-400">
                   <span>{p.age ? `${p.age}岁` : ""} {p.height ? `${p.height}cm` : ""} {p.weight ? `${p.weight}kg` : ""}</span>
