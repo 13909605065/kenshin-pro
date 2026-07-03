@@ -251,7 +251,7 @@ export default function FitnessPage() {
                   <th className="text-center p-3 text-gray-400 font-medium">综合</th>
                 </tr></thead>
                 <tbody>
-                  {players.slice(0,28).map(player => {
+                  {players.map(player => {
                     const latest = latestByPlayer[player.id] || {};
                     const perfTests = TESTS.filter(t => t.elite > 0);
                     const trs = perfTests.map(t => latest[t.id]).filter(Boolean);
