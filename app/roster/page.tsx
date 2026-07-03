@@ -395,6 +395,16 @@ export default function RosterPage() {
             <Trash2 className="w-3 h-3" /> 删除({selected.size})
           </button>
         )}
+        <button
+          onClick={() => {
+            const allIds = new Set(filtered.map(p => p.id));
+            if (selected.size === allIds.size) setSelected(new Set());
+            else setSelected(allIds);
+          }}
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition"
+        >
+          {selected.size === filtered.length && filtered.length > 0 ? '取消全选' : '全选'}
+        </button>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
         <a href="/花名册模板.xlsx" download="花名册模板.xlsx"
