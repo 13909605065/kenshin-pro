@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Search, Dumbbell, ArrowUpFromLine, Plus, Pencil, Trash2, X, CheckSquare, Square, Filter, ListChecks } from "lucide-react";
 import { STRENGTH_LIBRARY } from "@/lib/training-library";
-import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise } from "@/hooks/useCustomExercises";
+import { useCustomExercises, mapCustomBodyPart, mapCustomEquipment, CustomExercise, CustomDifficulty, CustomBodyPart, CustomEquipment } from "@/hooks/useCustomExercises";
 import { AddExerciseModal } from "@/components/exercises/AddExerciseModal";
 
 // ═══════════════════════════════════════════════
@@ -230,7 +230,23 @@ export default function ExercisesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCustom, setEditingCustom] = useState<CustomExercise | null>(null);
 
-  const builtInExercises = useMemo(() => buildUnifiedExercises(), []);
+  // ─── Hidden built-in exercises (user can hide built-ins) ───
+  const [hiddenBuiltIns, setHiddenBuiltIns] = useState<Set<string>>(() => {
+    try { const arr: string[] = JSON.parse(localStorage.getItem("kenshin_hidden_builtins") || "[]"); return new Set(arr); } catch { return new Set(); }
+  });
+  const hideBuiltIn = (id: string) => {
+    setHiddenBuiltIns(prev => {
+      const next = new Set(prev);
+      next.add(id);
+      localStorage.setItem("kenshin_hidden_builtins", JSON.stringify(Array.from(next)));
+      return next;
+    });
+  };
+
+  const builtInExercises = useMemo(() =>
+    buildUnifiedExercises().filter(e => !hiddenBuiltIns.has(e.id)),
+    [hiddenBuiltIns]
+  );
 
   // Convert custom exercises to UnifiedExercise format
   const customUnified = useMemo(() => {
@@ -329,6 +345,34 @@ export default function ExercisesPage() {
       setEditingCustom(found);
       setModalOpen(true);
     }
+  };
+
+  // Edit a built-in exercise: convert to custom first, then open edit
+  const handleEditBuiltIn = (ex: UnifiedExercise) => {
+    const ce: CustomExercise = {
+      id: `custom-${Date.now()}`,
+      name: ex.name,
+      body_part: (ex.bodyPart === "上半身" || ex.bodyPart === "下半身" || ex.bodyPart === "全身") ? ex.bodyPart as CustomBodyPart : "全身" as CustomBodyPart,
+      equipment: (["杠铃","哑铃","壶铃","自重","弹力带","药球","波速球","其他"] as CustomEquipment[]).includes(ex.equipment as any) ? ex.equipment as CustomEquipment : "其他" as CustomEquipment,
+      difficulty: ((ex.difficulty === "基础" ? "初级" : ex.difficulty === "进阶" ? "高级" : "中级") as CustomDifficulty),
+      description: "",
+      cue_points: ex.cue_points || [],
+      progression: ex.progression || "",
+      regression: ex.regression || "",
+      image_url: ex.image_url,
+    };
+    addExercise(ce);
+    // Hide the built-in version
+    hideBuiltIn(ex.id);
+    setEditingCustom(ce);
+    setModalOpen(true);
+  };
+
+  // Delete a built-in exercise: hide it
+  const handleDeleteBuiltIn = (id: string) => {
+    hideBuiltIn(id);
+    setDeleteToast("已隐藏");
+    setTimeout(() => setDeleteToast(null), 2000);
   };
 
   const handleDeleteCustom = (id: string) => {
@@ -514,8 +558,8 @@ export default function ExercisesPage() {
                 selected={selectedIds.has(ex.id)}
                 onSelect={() => setSelectedId(ex.id)}
                 onToggleSelect={() => toggleSelect(ex.id)}
-                onEdit={ex.isCustom ? () => handleEditCustom(ex.id) : undefined}
-                onDelete={ex.isCustom ? () => handleDeleteCustom(ex.id) : undefined}
+                onEdit={ex.isCustom ? () => handleEditCustom(ex.id) : () => handleEditBuiltIn(ex)}
+                onDelete={ex.isCustom ? () => handleDeleteCustom(ex.id) : () => handleDeleteBuiltIn(ex.id)}
               />
             ))}
           </div>
@@ -627,12 +671,10 @@ function ExerciseCard({
             ))}
           </ul>
         )}
-        {exercise.isCustom && (
-          <div className="flex gap-1 mt-2" onClick={e => e.stopPropagation()}>
-            {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> 编辑</button>}
-            {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> 删除</button>}
-          </div>
-        )}
+        <div className="flex gap-1 mt-2" onClick={e => e.stopPropagation()}>
+          {onEdit && <button onClick={onEdit} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-gray-400 hover:text-white"><Pencil className="w-2.5 h-2.5 inline"/> {exercise.isCustom ? "编辑" : "修改"}</button>}
+          {onDelete && <button onClick={onDelete} className="px-1.5 py-0.5 rounded text-[9px] bg-[#121212] text-red-400 hover:text-red-300"><Trash2 className="w-2.5 h-2.5 inline"/> {exercise.isCustom ? "删除" : "隐藏"}</button>}
+        </div>
       </div>
     </div>
   );

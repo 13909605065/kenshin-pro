@@ -135,6 +135,32 @@ function ProfileSummary({ formData, t }: any) {
 function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles }: any) {
   const [subPos, setSubPos] = useState("");
   const [autoFillToast, setAutoFillToast] = useState<{name: string, prevData: Record<string, any>} | null>(null);
+  const [rosterPlayers, setRosterPlayers] = useState<any[]>([]);
+  const [rosterOpen, setRosterOpen] = useState(false);
+
+  const refreshRoster = () => {
+    const players = getPlayers();
+    setRosterPlayers(players);
+  };
+
+  // 花名册中文位置 → 表单英文 Position key
+  const ROSTER_POS_MAP: Record<string, string> = {
+    "门将": "goalkeeper", "中后卫": "defender", "左后卫": "defender",
+    "右后卫": "defender", "后腰": "midfielder", "中前卫": "midfielder",
+    "前腰": "midfielder", "左边翼卫": "wingback", "右边翼卫": "wingback",
+    "中锋": "forward", "影锋": "forward", "边锋": "winger",
+  };
+
+  const pickRosterPlayer = (p: any) => {
+    setRosterOpen(false);
+    updateField("name", p.name);
+    if (p.position) updateField("position", ROSTER_POS_MAP[p.position] || p.position);
+    if (p.age) updateField("age", p.age);
+    if (p.height) updateField("height", p.height);
+    if (p.weight) updateField("weight", p.weight);
+    if (p.injuryHistory) updateField("injuryHistory", p.injuryHistory);
+    if (p.injuryStatus !== "healthy") updateField("injuryHistory", (formData.injuryHistory || '') + ' [花名册: ' + (p.injuryNote || p.injuryStatus) + ']');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -146,6 +172,43 @@ function EditProfileModal({ formData, updateField, setRole, t, onClose, profiles
 
         {formData.role !== "coach" ? (
           <>
+            {/* ── 花名册快速选择 ── */}
+            {rosterPlayers.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => { refreshRoster(); setRosterOpen(!rosterOpen); }}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-[#1a1a1a] border border-[#333] hover:border-[#992828] rounded-lg text-xs text-gray-300 transition"
+                >
+                  <span>📋 从花名册选择球员 ({rosterPlayers.length}人)</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition ${rosterOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {rosterOpen && (
+                  <div className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl">
+                    {rosterPlayers.map((p: any) => (
+                      <button
+                        key={p.id}
+                        onClick={() => pickRosterPlayer(p)}
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-[#992828]/20 transition flex items-center justify-between ${
+                          formData.name === p.name ? 'bg-[#992828]/10 text-[#992828]' : 'text-gray-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-gray-500 w-5 text-center">{p.number || '-'}</span>
+                          <span>{p.name}</span>
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          {p.position || '?'} · {p.age || '?'}岁
+                          {p.injuryStatus !== 'healthy' && (
+                            <span className="ml-1 text-red-500">⚠</span>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Name — auto-fill from saved profiles */}
             <div className="relative">
               <input type="text" value={formData.name} onChange={(e: any) => updateField("name", e.target.value)}

@@ -11,16 +11,16 @@ import {
 
 const NAV_ITEMS = [
   { id: "home",     label: "首页",     icon: Home,       path: "/" },
-  { id: "field",    label: "场地训练", icon: Activity,    path: "/field" },
-  { id: "warmup",   label: "热身设计", icon: Zap,         path: "/warmup" },
-  { id: "gym",      label: "力量房",   icon: Dumbbell,    path: "/gym" },
+  { id: "field",    label: "场地", icon: Activity,    path: "/field" },
+  { id: "warmup",   label: "热身", icon: Zap,         path: "/warmup" },
+  { id: "gym",      label: "力量",   icon: Dumbbell,    path: "/gym" },
   { id: "exercises",label: "动作库",   icon: ListChecks,  path: "/exercises" },
-  { id: "planning", label: "周期方案", icon: Dumbbell,    path: "/planning" },
-  { id: "load",     label: "负荷管理", icon: BarChart3,   path: "/load" },
+  { id: "planning", label: "周期", icon: Dumbbell,    path: "/planning" },
+  { id: "load",     label: "负荷", icon: BarChart3,   path: "/load" },
   { id: "fitness",  label: "体测",     icon: Gauge,       path: "/fitness" },
   { id: "roster",   label: "花名册",   icon: Users,       path: "/roster" },
-  { id: "injury-prevention", label: "伤病预防", icon: Shield, path: "/injury-prevention" },
-  { id: "status",   label: "状态录入", icon: Activity,    path: "/status" },
+  { id: "injury-prevention", label: "伤病", icon: Shield, path: "/injury-prevention" },
+  { id: "status",   label: "状态", icon: Activity,    path: "/status" },
   { id: "match",    label: "比赛",     icon: Trophy,      path: "/match" },
   { id: "settings", label: "设置",     icon: Settings,    path: "/settings" },
 ];

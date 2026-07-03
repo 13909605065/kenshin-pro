@@ -57,11 +57,15 @@ export function buildCoachPrompt(
 
   return `## 训练选型任务（仅选ID，不填任何数值）
 
-你是体能训练选型引擎。唯一职责：从文库套餐ID池中挑选最佳combo_id。所有组数、次数、负荷、间歇、距离由TS代码根据NSCA-CSCS/周期化书籍确定性计算——你绝不输出任何数字。
+你是S&C体能选型引擎。唯一职责：从文库套餐ID池中挑选最佳combo_id。TS代码将自动：
+1. 基于你的combo_id展开为完整训练课教案（分钟级时间轴）
+2. 计算所有组数/次数/负荷/间歇/RPE
+3. 生成周微周期计划
+4. 过滤外场不适用器械
 
 **训练上下文:**
 - 场景: ${sceneHint || '由系统决定'} | 位置: ${position} | 目标: ${goal} | 周期: ${phaseCtx}
-- 级别: ${levelCtx} | 人数: ${playerCount}人 | 教练: ${COACH_CERT_LABELS[cert] || cert} ${COACH_ROLE_LABELS[role] || role} ${LEAGUE_TAG_LABELS[league] || league}${tacticalCtx}
+- 级别: ${levelCtx} | 人数: ${playerCount}人 | 时长: ${trainingDuration}分钟 | 教练: ${COACH_CERT_LABELS[cert] || cert} ${COACH_ROLE_LABELS[role] || role} ${LEAGUE_TAG_LABELS[league] || league}${tacticalCtx}
 ${hasInjuries ? `\n⚠️ 伤病(须排除禁忌): ${injuryHistory.substring(0, 200)}` : ''}\
 ${hasACWR ? '\n⚠️ ACWR预警: 优先低冲击/恢复型套餐' : ''}\
 ${(data as any).equipmentAvailable?.length ? `\n器材: ${(data as any).equipmentAvailable.join('、')}` : ''}\

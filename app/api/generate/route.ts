@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/supabase-server";
 import { buildSystemPrompt, buildUserPrompt } from "@/lib/ai";
 import { PlayerFormData, SeasonPhase, Position } from "@/lib/types";
-import { assemblePlan, shouldUseAssembler } from "@/lib/plan-assembler";
+import { assemblePlan, buildCoachSessionPlan, shouldUseAssembler } from "@/lib/plan-assembler";
 import { validatePlan, type ValidationInput } from "@/lib/plan-validator";
 import type { FitnessProfile } from "@/lib/fitness-store";
 import { generateOfflinePlan, type OfflinePlanInput } from "@/lib/offline-plan";
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
   let kbContext = "";
   const seenPassages = new Set<string>();
   for (const topic of searchTopics) {
-    const ctx = getKnowledgeContext(topic, formData.position, formData.phase);
+    const ctx = getKnowledgeContext(topic, formData.position ?? undefined, formData.phase ?? undefined);
     if (ctx && !seenPassages.has(ctx.slice(0, 50))) {
       seenPassages.add(ctx.slice(0, 50));
       kbContext += ctx;
@@ -472,6 +472,36 @@ ${JSON.stringify(fitnessData, null, 1)}
             if (typeof ev.data === "object" && ev.data.module && emittedModules.has(ev.data.module)) continue;
             extraModuleCount++;
             controller.enqueue(sseEvent(ev.event, typeof ev.data === "string" ? ev.data : JSON.stringify(ev.data)));
+          }
+
+          // ── Coach mode: inject session plan + microcycle ──
+          if (isCoach) {
+            const { resolveCombo } = await import("@/lib/training-library");
+            const combo = planValidation.finalComboId ? resolveCombo(planValidation.finalComboId) : null;
+            const sessionPlan = buildCoachSessionPlan(
+              combo,
+              phaseVal,
+              goalVal,
+              sceneVal,
+              formData.position,
+              formData.playerCount || 20,
+              formData.trainingDuration || 75
+            );
+            moduleCount++;
+            controller.enqueue(sseEvent(`module_${moduleCount}`, JSON.stringify(sessionPlan)));
+
+            // Inject microcycle
+            const { MICROCYCLE_TEMPLATES } = await import("@/lib/training-library");
+            const microId = phaseVal === 'competition' ? 'microcycle-1game' : 'microcycle-1game';
+            const microcycle = MICROCYCLE_TEMPLATES[microId];
+            if (microcycle) {
+              moduleCount++;
+              controller.enqueue(sseEvent(`module_${moduleCount}`, JSON.stringify({
+                module: 'microcycle',
+                ...microcycle,
+                status: 'complete',
+              })));
+            }
           }
 
           controller.enqueue(

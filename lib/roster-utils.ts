@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/supabase-client";
+import { notifyChange } from "@/lib/data-events";
 
 export interface PlayerRecord {
   id: string;
@@ -167,20 +168,31 @@ async function pullFromCloud(): Promise<PlayerRecord[]> {
   return pullPromise;
 }
 
+/**
+ * 强制重新从 Supabase 拉取花名册。
+ * 在 savePlayers/addPlayer/updatePlayer/deletePlayer 后调用以刷新所有页面的数据。
+ */
+export function invalidateRosterCache(): void {
+  cloudPulled = false;
+  pullPromise = null;
+}
+
 /** Full async load — Supabase first, localStorage cache. Call from hooks/effects. */
 export async function loadPlayers(): Promise<PlayerRecord[]> {
+  invalidateRosterCache();
   return pullFromCloud();
 }
 
-/** Sync read — localStorage for instant UI, triggers background Supabase pull. */
+/** Sync read — localStorage only. 最快，savePlayers 已同步写 localStorage。 */
 export function getPlayers(): PlayerRecord[] {
-  pullFromCloud().catch(() => {});
   return getLocalPlayers();
 }
 
 /** Save full list — localStorage instant + robust Supabase push. */
 export async function savePlayersAsync(players: PlayerRecord[]): Promise<void> {
   saveLocalPlayers(players);
+  invalidateRosterCache();
+  notifyChange("roster-updated");
   try {
     const userId = await getUserId();
     if (!userId) return;
@@ -194,6 +206,8 @@ export async function savePlayersAsync(players: PlayerRecord[]): Promise<void> {
 /** Sync save (kept for backward compat — fire-and-forget) */
 export function savePlayers(players: PlayerRecord[]): void {
   saveLocalPlayers(players);
+  invalidateRosterCache();
+  notifyChange("roster-updated");
   getUserId().then(userId => {
     if (!userId) return;
     const rows = players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
@@ -230,6 +244,8 @@ export function addPlayer(p: Omit<PlayerRecord, "id">): PlayerRecord {
   const local = getLocalPlayers();
   local.push(np);
   saveLocalPlayers(local);
+  invalidateRosterCache();
+  notifyChange("roster-updated");
   getUserId().then(userId => {
     if (userId) {
       createClient().from("roster_players").insert({ id: newId, user_id: userId, ...mapPlayerToRow(np) }).then(({ error }) => {
@@ -243,6 +259,7 @@ export function addPlayer(p: Omit<PlayerRecord, "id">): PlayerRecord {
 export async function updatePlayerAsync(id: string, updates: Partial<PlayerRecord>): Promise<void> {
   const local = getLocalPlayers().map(p => p.id === id ? { ...p, ...updates } : p);
   saveLocalPlayers(local);
+  notifyChange("roster-updated");
   try {
     const userId = await getUserId();
     if (!userId) return;
@@ -254,6 +271,8 @@ export async function updatePlayerAsync(id: string, updates: Partial<PlayerRecor
 export function updatePlayer(id: string, updates: Partial<PlayerRecord>): void {
   const local = getLocalPlayers().map(p => p.id === id ? { ...p, ...updates } : p);
   saveLocalPlayers(local);
+  invalidateRosterCache();
+  notifyChange("roster-updated");
   getUserId().then(userId => {
     if (userId) {
       createClient().from("roster_players").update(mapPlayerToRow(updates)).eq("id", id).eq("user_id", userId).then(({ error }) => {
@@ -275,6 +294,8 @@ export async function deletePlayerAsync(id: string): Promise<void> {
 
 export function deletePlayer(id: string): void {
   saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
+  invalidateRosterCache();
+  notifyChange("roster-updated");
   getUserId().then(userId => {
     if (userId) {
       createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId).then(({ error }) => {

@@ -46,6 +46,72 @@ const BOOK_COMBO = 'ATHLETE_COMBOS (training-library.ts)';
 const DEFAULT_POSITION = 'midfielder';
 
 // ═══════════════════════════════════════════════
+// SCENE-AWARE EXERCISE FILTERING
+// ═══════════════════════════════════════════════
+
+/** Exercise IDs that are NOT safe for pitch (require gym equipment) */
+const PITCH_UNSAFE_PATTERNS = [
+  /^ex-back-squat/, /^ex-front-squat/, /^ex-deadlift/, /^ex-trap-bar-deadlift/,
+  /^ex-romanian-dl/, /^ex-bench-press/, /^ex-standing-press/, /^ex-barbell-row/,
+  /^ex-power-clean/, /^ex-hang-clean/, /^ex-dumbbell-/, /^ex-cable-/,
+  /^ex-sus-/, /^ex-leg-press/, /^ex-hanging-leg-raise/, /^ex-face-pull/,
+  /^ex-hip-thrust/, /^ex-hamstring-curl/, /^ex-lat-pulldown/, /^ex-chest-fly/,
+  /^ex-tricep-/, /^ex-bicep-/, /^ex-skull-crusher/,
+];
+
+/** Pitch-safe replacement IDs — bodyweight/band/ball only */
+const PITCH_SAFE_IDS: Record<string, string[]> = {
+  upper: ['ex-pushup', 'ex-band-row', 'ex-mb-chest-pass'],
+  lower: ['ex-bulgarian-split-squat', 'ex-nordic-hamstring', 'ex-single-leg-rdl', 'ex-glute-bridge', 'ex-box-jump'],
+  core: ['ex-plank', 'ex-dead-bug', 'ex-bird-dog', 'ex-side-plank'],
+  ability: ['ex-sprint-start', 'ex-pro-agility', 'ex-hurdle-jump', 'ex-sled-sprint'],
+};
+
+function isPitchUnsafe(exerciseId: string): boolean {
+  return PITCH_UNSAFE_PATTERNS.some(p => p.test(exerciseId));
+}
+
+function findPitchSafeReplacement(
+  _unsafeId: string,
+  category: 'upper' | 'lower' | 'core' | 'ability',
+  alreadyUsed: Set<string>
+): string | null {
+  const candidates = PITCH_SAFE_IDS[category] || [];
+  const available = candidates.filter(id =>
+    STRENGTH_LIBRARY[id] && !alreadyUsed.has(id)
+  );
+  return available[0] || null;
+}
+
+/** Filter exercises for pitch scene: replace gym-only exercises with bodyweight alternatives */
+function filterExercisesForScene(
+  ids: string[],
+  scene: string,
+  alreadyUsed: Set<string>
+): string[] {
+  if (scene !== 'pitch') return ids;
+  const result: string[] = [];
+  for (const id of ids) {
+    if (isPitchUnsafe(id)) {
+      // Find category by checking which map key matches
+      const cat = PITCH_SAFE_IDS.upper.includes(id) ? 'upper' :
+                  PITCH_SAFE_IDS.lower.includes(id) ? 'lower' :
+                  PITCH_SAFE_IDS.core.includes(id) ? 'core' : 'ability';
+      const replacement = findPitchSafeReplacement(id, cat, alreadyUsed);
+      if (replacement && !alreadyUsed.has(replacement)) {
+        result.push(replacement);
+        alreadyUsed.add(replacement);
+      }
+      // If no replacement found, skip the exercise (don't send barbell to pitch)
+    } else {
+      result.push(id);
+      alreadyUsed.add(id);
+    }
+  }
+  return result;
+}
+
+// ═══════════════════════════════════════════════
 // PARAMETER COMPUTATION (periodization.ts ONLY)
 // ═══════════════════════════════════════════════
 
@@ -254,10 +320,13 @@ function buildPositionTraining(
   phase: SeasonPhase,
   goal: string,
   position: string | null | undefined,
-  profile: FitnessProfile
+  profile: FitnessProfile,
+  scene: string
 ): PositionTraining {
   const pos = position || DEFAULT_POSITION;
   const posEx = POSITION_EXERCISES[pos] || POSITION_EXERCISES[DEFAULT_POSITION];
+
+  const usedIds = new Set<string>();
 
   const warmupIds = combo?.warmup_ids?.length
     ? combo.warmup_ids
@@ -266,17 +335,20 @@ function buildPositionTraining(
     .map(assembleWarmup)
     .filter((x): x is NonNullable<typeof x> => x != null);
 
-  const upperIds = combo?.upper_ids?.length ? combo.upper_ids : posEx.upper.slice(0, 3);
+  const rawUpperIds = combo?.upper_ids?.length ? combo.upper_ids : posEx.upper.slice(0, 3);
+  const upperIds = filterExercisesForScene(rawUpperIds, scene, usedIds);
   const upperLimb: Exercise[] = upperIds
     .map(id => assembleExercise(id, phase, goal, profile))
     .filter((x): x is NonNullable<typeof x> => x != null);
 
-  const lowerIds = combo?.lower_ids?.length ? combo.lower_ids : posEx.lower.slice(0, 3);
+  const rawLowerIds = combo?.lower_ids?.length ? combo.lower_ids : posEx.lower.slice(0, 3);
+  const lowerIds = filterExercisesForScene(rawLowerIds, scene, usedIds);
   const lowerLimb: Exercise[] = lowerIds
     .map(id => assembleExercise(id, phase, goal, profile))
     .filter((x): x is NonNullable<typeof x> => x != null);
 
-  const coreIds = combo?.core_ids?.length ? combo.core_ids : posEx.core.slice(0, 2);
+  const rawCoreIds = combo?.core_ids?.length ? combo.core_ids : posEx.core.slice(0, 2);
+  const coreIds = filterExercisesForScene(rawCoreIds, scene, usedIds);
   const core: Exercise[] = coreIds
     .map(id => assembleExercise(id, phase, goal, profile))
     .filter((x): x is NonNullable<typeof x> => x != null);
@@ -408,7 +480,7 @@ export function assemblePlan(
   const combo = validation.finalComboId ? resolveCombo(validation.finalComboId) : null;
 
   // ── 2. Position Training module ──
-  const pt = buildPositionTraining(combo, phase, goal, position, profile);
+  const pt = buildPositionTraining(combo, phase, goal, position, profile, scene);
   modules.push(pt);
 
   // ── 3. Ability Training module (from validated exercise IDs, excluding already-used) ──
@@ -438,4 +510,180 @@ export function assemblePlan(
 export function shouldUseAssembler(scene: string, _goal: string): boolean {
   if (scene === 'rehab') return false;
   return true;
+}
+
+// ═══════════════════════════════════════════════
+// COACH SESSION PLAN — 分钟级时间轴训练课教案
+// ═══════════════════════════════════════════════
+
+import type { SessionPlan, SessionActivity, SSGInfo } from './types';
+
+/**
+ * Build a minute-by-minute training session plan from a validated combo.
+ * This is what the head coach can hold and execute on the pitch.
+ */
+export function buildCoachSessionPlan(
+  combo: AthleteCombo | null,
+  phase: SeasonPhase,
+  goal: string,
+  scene: string,
+  position: string | null | undefined,
+  playerCount: number,
+  duration: number
+): SessionPlan {
+  const pos = position || 'midfielder';
+  const pp = getPhaseParams(phase);
+  const gp = getGoalParams(goal);
+  const sceneLabel = scene === 'gym' ? '力量房' : '外场';
+  const goalLabel = gp?.labelCn || goal;
+
+  let elapsed = 0;
+  const usedIds = new Set<string>();
+
+  // ── WARMUP (15-18% of total) ──
+  const warmupMins = Math.min(20, Math.round(duration * 0.18));
+  const warmupIds = combo?.warmup_ids?.slice(0, 5) || ['warm-hip-open', 'warm-glute-activation', 'warm-dynamic-stretch', 'warm-plank-series', 'warm-nordic-curl'];
+  const warmup = warmupIds.map(id => {
+    const w = WARMUP_LIBRARY[id];
+    return { name: w?.name || id, duration: w?.duration || 3, description: w?.description || '', category: (w?.category || 'no_ball') as 'no_ball' | 'with_ball' };
+  });
+  elapsed += warmupMins;
+
+  // ── MAIN ACTIVITIES ──
+  const remaining = duration - elapsed - Math.round(duration * 0.1);
+  const mainMins = Math.round(remaining * 0.70);
+
+  const activities: SessionActivity[] = [];
+  const defaultActivity = (name: string, dur: number, desc: string, progs: string[], regs: string[]): SessionActivity => ({
+    name, duration: dur,
+    area: scene === 'pitch' ? '半场' : '力量房',
+    groups: `${playerCount}人轮换`,
+    description: desc,
+    coaching_points: progs,
+    progression: progs[0] || '',
+    regression: regs[0] || '',
+  });
+
+  // Lower body block
+  const rawLowerIds = combo?.lower_ids?.slice(0, 3) || [];
+  const lowerIds = filterExercisesForScene(rawLowerIds, scene, usedIds);
+  if (lowerIds.length > 0) {
+    const descParts = lowerIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      const e = ref ? assembleExercise(id, phase, goal, {} as FitnessProfile) : null;
+      return e ? `${e.name} ${e.sets}×${e.reps} @${e.load} 间歇${e.rest}s` : id;
+    });
+    const cueParts = lowerIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      return ref?.cue_points?.[0] || '';
+    }).filter(Boolean);
+    activities.push(defaultActivity(
+      '下肢力量', Math.round(mainMins * 0.4),
+      descParts.join(' | '),
+      cueParts.length > 0 ? cueParts : ['控制离心3-5s', '保持核心稳定'],
+      ['降负荷20%', '减少组数1组']
+    ));
+  }
+
+  // Upper body block
+  const rawUpperIds = combo?.upper_ids?.slice(0, 2) || [];
+  const upperIds = filterExercisesForScene(rawUpperIds, scene, usedIds);
+  if (upperIds.length > 0) {
+    const descParts = upperIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      const e = ref ? assembleExercise(id, phase, goal, {} as FitnessProfile) : null;
+      return e ? `${e.name} ${e.sets}×${e.reps} @${e.load}` : id;
+    });
+    const cueParts = upperIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      return ref?.cue_points?.[0] || '';
+    }).filter(Boolean);
+    activities.push(defaultActivity(
+      '上肢力量', Math.round(mainMins * 0.25),
+      descParts.join(' | '),
+      cueParts.length > 0 ? cueParts : ['肩胛骨收紧', '控制节奏'],
+      ['降负荷20%', '减少组数1组']
+    ));
+  }
+
+  // Core block
+  const rawCoreIds = combo?.core_ids?.slice(0, 2) || [];
+  const coreIds = filterExercisesForScene(rawCoreIds, scene, usedIds);
+  if (coreIds.length > 0) {
+    const descParts = coreIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      const e = ref ? assembleExercise(id, phase, goal, {} as FitnessProfile) : null;
+      return e ? `${e.name} ${e.sets}×${e.reps}` : id;
+    });
+    const cueParts = coreIds.map(id => {
+      const ref = STRENGTH_LIBRARY[id];
+      return ref?.cue_points?.[0] || '';
+    }).filter(Boolean);
+    activities.push(defaultActivity(
+      '核心训练', Math.round(mainMins * 0.2),
+      descParts.join(' | '),
+      cueParts.length > 0 ? cueParts : ['腹式呼吸', '骨盆中立位'],
+      ['减少持续时间', '退阶到静态保持']
+    ));
+  }
+
+  // Ability/conditioning
+  const abilityMins = remaining - mainMins;
+  if (abilityMins >= 5 && combo?.ability_ids?.length) {
+    const rawAbility = filterExercisesForScene(combo.ability_ids.slice(0, 3), scene, usedIds);
+    if (rawAbility.length > 0) {
+      const descParts = rawAbility.map(id => {
+        const ref = STRENGTH_LIBRARY[id];
+        const e = ref ? assembleExercise(id, phase, goal, {} as FitnessProfile) : null;
+        return e ? `${e.name} ${e.sets}×${e.reps}` : id;
+      });
+      activities.push(defaultActivity(
+        '专项能力', abilityMins,
+        descParts.join(' | '),
+        ['全力执行', '保持技术质量'],
+        ['降速10%', '增加间歇']
+      ));
+    }
+  }
+
+  elapsed += mainMins + abilityMins;
+
+  // ── SSG (small-sided game) ──
+  const isPitch = scene === 'pitch';
+  const halfPlayers = Math.min(playerCount, 10);
+  const ssg: SSGInfo = {
+    id: 'ssg-session',
+    name: isPitch ? `${halfPlayers}v${halfPlayers} 小场地` : '无SSG',
+    focus: isPitch ? '攻防转换+体能维持' : '力量房无SSG',
+    duration: isPitch ? Math.min(15, Math.round(duration * 0.12)) : 0,
+    area: isPitch ? '30×20m' : '',
+    players: isPitch ? `${halfPlayers}v${halfPlayers}` : '',
+    rules: isPitch ? '2脚触球限制，自由轮转，进球即换人' : '',
+    coaching_focus: isPitch ? ['攻防转换速度', '丢球后立即反抢', '快速决策'] : [],
+  };
+
+  // ── COOLDOWN ──
+  const cooldownIds = combo?.cooldown_ids?.slice(0, 2) || ['cool-static-stretch', 'cool-foam-roll'];
+  const cooldown = cooldownIds.map(id => {
+    const c = COOLDOWN_LIBRARY[id];
+    return { name: c?.name || id, duration: c?.duration || 5, description: c?.description || '', category: 'no_ball' as const };
+  });
+
+  // ── Equipment ──
+  const equipment: string[] = scene === 'gym'
+    ? ['杠铃', '哑铃', '药球', '跳箱', '弹力带', '泡沫轴']
+    : ['标志盘', '锥桶', '分队背心', '足球', '弹力带', '泡沫轴'];
+
+  return {
+    module: 'session_plan',
+    title: `${pos} · ${sceneLabel} · ${goalLabel} · ${pp.labelCn}`,
+    duration,
+    player_count: playerCount,
+    equipment,
+    warmup,
+    activities,
+    ssg,
+    cooldown,
+    status: 'complete',
+  };
 }
