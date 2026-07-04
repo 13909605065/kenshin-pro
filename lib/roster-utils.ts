@@ -32,7 +32,7 @@ export {
   type Team,
 } from "@/lib/team-storage";
 
-import { teamKey } from "@/lib/team-storage";
+import { teamKey, teamRemove } from "@/lib/team-storage";
 
 function getStorageKey(): string {
   return teamKey("roster_players");
@@ -149,11 +149,21 @@ async function pullFromCloud(): Promise<PlayerRecord[]> {
       if (data.length > 0) {
         const cloudPlayers = data.map(mapRowToPlayer);
         const local = getLocalPlayers();
-        // 本地优先：如果本地有更多数据（用户刚编辑过），保留本地
-        if (local.length >= cloudPlayers.length) return local;
-        // 云端有更多数据（换设备/首次加载），用云端
-        saveLocalPlayers(cloudPlayers);
-        return cloudPlayers;
+        // ID级别合并：本地永远优先（保留本地删除/编辑），云端只补充本地没有的新球员
+        const localMap = new Map(local.map(p => [p.id, p]));
+        let addedFromCloud = 0;
+        for (const cp of cloudPlayers) {
+          if (!localMap.has(cp.id)) {
+            localMap.set(cp.id, cp); // 云端新增（其他设备添加的球员）
+            addedFromCloud++;
+          }
+          // 本地已有此ID → 保留本地版本（本地总是更新）
+        }
+        const merged = Array.from(localMap.values());
+        if (addedFromCloud > 0) {
+          saveLocalPlayers(merged);
+        }
+        return merged;
       }
 
       // Supabase is empty — migrate localStorage data to cloud
@@ -191,7 +201,8 @@ export function getPlayers(): PlayerRecord[] {
   return getLocalPlayers();
 }
 
-/** Save full list — localStorage instant + robust Supabase push. */
+/** Save full list — localStorage instant + robust Supabase push.
+ *  Also deletes cloud players NOT in the new list. */
 export async function savePlayersAsync(players: PlayerRecord[]): Promise<void> {
   saveLocalPlayers(players);
   invalidateRosterCache();
@@ -201,22 +212,43 @@ export async function savePlayersAsync(players: PlayerRecord[]): Promise<void> {
     if (!userId) return;
     const supabase = createClient();
     const rows = players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
+    const newIds = players.map(p => p.id);
+    // Upsert current players
     const { error } = await supabase.from("roster_players").upsert(rows, { onConflict: "id" });
     if (error) console.warn("[roster] savePlayers sync error:", error);
+    // Delete cloud players NOT in the new list
+    const { data: existing } = await supabase.from("roster_players").select("id").eq("user_id", userId);
+    if (existing) {
+      const toDelete = existing.filter((r: any) => !newIds.includes(r.id)).map((r: any) => r.id);
+      if (toDelete.length > 0) {
+        await supabase.from("roster_players").delete().in("id", toDelete).eq("user_id", userId);
+      }
+    }
   } catch (e) { console.warn("[roster] savePlayers failed:", e); }
 }
 
-/** Sync save (kept for backward compat — fire-and-forget) */
+/** Sync save (kept for backward compat — fire-and-forget).
+ *  Now also deletes cloud players NOT in the new list. */
 export function savePlayers(players: PlayerRecord[]): void {
   saveLocalPlayers(players);
   invalidateRosterCache();
   notifyChange("roster-updated");
-  getUserId().then(userId => {
+  getUserId().then(async userId => {
     if (!userId) return;
+    const supabase = createClient();
     const rows = players.map(p => ({ id: p.id, user_id: userId, ...mapPlayerToRow(p) }));
-    createClient().from("roster_players").upsert(rows, { onConflict: "id" }).then(({ error }) => {
-      if (error) console.warn("[roster] savePlayers sync error:", error);
-    });
+    const newIds = players.map(p => p.id);
+    // Upsert current players
+    const { error } = await supabase.from("roster_players").upsert(rows, { onConflict: "id" });
+    if (error) console.warn("[roster] savePlayers sync error:", error);
+    // Delete cloud players NOT in the new list (e.g., transferred/removed)
+    const { data: existing } = await supabase.from("roster_players").select("id").eq("user_id", userId);
+    if (existing) {
+      const toDelete = existing.filter((r: any) => !newIds.includes(r.id)).map((r: any) => r.id);
+      if (toDelete.length > 0) {
+        await supabase.from("roster_players").delete().in("id", toDelete).eq("user_id", userId);
+      }
+    }
   }).catch(() => {});
 }
 
@@ -285,25 +317,37 @@ export function updatePlayer(id: string, updates: Partial<PlayerRecord>): void {
   }).catch(() => {});
 }
 
+/** ⚠️ 推荐使用：等待 Supabase 删除完成，防止刷新后数据重现。 */
 export async function deletePlayerAsync(id: string): Promise<void> {
-  saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
-  try {
-    const userId = await getUserId();
-    if (!userId) return;
-    const { error } = await createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId);
-    if (error) console.warn("[roster] deletePlayer sync error:", error);
-  } catch (e) { console.warn("[roster] deletePlayer failed:", e); }
-}
-
-export function deletePlayer(id: string): void {
   saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
   invalidateRosterCache();
   notifyChange("roster-updated");
-  getUserId().then(userId => {
+  // 同步清理 user_kv 缓存
+  try { teamRemove("roster_players"); } catch {}
+  try {
+    const userId = await getUserId();
+    if (!userId) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("roster_players").delete().eq("id", id).eq("user_id", userId);
+    if (error) console.warn("[roster] deletePlayerAsync error:", error);
+  } catch (e) { console.warn("[roster] deletePlayerAsync failed:", e); }
+}
+
+/** Async 删除——等同 deletePlayerAsync，别名方便使用。 */
+export async function deletePlayer(id: string): Promise<void> {
+  return deletePlayerAsync(id);
+}
+
+/** 同步删除（兼容旧代码）——不等待 Supabase，仅删本地。 */
+export function deletePlayerSync(id: string): void {
+  saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
+  invalidateRosterCache();
+  notifyChange("roster-updated");
+  getUserId().then(async userId => {
     if (userId) {
-      createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId).then(({ error }) => {
-        if (error) console.warn("[roster] deletePlayer sync error:", error);
-      });
+      try {
+        await createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId);
+      } catch (e) { console.warn("[roster] deletePlayerSync failed:", e); }
     }
   }).catch(() => {});
 }

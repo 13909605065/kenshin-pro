@@ -84,7 +84,7 @@ export default function RosterPage() {
   const refreshPlayers = () => { setPlayers(getPlayers()); };
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState<PlayerRecord | null>(null);
-  const [filter, setFilter] = useState<"all" | "healthy" | "minor" | "out">("all");
+  const [filter, setFilter] = useState<"all" | "healthy" | "minor" | "out" | "u21" | "gk">("all");
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<{
     rawRows: (string | number | null)[][];
@@ -144,7 +144,12 @@ export default function RosterPage() {
     refreshPlayers();
   };
 
-  const filtered = filter === "all" ? players : players.filter((p) => p.injuryStatus === filter);
+  const filtered = (() => {
+          if (filter === "all") return players;
+          if (filter === "u21") return players.filter(p => p.age != null && p.age <= 21);
+          if (filter === "gk") return players.filter(p => p.position === '门将');
+          return players.filter((p) => p.injuryStatus === filter);
+        })();
 
   // Fitness panel state — which player's fitness panel is open
   const [fitnessPanelPlayerId, setFitnessPanelPlayerId] = useState<string | null>(null);
@@ -303,7 +308,7 @@ export default function RosterPage() {
             <ArrowLeft className="w-4 h-4" />
           </button>
           <span className="text-white font-bold text-sm">球队花名册</span>
-          <span className="text-[10px] text-gray-500">{players.length}名球员 · v20260704-1</span>
+          <span className="text-[10px] text-gray-500">{players.length}名球员 · U21 {players.filter(p => p.age != null && p.age <= 21).length}人 · GK {players.filter(p => p.position === '门将').length}人</span>
         </div>
       </header>
       {/* Import toast */}
@@ -376,7 +381,8 @@ export default function RosterPage() {
             }
             notifyChange("roster-updated");
             setSyncOk(true); setTimeout(() => setSyncOk(false), 2000);
-            alert(`已同步：清除了 ${cleaned} 条不属于当前花名册的脏数据。训练页现在只显示花名册的 ${players.length} 名球员。`);
+            setImportToast({type:'success',msg:`已清除 ${cleaned} 条孤立数据`});
+            setTimeout(()=>setImportToast(null),3000);
           }}
           className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 rounded-lg transition border border-orange-500/20"
         >
@@ -404,6 +410,19 @@ export default function RosterPage() {
           className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition"
         >
           {selected.size === filtered.length && filtered.length > 0 ? '取消全选' : '全选'}
+        </button>
+        <button
+          onClick={() => {
+            const filteredIds = new Set(filtered.map(p => p.id));
+            const next = new Set<string>();
+            filteredIds.forEach(id => {
+              if (!selected.has(id)) next.add(id);
+            });
+            setSelected(next);
+          }}
+          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 bg-[#1e1e1e] hover:bg-[#222] rounded-lg transition"
+        >
+          反选
         </button>
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleExcel} className="hidden" />
@@ -438,13 +457,22 @@ export default function RosterPage() {
       </div>
 
       {/* Filter */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {(["all", "healthy", "minor", "out"] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-lg text-xs transition ${filter === f ? "bg-[#992828]/20 text-[#992828] border border-[#992828]/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
             {f === "all" ? "全部" : `${statusEmoji(f)} ${statusLabel(f)}`}
           </button>
         ))}
+        <span className="text-gray-600 mx-1">|</span>
+        <button onClick={() => setFilter(filter === "u21" ? "all" : "u21" as any)}
+          className={`px-3 py-1 rounded-lg text-xs transition ${filter === "u21" ? "bg-purple-500/20 text-purple-400 border border-purple-500/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
+          🌱 U21 ({players.filter(p => p.age != null && p.age <= 21).length})
+        </button>
+        <button onClick={() => setFilter(filter === "gk" ? "all" : "gk" as any)}
+          className={`px-3 py-1 rounded-lg text-xs transition ${filter === "gk" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/40" : "bg-[#1e1e1e] text-gray-400 hover:text-white"}`}>
+          🧤 门将 ({players.filter(p => p.position === '门将').length})
+        </button>
       </div>
 
       {/* Player cards */}

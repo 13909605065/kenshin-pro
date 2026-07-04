@@ -28,7 +28,8 @@ type DataEvent =
   | "load-data-changed"
   | "knowledge-base-updated"
   | "sync-completed"
-  | "custom-exercises-updated";
+  | "custom-exercises-updated"
+  | "attendance-updated";
 
 import { useState, useEffect } from "react";
 

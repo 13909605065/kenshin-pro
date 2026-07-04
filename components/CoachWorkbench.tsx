@@ -20,6 +20,9 @@ import { getFitnessProfile, fitnessSummary, strengthAssessment, speedAssessment 
 import { getAtRiskPlayers, calcACWR, getLoadData, type LoadEntry } from '@/lib/acwr';
 import { calcRecoveryScore, getRecoveryEmoji, type RecoveryInput } from '@/lib/recovery-score';
 import { buildRecoveryInputFromStatus, getPlayerSelfReports, getCoachScores } from '@/lib/player-status';
+import { getPlayers, type PlayerRecord } from '@/lib/roster-utils';
+import { getTodayAttendance, buildAttendance, saveAttendance, getAttendanceStats, setAbsentReason, type AbsenceReason, ABSENCE_LABELS, ABSENCE_ORDER } from '@/lib/attendance-store';
+import { groupByPosition, GROUP_META } from '@/lib/player-groups';
 
 // ── helpers ──
 const today = new Date();
@@ -95,9 +98,9 @@ const GOAL_LABELS: Record<string, string> = {
 const SCENE_LABELS: Record<string, string> = { gym: '力量房', pitch: '外场' };
 
 // ── roster types ──
-interface RosterPlayer { id: string; name: string; position: string; number: string; age: number | null; height: number | null; weight: number | null; injuryStatus: 'healthy' | 'minor' | 'out'; injuryNote: string; injuryHistory?: string; disabledExercises?: string[]; }
 type PlayerStatus = { name: string; status: 'green' | 'yellow' | 'red'; reason: string; disabledExercises?: string[] };
-function loadRoster(): RosterPlayer[] { try { const raw = localStorage.getItem('roster_players'); return raw ? JSON.parse(raw) : []; } catch { return []; } }
+// Unified roster read — uses getPlayers() from roster-utils (team-scoped)
+function loadRoster(): PlayerRecord[] { return getPlayers(); }
 
 function mapPosition(cn: string): Position {
   const map: Record<string, Position> = {
@@ -330,23 +333,33 @@ export default function CoachWorkbench() {
   // ── training attendees selector ──
   const [trainingAttendees, setTrainingAttendees] = useState<Set<string>>(new Set());
   const [showAttendeeSelector, setShowAttendeeSelector] = useState(false);
-  const [trainingRoster, setTrainingRoster] = useState<{id: string; name: string}[]>([]);
+  const [showAbsentPanel, setShowAbsentPanel] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
-  function loadTrainingRoster(): {id: string; name: string}[] {
-    if (typeof window === 'undefined') return [];
-    try {
-      let raw = localStorage.getItem('kenshin_roster');
-      if (!raw) raw = localStorage.getItem('roster_players');
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-  }
+  // Unified roster data — always from getPlayers() (team-scoped)
+  const rosterPlayers = useMemo(() => getPlayers(), [syncVersion]);
 
-  // Initialize training attendees from roster on mount
+  // Initialize training attendees from roster + saved attendance
   useEffect(() => {
-    const roster = loadTrainingRoster();
-    setTrainingRoster(roster);
-    setTrainingAttendees(new Set(roster.map(p => p.name)));
-  }, []);
+    const players = getPlayers();
+    if (players.length === 0) return;
+    const saved = getTodayAttendance();
+    if (saved) {
+      // Restore saved attendance
+      const attending = new Set<string>();
+      for (const e of saved.entries) {
+        if (e.present) attending.add(e.playerId);
+      }
+      setTrainingAttendees(attending);
+    } else {
+      // Default: all healthy players attending, injured (out) auto-excluded
+      const attending = new Set<string>();
+      for (const p of players) {
+        if (p.injuryStatus !== "out") attending.add(p.id);
+      }
+      setTrainingAttendees(attending);
+    }
+  }, [syncVersion]);
 
   // ── MD calculation from match date ──
   const mdDay = useMemo(() => {
@@ -530,7 +543,10 @@ export default function CoachWorkbench() {
     // Auto-save to daily training log for load management
     const date = trainDate;
     const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
-    const attendeeNames = Array.from(trainingAttendees);
+    const attendeeNames = Array.from(trainingAttendees).map(id => {
+      const p = rosterPlayers.find(r => r.id === id);
+      return p ? p.name : id;
+    });
     try {
       const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
       const existing = logs.findIndex((l: any) => l.date === date);
@@ -902,8 +918,9 @@ export default function CoachWorkbench() {
                       <button key={p.id} onClick={() => togglePlayerSelect(p.name)}
                         className={`text-[10px] px-2 py-1 rounded transition whitespace-nowrap ${
                           selectedPlayers.has(p.name) ? 'bg-[#992828]/15 text-[#992828] ring-1 ring-[#992828]/40' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
-                        }`}>{p.name} · {p.position || '?'}
+                        }`}>{p.name}
                         {p.injuryStatus !== 'healthy' && (p.injuryStatus === 'out' ? ' 🔴' : ' 🟡')}
+                        {p.age != null && p.age <= 21 && ' 🌱'}
                       </button>
                     ))}
                   </div>
@@ -1018,62 +1035,211 @@ export default function CoachWorkbench() {
           )}
         </div>
 
-        {/* ── 参训球员选择器 (collapsible) ── */}
-        <div className="bg-[#1a1a1a] border border-[#2c2c2c] rounded-xl overflow-hidden">
-          <button
-            onClick={() => setShowAttendeeSelector(!showAttendeeSelector)}
-            className="w-full flex items-center justify-between px-3 py-2.5 text-xs hover:bg-[#222] transition"
-          >
-            <span className="text-[#ccc] font-medium">
-              参训球员 <span className="text-[#992828]">{trainingAttendees.size}人</span>
-            </span>
-            <span className="text-gray-500 text-[10px] transition-transform duration-200" style={{ transform: showAttendeeSelector ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-              ▼
-            </span>
-          </button>
-          {showAttendeeSelector && (
-            <div className="px-3 pb-3 border-t border-[#2c2c2c]">
-              <div className="flex items-center gap-2 mt-2 mb-2">
-                <button
-                  onClick={() => setTrainingAttendees(new Set(trainingRoster.map(p => p.name)))}
-                  className="text-[10px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition"
-                >全选</button>
-                <button
-                  onClick={() => setTrainingAttendees(new Set())}
-                  className="text-[10px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition"
-                >全不选</button>
-              </div>
-              {trainingRoster.length === 0 ? (
-                <p className="text-[10px] text-gray-600 py-1">暂无花名册数据</p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
-                  {trainingRoster.map(p => (
-                    <label key={p.id} className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded cursor-pointer transition ${
-                      trainingAttendees.has(p.name)
-                        ? 'bg-[#992828]/15 text-[#992828] ring-1 ring-[#992828]/40'
-                        : 'bg-[#111] text-[#888] hover:text-[#aaa]'
-                    }`}>
-                      <input
-                        type="checkbox"
-                        checked={trainingAttendees.has(p.name)}
-                        onChange={() => {
-                          setTrainingAttendees(prev => {
-                            const next = new Set(prev);
-                            if (next.has(p.name)) next.delete(p.name);
-                            else next.add(p.name);
-                            return next;
-                          });
-                        }}
-                        className="accent-[#992828] w-3 h-3"
-                      />
-                      {p.name}
-                    </label>
-                  ))}
+        {/* ── 参训球员选择器 (collapsible, grouped) ── */}
+        {(() => {
+          const allPlayers = rosterPlayers;
+          const groups = groupByPosition(allPlayers);
+          const allIds = allPlayers.map(p => p.id);
+          const attendingCount = trainingAttendees.size;
+          const absentCount = allPlayers.length - attendingCount;
+
+          const togglePlayer = (playerId: string) => {
+            setTrainingAttendees(prev => {
+              const next = new Set(prev);
+              if (next.has(playerId)) next.delete(playerId);
+              else next.add(playerId);
+              return next;
+            });
+          };
+
+          const selectGroup = (playerIds: string[]) => {
+            setTrainingAttendees(prev => { const next = new Set(prev); playerIds.forEach(id => next.add(id)); return next; });
+          };
+          const deselectGroup = (playerIds: string[]) => {
+            setTrainingAttendees(prev => { const next = new Set(prev); playerIds.forEach(id => next.delete(id)); return next; });
+          };
+          const invertGroup = (playerIds: string[]) => {
+            setTrainingAttendees(prev => {
+              const next = new Set(prev);
+              for (const id of playerIds) {
+                if (next.has(id)) next.delete(id); else next.add(id);
+              }
+              return next;
+            });
+          };
+
+          // Save attendance to localStorage on change
+          const saveCurrentAttendance = () => {
+            const record = buildAttendance(allPlayers, trainingAttendees);
+            saveAttendance(record);
+          };
+
+          return (
+            <div className="bg-[#1a1a1a] border border-[#2c2c2c] rounded-xl overflow-hidden">
+              <button
+                onClick={() => setShowAttendeeSelector(!showAttendeeSelector)}
+                className="w-full flex items-center justify-between px-3 py-2.5 text-xs hover:bg-[#222] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-[#ccc] font-medium">
+                    参训球员 <span className="text-[#992828]">{attendingCount}人</span>
+                  </span>
+                  {absentCount > 0 && (
+                    <span className="text-[10px] text-yellow-500/80">
+                      · 缺席{absentCount}人
+                    </span>
+                  )}
+                  <span className="text-[10px] text-gray-600">/ 在册{allPlayers.length}人</span>
+                </div>
+                <span className="text-gray-500 text-[10px] transition-transform duration-200" style={{ transform: showAttendeeSelector ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  ▼
+                </span>
+              </button>
+
+              {/* Absent alert banner */}
+              {absentCount > 0 && (
+                <div className="mx-3 mb-2 px-3 py-2 bg-yellow-500/5 border border-yellow-500/20 rounded-lg flex items-center justify-between">
+                  <span className="text-[10px] text-yellow-500/80">
+                    ⚠️ 在册{allPlayers.length}人，本次参训{attendingCount}人，缺席{absentCount}人
+                  </span>
+                  <button
+                    onClick={() => { setShowAbsentPanel(!showAbsentPanel); saveCurrentAttendance(); }}
+                    className="text-[10px] text-yellow-400 hover:text-yellow-300 underline"
+                  >
+                    {showAbsentPanel ? '收起' : '查看缺席名单'}
+                  </button>
+                </div>
+              )}
+
+              {/* Absent player details panel */}
+              {showAbsentPanel && absentCount > 0 && (
+                <div className="mx-3 mb-2 px-3 py-2 bg-[#111] border border-[#2c2c2c] rounded-lg max-h-[200px] overflow-y-auto">
+                  <p className="text-[10px] text-gray-500 mb-2">缺席球员 · 点击原因可修改</p>
+                  <div className="space-y-1">
+                    {(() => {
+                      const stats = getAttendanceStats(allPlayers);
+                      return stats.absentPlayers.map(ap => (
+                        <div key={ap.playerId} className="flex items-center gap-2 text-[10px]">
+                          <span className="text-gray-300 w-16 truncate">{ap.name}</span>
+                          <span className="text-gray-600 w-8">{ap.position}</span>
+                          <select
+                            value={ap.reason || ''}
+                            onChange={(e) => {
+                              const v = e.target.value as AbsenceReason | '';
+                              setAbsentReason(ap.playerId, v || null);
+                              // Refresh UI by re-reading attendance
+                              const updated = getTodayAttendance();
+                              if (updated) {
+                                const attending = new Set<string>();
+                                for (const en of updated.entries) {
+                                  if (en.present) attending.add(en.playerId);
+                                }
+                                setTrainingAttendees(attending);
+                              }
+                            }}
+                            className={`bg-[#1a1a1a] border rounded px-1.5 py-0.5 text-[9px] ${
+                              ap.reason ? 'border-yellow-500/30 text-yellow-400' : 'border-red-500/30 text-red-400'
+                            }`}
+                          >
+                            <option value="">未标记 ⚠️</option>
+                            {ABSENCE_ORDER.map(r => (
+                              <option key={r} value={r}>{ABSENCE_LABELS[r]}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {showAttendeeSelector && (
+                <div className="px-3 pb-3 border-t border-[#2c2c2c]">
+                  {/* Global actions */}
+                  <div className="flex items-center gap-1.5 mt-2 mb-3 flex-wrap">
+                    <button onClick={() => { setTrainingAttendees(new Set(allIds)); }}
+                      className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition">全选</button>
+                    <button onClick={() => { setTrainingAttendees(new Set()); }}
+                      className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition">全不选</button>
+                    <button onClick={() => invertGroup(allIds)}
+                      className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition">反选</button>
+                    <button onClick={() => {
+                      const healthyIds = allPlayers.filter(p => p.injuryStatus === 'healthy').map(p => p.id);
+                      setTrainingAttendees(new Set(healthyIds));
+                    }}
+                      className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white hover:bg-[#333] transition">全选健康</button>
+                    <button onClick={saveCurrentAttendance}
+                      className="text-[9px] px-2 py-1 rounded bg-[#992828]/15 text-[#992828] hover:bg-[#992828]/25 transition ml-auto">保存</button>
+                  </div>
+
+                  {allPlayers.length === 0 ? (
+                    <p className="text-[10px] text-gray-600 py-1">暂无花名册数据 · <a href="/roster" className="text-[#992828] hover:underline">去录入球员</a></p>
+                  ) : (
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {groups.map(g => {
+                        const groupIds = g.players.map(p => p.id);
+                        const groupAttending = g.players.filter(p => trainingAttendees.has(p.id)).length;
+                        const meta = GROUP_META[g.group];
+                        const groupOpen = !collapsedGroups.has(g.group);
+                        return (
+                          <div key={g.group} className="bg-[#111] rounded-lg overflow-hidden border border-[#1a1a1a]">
+                            {/* Group header */}
+                            <button
+                              onClick={() => setCollapsedGroups(prev => { const n = new Set(prev); if (n.has(g.group)) n.delete(g.group); else n.add(g.group); return n; })}
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 hover:bg-[#1a1a1a] transition text-[10px]"
+                            >
+                              <span>{groupOpen ? '▼' : '▶'}</span>
+                              <span className="text-gray-300">{meta.emoji} {meta.label}</span>
+                              <span className="text-gray-500">({groupAttending}/{g.players.length}人)</span>
+                              <div className="flex-1" />
+                              <span
+                                onClick={(e) => { e.stopPropagation(); selectGroup(groupIds); }}
+                                className="text-[9px] text-gray-500 hover:text-white px-1"
+                              >全选</span>
+                              <span
+                                onClick={(e) => { e.stopPropagation(); invertGroup(groupIds); }}
+                                className="text-[9px] text-gray-500 hover:text-white px-1"
+                              >反选</span>
+                            </button>
+                            {/* Group players */}
+                            {groupOpen && (
+                              <div className="flex flex-wrap gap-1 px-2.5 pb-2">
+                                {g.players.map(p => {
+                                  const isAttending = trainingAttendees.has(p.id);
+                                  const isInjured = p.injuryStatus !== 'healthy';
+                                  return (
+                                    <label key={p.id} className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded cursor-pointer transition ${
+                                      isAttending
+                                        ? 'bg-[#992828]/15 text-[#992828] ring-1 ring-[#992828]/40'
+                                        : isInjured
+                                        ? 'bg-[#111] text-red-500/60 hover:text-red-400'
+                                        : 'bg-[#111] text-[#888] hover:text-[#aaa]'
+                                    }`}>
+                                      <input
+                                        type="checkbox"
+                                        checked={isAttending}
+                                        onChange={() => togglePlayer(p.id)}
+                                        className="accent-[#992828] w-3 h-3"
+                                      />
+                                      {p.name}
+                                      {p.number && <span className="text-[8px] text-gray-600">#{p.number}</span>}
+                                      {isInjured && <span className="text-[8px]">{p.injuryStatus === 'out' ? '🔴' : '🟡'}</span>}
+                                      {p.age != null && p.age <= 21 && <span className="text-[8px]">🌱</span>}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* ══ QUICK ACTIONS ROW ══ */}
         <div className="flex items-center gap-2">
@@ -1399,7 +1565,10 @@ export default function CoachWorkbench() {
               } catch {}
 
               // Update individual TRIMP with actual duration
-              const attendeeNames = Array.from(trainingAttendees);
+              const attendeeNames = Array.from(trainingAttendees).map(id => {
+      const p = rosterPlayers.find(r => r.id === id);
+      return p ? p.name : id;
+    });
               if (attendeeNames.length > 0) {
                 try {
                   const trimpMultiplier = trainType === 'pitch' ? 2.5 : 2.0;
