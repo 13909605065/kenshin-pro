@@ -32,7 +32,7 @@ export {
   type Team,
 } from "@/lib/team-storage";
 
-import { teamKey, teamRemove } from "@/lib/team-storage";
+import { teamKey } from "@/lib/team-storage";
 
 function getStorageKey(): string {
   return teamKey("roster_players");
@@ -123,6 +123,40 @@ function saveLocalPlayers(players: PlayerRecord[]): void {
 let cloudPulled = false;
 let pullPromise: Promise<PlayerRecord[]> | null = null;
 
+// ── 近期删除黑名单：防止 pullFromCloud 把已删球员从云端拉回 ──
+const DELETED_IDS_KEY = "roster_deleted_ids";
+const DELETED_TTL_MS = 60_000; // 1分钟内禁止从云端恢复
+
+interface DeletedEntry { id: string; deletedAt: number; }
+
+function getDeletedIds(): Map<string, number> {
+  try {
+    const raw = localStorage.getItem(DELETED_IDS_KEY);
+    if (!raw) return new Map();
+    const entries: DeletedEntry[] = JSON.parse(raw);
+    const now = Date.now();
+    const valid = entries.filter(e => now - e.deletedAt < DELETED_TTL_MS);
+    return new Map(valid.map(e => [e.id, e.deletedAt]));
+  } catch { return new Map(); }
+}
+
+function recordDeletedId(id: string): void {
+  const map = getDeletedIds();
+  map.set(id, Date.now());
+  saveDeletedIds(map);
+}
+
+function clearDeletedId(id: string): void {
+  const map = getDeletedIds();
+  map.delete(id);
+  saveDeletedIds(map);
+}
+
+function saveDeletedIds(map: Map<string, number>): void {
+  const entries: DeletedEntry[] = Array.from(map.entries()).map(([id, deletedAt]) => ({ id, deletedAt }));
+  try { localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(entries)); } catch {}
+}
+
 /**
  * Pull roster from Supabase, merge with localStorage for any offline-only data,
  * then cache the merged result to localStorage.
@@ -149,15 +183,20 @@ async function pullFromCloud(): Promise<PlayerRecord[]> {
       if (data.length > 0) {
         const cloudPlayers = data.map(mapRowToPlayer);
         const local = getLocalPlayers();
-        // ID级别合并：本地永远优先（保留本地删除/编辑），云端只补充本地没有的新球员
+        // ID级别合并：本地永远优先，云端只补充本地没有且不在黑名单的新球员
+        const deletedIds = getDeletedIds();
         const localMap = new Map(local.map(p => [p.id, p]));
         let addedFromCloud = 0;
+        let blockedDeleted = 0;
         for (const cp of cloudPlayers) {
-          if (!localMap.has(cp.id)) {
-            localMap.set(cp.id, cp); // 云端新增（其他设备添加的球员）
-            addedFromCloud++;
+          if (localMap.has(cp.id)) continue; // 本地已有 → 保留本地版本
+          if (deletedIds.has(cp.id)) {
+            // 此球员近期被本地删除过，拒绝从云端恢复
+            blockedDeleted++;
+            continue;
           }
-          // 本地已有此ID → 保留本地版本（本地总是更新）
+          localMap.set(cp.id, cp); // 云端新增（其他设备添加的球员）
+          addedFromCloud++;
         }
         const merged = Array.from(localMap.values());
         if (addedFromCloud > 0) {
@@ -319,18 +358,26 @@ export function updatePlayer(id: string, updates: Partial<PlayerRecord>): void {
 
 /** ⚠️ 推荐使用：等待 Supabase 删除完成，防止刷新后数据重现。 */
 export async function deletePlayerAsync(id: string): Promise<void> {
-  saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
+  const filtered = getLocalPlayers().filter(p => p.id !== id);
+  saveLocalPlayers(filtered);
+  // 记录到「近期删除黑名单」，防止 pullFromCloud 从云端拉回旧数据
+  recordDeletedId(id);
   invalidateRosterCache();
   notifyChange("roster-updated");
-  // 同步清理 user_kv 缓存
-  try { teamRemove("roster_players"); } catch {}
   try {
     const userId = await getUserId();
     if (!userId) return;
     const supabase = createClient();
     const { error } = await supabase.from("roster_players").delete().eq("id", id).eq("user_id", userId);
-    if (error) console.warn("[roster] deletePlayerAsync error:", error);
-  } catch (e) { console.warn("[roster] deletePlayerAsync failed:", e); }
+    if (error) {
+      console.warn("[roster] deletePlayerAsync error (player kept in deleted-ids list):", error);
+    } else {
+      // 云端删除成功，可以从黑名单移除
+      clearDeletedId(id);
+    }
+  } catch (e) {
+    console.warn("[roster] deletePlayerAsync failed, player kept in deleted-ids list:", e);
+  }
 }
 
 /** Async 删除——等同 deletePlayerAsync，别名方便使用。 */
@@ -338,15 +385,17 @@ export async function deletePlayer(id: string): Promise<void> {
   return deletePlayerAsync(id);
 }
 
-/** 同步删除（兼容旧代码）——不等待 Supabase，仅删本地。 */
+/** 同步删除（兼容旧代码）——不等待 Supabase，仅删本地 + 黑名单保护。 */
 export function deletePlayerSync(id: string): void {
   saveLocalPlayers(getLocalPlayers().filter(p => p.id !== id));
+  recordDeletedId(id);
   invalidateRosterCache();
   notifyChange("roster-updated");
   getUserId().then(async userId => {
     if (userId) {
       try {
         await createClient().from("roster_players").delete().eq("id", id).eq("user_id", userId);
+        clearDeletedId(id);
       } catch (e) { console.warn("[roster] deletePlayerSync failed:", e); }
     }
   }).catch(() => {});
