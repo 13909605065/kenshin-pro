@@ -145,6 +145,26 @@ async function pullAllKVFromCloud(): Promise<number> {
           const cloudIsEmpty = row.value === "[]" || row.value === "{}" || row.value === '""' || row.value === "";
           if (cloudIsEmpty) continue; // keep local data
         }
+        // 🔴 花名册保护：过滤掉近期被本地删除的球员
+        if (row.key.includes("roster_players_") && localVal) {
+          try {
+            const deletedIds = new Set(
+              (JSON.parse(localStorage.getItem("roster_deleted_ids") || "[]") as Array<{id:string;deletedAt:number}>)
+                .filter(e => Date.now() - e.deletedAt < 60000)
+                .map(e => e.id)
+            );
+            if (deletedIds.size > 0) {
+              const cloudPlayers = JSON.parse(row.value) as Array<{id:string}>;
+              const filtered = cloudPlayers.filter(p => !deletedIds.has(p.id));
+              if (filtered.length < cloudPlayers.length) {
+                // 云端有已删球员，过滤后再写入
+                localStorage.setItem(row.key, JSON.stringify(filtered));
+                count++;
+                continue;
+              }
+            }
+          } catch {}
+        }
         localStorage.setItem(row.key, row.value);
         count++;
       }
