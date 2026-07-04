@@ -125,7 +125,7 @@ let pullPromise: Promise<PlayerRecord[]> | null = null;
 
 // ── 近期删除黑名单：防止 pullFromCloud 把已删球员从云端拉回 ──
 const DELETED_IDS_KEY = "roster_deleted_ids";
-const DELETED_TTL_MS = 60_000; // 1分钟内禁止从云端恢复
+const DELETED_TTL_MS = 300_000; // 5分钟内禁止从云端恢复
 
 interface DeletedEntry { id: string; deletedAt: number; }
 

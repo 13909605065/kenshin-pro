@@ -8,6 +8,7 @@ import {
   Gauge, Timer, Droplets, Brain, X, RotateCcw,
 } from "lucide-react";
 import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
+import { getTodayAttendance } from "@/lib/attendance-store";
 import { calcTRIMP, estimateZonesFromSession, type HeartRateProfile } from "@/lib/trimp";
 import { saveSessionLog } from "@/lib/training-log";
 import { notifyChange, useSyncVersion } from '@/lib/data-events';
@@ -554,15 +555,24 @@ export default function FieldPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isRunning, activePhaseId]);
 
-  // ── Compute player loads ──
+  // ── Compute player loads (attendance-aware) ──
   const playerLoads = useMemo((): PlayerLoad[] => {
     const totalSessionMin = session.warmupMin +
       session.phases.reduce((s, p) => s + p.durationMin * p.setsCompleted, 0);
 
-    return players.map(p => {
-      // Estimate time per player based on participation in all phases
+    // Read today's attendance — only show loads for attending players
+    const attendance = getTodayAttendance();
+    const attendingIds = attendance
+      ? new Set(attendance.entries.filter(e => e.present).map(e => e.playerId))
+      : new Set(players.map(p => p.id)); // fallback: all players
+
+    const activePlayers = attendance
+      ? players.filter(p => attendingIds.has(p.id))
+      : players;
+
+    return activePlayers.map(p => {
       const cumulativeMin = totalSessionMin;
-      const maxDailyLoad = 120; // max minutes per day
+      const maxDailyLoad = 120;
       const dailyLoadPercent = Math.round((cumulativeMin / maxDailyLoad) * 100);
       const fatigueWarning = dailyLoadPercent > 80 || p.injuryStatus !== "healthy";
 

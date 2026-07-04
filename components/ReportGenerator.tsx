@@ -10,7 +10,7 @@ export function ReportGenerator() {
   // Pull real data from localStorage
   const data = useMemo(() => {
     try {
-      const logs = JSON.parse(localStorage.getItem("kenshin_training_logs") || "[]");
+      const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
       const roster = JSON.parse(localStorage.getItem("roster_players") || "[]");
       const gyms = JSON.parse(localStorage.getItem("kenshin_gym_calendar") || "[]");
       const selfReports = JSON.parse(localStorage.getItem("kenshin_player_self_reports") || "[]");

@@ -246,6 +246,9 @@ async function migrateLocalToCloud() {
     "roster_players", "kenshin_fitness_profiles", "kenshin_history",
     "kenshin_cached_modules", "kenshin_load_data", "kenshin_training_logs",
     "kenshin_gps_data", "kenshin_pr_data", "kenshin_motivation",
+    "kenshin_attendance", "kenshin_daily_training_log", "kenshin_microcycle_plans",
+    "kenshin_gym_calendar", "kenshin_warmup_calendar", "kenshin_player_trimp",
+    "kenshin_field_sessions", "kenshin_season_calendar",
   ];
 
   for (let i = 0; i < localStorage.length; i++) {

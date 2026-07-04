@@ -7,6 +7,9 @@ import { getPlayers, type PlayerRecord } from "@/lib/roster-utils";
 import { useSyncVersion } from "@/lib/data-events";
 import { MobileNav } from "@/components/MobileNav";
 import { useTeam } from "@/lib/team-context";
+import { getFitnessProfile } from "@/lib/fitness-store";
+import { getHealthQuestionnaires } from "@/lib/monitoring-client";
+import { calcACWR, getLoadData } from "@/lib/acwr";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -143,6 +146,27 @@ export default function InjuryPreventionPage() {
     });
   };
 
+  // ── Parse injury history text → structured records ──
+  const parseInjuryHistory = useCallback((player: PlayerRecord): InjuryRecord[] => {
+    const records: InjuryRecord[] = [];
+    const text = [player.injuryHistory, player.injuryNote].filter(Boolean).join("；");
+    if (!text.trim()) return records;
+    // Pattern: "2024-03 ACL重建右膝" or "2025-01 腹股沟拉伤"
+    const parts = text.split(/[；;，,]/);
+    for (const part of parts) {
+      const trimmed = part.trim();
+      if (!trimmed) continue;
+      const dateMatch = trimmed.match(/(\d{4}-\d{2})/);
+      records.push({
+        body_part: trimmed.replace(/\d{4}-\d{2}/, '').trim().slice(0, 30),
+        injury_type: '',
+        occurrence_date: dateMatch ? dateMatch[1] + '-01' : '',
+        notes: trimmed,
+      });
+    }
+    return records;
+  }, []);
+
   // ── Generate plan ──
   const handleGenerate = useCallback(async (player: PlayerRecord) => {
     setSelectedPlayer(player);
@@ -150,6 +174,47 @@ export default function InjuryPreventionPage() {
     setKbRefs(null);
     setGenError(null);
     setGenLoading(true);
+
+    // Gather real personalization data
+    const injuries = parseInjuryHistory(player);
+    const fitness = getFitnessProfile(player.id);
+
+    // Load recent health scores
+    let healthScores: HealthScores | null = null;
+    try {
+      const allHealth = await getHealthQuestionnaires();
+      const recent = allHealth
+        .filter(q => q.player_name === player.name)
+        .sort((a, b) => (b.record_date || '').localeCompare(a.record_date || ''))[0];
+      if (recent) {
+        healthScores = {
+          sleep: recent.sleep_score || 3,
+          fatigue: recent.fatigue_score || 3,
+          soreness: recent.soreness_score || 3,
+          stress: recent.stress_score || 3,
+          mood: recent.mood_score || 3,
+        };
+      }
+    } catch { /* use null if unavailable */ }
+
+    // Load ACWR
+    let acwrInfo: { acwr: number; status: string } | null = null;
+    try {
+      const allLoads = getLoadData();
+      const playerLoads = allLoads[player.name];
+      if (playerLoads && playerLoads.length > 0) {
+        const acwrResult = calcACWR(playerLoads);
+        acwrInfo = { acwr: acwrResult.acwr, status: acwrResult.status };
+      }
+    } catch { /* use null if unavailable */ }
+
+    // Build enhanced injury history with fitness context
+    const fitnessContext = fitness && (fitness.squat1RM || fitness.sprint30m || fitness.yoYoIR1 || fitness.verticalJump)
+      ? `[体能数据] ${fitness.squat1RM ? `深蹲1RM:${fitness.squat1RM}kg ` : ''}${fitness.sprint30m ? `30m:${fitness.sprint30m}s ` : ''}${fitness.yoYoIR1 ? `Yo-Yo:${fitness.yoYoIR1}m ` : ''}${fitness.verticalJump ? `CMJ:${fitness.verticalJump}cm` : ''}`
+      : '';
+    const acwrContext = acwrInfo
+      ? `[负荷状态] ACWR:${acwrInfo.acwr.toFixed(2)}(${acwrInfo.status}) `
+      : '';
 
     try {
       const res = await fetch("/api/injury-prevention/generate", {
@@ -160,10 +225,10 @@ export default function InjuryPreventionPage() {
           position: player.position || "",
           injuryStatus: player.injuryStatus || "healthy",
           injuryNote: player.injuryNote || "",
-          injuryHistory: player.injuryHistory || "",
+          injuryHistory: [player.injuryHistory, fitnessContext, acwrContext].filter(Boolean).join('\n'),
           disabledExercises: player.disabledExercises || [],
-          injuries: [] as InjuryRecord[],
-          healthScores: null as HealthScores | null,
+          injuries,
+          healthScores,
         }),
       });
       const data = await res.json();
