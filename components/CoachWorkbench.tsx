@@ -557,16 +557,26 @@ export default function CoachWorkbench() {
     if (attendeeNames.length > 0) {
       try {
         const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
-        const perPlayerTRIMP = Math.round((duration * trimpMultiplier * 10) / attendeeNames.length);
+        const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
+        const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
         const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
         const savedAt = new Date().toISOString();
         for (const playerName of attendeeNames) {
           existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
         }
         localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+        // Also write to ACWR store (kenshin_load_data)
+        const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+        for (const playerName of attendeeNames) {
+          if (!loadData[playerName]) loadData[playerName] = [];
+          loadData[playerName].push({ date, sRPE, duration });
+          if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
+        }
+        localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
       } catch {}
     }
     window.dispatchEvent(new CustomEvent('training-log-updated'));
+    window.dispatchEvent(new Event('storage'));
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 2500);
   }, [trainDate, trainingAttendees, rosterPlayers, timeSlot, duration, weather]);
@@ -604,11 +614,21 @@ export default function CoachWorkbench() {
           existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt, estimated: true });
         }
         localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+        // Also write to ACWR store
+        const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
+        const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+        for (const playerName of attendeeNames) {
+          if (!loadData[playerName]) loadData[playerName] = [];
+          loadData[playerName].push({ date, sRPE, duration });
+          if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
+        }
+        localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
       } catch {}
     }
 
     // Notify load management page to refresh
     window.dispatchEvent(new CustomEvent('training-log-updated'));
+    window.dispatchEvent(new Event('storage'));
 
     setActiveDayOffset(mdDay);
 
@@ -1832,6 +1852,15 @@ export default function CoachWorkbench() {
                     existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
                   }
                   localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+                  // Also write to ACWR store
+                  const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
+                  const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+                  for (const playerName of attendeeNames) {
+                    if (!loadData[playerName]) loadData[playerName] = [];
+                    loadData[playerName].push({ date, sRPE, duration: elapsedMin });
+                    if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
+                  }
+                  localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
                 } catch {}
               }
 
