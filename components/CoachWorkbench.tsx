@@ -1071,11 +1071,61 @@ export default function CoachWorkbench() {
               </div>
             )}
 
-            {/* Generate button */}
-            <button onClick={handleGenerate} disabled={generating}
-              className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-[#333] disabled:text-[#666] text-white rounded-xl text-sm font-bold transition active:scale-[0.98]">
-              {generating ? '生成中...' : '生成恢复课方案'}
-            </button>
+            {/* ── 手动记录模式 ── */}
+            <div className="mb-3">
+              <textarea
+                placeholder="直接写训练内容，不经过AI生成。例：20min慢跑 + 10min全身静态拉伸 + 冰敷"
+                rows={2}
+                className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#992828] resize-none"
+                id="recovery-manual-note"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              {/* Manual record button — just save, no AI */}
+              <button onClick={() => {
+                const noteEl = document.getElementById('recovery-manual-note') as HTMLTextAreaElement;
+                const manualNote = noteEl?.value?.trim() || '恢复训练';
+                const date = trainDate;
+                const trainType = 'recovery';
+                const attendeeNames = Array.from(trainingAttendees).map(id => {
+                  const p = rosterPlayers.find(r => r.id === id);
+                  return p ? p.name : id;
+                });
+                // Save to daily log
+                try {
+                  const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+                  const slot = `${Date.now()}`;
+                  logs.unshift({ date, trainType, timeSlot, duration, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot, note: manualNote });
+                  localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
+                } catch {}
+                // Save TRIMP for each attending player
+                if (attendeeNames.length > 0) {
+                  try {
+                    const trimpMultiplier = 1.0;
+                    const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
+                    const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
+                    const savedAt = new Date().toISOString();
+                    for (const playerName of attendeeNames) {
+                      existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
+                    }
+                    localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+                  } catch {}
+                }
+                window.dispatchEvent(new CustomEvent('training-log-updated'));
+                setSaveToast(true);
+                setTimeout(() => setSaveToast(false), 2500);
+              }}
+                className="flex-1 py-3 bg-[#1a5c1a] hover:bg-[#145014] text-white rounded-xl text-sm font-bold transition active:scale-[0.98]">
+                💾 直接记录
+              </button>
+
+              {/* AI generate button */}
+              <button onClick={handleGenerate} disabled={generating}
+                className="flex-1 py-3 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-[#333] disabled:text-[#666] text-white rounded-xl text-sm font-bold transition active:scale-[0.98]">
+                {generating ? '生成中...' : 'AI生成'}
+              </button>
+            </div>
             {genError && <p className="text-[10px] text-red-400 mt-2">{genError}</p>}
           </div>
 
