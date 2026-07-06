@@ -539,6 +539,38 @@ export default function CoachWorkbench() {
       trainingDuration: duration, playerCount };
   }, [players, goal, phase, coachCert, coachRole, leagueTag, duration, playerCount, selectedPlayers, planMode, addonTheme, addonScene]);
 
+  // ── manual record (no AI) ──
+  const handleManualRecord = useCallback((trainType: string, note: string) => {
+    const date = trainDate;
+    const attendeeNames = Array.from(trainingAttendees).map(id => {
+      const p = rosterPlayers.find(r => r.id === id);
+      return p ? p.name : id;
+    });
+    // Save to daily log
+    try {
+      const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+      const slot = `${Date.now()}`;
+      logs.unshift({ date, trainType, timeSlot, duration, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot, note });
+      localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
+    } catch {}
+    // Save TRIMP per player
+    if (attendeeNames.length > 0) {
+      try {
+        const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
+        const perPlayerTRIMP = Math.round((duration * trimpMultiplier * 10) / attendeeNames.length);
+        const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
+        const savedAt = new Date().toISOString();
+        for (const playerName of attendeeNames) {
+          existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
+        }
+        localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
+      } catch {}
+    }
+    window.dispatchEvent(new CustomEvent('training-log-updated'));
+    setSaveToast(true);
+    setTimeout(() => setSaveToast(false), 2500);
+  }, [trainDate, trainingAttendees, rosterPlayers, timeSlot, duration, weather]);
+
   // ── generate ──
   const handleGenerate = async () => {
     setGenerating(true);
@@ -955,6 +987,28 @@ export default function CoachWorkbench() {
             </div>
           )}
 
+          {/* Quick manual record */}
+          <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-gray-400">快速记录（不经过AI）</span>
+              <button onClick={() => {
+                const noteEl = document.getElementById('gym-manual-note') as HTMLTextAreaElement;
+                const note = noteEl?.value?.trim();
+                if (!note) return;
+                handleManualRecord('gym', note);
+                if (noteEl) noteEl.value = '';
+              }}
+                className="px-3 py-1 bg-[#1a5c1a] hover:bg-[#145014] text-white rounded text-[10px] font-bold transition active:scale-95"
+              >💾 记录</button>
+            </div>
+            <textarea
+              id="gym-manual-note"
+              placeholder="写训练内容。例：深蹲4×8 70%1RM + 卧推3×10 + 北欧弯举3×6 + 核心循环"
+              rows={2}
+              className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#992828] resize-none"
+            />
+          </div>
+
           {/* GymDesigner */}
           <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-[#2c2c2c]">
@@ -1085,36 +1139,8 @@ export default function CoachWorkbench() {
               {/* Manual record button — just save, no AI */}
               <button onClick={() => {
                 const noteEl = document.getElementById('recovery-manual-note') as HTMLTextAreaElement;
-                const manualNote = noteEl?.value?.trim() || '恢复训练';
-                const date = trainDate;
-                const trainType = 'recovery';
-                const attendeeNames = Array.from(trainingAttendees).map(id => {
-                  const p = rosterPlayers.find(r => r.id === id);
-                  return p ? p.name : id;
-                });
-                // Save to daily log
-                try {
-                  const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-                  const slot = `${Date.now()}`;
-                  logs.unshift({ date, trainType, timeSlot, duration, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot, note: manualNote });
-                  localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
-                } catch {}
-                // Save TRIMP for each attending player
-                if (attendeeNames.length > 0) {
-                  try {
-                    const trimpMultiplier = 1.0;
-                    const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
-                    const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
-                    const savedAt = new Date().toISOString();
-                    for (const playerName of attendeeNames) {
-                      existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
-                    }
-                    localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
-                  } catch {}
-                }
-                window.dispatchEvent(new CustomEvent('training-log-updated'));
-                setSaveToast(true);
-                setTimeout(() => setSaveToast(false), 2500);
+                handleManualRecord('recovery', noteEl?.value?.trim() || '恢复训练');
+                if (noteEl) noteEl.value = '';
               }}
                 className="flex-1 py-3 bg-[#1a5c1a] hover:bg-[#145014] text-white rounded-xl text-sm font-bold transition active:scale-[0.98]">
                 💾 直接记录
@@ -1231,7 +1257,7 @@ export default function CoachWorkbench() {
           </div>
         </div>
 
-        {/* Row 3: Training type indicator */}
+        {/* Row 3: Training type indicator + quick manual record */}
         <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg">
           <span className="text-[10px] text-gray-500">训练:</span>
           <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '外场训练' : workbenchMode === 'gym' ? '力量房' : '恢复再生'} · {duration}min</span>
@@ -1240,7 +1266,24 @@ export default function CoachWorkbench() {
               ⚠ {recoveryScore.adjustments[0]}
             </span>
           )}
+          <button
+            onClick={() => {
+              const noteEl = document.getElementById('football-manual-note') as HTMLTextAreaElement;
+              const note = noteEl?.value?.trim();
+              if (!note) return;
+              handleManualRecord(workbenchMode === 'football' ? 'pitch' : 'gym', note);
+              if (noteEl) noteEl.value = '';
+            }}
+            className="ml-auto px-3 py-1 bg-[#1a5c1a] hover:bg-[#145014] text-white rounded text-[10px] font-bold transition active:scale-95"
+          >💾 记录</button>
         </div>
+        {/* Manual note input */}
+        <textarea
+          id="football-manual-note"
+          placeholder="直接写训练内容，不经过AI。例：热身15min + 传球练习15min + 50×50m对抗15min"
+          rows={2}
+          className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-xs text-white placeholder:text-gray-600 focus:outline-none focus:border-[#992828] resize-none"
+        />
 
         {/* ── 参训球员选择器 (collapsible, grouped) ── */}
         {(() => {
