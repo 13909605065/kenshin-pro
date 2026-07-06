@@ -907,6 +907,53 @@ export default function CoachWorkbench() {
         </button>
       </div>
 
+      {/* ══ 今日训练日志 ══ */}
+      <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-3">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-bold text-[#999]">今日训练日志</h3>
+          <span className="text-[10px] text-[#666]">{todayLogs.length}条记录</span>
+        </div>
+        {todayLogs.length === 0 ? (
+          <p className="text-[10px] text-[#555]">暂无记录，保存训练后自动出现在这里</p>
+        ) : (
+          <div className="space-y-2">
+            {todayLogs.map((log: any, i: number) => {
+              const typeLabel = log.trainType === 'pitch' ? '⚽ 外场' : log.trainType === 'gym' ? '🏋️ 力量房' : '🧘 恢复再生';
+              const playerCount = Array.isArray(log.players) ? log.players.length : 0;
+              const trimpTotal = Array.isArray(log.players) ? log.players.reduce((s: number, p: any) => s + (typeof p === 'object' ? (p.trimp || 0) : 0), 0) : 0;
+              return (
+                <div key={i} className="bg-[#1a1a1a] rounded-lg p-2.5 flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[11px] font-bold text-white">{typeLabel}</span>
+                      <span className="text-[10px] text-[#666]">{log.duration}min</span>
+                      <span className="text-[10px] text-[#666]">{log.timeSlot === 'morning' ? '上午' : '下午'}</span>
+                    </div>
+                    {log.note && <p className="text-[10px] text-gray-400 truncate">{log.note}</p>}
+                    {playerCount > 0 && (
+                      <p className="text-[9px] text-[#666] mt-0.5">
+                        {playerCount}人 · TRIMP {trimpTotal}: {Array.isArray(log.players) ? log.players.slice(0, 6).map((p: any) => typeof p === 'object' ? p.name : p).join('、') + (log.players.length > 6 ? ` +${log.players.length - 6}人` : '') : ''}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      try {
+                        const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+                        const updated = logs.filter((_: any, j: number) => j !== logs.findIndex((ll: any) => ll.slot === log.slot));
+                        localStorage.setItem("kenshin_daily_training_log", JSON.stringify(updated));
+                        refreshTodayLogs();
+                      } catch {}
+                    }}
+                    className="text-[9px] text-gray-600 hover:text-red-400 shrink-0"
+                  >删除</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ── 训练日期 + 类型 + 时段 ── */}
       <div className="flex items-center gap-2 bg-[#141414] border border-[#2c2c2c] rounded-xl p-2.5 flex-wrap">
         <input type="date" value={trainDate} onChange={e => setTrainDate(e.target.value)}
@@ -1925,51 +1972,6 @@ export default function CoachWorkbench() {
 
       {/* ══ Close football mode fragment ══ */}
       </>
-      )}
-
-      {/* ══ 今日训练日志 ══ */}
-      {todayLogs.length > 0 && (
-        <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-bold text-[#999]">今日训练日志</h3>
-            <span className="text-[10px] text-[#666]">{todayLogs.length}条记录</span>
-          </div>
-          <div className="space-y-2">
-            {todayLogs.map((log: any, i: number) => {
-              const typeLabel = log.trainType === 'pitch' ? '⚽ 外场' : log.trainType === 'gym' ? '🏋️ 力量房' : '🧘 恢复再生';
-              const playerCount = Array.isArray(log.players) ? log.players.length : 0;
-              const trimpTotal = Array.isArray(log.players) ? log.players.reduce((s: number, p: any) => s + (typeof p === 'object' ? (p.trimp || 0) : 0), 0) : 0;
-              return (
-                <div key={i} className="bg-[#1a1a1a] rounded-lg p-3 flex items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-bold text-white">{typeLabel}</span>
-                      <span className="text-[10px] text-[#666]">{log.duration}min</span>
-                      <span className="text-[10px] text-[#666]">{log.timeSlot === 'morning' ? '上午' : '下午'}</span>
-                    </div>
-                    {log.note && <p className="text-[10px] text-gray-400 truncate">{log.note}</p>}
-                    {playerCount > 0 && (
-                      <p className="text-[9px] text-[#666] mt-1">
-                        {playerCount}人 · TRIMP {trimpTotal}: {Array.isArray(log.players) ? log.players.slice(0, 8).map((p: any) => typeof p === 'object' ? p.name : p).join('、') + (log.players.length > 8 ? '...' : '') : ''}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => {
-                      try {
-                        const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-                        const updated = logs.filter((_: any, j: number) => j !== logs.findIndex((ll: any) => ll.slot === log.slot));
-                        localStorage.setItem("kenshin_daily_training_log", JSON.stringify(updated));
-                        refreshTodayLogs();
-                      } catch {}
-                    }}
-                    className="text-[9px] text-gray-600 hover:text-red-400 shrink-0"
-                  >删除</button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
       )}
 
       {/* ══ SHARE TOAST ══ */}
