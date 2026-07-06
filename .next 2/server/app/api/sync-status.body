@@ -1,0 +1,1 @@
+{"status":"error","message":"Dynamic server usage: Route /api/sync-status/ couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"}

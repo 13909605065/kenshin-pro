@@ -23,7 +23,6 @@ import { buildRecoveryInputFromStatus, getPlayerSelfReports, getCoachScores } fr
 import { getPlayers, type PlayerRecord } from '@/lib/roster-utils';
 import { getTodayAttendance, buildAttendance, saveAttendance, getAttendanceStats, setAbsentReason, type AbsenceReason, ABSENCE_LABELS, ABSENCE_ORDER } from '@/lib/attendance-store';
 import { groupByPosition, GROUP_META } from '@/lib/player-groups';
-import { teamGet, teamSet } from '@/lib/team-storage';
 
 // ── helpers ──
 const today = new Date();
@@ -565,41 +564,35 @@ export default function CoachWorkbench() {
   // ── manual record (no AI) ──
   const handleManualRecord = useCallback((trainType: string, note: string) => {
     const date = trainDate;
-    const attendeeNames = Array.from(trainingAttendees).map(id => {
-      const p = rosterPlayers.find(r => r.id === id);
-      return p ? p.name : id;
-    });
-    // Save to daily log
+    const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
+    const attendeeNames: string[] = [];
+    const ids = Array.from(trainingAttendees);
+    for (let i = 0; i < ids.length; i++) {
+      const p = rosterPlayers.find(r => r.id === ids[i]);
+      const name = p ? p.name : ids[i];
+      attendeeNames.push(name);
+    }
+    const perPlayerTRIMP = attendeeNames.length > 0
+      ? Math.round((duration * trimpMultiplier) / attendeeNames.length)
+      : 0;
+    const playersWithTRIMP = attendeeNames.map((name, i) => ({
+      name,
+      trimp: perPlayerTRIMP,
+    }));
+
+    // ONE store: kenshin_daily_training_log with player TRIMP embedded
     try {
       const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
       const slot = `${Date.now()}`;
-      logs.unshift({ date, trainType, timeSlot, duration, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot, note });
+      logs.unshift({
+        date, trainType, timeSlot, duration, weather,
+        savedAt: new Date().toISOString(),
+        players: playersWithTRIMP,
+        slot, note,
+      });
       localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
     } catch {}
-    // Save TRIMP per player
-    if (attendeeNames.length > 0) {
-      try {
-        const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
-        const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
-        const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
-        const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
-        const savedAt = new Date().toISOString();
-        for (const playerName of attendeeNames) {
-          existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
-        }
-        localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
-        // Also write to ACWR store (kenshin_load_data)
-        const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
-        for (const playerName of attendeeNames) {
-          if (!loadData[playerName]) loadData[playerName] = [];
-          loadData[playerName].push({ date, sRPE, duration });
-          if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
-        }
-        teamSet("kenshin_load_data", JSON.stringify(loadData));
-      } catch {}
-    }
     window.dispatchEvent(new CustomEvent('training-log-updated'));
-    window.dispatchEvent(new Event('storage'));
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 2500);
   }, [trainDate, trainingAttendees, rosterPlayers, timeSlot, duration, weather]);
@@ -611,47 +604,27 @@ export default function CoachWorkbench() {
     setShowPlan(true);
     setWorkoutTimerActive(true);
 
-    // Auto-save to daily training log for load management
+    // Auto-save to daily training log with player TRIMP embedded
     const date = trainDate;
     const trainType = workbenchMode === 'football' ? 'pitch' : workbenchMode === 'gym' ? 'gym' : 'recovery';
+    const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
     const attendeeNames = Array.from(trainingAttendees).map(id => {
       const p = rosterPlayers.find(r => r.id === id);
       return p ? p.name : id;
     });
+    const perPlayerTRIMP = attendeeNames.length > 0
+      ? Math.round((duration * trimpMultiplier) / attendeeNames.length)
+      : 0;
+    const playersWithTRIMP = attendeeNames.map(name => ({ name, trimp: perPlayerTRIMP }));
     try {
       const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
       const slot = `${Date.now()}`;
-      const entry = { date, trainType, timeSlot, duration: 0, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot };
-      logs.unshift(entry);
+      logs.unshift({ date, trainType, timeSlot, duration: 0, weather, savedAt: new Date().toISOString(), players: playersWithTRIMP, slot, estimated: true });
       localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
     } catch {}
 
-    // Save estimated TRIMP for each attending player
-    if (attendeeNames.length > 0) {
-      try {
-        const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
-        const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
-        const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
-        const savedAt = new Date().toISOString();
-        for (const playerName of attendeeNames) {
-          existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt, estimated: true });
-        }
-        localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
-        // Also write to ACWR store
-        const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
-        const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
-        for (const playerName of attendeeNames) {
-          if (!loadData[playerName]) loadData[playerName] = [];
-          loadData[playerName].push({ date, sRPE, duration });
-          if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
-        }
-        teamSet("kenshin_load_data", JSON.stringify(loadData));
-      } catch {}
-    }
-
     // Notify load management page to refresh
     window.dispatchEvent(new CustomEvent('training-log-updated'));
-    window.dispatchEvent(new Event('storage'));
 
     setActiveDayOffset(mdDay);
 
@@ -1858,40 +1831,44 @@ export default function CoachWorkbench() {
                 localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
               } catch {}
 
-              // Update individual TRIMP with actual duration
-              const attendeeNames = Array.from(trainingAttendees).map(id => {
-      const p = rosterPlayers.find(r => r.id === id);
-      return p ? p.name : id;
-    });
-              if (attendeeNames.length > 0) {
-                try {
-                  const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
-                  const perPlayerTRIMP = Math.round((elapsedMin * trimpMultiplier) / attendeeNames.length);
-                  let existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
-                  // Remove estimated entries for this date
-                  existingTRIMP = existingTRIMP.filter((e: any) => !(e.date === date && e.estimated));
-                  const savedAt = new Date().toISOString();
-                  for (const playerName of attendeeNames) {
-                    existingTRIMP.push({ playerName, date, trimp: perPlayerTRIMP, trainType, savedAt });
-                  }
-                  localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
-                  // Also write to ACWR store
-                  const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
-                  const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
-                  for (const playerName of attendeeNames) {
-                    if (!loadData[playerName]) loadData[playerName] = [];
-                    loadData[playerName].push({ date, sRPE, duration: elapsedMin });
-                    if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
-                  }
-                  teamSet("kenshin_load_data", JSON.stringify(loadData));
-                } catch {}
-              }
+              // Update daily log with actual duration + player TRIMP
+              try {
+                const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
+                const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
+                const attendeeNames = Array.from(trainingAttendees).map(id => {
+                  const p = rosterPlayers.find(r => r.id === id);
+                  return p ? p.name : id;
+                });
+                const perPlayerTRIMP = attendeeNames.length > 0
+                  ? Math.round((elapsedMin * trimpMultiplier) / attendeeNames.length)
+                  : 0;
+                // Replace estimated entry with actual
+                const estimatedIdx = logs.findIndex((l: any) => l.estimated && l.date === date);
+                if (estimatedIdx >= 0) {
+                  logs[estimatedIdx].duration = elapsedMin;
+                  logs[estimatedIdx].players = attendeeNames.map(name => ({ name, trimp: perPlayerTRIMP }));
+                  logs[estimatedIdx].estimated = false;
+                  logs[estimatedIdx].savedAt = new Date().toISOString();
+                } else {
+                  logs.unshift({
+                    date, trainType, timeSlot, duration: elapsedMin, weather,
+                    savedAt: new Date().toISOString(),
+                    players: attendeeNames.map(name => ({ name, trimp: perPlayerTRIMP })),
+                    slot: `${Date.now()}`,
+                  });
+                }
+                localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
+              } catch {}
 
               // ── Auto-generate training notes ──
               const todayKey = new Date().toISOString().slice(0, 10);
               const sceneLabel = trainType === 'pitch' ? '外场' : trainType === 'gym' ? '力量房' : '恢复再生';
               const intensityLabel = '中'; // default, coach can edit later
-              const noteDraft = `${sceneLabel}训练 · ${elapsedMin}min · ${intensityLabel}强度\n${attendeeNames.length > 0 ? `参训: ${attendeeNames.join('、')}` : '全队合练'}\n要点: ___`;
+              const timerAtNames = Array.from(trainingAttendees).map(id => {
+                const p = rosterPlayers.find(r => r.id === id);
+                return p ? p.name : id;
+              });
+              const noteDraft = `${sceneLabel}训练 · ${elapsedMin}min · ${intensityLabel}强度\n${timerAtNames.length > 0 ? `参训: ${timerAtNames.join('、')}` : '全队合练'}\n要点: ___`;
               try {
                 const notes = JSON.parse(localStorage.getItem('kenshin_structured_notes') || '{}');
                 if (!notes[todayKey] || !notes[todayKey].notes) {
@@ -1961,6 +1938,7 @@ export default function CoachWorkbench() {
             {todayLogs.map((log: any, i: number) => {
               const typeLabel = log.trainType === 'pitch' ? '⚽ 外场' : log.trainType === 'gym' ? '🏋️ 力量房' : '🧘 恢复再生';
               const playerCount = Array.isArray(log.players) ? log.players.length : 0;
+              const trimpTotal = Array.isArray(log.players) ? log.players.reduce((s: number, p: any) => s + (typeof p === 'object' ? (p.trimp || 0) : 0), 0) : 0;
               return (
                 <div key={i} className="bg-[#1a1a1a] rounded-lg p-3 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
@@ -1972,7 +1950,7 @@ export default function CoachWorkbench() {
                     {log.note && <p className="text-[10px] text-gray-400 truncate">{log.note}</p>}
                     {playerCount > 0 && (
                       <p className="text-[9px] text-[#666] mt-1">
-                        {playerCount}人: {Array.isArray(log.players) ? log.players.slice(0, 8).join('、') + (log.players.length > 8 ? '...' : '') : ''}
+                        {playerCount}人 · TRIMP {trimpTotal}: {Array.isArray(log.players) ? log.players.slice(0, 8).map((p: any) => typeof p === 'object' ? p.name : p).join('、') + (log.players.length > 8 ? '...' : '') : ''}
                       </p>
                     )}
                   </div>

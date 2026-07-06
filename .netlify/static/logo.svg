@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 24">
+  <text x="0" y="18" fill="#d92525" font-family="Arial, sans-serif" font-weight="900" font-size="20">KENSHIN</text>
+  <text x="87" y="18" fill="#d1d1d1" font-family="Arial, sans-serif" font-weight="300" font-size="20">PRO</text>
+  <text x="122" y="11" fill="#a0a0a0" font-family="Arial, sans-serif" font-weight="600" font-size="11">S&amp;C</text>
+  <line x1="82" y1="4" x2="82" y2="18" stroke="#d92525" stroke-width="1.5"/>
+</svg>

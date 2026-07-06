@@ -4,6 +4,7 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Activity, TrendingUp, AlertTriangle, User, CheckCircle2, BarChart3 } from "lucide-react";
 import { notifyChange, useSyncVersion } from '@/lib/data-events';
+import { getAllPlayerTRIMP } from '@/lib/acwr';
 import { MobileNav } from "@/components/MobileNav";
 import { ArrowLeft } from "lucide-react";
 import WeeklyLoadBar from "@/components/WeeklyLoadBar";
@@ -139,10 +140,10 @@ function readLS<T>(key: string, fallback: T): T {
 // ═══ Player TRIMP entry type ═══
 interface PlayerTRIMPEntry {
   playerName: string;
-  date: string;       // YYYY-MM-DD
+  date: string;
   trimp: number;
   trainType: string;
-  savedAt: string;
+  savedAt?: string;
 }
 
 // ═══ Match player from match_state ═══
@@ -468,9 +469,9 @@ export default function LoadPage() {
   // ═══════════════════════════════════════════
   const [selectedPlayer, setSelectedPlayer] = useState<string>("__all__");
 
-  // Read all player TRIMP data
+  // Read all player TRIMP from unified store
   const allPlayerTRIMP = useMemo<PlayerTRIMPEntry[]>(() => {
-    return readLS<PlayerTRIMPEntry[]>('kenshin_player_trimp', []);
+    return getAllPlayerTRIMP();
   }, [refreshKey]);
 
   // Read roster
@@ -640,7 +641,7 @@ export default function LoadPage() {
 
       // Actual: from player TRIMP entries on match day
       const matchDateISO = matchState.startedAt ? matchState.startedAt.slice(0, 10) : new Date().toISOString().slice(0, 10);
-      const playerTRIMPEntries = readLS<PlayerTRIMPEntry[]>('kenshin_player_trimp', [])
+      const playerTRIMPEntries = getAllPlayerTRIMP()
         .filter(e => e.playerName === mp.name && e.date === matchDateISO);
       const actualTRIMP = playerTRIMPEntries.reduce((sum, e) => sum + e.trimp, 0);
 

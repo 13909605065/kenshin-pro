@@ -123,6 +123,47 @@ export function deletePlayerLoadData(playerName: string): void {
   saveLoadData(data);
 }
 
+// ═══════════════════════════════════════════
+// UNIFIED READ — single source: kenshin_daily_training_log
+// ═══════════════════════════════════════════
+
+export interface UnifiedTRIMPEntry {
+  playerName: string;
+  date: string;
+  trimp: number;
+  trainType: string;
+  savedAt?: string;
+}
+
+/** Read ALL player TRIMP from the unified store (kenshin_daily_training_log).
+ *  Handles both new format {players: [{name, trimp}]} and old format {players: ["name"]}. */
+export function getAllPlayerTRIMP(): UnifiedTRIMPEntry[] {
+  try {
+    const raw = localStorage.getItem("kenshin_daily_training_log");
+    if (!raw) return [];
+    const logs = JSON.parse(raw);
+    const results: UnifiedTRIMPEntry[] = [];
+    for (const log of logs) {
+      const date = log.date;
+      const trainType = log.trainType || 'pitch';
+      const players = log.players;
+      if (!Array.isArray(players)) continue;
+      for (const p of players) {
+        if (typeof p === 'object' && p.name) {
+          results.push({ playerName: p.name, date, trimp: p.trimp || 0, trainType });
+        } else if (typeof p === 'string') {
+          // Old format: just names, no TRIMP. Estimate from duration.
+          const trimp = log.duration && players.length > 0
+            ? Math.round((log.duration * 2.0) / players.length)
+            : 0;
+          results.push({ playerName: p, date, trimp, trainType });
+        }
+      }
+    }
+    return results;
+  } catch { return []; }
+}
+
 /** Clear all load data */
 export function clearAllLoadData(): void {
   try {
