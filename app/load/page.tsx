@@ -678,6 +678,101 @@ export default function LoadPage() {
     return { rows, hasDeficit, totalWithDeficit };
   }, [completedSupplements, refreshKey]);
 
+  // ── Daily Snapshot: date picker + all players for that day ──
+  const availableDates = useMemo(() => {
+    const dates = new Set<string>();
+    try {
+      const raw = localStorage.getItem("kenshin_daily_training_log");
+      if (raw) {
+        const logs = JSON.parse(raw);
+        logs.forEach((l: any) => { if (l.date) dates.add(l.date); });
+      }
+    } catch {}
+    return Array.from(dates).sort().reverse();
+  }, [refreshKey]);
+  const [snapDate, setSnapDate] = useState(() => {
+    try {
+      const raw = localStorage.getItem("kenshin_daily_training_log");
+      if (raw) {
+        const logs = JSON.parse(raw);
+        const latest = logs.find((l: any) => l.date)?.date;
+        if (latest) return latest;
+      }
+    } catch {}
+    return new Date().toISOString().slice(0, 10);
+  });
+  const snapData = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("kenshin_daily_training_log");
+      if (!raw) return [];
+      const logs = JSON.parse(raw);
+      const todayLogs = logs.filter((l: any) => l.date === snapDate && l.players?.length > 0);
+      // Collect all players from today's logs
+      const playerMap: Record<string, { trimp: number; types: string[]; notes: string[] }> = {};
+      for (const log of todayLogs) {
+        const players = log.players || [];
+        const trainType = log.trainType || 'pitch';
+        const note = log.note || '';
+        for (const p of players) {
+          const name = typeof p === 'object' ? p.name : p;
+          const trimp = typeof p === 'object' ? (p.trimp || 0) : 0;
+          if (!playerMap[name]) playerMap[name] = { trimp: 0, types: [], notes: [] };
+          playerMap[name].trimp += trimp;
+          if (trainType && !playerMap[name].types.includes(trainType)) {
+            playerMap[name].types.push(trainType);
+          }
+          if (note) playerMap[name].notes.push(note);
+        }
+      }
+      return Object.entries(playerMap).map(([name, data]) => ({ name, ...data }));
+    } catch { return []; }
+  }, [snapDate, refreshKey]);
+
+  function DailySnapshot() {
+    if (availableDates.length === 0) return null;
+    const typeLabel = (t: string) => t === 'pitch' ? '外场' : t === 'gym' ? '力量房' : '恢复';
+    const dateLabel = snapDate.slice(5).replace('-', '/');
+    return (
+      <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white">每日快照 · {dateLabel}</h3>
+          <select value={snapDate} onChange={e => setSnapDate(e.target.value)}
+            className="bg-[#1a1a1a] border border-[#333] rounded-lg px-2 py-1 text-xs text-white">
+            {availableDates.map(d => (
+              <option key={d} value={d}>{d.slice(5)}</option>
+            ))}
+          </select>
+        </div>
+        {snapData.length === 0 ? (
+          <p className="text-[10px] text-[#666]">{snapDate} 无训练记录</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[10px]">
+              <thead>
+                <tr className="text-[#888] border-b border-[#222]">
+                  <th className="text-left py-1.5 pr-2">球员</th>
+                  <th className="text-left py-1.5 px-1">类型</th>
+                  <th className="text-right py-1.5 px-1">TRIMP</th>
+                  <th className="text-left py-1.5 pl-2">备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                {snapData.map((p, i) => (
+                  <tr key={i} className="border-b border-[#1a1a1a] hover:bg-[#111]">
+                    <td className="py-1.5 pr-2 text-white font-medium">{p.name}</td>
+                    <td className="py-1.5 px-1">{p.types.map(typeLabel).join('/')}</td>
+                    <td className={`py-1.5 px-1 text-right font-mono ${p.trimp > 200 ? 'text-red-400' : p.trimp < 60 ? 'text-green-400' : 'text-white'}`}>{p.trimp}</td>
+                    <td className="py-1.5 pl-2 text-[#666] truncate max-w-[120px]">{p.notes.join('; ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#121212] pb-20">
       <header className="sticky top-0 z-40 bg-[#121212]/90 backdrop-blur border-b border-[#222]">
@@ -694,6 +789,9 @@ export default function LoadPage() {
           <GPSImportButton />
         </div>
       </div>
+
+      {/* ═══ 每日快照 —— 选日期看当天全队数据 ═══ */}
+      <DailySnapshot />
 
       {/* ═══ LOAD CAPACITY CARD ═══ */}
       <div className="bg-[#0d0d0d] border border-[#222] rounded-xl p-5 mb-4">
