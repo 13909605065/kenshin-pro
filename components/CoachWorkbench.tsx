@@ -23,6 +23,7 @@ import { buildRecoveryInputFromStatus, getPlayerSelfReports, getCoachScores } fr
 import { getPlayers, type PlayerRecord } from '@/lib/roster-utils';
 import { getTodayAttendance, buildAttendance, saveAttendance, getAttendanceStats, setAbsentReason, type AbsenceReason, ABSENCE_LABELS, ABSENCE_ORDER } from '@/lib/attendance-store';
 import { groupByPosition, GROUP_META } from '@/lib/player-groups';
+import { teamGet, teamSet } from '@/lib/team-storage';
 
 // ── helpers ──
 const today = new Date();
@@ -566,13 +567,13 @@ export default function CoachWorkbench() {
         }
         localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
         // Also write to ACWR store (kenshin_load_data)
-        const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+        const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
         for (const playerName of attendeeNames) {
           if (!loadData[playerName]) loadData[playerName] = [];
           loadData[playerName].push({ date, sRPE, duration });
           if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
         }
-        localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
+        teamSet("kenshin_load_data", JSON.stringify(loadData));
       } catch {}
     }
     window.dispatchEvent(new CustomEvent('training-log-updated'));
@@ -616,13 +617,13 @@ export default function CoachWorkbench() {
         localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
         // Also write to ACWR store
         const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
-        const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+        const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
         for (const playerName of attendeeNames) {
           if (!loadData[playerName]) loadData[playerName] = [];
           loadData[playerName].push({ date, sRPE, duration });
           if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
         }
-        localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
+        teamSet("kenshin_load_data", JSON.stringify(loadData));
       } catch {}
     }
 
@@ -1854,13 +1855,13 @@ export default function CoachWorkbench() {
                   localStorage.setItem("kenshin_player_trimp", JSON.stringify(existingTRIMP.slice(-500)));
                   // Also write to ACWR store
                   const sRPE = trainType === 'pitch' ? 7 : trainType === 'gym' ? 6 : 2;
-                  const loadData = JSON.parse(localStorage.getItem("kenshin_load_data") || "{}");
+                  const loadData = JSON.parse(teamGet("kenshin_load_data") || "{}");
                   for (const playerName of attendeeNames) {
                     if (!loadData[playerName]) loadData[playerName] = [];
                     loadData[playerName].push({ date, sRPE, duration: elapsedMin });
                     if (loadData[playerName].length > 35) loadData[playerName] = loadData[playerName].slice(-35);
                   }
-                  localStorage.setItem("kenshin_load_data", JSON.stringify(loadData));
+                  teamSet("kenshin_load_data", JSON.stringify(loadData));
                 } catch {}
               }
 
