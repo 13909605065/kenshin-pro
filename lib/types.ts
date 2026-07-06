@@ -149,7 +149,7 @@ export interface WeatherAdaptation {
 
 // ---- Form Input ----
 export type Position = "goalkeeper" | "defender" | "midfielder" | "forward" | "center_forward" | "winger" | "wingback";
-export type TrainingGoal = "strength" | "power" | "speed" | "agility" | "mas_endurance" | "combat";
+export type TrainingGoal = "strength" | "power" | "speed" | "agility" | "mas_endurance" | "combat" | "flexibility" | "regeneration";
 export type FitnessGoal = "hypertrophy" | "fat_loss" | "body_shaping" | "general_fitness" | "strength_fitness" | "endurance_fitness";
 export type SeasonPhase = "preseason" | "competition" | "recovery" | "offseason";
 export type InjurySite = "knee" | "ankle" | "achilles" | "waist" | "thigh" | "hip" | "finger" | "wrist" | "shoulder";

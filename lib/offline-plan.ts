@@ -12,9 +12,11 @@ import type { TrainingModule, Exercise, SeasonPhase, Position } from './types';
 // ── Warmup selection ──
 const GYM_WARMUP_IDS = ['warm-hip-open', 'warm-glute-activation', 'warm-dynamic-stretch', 'warm-plank-series', 'warm-side-plank-series', 'warm-single-leg-balance', 'warm-nordic-curl'];
 const PITCH_NO_BALL_IDS = ['warm-light-jog', 'warm-agility-ladder', 'warm-dynamic-stretch', 'warm-glute-activation', 'warm-nordic-curl', 'warm-plank-series'];
+const RECOVERY_WARMUP_IDS = ['warm-light-jog', 'warm-hip-open', 'warm-dynamic-stretch', 'warm-glute-activation', 'warm-plank-series'];
 
 function pickWarmup(scene: string): string[] {
   if (scene === 'gym') return GYM_WARMUP_IDS;
+  if (scene === 'recovery') return RECOVERY_WARMUP_IDS;
   // pitch: prefer no-ball for S&C focus
   return PITCH_NO_BALL_IDS;
 }
@@ -122,13 +124,39 @@ export function generateOfflinePlan(input: OfflinePlanInput): TrainingModule[] {
   const pp = getPhaseParams(phase);
   const gp = getGoalParams(goal);
 
+  // ── Recovery scene: stretching + foam rolling + breathing ──
+  if (scene === 'recovery') {
+    const recoveryWarmup = pickWarmup('recovery').map(resolveWarmupItem);
+    const recoveryCooldown = [
+      { name: '泡沫轴筋膜放松', duration: 10, description: '小腿/大腿前后侧/背部/臀肌，每部位45-60s缓慢滚动，痛点停留' },
+      { name: '静态拉伸序列', duration: 10, description: '股四头肌/腘绳肌/臀肌/髋屈肌/小腿/胸椎，每侧20-30s保持，禁止弹震' },
+      { name: '腹式呼吸调节', duration: 5, description: '仰卧屈膝，吸气4s→屏息2s→呼气6s，5-8轮，降低心率至Zone1' },
+    ];
+    const goalLabel = gp?.labelCn || goal;
+    const phaseLabel = pp.labelCn;
+    const sceneLabel = '恢复再生';
+    const title = `${sceneLabel}·${goalLabel}·${phaseLabel}`;
+    return [{
+      module: 'position_training',
+      title: playerName ? `${playerName} · ${title}` : title,
+      analysis: `离线恢复模式 | 场景:${sceneLabel} | 目标:${goalLabel} | 阶段:${phaseLabel} | HR Zone1-2(60-70%HRmax) | 纯自重 | 赛后MD+1恢复`,
+      warmup: recoveryWarmup,
+      upper_limb: [],
+      lower_limb: [],
+      core: [],
+      cooldown: recoveryCooldown,
+      nutrition: pickNutrition(goal),
+      status: 'complete',
+    }];
+  }
+
   const warmup = pickWarmup(scene).map(resolveWarmupItem);
   const { upper, lower, core, ability } = pickExercises(scene, goal, duration, position);
   const cooldown = resolveCooldown();
 
   const goalLabel = gp?.labelCn || goal;
   const phaseLabel = pp.labelCn;
-  const sceneLabel = scene === 'gym' ? '力量房' : '外场';
+  const sceneLabel = scene === 'gym' ? '力量房' : scene === 'recovery' ? '恢复再生' : '外场';
   const title = `${sceneLabel}·${goalLabel}·${phaseLabel}`;
 
   const positionModule: TrainingModule = {

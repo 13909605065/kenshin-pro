@@ -508,7 +508,7 @@ export function assemblePlan(
  * Quick check: does it make sense to use the assembler for this scene+goal?
  */
 export function shouldUseAssembler(scene: string, _goal: string): boolean {
-  if (scene === 'rehab') return false;
+  if (scene === 'rehab' || scene === 'recovery') return false;
   return true;
 }
 

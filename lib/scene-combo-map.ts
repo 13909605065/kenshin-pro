@@ -17,14 +17,14 @@ export interface ComboTarget {
   fallbackComboId?: string; // if primary not found in library
 }
 
-type SceneKey = 'gym' | 'pitch';
+type SceneKey = 'gym' | 'pitch' | 'recovery';
 type GoalKey = string;
 
 // ═══════════════════════════════════════════
 // MASTER LOOKUP: scene × goal × phase × position → combo
 // ═══════════════════════════════════════════
 
-const MAP: Record<SceneKey, Record<GoalKey, Record<string, Record<string, ComboTarget>>>> = {
+const MAP: Partial<Record<SceneKey, Record<GoalKey, Record<string, Record<string, ComboTarget>>>>> = {
   gym: {
     strength: {
       offseason: {

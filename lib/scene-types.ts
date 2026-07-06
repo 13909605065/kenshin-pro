@@ -9,6 +9,7 @@ export const COACH_SCENES = [
   { id: "planning" as const, label: "备战", icon: "🎯" },
   { id: "pitch" as const, label: "训练场", icon: "🏟️" },
   { id: "gym" as const, label: "力量房", icon: "🏋️" },
+  { id: "recovery" as const, label: "恢复再生", icon: "🧘" },
 ];
 
 // 运动员3场景 — 对应四大板块中的板块二/三/四

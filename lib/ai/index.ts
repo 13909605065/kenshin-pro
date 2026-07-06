@@ -95,6 +95,25 @@ export function buildSystemPrompt(data: PlayerFormData, scene?: string): string 
     return rehabRule + prompt;
   }
 
+  if (scene === "recovery") {
+    const recoveryRule = `\n\n## ⚠️⚠️⚠️ 场景铁律：赛后恢复/再生训练 - 以下规则优先级最高 ⚠️⚠️⚠️
+你正在为赛后恢复/再生训练生成方案。这是一堂低强度恢复课，不是正常训练课。
+- 🔴 禁止任何杠铃/哑铃/大重量器械（所有负荷≤50%1RM）
+- 🔴 禁止爆发力/增强式/冲刺/跳跃/变向类动作
+- 🔴 禁止使用 combo_id（套餐是为正常训练课设计的）
+- 🔴 禁止 SSG 对抗赛/有球高强度训练
+- 🔴 禁止绳梯灵敏/折返跑/间歇跑
+- 🟢 核心内容：静态拉伸(每肌群20-30s)、动态拉伸、PNF拉伸、泡沫轴/筋膜球放松、呼吸练习、轻量核心激活
+- 🟢 热身：5-10min轻慢跑(HR<120bpm)+动态拉伸，冷身：10-15min静态拉伸+泡沫轴
+- 🟢 心率限制：(220-年龄)×60-70%，RPE≤3/10
+- 🟢 器材：仅自重、弹力带、泡沫轴、瑜伽垫
+- 🟢 分组：每拉伸动作2-3组×20-30s保持，间歇30s
+- 📊 依据：NSCA-CSCS第4版第23章恢复与再生 + Routledge Handbook恢复策略 + 精准拉伸(Chris Frederick)
+- 📋 输出结构：module_1(position_training)为主，warmup填轻量热身、upper_limb留空数组、lower_limb填拉伸动作、core填核心激活、cooldown填静态拉伸+泡沫轴
+- 如无伤病 module_4 填 status="skipped"`;
+    return recoveryRule + prompt;
+  }
+
   return prompt;
 }
 

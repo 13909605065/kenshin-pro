@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
   if (scene === "gym") searchTopics.push("力量训练 负荷 组数 次数");
   if (scene === "pitch") searchTopics.push("场地训练 足球 速度 灵敏");
   if (scene === "rehab") searchTopics.push("伤病 康复 恢复 训练");
+  if (scene === "recovery") searchTopics.push("赛后恢复 拉伸 筋膜放松 主动恢复 柔韧性");
   if (isCoach) searchTopics.push("教练 团队 训练计划 周期安排");
   searchTopics.push("足球体能 运动科学");
 
@@ -242,6 +243,18 @@ export async function POST(request: NextRequest) {
 ❌ 热身仅允许低强度版本，心率不超过(220-年龄)×60%
 🟢 必须输出 module_5 康复方案 phases 数组（急性期→增殖期→重塑期→功能期）
 🟢 训练目标自动改为：弱侧强化+替代训练+渐进恢复`;
+  } else if (scene === "recovery") {
+    sceneHint = `## 🧘 场景限制：赛后恢复/再生训练
+今天是赛后恢复日（MD+1），带领昨天比赛的11-12人进行低强度恢复：
+✅ 只能输出：静态拉伸(每肌群20-30s)、动态拉伸、PNF拉伸、泡沫轴/筋膜球放松、呼吸调节、轻量核心激活
+❌ 禁止：任何杠铃/哑铃负重、爆发力/增强式/冲刺/跳跃/变向
+❌ 禁止使用 combo_id（恢复课不使用正常训练套餐）
+❌ 禁止：SSG对抗赛、有球技术训练、绳梯灵敏、折返跑
+🟢 心率限制：(220-年龄)×60-70%，全程RPE≤3/10
+🟢 器材：仅自重、弹力带、泡沫轴、瑜伽垫
+🟢 热身：5-10min轻慢跑+动态拉伸；冷身：10-15min静态拉伸+泡沫轴
+🟢 分组建议：每动作2-3组×20-30s保持，间歇30-45s
+📊 依据：NSCA-CSCS第4版第23章 + Routledge Handbook恢复策略 + 精准拉伸`;
   }
 
   // Inject fitness data hint if available
@@ -378,7 +391,7 @@ ${JSON.stringify(fitnessData, null, 1)}
         );
 
         // Determine if we should use the B+C pipeline (validation + assembly)
-        const usePipeline = scene !== "rehab" && shouldUseAssembler(scene || "gym", formData.goal || "strength");
+        const usePipeline = scene !== "rehab" && scene !== "recovery" && shouldUseAssembler(scene || "gym", formData.goal || "strength");
 
         if (usePipeline && module1Event && typeof module1Event.data === "object") {
           // ═══════════════════════════════════════

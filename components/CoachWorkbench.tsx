@@ -77,6 +77,7 @@ function getMicrocyclePlan(matchDate: string, dayOffset: number): MicrocyclePlan
 const SCENES = [
   { id: 'gym' as const, label: '力量房', desc: '抗阻力量 · 爆发力 · 协调灵敏 · 肌耐力', hint: '全无球热身 · FIFA 11+' },
   { id: 'pitch' as const, label: '外场', desc: '自重力量 · 场地爆发力 · 直线速度 · 专项耐力', hint: '无球/有球热身二选一' },
+  { id: 'recovery' as const, label: '恢复再生', desc: '拉伸放松 · 筋膜释放 · 主动恢复 · 活动度', hint: '赛后MD+1 · 无球 · HR Zone1-2' },
 ];
 
 const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
@@ -87,6 +88,10 @@ const SCENE_GOALS: Record<string, { id: string; label: string }[]> = {
   pitch: [
     { id: 'strength', label: '自重基础力量' }, { id: 'power', label: '场地爆发力' },
     { id: 'speed', label: '直线加速速度' }, { id: 'mas_endurance', label: '专项间歇耐力' },
+  ],
+  recovery: [
+    { id: 'flexibility', label: '拉伸柔韧' },
+    { id: 'regeneration', label: '主动恢复' },
   ] };
 
 const DURATIONS = [30, 45, 60, 75, 90];
@@ -94,8 +99,9 @@ const ADDON_DURATIONS = [15, 20, 25, 30];
 
 // ── goal/scene label lookups ──
 const GOAL_LABELS: Record<string, string> = {
-  strength: '力量', power: '爆发力', speed: '速度', agility: '灵敏', mas_endurance: '耐力' };
-const SCENE_LABELS: Record<string, string> = { gym: '力量房', pitch: '外场' };
+  strength: '力量', power: '爆发力', speed: '速度', agility: '灵敏', mas_endurance: '耐力',
+  flexibility: '拉伸', regeneration: '恢复' };
+const SCENE_LABELS: Record<string, string> = { gym: '力量房', pitch: '外场', recovery: '恢复再生' };
 
 // ── roster types ──
 type PlayerStatus = { name: string; status: 'green' | 'yellow' | 'red'; reason: string; disabledExercises?: string[] };
@@ -113,14 +119,14 @@ function mapPosition(cn: string): Position {
 }
 
 // ── MD recommendation map ──
-function getMDRecommendation(mdDay: number): { scene: 'gym' | 'pitch'; goal: string; label: string } {
+function getMDRecommendation(mdDay: number): { scene: 'gym' | 'pitch' | 'recovery'; goal: string; label: string } {
   if (mdDay >= 4) return { scene: 'gym', goal: 'strength', label: '力量房·力量' };
   if (mdDay === 3) return { scene: 'gym', goal: 'strength', label: '力量房·力量+爆发' };
   if (mdDay === 2) return { scene: 'gym', goal: 'power', label: '力量房·爆发力' };
   if (mdDay === 1) return { scene: 'pitch', goal: 'speed', label: '外场·赛前激活' };
   if (mdDay === 0) return { scene: 'pitch', goal: 'speed', label: '外场·比赛日激活' };
-  if (mdDay === -1) return { scene: 'gym', goal: 'mas_endurance', label: '力量房·主动恢复' };
-  if (mdDay === -2) return { scene: 'gym', goal: 'strength', label: '力量房·弱链纠正' };
+  if (mdDay === -1) return { scene: 'recovery', goal: 'flexibility', label: '恢复·拉伸放松' };
+  if (mdDay === -2) return { scene: 'recovery', goal: 'regeneration', label: '恢复·筋膜放松' };
   return { scene: 'gym', goal: 'strength', label: '力量房·正常训练' };
 }
 
@@ -201,13 +207,13 @@ interface EditState {
 export default function CoachWorkbench() {
   const { modules, planId, generate, loadModules, isOffline } = useTraining();
   const syncVersion = useSyncVersion();
-  const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football'>('football');
+  const [workbenchMode, setWorkbenchMode] = useState<'gym' | 'football' | 'recovery'>('football');
   const [trainDate, setTrainDate] = useState(() => {
     try { return localStorage.getItem("kenshin_coach_trainDate") || new Date().toISOString().slice(0, 10); } catch { return new Date().toISOString().slice(0, 10); }
   });
   const [timeSlot, setTimeSlot] = useState<'morning' | 'afternoon'>(new Date().getHours() < 12 ? 'morning' : 'afternoon');
-  const [scene, setScene] = useState<'gym' | 'pitch'>(() => {
-    try { return (localStorage.getItem("kenshin_coach_scene") as 'gym'|'pitch') || 'gym'; } catch { return 'gym'; }
+  const [scene, setScene] = useState<'gym' | 'pitch' | 'recovery'>(() => {
+    try { return (localStorage.getItem("kenshin_coach_scene") as 'gym'|'pitch'|'recovery') || 'gym'; } catch { return 'gym'; }
   });
   const [goal, setGoal] = useState(() => {
     try { return localStorage.getItem("kenshin_coach_goal") || 'strength'; } catch { return 'strength'; }
@@ -240,7 +246,7 @@ export default function CoachWorkbench() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [addonTheme, setAddonTheme] = useState('');
-  const [addonScene, setAddonScene] = useState<'gym' | 'pitch'>('gym');
+  const [addonScene, setAddonScene] = useState<'gym' | 'pitch' | 'recovery'>('gym');
   const [weather, setWeather] = useState<'sun' | 'cloud' | 'rain'>(() => {
     if (typeof window === 'undefined') return 'sun';
     return (localStorage.getItem('kenshin_coach_weather') as 'sun' | 'cloud' | 'rain') || 'sun';
@@ -542,7 +548,7 @@ export default function CoachWorkbench() {
 
     // Auto-save to daily training log for load management
     const date = trainDate;
-    const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
+    const trainType = workbenchMode === 'football' ? 'pitch' : workbenchMode === 'gym' ? 'gym' : 'recovery';
     const attendeeNames = Array.from(trainingAttendees).map(id => {
       const p = rosterPlayers.find(r => r.id === id);
       return p ? p.name : id;
@@ -559,7 +565,7 @@ export default function CoachWorkbench() {
     // Save estimated TRIMP for each attending player
     if (attendeeNames.length > 0) {
       try {
-        const trimpMultiplier = trainType === 'pitch' ? 2.5 : 2.0;
+        const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
         const perPlayerTRIMP = Math.round((duration * trimpMultiplier) / attendeeNames.length);
         const existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
         const savedAt = new Date().toISOString();
@@ -633,18 +639,26 @@ export default function CoachWorkbench() {
     const plan = getMicrocyclePlan(matchDate, dayOffset);
     if (plan) {
       loadModules(plan.modules, plan.formData);
-      setScene(plan.scene as 'gym' | 'pitch');
+      setScene(plan.scene as 'gym' | 'pitch' | 'recovery');
       setGoal(plan.goal);
       setDuration(plan.duration);
       setPhase(plan.phase as SeasonPhase);
       setShowPlan(true);
       setActiveDayOffset(dayOffset);
+      // Auto-switch workbench mode for recovery plans
+      if (plan.scene === 'recovery') setWorkbenchMode('recovery');
+      else if (plan.scene === 'gym') setWorkbenchMode('gym');
+      else setWorkbenchMode('football');
     } else {
       const rec = getMDRecommendation(dayOffset);
       setScene(rec.scene);
       setGoal(rec.goal);
       setActiveDayOffset(dayOffset);
       setShowPlan(false);
+      // Auto-switch workbench mode based on recommendation
+      if (rec.scene === 'recovery') setWorkbenchMode('recovery');
+      else if (rec.scene === 'gym') setWorkbenchMode('gym');
+      else setWorkbenchMode('football');
     }
   }, [matchDate, loadModules]);
 
@@ -654,12 +668,15 @@ export default function CoachWorkbench() {
     const plan = getMicrocyclePlan(lastWeekMatchDate, mdDay);
     if (plan) {
       loadModules(plan.modules, plan.formData);
-      setScene(plan.scene as 'gym' | 'pitch');
+      setScene(plan.scene as 'gym' | 'pitch' | 'recovery');
       setGoal(plan.goal);
       setDuration(plan.duration);
       setPhase(plan.phase as SeasonPhase);
       setShowPlan(true);
       setActiveDayOffset(mdDay);
+      if (plan.scene === 'recovery') setWorkbenchMode('recovery');
+      else if (plan.scene === 'gym') setWorkbenchMode('gym');
+      else setWorkbenchMode('football');
     }
   }, [matchDate, mdDay, loadModules]);
 
@@ -776,13 +793,14 @@ export default function CoachWorkbench() {
         // 只显示匹配当前模式的预排方案
         const matchPlan = tp && (
           (workbenchMode === 'football' && tp.scene === 'pitch') ||
-          (workbenchMode === 'gym' && tp.scene === 'gym')
+          (workbenchMode === 'gym' && tp.scene === 'gym') ||
+          (workbenchMode === 'recovery' && tp.scene === 'recovery')
         ) ? tp : null;
         if (!matchPlan) return (
           <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <span className="text-sm font-bold text-[#F1F1F1]">暂无{workbenchMode === 'football' ? '外场' : '力量'}预排方案</span>
+                <span className="text-sm font-bold text-[#F1F1F1]">暂无{workbenchMode === 'football' ? '外场' : workbenchMode === 'gym' ? '力量' : '恢复'}预排方案</span>
                 <p className="text-[10px] text-[#888] mt-0.5">提前在周期方案中编排本周训练</p>
               </div>
               <a href="/planning" className="px-3 py-2 bg-[#992828] hover:bg-[#7a1e1e] text-white rounded-lg text-xs font-bold transition active:scale-[0.98] no-underline inline-block">
@@ -834,13 +852,19 @@ export default function CoachWorkbench() {
           }`}>力量房
           {workbenchMode === 'gym' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#992828] rounded-full" />}
         </button>
+        <button onClick={() => setWorkbenchMode('recovery')}
+          className={`flex-1 py-3 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 relative ${
+            workbenchMode === 'recovery' ? 'bg-[#171717] text-[#992828]' : 'bg-[#171717] text-[#888] hover:text-[#aaa]'
+          }`}>恢复再生
+          {workbenchMode === 'recovery' && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-[#992828] rounded-full" />}
+        </button>
       </div>
 
       {/* ── 训练日期 + 类型 + 时段 ── */}
       <div className="flex items-center gap-2 bg-[#141414] border border-[#2c2c2c] rounded-xl p-2.5 flex-wrap">
         <input type="date" value={trainDate} onChange={e => setTrainDate(e.target.value)}
           className="bg-[#1a1a1a] border border-[#333] rounded px-2 py-1 text-[10px] text-white focus:border-[#992828] outline-none" />
-        <span className="text-xs font-bold text-[#F1F1F1]">{workbenchMode === 'football' ? '外场' : '力量房'}</span>
+        <span className="text-xs font-bold text-[#F1F1F1]">{workbenchMode === 'football' ? '外场' : workbenchMode === 'gym' ? '力量房' : '恢复再生'}</span>
         <span className="text-[#555]">|</span>
         {trainDate === dateStr(new Date()) ? (
           <span className="text-[10px] text-[#992828] font-medium">今日训练</span>
@@ -944,6 +968,140 @@ export default function CoachWorkbench() {
       )}
 
       {/* ═══════════════════════════════════════════════
+          RECOVERY MODE — 赛后恢复/再生训练
+          ═══════════════════════════════════════════════ */}
+      {workbenchMode === 'recovery' && (
+        <div className="space-y-4">
+          {/* Recovery info card */}
+          <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-lg font-bold text-[#F1F1F1]">恢复再生课</span>
+              <span className="text-[10px] text-[#888] bg-[#1a1a1a] px-2 py-0.5 rounded">MD+1</span>
+              <span className="text-[10px] text-[#888]">心率 Zone1-2 · 纯自重 · 无球</span>
+            </div>
+            <p className="text-[10px] text-[#666] mb-4">赛后24h副交感神经恢复窗口，降低肌肉张力、促进代谢产物清除</p>
+
+            {/* Goal selector */}
+            <div className="flex gap-2 mb-3 flex-wrap items-center">
+              <span className="text-[10px] text-gray-500">目标:</span>
+              {(SCENE_GOALS['recovery'] || []).map(g => (
+                <button key={g.id} onClick={() => setGoal(g.id)}
+                  className={`px-3 py-1.5 rounded text-[11px] font-medium transition ${
+                    goal === g.id ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
+                  }`}>{g.label}</button>
+              ))}
+            </div>
+
+            {/* Duration selector */}
+            <div className="flex gap-2 mb-3 flex-wrap items-center">
+              <span className="text-[10px] text-gray-500">时长:</span>
+              {[30, 45, 60].map(d => (
+                <button key={d} onClick={() => setDuration(d)}
+                  className={`px-3 py-1.5 rounded text-[11px] font-medium transition ${
+                    duration === d ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888]'
+                  }`}>{d}min</button>
+              ))}
+            </div>
+
+            {/* Phase selector */}
+            <div className="flex gap-2 mb-4 flex-wrap items-center">
+              <span className="text-[10px] text-gray-500">阶段:</span>
+              <select value={phase} onChange={e => setPhase(e.target.value as SeasonPhase)}
+                className="bg-[#1a1a1a] border border-[#333] rounded-lg px-2 py-1 text-xs text-white">
+                <option value="preseason">季前备战</option>
+                <option value="competition">联赛期</option>
+                <option value="recovery">赛后恢复</option>
+                <option value="offseason">休赛补强</option>
+              </select>
+              <span className="text-[10px] text-[#555] ml-2">参训 {trainingAttendees.size}/{rosterPlayers.length}人</span>
+            </div>
+
+            {/* Player selector — recovery-specific */}
+            {rosterPlayers.length > 0 && (
+              <div className="mb-4 border border-[#2c2c2c] rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setShowAttendeeSelector(!showAttendeeSelector)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-[10px] hover:bg-[#1a1a1a] transition"
+                >
+                  <span className="text-[#888]">{showAttendeeSelector ? '收起' : '选择参训球员'}</span>
+                  <span className="text-gray-500 text-[9px]">{showAttendeeSelector ? '▲' : '▼'}</span>
+                </button>
+                {showAttendeeSelector && (
+                  <div className="px-3 pb-3 border-t border-[#2c2c2c] max-h-[240px] overflow-y-auto">
+                    <div className="flex gap-1.5 my-2 flex-wrap">
+                      <button onClick={() => {
+                        const allIds = rosterPlayers.map(p => p.id);
+                        setTrainingAttendees(new Set(allIds));
+                      }} className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white">全选</button>
+                      <button onClick={() => setTrainingAttendees(new Set())} className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white">清空</button>
+                      <button onClick={() => {
+                        const healthyIds = rosterPlayers.filter(p => p.injuryStatus === 'healthy').map(p => p.id);
+                        setTrainingAttendees(new Set(healthyIds));
+                      }} className="text-[9px] px-2 py-1 rounded bg-[#222] text-[#888] hover:text-white">健康球员</button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {rosterPlayers.map(p => {
+                        const isAttending = trainingAttendees.has(p.id);
+                        const isInjured = p.injuryStatus !== 'healthy';
+                        return (
+                          <label key={p.id} className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded cursor-pointer transition ${
+                            isAttending
+                              ? 'bg-[#992828]/15 text-[#992828] ring-1 ring-[#992828]/40'
+                              : isInjured
+                              ? 'bg-[#111] text-red-500/60 hover:text-red-400'
+                              : 'bg-[#111] text-[#888] hover:text-[#aaa]'
+                          }`}>
+                            <input type="checkbox" checked={isAttending}
+                              onChange={() => {
+                                setTrainingAttendees(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+                                  return next;
+                                });
+                              }}
+                              className="accent-[#992828] w-3 h-3" />
+                            {p.name}
+                            {p.number && <span className="text-[8px] text-gray-600">#{p.number}</span>}
+                            {isInjured && <span className="text-[8px]">{p.injuryStatus === 'out' ? '🔴' : '🟡'}</span>}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Generate button */}
+            <button onClick={handleGenerate} disabled={generating}
+              className="w-full py-3 bg-[#992828] hover:bg-[#7a1e1e] disabled:bg-[#333] disabled:text-[#666] text-white rounded-xl text-sm font-bold transition active:scale-[0.98]">
+              {generating ? '生成中...' : '生成恢复课方案'}
+            </button>
+            {genError && <p className="text-[10px] text-red-400 mt-2">{genError}</p>}
+          </div>
+
+          {/* Plan output area */}
+          {showPlan && modules.length > 0 && (
+            <div className="bg-[#141414] border border-[#2c2c2c] rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-[#2c2c2c]">
+                <h3 className="text-sm font-bold text-[#F1F1F1]">
+                  恢复再生 · {duration}min · {activeDayOffset === 0 ? '比赛日' : activeDayOffset > 0 ? `MD-${activeDayOffset}` : `MD+${Math.abs(activeDayOffset)}`}
+                  {isOffline && <span className="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">离线</span>}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <ExportTable modules={modules} formData={buildFormData()} />
+                  <button onClick={() => setShowPlan(false)} className="text-[10px] text-gray-500 hover:text-white">收起</button>
+                </div>
+              </div>
+              <div className="p-4">
+                <PhysicalTab modules={modules} position={null} onUpdateExercise={handleEditExercise} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════
           FOOTBALL MODE
           ═══════════════════════════════════════════════ */}
       {workbenchMode === 'football' && (
@@ -1027,7 +1185,7 @@ export default function CoachWorkbench() {
         {/* Row 3: Training type indicator */}
         <div className="flex items-center gap-2 p-2.5 bg-[#1a1a1a] rounded-lg">
           <span className="text-[10px] text-gray-500">训练:</span>
-          <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '外场训练' : '力量房'} · {duration}min</span>
+          <span className="text-xs font-bold text-white">{workbenchMode === 'football' ? '外场训练' : workbenchMode === 'gym' ? '力量房' : '恢复再生'} · {duration}min</span>
           {recoveryScore.adjustments.length > 0 && (
             <span className="text-[9px] text-yellow-400/80 truncate max-w-[240px]">
               ⚠ {recoveryScore.adjustments[0]}
@@ -1410,7 +1568,7 @@ export default function CoachWorkbench() {
 
                 {/* Scene */}
                 <div className="flex gap-1">
-                  {SCENES.filter(s => s.id === 'pitch').map(s => (
+                  {SCENES.map(s => (
                     <button key={s.id} onClick={() => { setScene(s.id); setGoal(SCENE_GOALS[s.id][0].id); }}
                       className={`px-2 py-1 rounded text-[10px] font-medium transition ${
                         scene === s.id ? 'bg-[#992828] text-white' : 'bg-[#1a1a1a] text-[#888] hover:text-white'
@@ -1553,7 +1711,7 @@ export default function CoachWorkbench() {
             const elapsedMin = Math.round((Date.now() - trainingStartRef.current) / 60000);
             if (elapsedMin > 0) {
               const date = trainDate;
-              const trainType = workbenchMode === 'football' ? 'pitch' : 'gym';
+              const trainType = workbenchMode === 'football' ? 'pitch' : workbenchMode === 'gym' ? 'gym' : 'recovery';
               try {
                 const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
                 const existing = logs.findIndex((l: any) => l.date === date);
@@ -1571,7 +1729,7 @@ export default function CoachWorkbench() {
     });
               if (attendeeNames.length > 0) {
                 try {
-                  const trimpMultiplier = trainType === 'pitch' ? 2.5 : 2.0;
+                  const trimpMultiplier = trainType === 'pitch' ? 2.5 : trainType === 'gym' ? 2.0 : 1.0;
                   const perPlayerTRIMP = Math.round((elapsedMin * trimpMultiplier) / attendeeNames.length);
                   let existingTRIMP = JSON.parse(localStorage.getItem("kenshin_player_trimp") || "[]");
                   // Remove estimated entries for this date
@@ -1586,7 +1744,7 @@ export default function CoachWorkbench() {
 
               // ── Auto-generate training notes ──
               const todayKey = new Date().toISOString().slice(0, 10);
-              const sceneLabel = trainType === 'pitch' ? '外场' : '力量房';
+              const sceneLabel = trainType === 'pitch' ? '外场' : trainType === 'gym' ? '力量房' : '恢复再生';
               const intensityLabel = '中'; // default, coach can edit later
               const noteDraft = `${sceneLabel}训练 · ${elapsedMin}min · ${intensityLabel}强度\n${attendeeNames.length > 0 ? `参训: ${attendeeNames.join('、')}` : '全队合练'}\n要点: ___`;
               try {

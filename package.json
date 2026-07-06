@@ -39,6 +39,6 @@
     "pptxgenjs": "^4.0.1",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
-    "vercel": "^54.10.1"
+    "vercel": "^54.20.1"
   }
 }

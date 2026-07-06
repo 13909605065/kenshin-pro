@@ -19,6 +19,8 @@ export const GOAL_LABELS: Record<string, string> = {
   agility: "协调灵敏",
   mas_endurance: "耐力",
   combat: "对抗能力",
+  flexibility: "拉伸柔韧",
+  regeneration: "主动恢复",
   hypertrophy: "肌肥大",
   fat_loss: "减脂",
   body_shaping: "塑形",
