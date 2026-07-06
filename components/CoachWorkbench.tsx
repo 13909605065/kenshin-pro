@@ -555,11 +555,10 @@ export default function CoachWorkbench() {
     });
     try {
       const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-      const existing = logs.findIndex((l: any) => l.date === date);
-      const entry = { date, trainType, timeSlot, duration: 0, weather, savedAt: new Date().toISOString(), players: attendeeNames };
-      if (existing >= 0) logs[existing] = entry;
-      else logs.unshift(entry);
-      localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
+      const slot = `${Date.now()}`;
+      const entry = { date, trainType, timeSlot, duration: 0, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot };
+      logs.unshift(entry);
+      localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
     } catch {}
 
     // Save estimated TRIMP for each attending player
@@ -1714,12 +1713,13 @@ export default function CoachWorkbench() {
               const trainType = workbenchMode === 'football' ? 'pitch' : workbenchMode === 'gym' ? 'gym' : 'recovery';
               try {
                 const logs = JSON.parse(localStorage.getItem("kenshin_daily_training_log") || "[]");
-                const existing = logs.findIndex((l: any) => l.date === date);
-                if (existing >= 0) { logs[existing].duration = elapsedMin; logs[existing].savedAt = new Date().toISOString(); logs[existing].weather = weather; }
-                else {
-                  logs.unshift({ date, trainType, timeSlot, duration: elapsedMin, weather, savedAt: new Date().toISOString() });
-                }
-                localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 100)));
+                const attendeeNames = Array.from(trainingAttendees).map(id => {
+                  const p = rosterPlayers.find(r => r.id === id);
+                  return p ? p.name : id;
+                });
+                const slot = `${Date.now()}`;
+                logs.unshift({ date, trainType, timeSlot, duration: elapsedMin, weather, savedAt: new Date().toISOString(), players: attendeeNames, slot });
+                localStorage.setItem("kenshin_daily_training_log", JSON.stringify(logs.slice(0, 200)));
               } catch {}
 
               // Update individual TRIMP with actual duration
