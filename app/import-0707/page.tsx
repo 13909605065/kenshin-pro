@@ -31,88 +31,93 @@ export default function ImportTrainingData() {
     setStatus("writing");
     setMessage("正在写入...");
 
+    const logKey = `kenshin_daily_training_log`;
+    const loadKey = `kenshin_load_data`;
+    const now = new Date().toISOString();
+    const perPlayerTRIMP = Math.round((DURATION * 2.5) / PLAYERS.length);
+
+    // 1. 先写 localStorage（秒级完成，不依赖网络）
+    const logEntry = {
+      date: DATE, trainType: "pitch", timeSlot: "16:30-17:30", duration: DURATION,
+      weather: "", savedAt: now,
+      players: PLAYERS.map(p => ({ name: p.name, trimp: perPlayerTRIMP })),
+      slot: Date.now().toString(), note: NOTE,
+    };
+
+    let logs: any[] = [];
+    try {
+      const raw = localStorage.getItem(logKey);
+      logs = raw ? JSON.parse(raw) : [];
+    } catch { logs = []; }
+
+    const idx = logs.findIndex((l: any) => l.date === DATE);
+    if (idx >= 0) logs[idx] = logEntry;
+    else logs.unshift(logEntry);
+    localStorage.setItem(logKey, JSON.stringify(logs.slice(0, 200)));
+
+    // 2. 写个人负荷数据到 localStorage
+    let loadData: Record<string, any[]> = {};
+    try {
+      const raw = localStorage.getItem(loadKey);
+      loadData = raw ? JSON.parse(raw) : {};
+    } catch { loadData = {}; }
+
+    PLAYERS.forEach(p => {
+      if (!loadData[p.name]) loadData[p.name] = [];
+      const ei = loadData[p.name].findIndex((e: any) => e.date === DATE);
+      const entry = { date: DATE, sRPE: p.rpe, duration: DURATION };
+      if (ei >= 0) loadData[p.name][ei] = entry;
+      else loadData[p.name].push(entry);
+      loadData[p.name].sort((a: any, b: any) => b.date.localeCompare(a.date));
+    });
+    localStorage.setItem(loadKey, JSON.stringify(loadData));
+    // 同时写带队ID的key（teamGet/teamSet用），防止迁移后数据断连
+    const teamId = getActiveTeamId();
+    if (teamId) {
+      localStorage.setItem(`kenshin_load_data_${teamId}`, JSON.stringify(loadData));
+      localStorage.setItem(`kenshin_daily_training_log_${teamId}`, JSON.stringify(logs.slice(0, 200)));
+    }
+
+    // 3. 触发页面刷新
+    window.dispatchEvent(new CustomEvent('training-log-updated'));
+
+    const totalSRPE = PLAYERS.reduce((s, p) => s + p.rpe * DURATION, 0);
+    const avgRPE = (PLAYERS.reduce((s, p) => s + p.rpe, 0) / PLAYERS.length).toFixed(1);
+
+    // 4. 后台同步到 Supabase（不阻塞，失败不影响）
+    let supabaseOk = false;
     try {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setStatus("error");
-        setMessage("❌ 未登录，请先登录 kenshinpro.cn");
-        return;
+      if (session?.user) {
+        const userId = session.user.id;
+        const teamId = getActiveTeamId();
+
+        if (userId && teamId) {
+          // 同步训练日志
+          await supabase.from("user_kv").upsert({
+            user_id: userId, key: logKey,
+            value: JSON.stringify(logs.slice(0, 200)), updated_at: now,
+          }, { onConflict: "user_id, key" });
+
+          // 同步负荷数据
+          await supabase.from("user_kv").upsert({
+            user_id: userId, key: loadKey,
+            value: JSON.stringify(loadData), updated_at: now,
+          }, { onConflict: "user_id, key" });
+
+          supabaseOk = true;
+        }
       }
+    } catch { /* Supabase unreachable, localStorage is fine */ }
 
-      const userId = session.user.id;
-      const teamId = getActiveTeamId();
-      if (!teamId) {
-        setStatus("error");
-        setMessage("❌ 未选择球队，请先在网站中选择崇德荣海");
-        return;
-      }
-
-      // 负荷管理页面读的是不带队ID的原始key，不能加teamId后缀
-      const logKey = `kenshin_daily_training_log`;
-      const loadKey = `kenshin_load_data`;
-      const now = new Date().toISOString();
-      const perPlayerTRIMP = Math.round((DURATION * 2.5) / PLAYERS.length);
-
-      // 1. 写训练日志
-      const logEntry = {
-        date: DATE, trainType: "pitch", timeSlot: "16:30-17:30", duration: DURATION,
-        weather: "", savedAt: now,
-        players: PLAYERS.map(p => ({ name: p.name, trimp: perPlayerTRIMP })),
-        slot: Date.now().toString(), note: NOTE,
-      };
-
-      const { data: existingLog } = await supabase
-        .from("user_kv").select("value").eq("user_id", userId).eq("key", logKey).single();
-
-      let logs: any[] = [];
-      if (existingLog?.value) {
-        try { logs = JSON.parse(existingLog.value); } catch {}
-      }
-      const idx = logs.findIndex((l: any) => l.date === DATE);
-      if (idx >= 0) logs[idx] = logEntry;
-      else logs.unshift(logEntry);
-
-      await supabase.from("user_kv").upsert({
-        user_id: userId, key: logKey,
-        value: JSON.stringify(logs.slice(0, 200)), updated_at: now,
-      }, { onConflict: "user_id, key" });
-
-      // 2. 写负荷数据
-      const { data: existingLoad } = await supabase
-        .from("user_kv").select("value").eq("user_id", userId).eq("key", loadKey).single();
-
-      let loadData: Record<string, any[]> = {};
-      if (existingLoad?.value) {
-        try { loadData = JSON.parse(existingLoad.value); } catch {}
-      }
-
-      PLAYERS.forEach(p => {
-        if (!loadData[p.name]) loadData[p.name] = [];
-        const ei = loadData[p.name].findIndex((e: any) => e.date === DATE);
-        const entry = { date: DATE, sRPE: p.rpe, duration: DURATION };
-        if (ei >= 0) loadData[p.name][ei] = entry;
-        else loadData[p.name].push(entry);
-        loadData[p.name].sort((a: any, b: any) => b.date.localeCompare(a.date));
-      });
-
-      await supabase.from("user_kv").upsert({
-        user_id: userId, key: loadKey,
-        value: JSON.stringify(loadData), updated_at: now,
-      }, { onConflict: "user_id, key" });
-
-      // 3. 同步到 localStorage
-      localStorage.setItem(logKey, JSON.stringify(logs.slice(0, 200)));
-      localStorage.setItem(loadKey, JSON.stringify(loadData));
-      window.dispatchEvent(new CustomEvent('training-log-updated'));
-
-      setStatus("done");
-      const totalSRPE = PLAYERS.reduce((s, p) => s + p.rpe * DURATION, 0);
-      setMessage(`✅ 写入成功！22人 | 总sRPE=${totalSRPE} | 均RPE=${(PLAYERS.reduce((s,p)=>s+p.rpe,0)/PLAYERS.length).toFixed(1)}\n💡 现在可以去「负荷管理」页面查看数据`);
-    } catch (e: any) {
-      setStatus("error");
-      setMessage("❌ 写入失败: " + e.message);
-    }
+    setStatus("done");
+    setMessage(
+      `✅ 写入成功！22人 | 总sRPE=${totalSRPE} | 均RPE=${avgRPE}\n` +
+      `📋 localStorage: 已写入\n` +
+      `☁️ Supabase: ${supabaseOk ? '已同步' : '暂未同步（网络问题，不影响使用）'}\n` +
+      `💡 去「负荷管理」下拉选 07-07 查看`
+    );
   };
 
   return (
