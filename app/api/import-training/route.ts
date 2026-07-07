@@ -106,8 +106,23 @@ export async function GET(_req: NextRequest) {
   try {
     const admin = supabaseAdmin();
 
-    // 列出所有用户及其激活的球队
-    const { data: users } = await admin.auth.admin.listUsers();
+    // 列出所有用户
+    const { data: users, error: userError } = await admin.auth.admin.listUsers();
+
+    // 同时查 user_kv 表来找 team IDs
+    const { data: kvData, error: kvError } = await admin
+      .from("user_kv")
+      .select("user_id, key")
+      .limit(50);
+
+    // Extract team IDs from kv keys
+    const teamIds = new Set<string>();
+    if (kvData) {
+      kvData.forEach((row: any) => {
+        const match = row.key?.match(/_(team_[a-z0-9-]+|[a-z0-9-]{20,})$/);
+        if (match) teamIds.add(match[1]);
+      });
+    }
 
     const result = [];
     for (const user of users?.users || []) {
@@ -130,8 +145,14 @@ export async function GET(_req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ users: result });
+    return NextResponse.json({
+      users: result,
+      teamIdsFromKV: [...teamIds],
+      userError: userError?.message || null,
+      kvError: kvError?.message || null,
+      serviceKeyAvailable: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: e.message, stack: e.stack }, { status: 500 });
   }
 }
