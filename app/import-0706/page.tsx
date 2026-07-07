@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/supabase-client";
 
 const DATE = "2026-07-06";
@@ -29,6 +29,7 @@ function getActiveTeamId(): string {
 export default function Import0706() {
   const [status, setStatus] = useState<"idle" | "writing" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
+  const autoRan = useRef(false);
 
   const doImport = async () => {
     setStatus("writing");
@@ -113,6 +114,15 @@ export default function Import0706() {
     setStatus("done");
     setMessage(`✅ 7/6 写入完成！29人\n🏃 恢复组11人(30min RPE2) + 训练组18人(45min RPE5)\n\n` + logs.join("\n"));
   };
+
+  // ?auto=1 → 打开页面自动写入
+  useEffect(() => {
+    if (autoRan.current) return;
+    if (typeof window !== "undefined" && window.location.search.includes("auto=1")) {
+      autoRan.current = true;
+      setTimeout(() => doImport(), 300);
+    }
+  }, []); // eslint-disable-line
 
   return (
     <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
