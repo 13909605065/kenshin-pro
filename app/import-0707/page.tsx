@@ -48,8 +48,9 @@ export default function ImportTrainingData() {
         return;
       }
 
-      const logKey = `kenshin_daily_training_log_${teamId}`;
-      const loadKey = `kenshin_load_data_${teamId}`;
+      // 负荷管理页面读的是不带队ID的原始key，不能加teamId后缀
+      const logKey = `kenshin_daily_training_log`;
+      const loadKey = `kenshin_load_data`;
       const now = new Date().toISOString();
       const perPlayerTRIMP = Math.round((DURATION * 2.5) / PLAYERS.length);
 
