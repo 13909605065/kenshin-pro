@@ -45,3 +45,8 @@ export const EXERCISE_LIBRARY: ExerciseLibItem[] = Object.entries(STRENGTH_LIBRA
 
 // ====== Strength Templates ======
 export const STRENGTH_TEMPLATES: StrengthTemplate[] = [];
+
+/** Find an exercise by ID from the auto-generated library */
+export function findExercise(id: string): ExerciseLibItem | undefined {
+  return EXERCISE_LIBRARY.find(e => e.id === id);
+}

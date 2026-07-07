@@ -778,7 +778,7 @@ export default function SeasonCalendar() {
   }, [data.matchDates]);
 
   // ── Render a mini day cell (season view) ──
-  const renderMiniDay = useCallback((d, isToday, isCurrentMonth) => {
+  const renderMiniDay = useCallback((d: string, isToday: boolean, isCurrentMonth: boolean) => {
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();
@@ -810,7 +810,7 @@ export default function SeasonCalendar() {
   }, [getEventsForDate, isMatchDay, getPhaseForDate, showOnlyMarked]);
 
   // ── Render a full day cell (month/week view) ──
-  const renderFullDay = useCallback((d, isToday) => {
+  const renderFullDay = useCallback((d: string, isToday: boolean) => {
     const events = getEventsForDate(d);
     const parsed = parseDate(d);
     const dayNum = parsed.getDate();

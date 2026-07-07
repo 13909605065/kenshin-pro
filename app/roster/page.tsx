@@ -171,14 +171,6 @@ export default function RosterPage() {
       const ws = wb.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" }) as (string | number | null)[][];
 
-      // Dump raw parse info for debugging
-      console.log("=== 花名册导入诊断 ===");
-      console.log("文件名:", file.name, "大小:", file.size, "bytes");
-      console.log("Sheet:", sheetName, "总行数:", rows.length);
-      if (rows.length > 0) console.log("表头:", rows[0]);
-      if (rows.length > 1) { console.log("第1行数据:", rows[1]); console.log("第2行数据:", rows[2] || "(无)"); }
-      console.log("===================");
-
       if (rows.length < 2) {
         setImportToast({type:'error',msg:`文件只有 ${rows.length} 行（需要至少表头+1行数据），请检查文件内容`});
         setTimeout(()=>setImportToast(null),6000);
@@ -187,7 +179,6 @@ export default function RosterPage() {
       }
 
       const parsed = parseExcelData(rows);
-      console.log("解析结果:", parsed.players.length, "球员,", parsed.warnings.length, "警告", parsed.warnings);
 
       // ALWAYS show preview so user can see what happened
       setPreview({ rawRows: rows, parsed, fileName: file.name });
