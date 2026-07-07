@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
  * GET /api/import-training?userId=xxx
  * 获取用户信息（用于确认 userId 和 teamId）
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const admin = supabaseAdmin();
 
