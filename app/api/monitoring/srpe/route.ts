@@ -1,7 +1,7 @@
 /**
  * sRPE API — session-RPE data CRUD with Supabase
  * GET: /api/monitoring/srpe?player=&from=&to=
- * POST: batch upsert sRPE entries
+ * POST: batch insert sRPE entries (delete+insert to handle duplicates without unique constraint)
  */
 import { NextRequest } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/supabase-server";
@@ -46,10 +46,17 @@ export async function POST(request: NextRequest) {
     notes: e.notes || null,
   }));
 
-  const { data, error } = await supabase.from("srpe_entries").upsert(rows, {
-    onConflict: "user_id,player_name,session_date,session_type",
-    ignoreDuplicates: false,
-  }).select();
+  // Delete existing entries with same keys before insert
+  // (table lacks unique constraint, so upsert fails)
+  for (const row of rows) {
+    await supabase.from("srpe_entries").delete()
+      .eq("user_id", row.user_id)
+      .eq("player_name", row.player_name)
+      .eq("session_date", row.session_date)
+      .eq("session_type", row.session_type);
+  }
+
+  const { data, error } = await supabase.from("srpe_entries").insert(rows).select();
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
   return Response.json({ data, count: data.length });
