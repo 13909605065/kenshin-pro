@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>崇德荣海 · 负荷监控仪表盘</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --card: #1a1f2e;
+    --text: #e1e4e8;
+    --sub: #8b949e;
+    --red: #992828;
+    --green: #2ea043;
+    --amber: #d29922;
+    --blue: #58a6ff;
+    --border: #30363d;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:20px; }
+  h1 { font-size:1.5rem; margin-bottom:4px; }
+  .subtitle { color:var(--sub); font-size:0.85rem; margin-bottom:24px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .stat-card .label { color:var(--sub); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-card .value { font-size:2rem; font-weight:700; margin:8px 0; }
+  .stat-card .change { font-size:0.8rem; }
+  .change-up { color:var(--red); }
+  .change-down { color:var(--green); }
+  .chart-row { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:16px; }
+  .chart-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .chart-card h2 { font-size:1rem; margin-bottom:16px; color:var(--sub); }
+  .chart-wrap { position:relative; height:300px; }
+  .chart-wrap.short { height:250px; }
+  .alert-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .alert { padding:6px 14px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+  .alert-ok { background:#1a3a2a; color:var(--green); }
+  .alert-warn { background:#3a2f1a; color:var(--amber); }
+  .alert-rest { background:#1a253a; color:#58a6ff; }
+  .alert-bad { background:#3a1a1a; color:var(--red); }
+  @media(max-width:768px){ .chart-row{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<h1>⚽ 山西崇德荣海</h1>
+<p class="subtitle">负荷监控仪表盘 · 7/6 — 7/14 九日趋势 · 更新于2026-07-15</p>
+
+<div class="grid">
+  <div class="stat-card">
+    <div class="label">📊 今日总负荷</div>
+    <div class="value">4,380</div>
+    <div class="change change-up">sRPE · 23人参训</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">📈 7日均sRPE</div>
+    <div class="value" id="avg7">—</div>
+    <div class="change">vs 前7日均值</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">😴 睡眠质量</div>
+    <div class="value">3.0</div>
+    <div class="change">/5 · 正常范围</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">💪 疲劳指数</div>
+    <div class="value">2.0</div>
+    <div class="change">/5 · 低位良好</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">🦵 肌肉酸痛</div>
+    <div class="value">1.8</div>
+    <div class="change">/5 · 接近无酸痛</div>
+  </div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-card">
+    <h2>📊 每日训练负荷 (sRPE)</h2>
+    <div class="chart-wrap"><canvas id="srpeChart"></canvas></div>
+    <div class="alert-row">
+      <span class="alert alert-ok">7/6 恢复+训练</span>
+      <span class="alert alert-ok">7/7 MD-1</span>
+      <span class="alert alert-warn">7/8 ⚽比赛日</span>
+      <span class="alert alert-ok">7/9 放假</span>
+      <span class="alert alert-ok">7/10 上海踩场</span>
+      <span class="alert alert-ok">7/11 泳池恢复</span>
+      <span class="alert alert-ok">7/12 正常训练</span>
+	      <span class="alert alert-rest">7/13 放假</span>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h2>🫀 身体状态趋势</h2>
+    <div class="chart-wrap"><canvas id="wellnessChart"></canvas></div>
+  </div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-card">
+    <h2>📈 ACWR 急慢性负荷比</h2>
+    <div class="chart-wrap short"><canvas id="acwrChart"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h2>👥 参训人数</h2>
+    <div class="chart-wrap short"><canvas id="attendanceChart"></canvas></div>
+  </div>
+</div>
+
+<script>
+const raw = {"06": {"date": "7/6", "n": 25, "total_srpe": 3810, "avg_rpe": 3.7, "avg_sleep": 0, "avg_fatigue": 0, "avg_sore": 0}, "07": {"date": "7/7", "n": 24, "total_srpe": 5520, "avg_rpe": 4.0, "avg_sleep": 3.4, "avg_fatigue": 2.9, "avg_sore": 2.7}, "08": {"date": "7/8", "n": 22, "total_srpe": 9763, "avg_rpe": 7.3, "avg_sleep": 3.2, "avg_fatigue": 2.7, "avg_sore": 2.4}, "09": {"date": "7/9", "n": 0, "total_srpe": 0, "avg_rpe": 0, "avg_sleep": 3.2, "avg_fatigue": 3.4, "avg_sore": 2.9}, "10": {"date": "7/10", "n": 21, "total_srpe": 4450, "avg_rpe": 4.2, "avg_sleep": 3.0, "avg_fatigue": 3.1, "avg_sore": 2.8}, "11": {"date": "7/11", "n": 23, "total_srpe": 1470, "avg_rpe": 1.8, "avg_sleep": 3.0, "avg_fatigue": 2.5, "avg_sore": 2.2}, "12": {"date": "7/12", "n": 23, "total_srpe": 4380, "avg_rpe": 3.2, "avg_sleep": 3.0, "avg_fatigue": 2.0, "avg_sore": 1.8}, "13": {"date": "7/13", "n": 0, "total_srpe": 0, "avg_rpe": 0, "avg_sleep": 2.7, "avg_fatigue": 1.7, "avg_sore": 1.5}, "14": {"date": "7/14", "n": 25, "total_srpe": 11778, "avg_rpe": 6.0, "avg_sleep": 2.8, "avg_fatigue": 1.6, "avg_sore": 1.7}};
+
+const days = Object.keys(raw).sort();
+const labels = days.map(d => raw[d].date);
+const srpeData = days.map(d => raw[d].total_srpe);
+const rpeData = days.map(d => raw[d].avg_rpe);
+const sleepData = days.map(d => raw[d].avg_sleep || null);
+const fatigueData = days.map(d => raw[d].avg_fatigue || null);
+const soreData = days.map(d => raw[d].avg_sore || null);
+const attData = days.map(d => raw[d].n);
+
+// ACWR: acute (7-day avg) / chronic (28-day avg)
+// With only 7 days, use rolling acute
+const acute = [];
+const chronic = [];
+const acwr = [];
+let cum_sum = 0;
+for (let i = 0; i < srpeData.length; i++) {
+  cum_sum += srpeData[i];
+  const days_so_far = i + 1;
+  acute.push(srpeData[i]);
+  const chronic_val = cum_sum / days_so_far;
+  chronic.push(Math.round(chronic_val));
+  acwr.push(days_so_far >= 3 ? parseFloat((srpeData[i] / Math.max(1, chronic_val)).toFixed(2)) : null);
+}
+
+// 7-day avg
+const validSrpe = srpeData.filter(v => v > 0);
+const avg7 = Math.round(validSrpe.reduce((a,b)=>a+b,0) / validSrpe.length);
+document.getElementById('avg7').textContent = avg7;
+
+// Chart defaults
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+// sRPE Bar Chart
+new Chart(document.getElementById('srpeChart'), {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'sRPE',
+      data: srpeData,
+      backgroundColor: srpeData.map(v => v > 8000 ? '#992828' : v > 5000 ? '#d29922' : '#2ea043'),
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#21262d' }, title: { display: true, text: 'sRPE' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Wellness Line Chart
+new Chart(document.getElementById('wellnessChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label: '睡眠', data: sleepData, borderColor: '#58a6ff', backgroundColor:'transparent', tension:0.3, spanGaps:true },
+      { label: '疲劳', data: fatigueData, borderColor: '#d29922', backgroundColor:'transparent', tension:0.3, spanGaps:true },
+      { label: '酸痛', data: soreData, borderColor: '#992828', backgroundColor:'transparent', tension:0.3, spanGaps:true },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { position:'bottom', labels:{boxWidth:12, padding:16}} },
+    scales: {
+      y: { min:0, max:5, grid:{color:'#21262d'}, title:{display:true, text:'1-5量表'} },
+      x: { grid:{display:false} }
+    }
+  }
+});
+
+// ACWR Chart
+new Chart(document.getElementById('acwrChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label: 'ACWR', data: acwr, borderColor: '#58a6ff', backgroundColor:'rgba(88,166,255,0.1)', tension:0.3, fill:true, spanGaps:true },
+      { label: '急性负荷', data: acute, borderColor: '#d29922', backgroundColor:'transparent', tension:0.3, borderDash:[4,4], spanGaps:true, yAxisID:'y1' },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'bottom', labels:{boxWidth:12, padding:16} },
+      annotation: false
+    },
+    scales: {
+      y: { min:0, max:3, grid:{color:'#21262d'}, title:{display:true, text:'ACWR'} },
+      y1: { position:'right', grid:{display:false}, title:{display:true, text:'sRPE'} },
+      x: { grid:{display:false} }
+    }
+  }
+});
+
+// Attendance Chart
+new Chart(document.getElementById('attendanceChart'), {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: '参训人数',
+      data: attData,
+      backgroundColor: '#30363d',
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min:0, max:30, grid:{color:'#21262d'}, title:{display:true, text:'人数'} },
+      x: { grid:{display:false} }
+    }
+  }
+});
+</script>
+</body>
+</html>
