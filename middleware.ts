@@ -33,9 +33,11 @@ export async function middleware(request: NextRequest) {
   const isSharePage = request.nextUrl.pathname.startsWith("/share");
   const isOfflinePage = request.nextUrl.pathname.startsWith("/offline");
   const isCheckinPage = request.nextUrl.pathname.startsWith("/checkin");
+  const isReportPage = request.nextUrl.pathname.startsWith("/report");
+  const isPublicStatic = request.nextUrl.pathname.startsWith("/仪表盘") || request.nextUrl.pathname.startsWith("/数据文件");
 
-  // Allow auth callback, API routes, share pages, checkin, and offline page to proceed (they handle auth themselves)
-  if (isAuthCallback || isApiRoute || isSharePage || isOfflinePage || isCheckinPage) return response;
+  // Allow auth callback, API routes, share pages, checkin, offline page, and public static files
+  if (isAuthCallback || isApiRoute || isSharePage || isOfflinePage || isCheckinPage || isReportPage || isPublicStatic) return response;
 
   // Redirect to login if not authenticated (301 to preserve current page for after-login redirect)
   if (!user && !isLoginPage) {
@@ -55,5 +57,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public|mediapipe|equipment|icons|manifest|logo\\.svg|offline).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|public|mediapipe|equipment|icons|manifest|logo\\.svg|offline|仪表盘|数据文件).*)"],
 };

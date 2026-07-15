@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Home, Ellipsis, Dumbbell, Users, X, Zap, Activity, BarChart3, Gauge, Trophy, Settings, Footprints, ClipboardCheck, Shield } from "lucide-react";
+import { Home, Ellipsis, Dumbbell, Users, X, Zap, Activity, BarChart3, Gauge, Trophy, Settings, Footprints, ClipboardCheck, Shield, LayoutDashboard } from "lucide-react";
 import { useLang } from "@/components/providers/LanguageProvider";
 
 // ═══════════════════════════════════════════════
@@ -14,6 +14,7 @@ export const MAIN_TABS = [
   { id: "gym", label: "力量房", icon: Dumbbell, path: "/gym" },
   { id: "exercises", label: "动作库", icon: Dumbbell, path: "/exercises" },
   { id: "injury-prevention", label: "伤病预防", icon: Shield, path: "/injury-prevention" },
+  { id: "team-dashboard", label: "仪表盘", icon: LayoutDashboard, path: "/team-dashboard" },
   { id: "planning", label: "周期方案", icon: Dumbbell, path: "/planning" },
 ];
 

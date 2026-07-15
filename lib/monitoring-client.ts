@@ -230,6 +230,76 @@ export async function deleteInjury(id: string): Promise<void> {
 }
 
 // ═══════════════════════════════════════════
+// Dashboard
+// ═══════════════════════════════════════════
+
+export interface DashboardPlayerDay {
+  name: string;
+  position: string;
+  rpe: number | null;
+  srpe: number | null;
+  duration: number | null;
+  sessionType: "training" | "match" | null;
+  sleep: number | null;
+  fatigue: number | null;
+  soreness: number | null;
+  stress: number | null;
+  mood: number | null;
+  healthTotal: number | null;
+  healthWarning: boolean;
+  injuryStatus: string | null;
+  injuryNote: string | null;
+  notes: string;
+}
+
+export interface DashboardDaySummary {
+  date: string;
+  dayType: "训练" | "比赛" | "放假" | "恢复";
+  nParticipants: number;
+  nMorningSurveys: number;
+  totalSRPE: number;
+  avgRPE: number;
+  avgSleep: number;
+  avgFatigue: number;
+  avgSoreness: number;
+  avgHealthTotal: number;
+  atRiskCount: number;
+  players: DashboardPlayerDay[];
+}
+
+export interface DashboardACWR {
+  playerName: string;
+  acuteTotal: number;
+  acuteDaily: number;
+  chronicDaily: number;
+  acwr: number | null;
+  status: "safe" | "warning" | "danger" | "insufficient";
+}
+
+export interface DashboardData {
+  days: DashboardDaySummary[];
+  acwr: DashboardACWR[];
+  dateRange: { from: string; to: string };
+  generatedAt: string;
+}
+
+export async function getDashboardData(params?: {
+  from?: string;
+  to?: string;
+}): Promise<DashboardData | null> {
+  const sp = new URLSearchParams();
+  if (params?.from) sp.set("from", params.from);
+  if (params?.to) sp.set("to", params.to);
+  const qs = sp.toString();
+  try {
+    return await apiFetch<DashboardData>(`/api/monitoring/dashboard${qs ? `?${qs}` : ""}`);
+  } catch (e) {
+    console.error("Dashboard fetch failed:", e);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════
 // Migration: localStorage → Supabase
 // ═══════════════════════════════════════════
 
